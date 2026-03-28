@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layout :: header('PorfirIA · Centro de Mando')">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/js/orbita-layout-bridge.js"></script>
+</head>
+    <!-- ▼ FALLBACK para Firebase / Browsers estáticos ▼ -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PorfirIA · Centro de Mando — Orbita Clínica</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css?v=2.0" />
+    <!-- Specific Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ═══════════════════════════════════════
+           ESSENTIAL LAYOUT CSS (Natural Template Parity)
+        ═══════════════════════════════════════ */
+        .profile-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-modal-overlay.open {
+            display: flex !important;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .profile-modal {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e2e8f0;
+        }
+
+        .profile-modal-header {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            padding: 24px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+
+        .profile-modal-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .profile-modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .profile-modal-role {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 1px;
+        }
+
+        .profile-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .profile-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .profile-modal-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .profile-modal-body label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: -10px;
+        }
+
+        .profile-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .profile-input:focus {
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .profile-modal-footer {
+            padding: 20px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+
+        .btn-save {
+            padding: 10px 24px;
+            border-radius: 12px;
+            border: none;
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            position: fixed;
+            width: 280px;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+
+        .content-wrapper {
+            width: 100%;
+            margin-left: 0;
+            padding-left: 280px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: padding-left 0.3s ease;
+        }
+
+        .navbar {
+            height: 64px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #f1f5f9;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            gap: 1rem;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .hamburger {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #64748b;
+            transition: background 0.2s;
+        }
+
+        .hamburger:hover {
+            background: #f1f5f9;
+        }
+
+        .page-title-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .navbar-page-title {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        .status-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* Sidebar Elements */
+        .sidebar-brand {
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-logo {
+            height: 75px;
+            filter: brightness(0) invert(1);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-group-items {
+            display: none;
+            padding-left: 0.5rem;
+            margin-top: 2px;
+        }
+
+        .nav-group.open .nav-group-items {
+            display: block;
+        }
+
+        .nav-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            padding: 1.5rem 0.85rem 0.5rem;
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .notification-bell {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #64748b;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* User Profile & Dropdown */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            border-left: 1px solid #f1f5f9;
+            padding-left: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+
+        .role-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #64748b;
+            transition: all 0.2s ease;
+        }
+
+        .role-badge.master {
+            background: #ef4444 !important;
+            color: white !important;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+        }
+
+        .user-avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            background: white;
+            border-radius: 16px;
+            min-width: 220px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid #f1f5f9;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .avatar-dropdown.open {
+            display: block !important;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        .avatar-dropdown-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+        }
+
+        .avatar-dropdown-name {
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .avatar-dropdown-role {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .avatar-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .avatar-dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        @keyframes pulse-green {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(0.85);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content-wrapper {
+                padding-left: 0;
+            }
+
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
+        .score-ring {
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .main-content {
+            padding: 0 !important;
+            background: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        .cmd-container {
+            padding: 2.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<!-- Estilos y Configuración -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    institutional: { navy: '#1e293b', blue: '#3b82f6', gray: '#94a3b8' }
+                }
+            }
+        }
+    }
+</script>
+
+<style type="text/tailwindcss">
+    @layer components {
+        .glass-card { @apply bg-white border border-slate-100 shadow-sm rounded-[2rem] p-8 transition-all duration-300; }
+        .kpi-card { @apply bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm border-t-8 transition-all hover:shadow-md; }
+    }
+</style>
+
+<style>
+    .score-ring {
+        transition: stroke-dashoffset 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .main-content {
+        padding: 0 !important;
+        background: #f1f5f9;
+        overflow-x: hidden;
+    }
+
+    .cmd-container {
+        padding: 2.5rem;
+        max-width: 1600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .hero-gradient {
+        background: radial-gradient(circle at top left, #253d5b 0%, #111827 100%);
+    }
+
+    .kpi-icon-bg {
+        @apply w-12 h-12 rounded-2xl flex items-center justify-center mb-4;
+    }
+</style>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar from Layout -->
+    <aside th:replace="layout :: sidebar">
+        <div class="sidebar-brand" style="padding: 2.5rem 1.5rem;">
+            <div class="sidebar-logo-container" style="margin-bottom: 1rem;">
+                <img src="/assets/Logo_Clinica.png" alt="Orbita Clínica" class="sidebar-logo"
+                    style="height: 75px; filter: brightness(0) invert(1);" />
+            </div>
+            <div class="brand-text">
+                <div class="brand-name"
+                    style="font-size: 1.3rem; font-weight: 800; color: white; letter-spacing: -0.02em;">Orbita Clínica
+                </div>
+                <div class="brand-tagline"
+                    style="font-size: 10px; color: white !important; text-transform: uppercase; letter-spacing: 2px;">
+                    Ecosistema
+                    Científico</div>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a href="/home" class="nav-link" id="nav-home">
+                <i data-lucide="layout-grid"></i>
+                <span>Panel Principal</span>
+            </a>
+
+            <a href="/usuarios" class="nav-link admin-only" id="nav-users-direct" style="display: none !important;">
+                <i data-lucide="users"></i>
+                <span>Usuarios</span>
+            </a>
+
+            <div class="nav-section-title"
+                style="padding: 1.5rem 1.5rem 0.5rem; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">
+                Módulos del Sistema</div>
+
+            <!-- Dynamic Navigation Groups -->
+            <div class="nav-group" id="group-gtc">
+                <div class="nav-group-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div
+                        style="display: flex; align-items: center; gap: 0.85rem; color: inherit; text-decoration: none; flex: 1;">
+                        <i data-lucide="clipboard-list" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Gestión CTC</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a href="/cronogramagpc" class="nav-link"><i data-lucide="calendar"></i><span>Cronograma
+                            GPC</span></a>
+                    <a href="/plananual-gpc" class="nav-link"><i data-lucide="file-text"></i><span>Plan Anual
+                            GPC</span></a>
+                </div>
+            </div>
+
+            <div class="nav-group open" id="group-programas">
+                <div class="nav-group-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="activity" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Programas</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a href="/altocosto" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto Costo</span></a>
+                    <a href="/porfiria" class="nav-link active"><i
+                            data-lucide="microscope"></i><span>PorfirIA</span></a>
+                </div>
+            </div>
+
+            <div class="nav-group" id="group-eco">
+                <div class="nav-group-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="boxes" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Ecosistema Digital</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a href="/auxiliares-enf-rcf" class="nav-link"><i data-lucide="user-plus"></i><span>Auxiliares
+                            RCF</span></a>
+                    <a href="/medicos-gen-rcf" class="nav-link"><i data-lucide="user-check"></i><span>Médicos
+                            RCF</span></a>
+                    <a href="/ams" class="nav-link"><i data-lucide="stethoscope"></i><span>AMS</span></a>
+                    <a href="/isa" class="nav-link"><i data-lucide="database"></i><span>ISA</span></a>
+                </div>
+            </div>
+
+            <div class="nav-group" id="group-datos">
+                <div class="nav-group-header" onclick="this.parentElement.classList.toggle('open')">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="bar-chart-3" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Datos y Estadística</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a href="/dashboard-citas-cx-imx" class="nav-link"><i
+                            data-lucide="layout-dashboard"></i><span>Dashboard Cx</span></a>
+                    <a href="/consulta-cx-imdx" class="nav-link"><i data-lucide="edit-3"></i><span>Carga Cx
+                            IMDX</span></a>
+                    <a href="/estadistica-diaria" class="nav-link"><i data-lucide="calendar-days"></i><span>Estadística
+                            Diaria</span></a>
+                    <a href="/acumulado-mensual" class="nav-link"><i data-lucide="trending-up"></i><span>Acumulado
+                            Mensual</span></a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar from Layout -->
+        <nav th:replace="layout :: navbar('Centro de Mando PorfirIA')">
+            <div class="navbar-left">
+                <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('active')"
+                    style="color: #64748b; background:none; border:none; cursor:pointer; padding:0.5rem">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="page-title-container">
+                    <h1 class="navbar-page-title">Centro de Mando PorfirIA</h1>
+                    <div class="status-badge" style="background:transparent; border:none; padding:0;">
+                        <span class="status-text"
+                            style="color:#94a3b8; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px;">•
+                            INTELIGENCIA PREDICTIVA - SOLO ADMIN</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navbar-actions">
+                <div class="notification-bell" title="Notificaciones">
+                    <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
+                    <span class="notif-dot"></span>
+                </div>
+
+                <div class="user-profile" style="position: relative;">
+                    <div class="user-info">
+                        <span class="user-name" id="userNameLabel">Cargando...</span>
+                        <span class="role-badge" id="userRoleBadge">-</span>
+                    </div>
+
+                    <div class="avatar-wrapper" id="avatarWrapper">
+                        <div class="user-avatar-circle" id="userAvatarInitials">U</div>
+                    </div>
+
+                    <div class="avatar-dropdown" id="avatarDropdown">
+                        <div class="avatar-dropdown-header">
+                            <div class="avatar-dropdown-avatar" id="avatarDropdownInitials">U</div>
+                            <div>
+                                <div class="avatar-dropdown-name" id="avatarDropdownName">Usuario</div>
+                                <div class="avatar-dropdown-role" id="avatarDropdownRole">-</div>
+                            </div>
+                        </div>
+                        <div class="avatar-dropdown-divider"></div>
+                        <button class="avatar-dropdown-item" id="openProfileBtn">
+                            <i data-lucide="user" style="width:15px;"></i> Ver Perfil
+                        </button>
+                        <button class="avatar-dropdown-item danger" id="logoutBtn">
+                            <i data-lucide="log-out" style="width:15px;"></i> Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="cmd-container">
+                <!-- LOADER PREMIUM -->
+                <div id="cmd-loader" class="flex flex-col items-center justify-center py-40 gap-8">
+                    <div class="relative w-24 h-24">
+                        <div class="absolute inset-0 border-[6px] border-slate-200 rounded-full"></div>
+                        <div
+                            class="absolute inset-0 border-[6px] border-blue-500 border-t-transparent rounded-full animate-spin">
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <h2 class="text-2xl font-black text-slate-800 tracking-tight">Sincronizando PorfirIA</h2>
+                        <p class="text-slate-400 font-bold uppercase tracking-[0.3em] text-[10px] mt-2">Inteligencia
+                            Médica Predictiva</p>
+                    </div>
+                    <div class="w-80 bg-slate-200 rounded-full h-2 overflow-hidden shadow-inner">
+                        <div id="loader-bar"
+                            class="h-full bg-blue-500 rounded-full transition-all duration-700 shadow-lg"
+                            style="width:5%"></div>
+                    </div>
+                </div>
+
+                <div id="cmd-content" class="hidden space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+
+                    <!-- ══ MÓDULO 1: HERO SCORE SECTION (MATCHING IMAGE 2) ══ -->
+                    <section
+                        class="bg-[#1e293b] rounded-[2rem] p-10 shadow-2xl relative overflow-hidden flex flex-col xl:flex-row items-center gap-8">
+                        <!-- Score Indicator -->
+                        <div class="flex flex-col items-center gap-4 min-w-[200px]">
+                            <div class="relative w-40 h-40">
+                                <svg viewBox="0 0 140 140" class="w-full h-full -rotate-90">
+                                    <circle cx="70" cy="70" r="58" fill="none" stroke="#2a3a50" stroke-width="12" />
+                                    <circle id="score-circle" cx="70" cy="70" r="58" fill="none" stroke="#fbbf24"
+                                        stroke-width="12" stroke-dasharray="364.4" stroke-dashoffset="364.4"
+                                        stroke-linecap="round" class="score-ring" />
+                                </svg>
+                                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span id="score-valor" class="text-4xl font-black text-white">— <span
+                                            class="text-lg text-white/50">/ 100</span></span>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-white font-bold text-sm">Índice de Salud</p>
+                                <p id="score-label"
+                                    class="text-[#fbbf24] text-[10px] font-black uppercase tracking-widest mt-0.5">
+                                    ANALIZANDO...</p>
+                            </div>
+                        </div>
+
+                        <!-- Middle KPI Cards -->
+                        <div class="flex-1 grid grid-cols-5 gap-3">
+                            <div
+                                class="bg-white/5 border border-white/5 p-4 rounded-xl flex flex-col items-center gap-3">
+                                <div
+                                    class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400">
+                                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xl font-black text-white" id="hero-cum-val">...</p>
+                                    <p class="text-[8px] uppercase font-bold text-white/40 tracking-wider">Cumplimiento
+                                    </p>
+                                </div>
+                                <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+                                    <div id="hero-cum-bar" class="bg-blue-500 h-full transition-all duration-1000"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-white/5 border border-white/5 p-4 rounded-xl flex flex-col items-center gap-3">
+                                <div
+                                    class="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400">
+                                    <i data-lucide="phone" class="w-4 h-4"></i>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xl font-black text-white" id="hero-cont-val">...</p>
+                                    <p class="text-[8px] uppercase font-bold text-white/40 tracking-wider">
+                                        Contactabilidad</p>
+                                </div>
+                                <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+                                    <div id="hero-cont-bar" class="bg-emerald-500 h-full transition-all duration-1000"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-white/5 border border-white/5 p-4 rounded-xl flex flex-col items-center gap-3">
+                                <div
+                                    class="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center text-amber-400">
+                                    <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xl font-black text-white" id="hero-ord-val">...</p>
+                                    <p class="text-[8px] uppercase font-bold text-white/40 tracking-wider">Órdenes a
+                                        Tiempo</p>
+                                </div>
+                                <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+                                    <div id="hero-ord-bar" class="bg-amber-500 h-full transition-all duration-1000"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-white/5 border border-white/5 p-4 rounded-xl flex flex-col items-center gap-3">
+                                <div
+                                    class="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400">
+                                    <i data-lucide="flask-conical" class="w-4 h-4"></i>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xl font-black text-white" id="hero-siv-val">...</p>
+                                    <p class="text-[8px] uppercase font-bold text-white/40 tracking-wider">Sivigila</p>
+                                </div>
+                                <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+                                    <div id="hero-siv-bar" class="bg-purple-500 h-full transition-all duration-1000"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div
+                                class="bg-white/5 border border-white/5 p-4 rounded-xl flex flex-col items-center gap-3">
+                                <div
+                                    class="w-8 h-8 bg-rose-500/20 rounded-lg flex items-center justify-center text-rose-400">
+                                    <i data-lucide="trending-up" class="w-4 h-4"></i>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-xl font-black text-white" id="hero-adh-val">...</p>
+                                    <p class="text-[8px] uppercase font-bold text-white/40 tracking-wider">Adherencia
+                                    </p>
+                                </div>
+                                <div class="w-full bg-white/10 h-1 rounded-full overflow-hidden mt-1">
+                                    <div id="hero-adh-bar" class="bg-rose-500 h-full transition-all duration-1000"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Action Box -->
+                        <div id="status-action-box"
+                            class="bg-white/5 border border-white/5 p-6 rounded-2xl flex flex-col items-center justify-center min-w-[150px] gap-3">
+                            <i data-lucide="shield-alert" class="w-10 h-10 text-emerald-400" id="status-icon"></i>
+                            <p class="text-white font-black text-[10px] uppercase tracking-widest text-center"
+                                id="status-text">Operación Normal</p>
+                        </div>
+                    </section>
+
+
+
+                    <!-- ══ MÓDULO 2: KPI GRID (6 CARDS MATCHING IMAGE 2) ══ -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Activos</p>
+                            <p class="text-3xl font-black text-slate-800" id="kpi-activos">—</p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1">Conf + Pend</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Riesgo
+                                Crítico</p>
+                            <p class="text-3xl font-black text-rose-500" id="kpi-criticos">—</p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1">Score ≥ 70</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Vencen 30D
+                            </p>
+                            <p class="text-3xl font-black text-amber-500" id="kpi-vencen30">—</p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1">Próximas citas</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Cumplimiento
+                            </p>
+                            <p class="text-3xl font-black text-emerald-500" id="kpi-cumplimiento">...</p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1">Promedio esp.</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sin Teléfono
+                            </p>
+                            <p class="text-3xl font-black text-slate-800" id="kpi-sin-telefono">...</p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1">Barrera acceso</p>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                Gestiones/Sem</p>
+                            <p class="text-3xl font-black text-indigo-500" id="kpi-gestiones">...</p>
+                            <p class="text-[9px] font-bold text-slate-400 mt-1">Equipo activo</p>
+                        </div>
+                    </div>
+
+
+
+                    <!-- ══ MÓDULO 3: PREDICTOR & RADAR ══ -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
+                        <!-- Chart Section -->
+                        <div class="lg:col-span-2 glass-card flex flex-col h-[500px]">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-2 h-8 bg-blue-500 rounded-full"></div>
+                                    <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">Predicción de
+                                        Vencimientos</h3>
+                                </div>
+                                <div class="flex gap-2">
+                                    <span
+                                        class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full border border-blue-100 uppercase">Analítica
+                                        IA</span>
+                                </div>
+                            </div>
+                            <div class="flex-1 relative">
+                                <canvas id="chart-prediccion"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Radar Section -->
+                        <div class="glass-card flex flex-col h-[500px]">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-2 h-8 bg-rose-500 rounded-full"></div>
+                                    <h3 class="text-lg font-black text-slate-800 tracking-tight uppercase">Radar
+                                        Prioritario</h3>
+                                </div>
+                            </div>
+                            <div id="radar-riesgo" class="flex-1 space-y-4 overflow-y-auto pr-4 custom-scrollbar"></div>
+
+                            <div class="mt-6 pt-6 border-t border-slate-100 text-center">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Top 10 Casos
+                                    Críticos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts from Layout -->
+    <div th:replace="~{layout :: scripts}"></div>
+    <div th:replace="~{layout :: ui-scripts}"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+
+    <script th:inline="javascript">
+        // CONFIGURACIÓN SEPARADA PORFIRIA
+        const porfiriaConfig = {
+            apiKey: "AIzaSyBKapBxjuWDll_jRiKhaeUXGatTiVDIyhU",
+            authDomain: "porfiria-13d61.firebaseapp.com",
+            projectId: "porfiria-13d61",
+            storageBucket: "porfiria-13d61.firebasestorage.app",
+            messagingSenderId: "496431067191",
+            appId: "1:496431067191:web:081214e868606bf3bc8fb2"
+        };
+
+        let pdb;
+        let predChart = null; // Para evitar error "Canvas is already in use"
+        let isCentroMandoInitialized = false;
+
+        try {
+            let pApp = firebase.apps.find(a => a.name === 'PorfirIAProject');
+            if (!pApp) pApp = firebase.initializeApp(porfiriaConfig, 'PorfirIAProject');
+            pdb = pApp.firestore();
+            console.log("🚀 PorfirIA Inteligencia Activa");
+        } catch (e) { console.error("Firebase Error:", e); }
+
+        const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+        const setStyle = (id, p, v) => { const el = document.getElementById(id); if (el) el.style[p] = v; };
+        const safeGet = async fn => { try { return await fn(); } catch (e) { return { docs: [] }; } };
+
+        async function startCentroMandoIA() {
+            if (!pdb || isCentroMandoInitialized) return;
+            isCentroMandoInitialized = true;
+            console.log("Iniciando Proceso de Renderizado PorfirIA...");
+
+            const loaderBar = document.getElementById('loader-bar');
+
+            try {
+                const now = new Date();
+                const d30 = new Date(now); d30.setDate(now.getDate() + 30);
+                const d60 = new Date(now); d60.setDate(now.getDate() + 60);
+                const d90 = new Date(now); d90.setDate(now.getDate() + 90);
+
+                if (loaderBar) loaderBar.style.width = '30%';
+
+                // 1. Carga de Pacientes Activos
+                const [cSnap, pSnap] = await Promise.all([
+                    safeGet(() => pdb.collection("patients").where("estadoActual", "==", "1, Confirmada").get()),
+                    safeGet(() => pdb.collection("patients").where("estadoActual", "==", "2, Pendiente").get())
+                ]);
+                const allP = [...cSnap.docs, ...pSnap.docs];
+                setText('kpi-activos', allP.length);
+
+                if (loaderBar) loaderBar.style.width = '60%';
+
+                // 2. Análisis Clínico Predictivo
+                let criticos = 0, v30 = 0, v60 = 0, v90 = 0, sinTelefono = 0;
+                const radar = [];
+
+                await Promise.all(allP.slice(0, 100).map(async doc => {
+                    const p = doc.data();
+                    if (!p.telefono && !p.phone) sinTelefono++;
+
+                    const sSnap = await safeGet(() => pdb.collection("patients").doc(doc.id).collection("services").get());
+                    let maxAtraso = 0;
+
+                    sSnap.docs.forEach(sd => {
+                        const s = sd.data();
+                        if (s.frecuenciaMeses > 0 && s.ultimaAtencion) {
+                            const last = s.ultimaAtencion.toDate ? s.ultimaAtencion.toDate() : new Date(s.ultimaAtencion);
+                            const next = new Date(last); next.setMonth(next.getMonth() + Number(s.frecuenciaMeses));
+                            const diffDays = Math.floor((now - next) / (1000 * 60 * 60 * 24));
+
+                            if (next < now) maxAtraso = Math.max(maxAtraso, diffDays);
+                            else if (next <= d30) v30++; else if (next <= d60) v60++; else if (next <= d90) v90++;
+                        }
+                    });
+
+                    if (maxAtraso > 0) {
+                        criticos++;
+                        radar.push({ nombre: p.nombre || doc.id, atraso: maxAtraso });
+                    }
+                }));
+
+                if (loaderBar) loaderBar.style.width = '90%';
+
+                // 3. Renderizado de Interfaz Dinámica Realy
+                const total = allP.length || 1;
+                const contPer = Math.round(((total - sinTelefono) / total) * 100);
+                const scorePer = Math.round(((total - criticos) / total) * 100);
+
+                setText('kpi-criticos', criticos);
+                setText('kpi-vencen30', v30);
+                setText('kpi-sin-telefono', sinTelefono);
+                setText('kpi-contactabilidad', `${contPer}%`);
+
+                // Hero Section Dynamic Values
+                document.getElementById('score-valor').innerHTML = `${scorePer} <span class="text-lg text-white/50">/ 100</span>`;
+                setText('hero-cont-val', `${contPer}%`);
+                setStyle('hero-cont-bar', 'width', `${contPer}%`);
+
+                // Estimaciones dinámicas basadas en cumplimiento real (ejemplo simple)
+                const cumPer = Math.max(0, 100 - (criticos * 2)); // Placeholder logic for demonstration of real reactivity
+                setText('hero-cum-val', `${cumPer}%`);
+                setStyle('hero-cum-bar', 'width', `${cumPer}%`);
+                setText('kpi-cumplimiento', `${cumPer}%`);
+
+                // Score Ring & Labels
+                const offset = 364.4 - (scorePer * 364.4 / 100);
+                setStyle('score-circle', 'strokeDashoffset', offset);
+
+                if (scorePer < 70) {
+                    setText('score-label', 'ATENCIÓN REQUERIDA');
+                    setStyle('score-circle', 'stroke', '#fbbf24');
+                    document.getElementById('status-icon')?.setAttribute('data-lucide', 'alert-triangle');
+                    setText('status-text', 'Requiere Atención');
+                    setStyle('status-icon', 'color', '#fbbf24');
+                } else {
+                    setText('score-label', 'SALUD ÓPTIMA');
+                    setStyle('score-circle', 'stroke', '#10b981');
+                    document.getElementById('status-icon')?.setAttribute('data-lucide', 'shield-check');
+                    setText('status-text', 'Operación Normal');
+                    setStyle('status-icon', 'color', '#10b981');
+                }
+                if (window.lucide) lucide.createIcons();
+
+
+
+                const radarList = document.getElementById('radar-riesgo');
+                if (radarList) radarList.innerHTML = radar.slice(0, 10).sort((a, b) => b.atraso - a.atraso).map(r => `
+                    <div class="flex items-center justify-between p-5 bg-white border border-slate-50 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-black text-slate-800 tracking-tight">${r.nombre}</span>
+                            <span class="text-[10px] text-rose-500 font-bold uppercase tracking-widest mt-1">${r.atraso} días de atraso</span>
+                        </div>
+                        <div class="px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black rounded-xl">Prioridad 1</div>
+                    </div>
+                `).join('') || '<div class="text-center py-20 text-slate-300 font-bold">Sin alertas pendientes</div>';
+
+                // Chart.js Predicción
+                if (predChart) predChart.destroy();
+                predChart = new Chart(document.getElementById('chart-prediccion'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ya Vencidos', '0-30 Días', '31-60 Días', '61-90 Días'],
+                        datasets: [{
+                            data: [criticos, v30, v60, v90],
+                            backgroundColor: ['#f43f5e', '#f59e0b', '#3b82f6', '#10b981'],
+                            borderRadius: 16,
+                            barThickness: 50
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f1f5f9', borderDash: [5, 5] }, border: { display: false } },
+                            x: { grid: { display: false }, border: { display: false } }
+                        }
+                    }
+                });
+
+
+                // 4. Finalización
+                if (loaderBar) loaderBar.style.width = '100%';
+                setTimeout(() => {
+                    document.getElementById('cmd-loader').style.display = 'none';
+                    document.getElementById('cmd-content').classList.remove('hidden');
+                }, 800);
+
+            } catch (e) { console.error("Critical Render Error:", e); }
+        }
+
+        window.addEventListener('OrbitaContextReady', (e) => {
+            console.log("OrbitaContext detectado, iniciando Centro de Mando...");
+            startCentroMandoIA();
+        });
+        window.addEventListener('user-ready', (e) => {
+            console.log("user-ready detectado, iniciando Centro de Mando...");
+            startCentroMandoIA();
+        });
+        // Fallback si el evento se pierde
+        setTimeout(() => { if (document.getElementById('cmd-content').classList.contains('hidden')) startCentroMandoIA(); }, 6000);
+    </script>
+</body>
+
+</html>

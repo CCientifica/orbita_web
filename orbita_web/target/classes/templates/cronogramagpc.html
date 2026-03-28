@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:replace="~{layout :: header('Cronograma GPC y Protocolos')}"></div>
+    <!-- Specific Styles for Cronograma -->
+    <style>
+        :root {
+            --card-border: #e2e8f0;
+            --muted: #64748b;
+        }
+
+        /* Full-width container overrides */
+        .main-content {
+            max-width: 100% !important;
+            padding: 1.5rem 2rem !important;
+        }
+
+        .card.full-bleed {
+            width: 100%;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-hd {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            background: #f8fafc;
+        }
+
+        .card-bd {
+            padding: 1.5rem;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            appearance: none;
+            border: 1px solid var(--card-border);
+            background: #fff;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            color: var(--muted);
+        }
+
+        .tab[aria-selected="true"] {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(var(--primary-rgb, 14, 165, 233), 0.2);
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar .spacer {
+            flex: 1;
+        }
+
+        .grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+        }
+
+        .grid th, .grid td {
+            border-bottom: 1px solid var(--card-border);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            vertical-align: top;
+            background: #fff;
+            font-size: 0.875rem;
+        }
+
+        .grid th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f1f5f9;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.025em;
+        }
+
+        .grid td input, .grid td select, .grid td textarea {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            background: #fff;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .grid td input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .table-wrap {
+            width: 100%;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            overflow: auto;
+            position: relative;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            border-radius: 9999px;
+            padding: 0.25rem 0.625rem;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+
+        .b-alta { background: #fee2e2; color: #991b1b; }
+        .b-media { background: #fef3c7; color: #92400e; }
+        .b-baja { background: #dcfce7; color: #166534; }
+        .b-info { background: #e0f2fe; color: #0369a1; }
+        
+        .month-sep .month-title {
+            background: #f8fafc;
+            font-weight: 800;
+            padding: 1rem;
+            border-top: 2px solid #e2e8f0;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Modal Styles Integration */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 1100px;
+            max-height: 90vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-hd {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+        }
+
+        .modal-bd {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-ft {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            background: #f8fafc;
+        }
+
+        .sigpad {
+            border: 2px dashed #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            padding: 1rem;
+        }
+
+        .sigpad canvas {
+            width: 100%;
+            height: 150px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            cursor: crosshair;
+        }
+
+        .sig-thumb {
+            max-height: 40px;
+            max-width: 120px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar -->
+        <nav th:replace="~{layout :: navbar('Cronograma GPC')}"></nav>
+
+        <main class="main-content">
+            <header class="dashboard-header fade-in">
+                <h1>Cronograma de Actualización GPC y Protocolos</h1>
+                <p>Identifica documentos, compara con el perfil epidemiológico institucional y genera el cronograma anual.</p>
+            </header>
+
+            <section class="card full-bleed fade-in">
+                <div class="card-hd">
+                    <div class="toolbar">
+                        <div class="input-group" style="width: auto;">
+                            <label class="form-label mb-0 me-2" style="font-weight: 700;">Año:</label>
+                            <select id="anioSel" class="form-select w-auto"></select>
+                        </div>
+                        <div class="input-group" style="width: auto;">
+                            <label class="form-label mb-0 me-2" style="font-weight: 700;">Capacidad/mes:</label>
+                            <input id="capacidadMes" type="number" min="1" value="2" class="form-control" style="width:70px">
+                        </div>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab" data-tab="ident" aria-selected="true">1) Identificación</button>
+                        <button class="tab" data-tab="perfil" aria-selected="false">2) Perfil Epidemiológico</button>
+                        <button class="tab" data-tab="crono" aria-selected="false">3) Cronograma</button>
+                        <button class="tab" data-tab="actu" aria-selected="false">4) Actualización</button>
+                    </div>
+                </div>
+
+                <div class="card-bd">
+                    <!-- Panel 1: Identificación -->
+                    <div id="panel-ident" class="panel active">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                Captura o importa el inventario de GPC/Protocolos para el periodo.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <input id="fileIdent" type="file" accept=".xlsx,.xls" hidden>
+                                <button id="btnAddIdent" class="btn btn-outline-primary btn-sm"><i data-lucide="plus" style="width:16px;"></i> Fila</button>
+                                <button id="btnImportIdent" class="btn btn-outline-success btn-sm"><i data-lucide="upload" style="width:16px;"></i> XLSX</button>
+                                <button id="btnSaveIdent" class="btn btn-primary btn-sm"><i data-lucide="save" style="width:16px;"></i> Guardar</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap" style="max-height:500px;">
+                            <table class="grid" id="tblIdent">
+                                <thead>
+                                    <tr>
+                                        <th style="width:120px">Código</th>
+                                        <th style="width:400px">Nombre de documento</th>
+                                        <th style="width:150px">Última Act.</th>
+                                        <th style="width:180px">Próxima Act.</th>
+                                        <th style="width:100px" class="text-center">Adaptada</th>
+                                        <th style="width:100px" class="text-center">Ajuste</th>
+                                        <th style="width:100px" class="text-center">Descarte</th>
+                                        <th style="width:160px">Responsable</th>
+                                        <th style="width:160px">Especialidad</th>
+                                        <th style="width:200px">Observación</th>
+                                        <th style="width:120px">Prioridad</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Perfil Epidemiológico -->
+                    <div id="panel-perfil" class="panel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                Registra diagnósticos (frecuencia). El sistema calcula la priorización por cruce de documentos.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <input id="filePerfil" type="file" accept=".xlsx,.xls" hidden>
+                                <button id="btnAddDiag" class="btn btn-outline-primary btn-sm"><i data-lucide="plus" style="width:16px;"></i> Dx</button>
+                                <button id="btnImportPerfil" class="btn btn-outline-success btn-sm"><i data-lucide="upload" style="width:16px;"></i> XLSX</button>
+                                <button id="btnCalcular" class="btn btn-info btn-sm text-white"><i data-lucide="calculator" style="width:16px;"></i> Priorizar</button>
+                                <button id="btnSavePerfil" class="btn btn-primary btn-sm"><i data-lucide="save" style="width:16px;"></i> Guardar</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap" style="max-height:500px;">
+                            <table class="grid" id="tblPerfil">
+                                <thead>
+                                    <tr>
+                                        <th style="width:300px">Diagnóstico</th>
+                                        <th style="width:100px" class="text-end">Frec.</th>
+                                        <th style="width:300px">Documento Relacionado</th>
+                                        <th style="width:120px">Código Doc.</th>
+                                        <th style="width:150px">Acción Sugerida</th>
+                                        <th style="width:130px" class="text-center">Prioridad</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Cronograma -->
+                    <div id="panel-crono" class="panel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                Genera el plan con base en la priorización, vencimientos y capacidad mensual.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button id="btnGenerar" class="btn btn-success btn-sm"><i data-lucide="zap" style="width:16px;"></i> Generar Plan</button>
+                                <button id="btnAddCrono" class="btn btn-outline-primary btn-sm"><i data-lucide="plus" style="width:16px;"></i> Actividad</button>
+                                <button id="btnGuardarCrono" class="btn btn-primary btn-sm"><i data-lucide="save" style="width:16px;"></i> Guardar</button>
+                                <button id="btnExportCrono" class="btn btn-outline-info btn-sm"><i data-lucide="download" style="width:16px;"></i> Exportar</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap" style="max-height:550px;">
+                            <table class="grid" id="tblCrono">
+                                <thead>
+                                    <tr>
+                                        <th style="width:100px">Código</th>
+                                        <th style="width:350px">Diagnóstico - Tema</th>
+                                        <th style="width:180px">Vence / Semáforo</th>
+                                        <th style="width:120px">Acción</th>
+                                        <th style="width:180px">Mes Ejecución</th>
+                                        <th style="width:120px">Prioridad</th>
+                                        <th style="width:130px">Inicio</th>
+                                        <th style="width:130px">Entrega</th>
+                                        <th style="width:100px" class="text-center">Hecho</th>
+                                        <th style="width:120px" class="text-end">% Anual</th>
+                                        <th style="width:120px" class="text-end">% Mes</th>
+                                        <th style="width:150px">Estado</th>
+                                        <th style="width:80px" class="text-center">Acc.</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel 4: Actualización -->
+                    <div id="panel-actu" class="panel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                Registra evidencias de documentos socializados e implementados y genera actas PDF.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button id="btnPrefillActu" class="btn btn-outline-info btn-sm"><i data-lucide="refresh-cw" style="width:16px;"></i> Cargar Hechos</button>
+                                <button id="btnAddActu" class="btn btn-outline-primary btn-sm"><i data-lucide="plus" style="width:16px;"></i> Registro</button>
+                                <button id="btnSaveActu" class="btn btn-primary btn-sm"><i data-lucide="save" style="width:16px;"></i> Guardar</button>
+                            </div>
+                        </div>
+                        <div class="table-wrap" style="max-height:550px;">
+                            <table class="grid" id="tblActu">
+                                <thead>
+                                    <tr>
+                                        <th style="width:100px">Código</th>
+                                        <th style="width:400px">Diagnóstico - Tema</th>
+                                        <th style="width:140px">Fecha Act.</th>
+                                        <th style="width:120px">Mes Act.</th>
+                                        <th style="width:180px">Próxima Act.</th>
+                                        <th style="width:120px">Semáforo</th>
+                                        <th style="width:170px">Socialización</th>
+                                        <th style="width:130px">Evidencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Modal Evidencia (Socialización / Implementación) -->
+    <div id="evidModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="modal-hd">
+                <div>
+                    <h3 class="mb-0" style="font-weight: 800;">Evidencia de cumplimiento</h3>
+                    <p id="evidDocRef" class="mb-0 text-muted" style="font-size: 0.8rem;"></p>
+                </div>
+                <button id="evidClose" class="btn btn-link link-secondary p-0"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-bd">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de Evidencia</label>
+                        <select id="evidTipo" class="form-select">
+                            <option value="social">Socialización</option>
+                            <option value="impl">Implementación</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha</label>
+                        <input id="evidFecha" type="date" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tema</label>
+                        <input id="evidTema" type="text" readonly class="form-control bg-light">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label class="form-label">Facilitador</label>
+                        <input id="evidFac" type="text" class="form-control" placeholder="Nombre completo">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Responsable</label>
+                        <input id="evidResp" type="text" class="form-control" placeholder="Nombre completo">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Horario</label>
+                        <input id="evidHora" type="text" class="form-control" placeholder="7 - 8 AM">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Duración</label>
+                        <input id="evidDur" type="text" class="form-control" placeholder="1 H">
+                    </div>
+
+                    <!-- Campos implementación -->
+                    <div class="col-md-2 impl-only">
+                        <label class="form-label">Versión</label>
+                        <input id="evidVersion" type="text" class="form-control" placeholder="02">
+                    </div>
+                    <div class="col-md-4 impl-only">
+                        <label class="form-label">Vigencia</label>
+                        <input id="evidVigencia" type="text" class="form-control" placeholder="VIGENTE 2026">
+                    </div>
+
+                    <div class="col-12 mt-4">
+                        <div class="form-label mb-2" style="font-weight: 700;">Servicios involucrados</div>
+                        <div id="evidServicios" class="d-flex flex-wrap gap-2">
+                            <!-- Servicios se inyectan via JS -->
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 border-top pt-3">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="card h-100 shadow-none border">
+                                    <div class="card-header bg-light py-2">
+                                        <h6 class="mb-0" style="font-size: 0.85rem;">Catálogo de Profesionales</h6>
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <div class="input-group input-group-sm mb-3">
+                                            <input id="filtroEsp" type="text" class="form-control" placeholder="Filtrar por nombre/esp...">
+                                            <button id="btnImportProfs" class="btn btn-outline-success"><i data-lucide="upload" style="width:14px;"></i></button>
+                                        </div>
+                                        <div id="profsCatList" style="max-height: 300px; overflow-y: auto;">
+                                            <!-- Catálogo se inyecta aqui -->
+                                        </div>
+                                        <input id="fileProfs" type="file" accept=".xlsx,.xls" hidden>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card h-100 shadow-none border">
+                                    <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0" style="font-size: 0.85rem;">Asistentes / Firmantes</h6>
+                                        <small class="text-muted" style="font-size: 11px;">Marca los servicios por profesional</small>
+                                    </div>
+                                    <div class="card-body p-3 overflow-auto">
+                                        <table class="table table-sm table-bordered mb-0" id="profsSelTable" style="font-size: 0.8rem;">
+                                            <thead class="bg-light">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Cargo</th>
+                                                    <th>Servicios</th>
+                                                    <th>Firma</th>
+                                                    <th class="text-center">Acción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+
+                                        <!-- Panel de firma dinámico -->
+                                        <div id="sigPadWrap" class="sigpad mt-3" style="display:none;">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <strong id="sigFor" style="font-size: 0.85rem;"></strong>
+                                                <button id="sigClear" class="btn btn-sm btn-outline-secondary py-0">Limpiar</button>
+                                            </div>
+                                            <canvas id="sigCanvas"></canvas>
+                                            <div class="text-end mt-2">
+                                                <button id="sigSave" class="btn btn-sm btn-primary py-1">Guardar firma</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-ft">
+                <button id="evidGenPDF" class="btn btn-success"><i data-lucide="file-text" style="width:16px;"></i> Generar PDF(s)</button>
+                <button id="evidSaveClose" class="btn btn-primary"><i data-lucide="check" style="width:16px;"></i> Guardar y Cerrar</button>
+                <button id="evidCancel" class="btn btn-outline-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden templates for PDF generation -->
+    <div id="tplPDF" style="position:absolute;left:-9999px;top:-9999px;visibility:hidden"></div>
+
+    <!-- External Libs -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+    <!-- Layout Scripts -->
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <!-- Module Logic -->
+    <script type="module" th:inline="javascript">
+        import { collection, doc, getDocs, setDoc, query, where, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+        // Get instances from layout
+        const { db, auth } = window.firebaseInstance;
+
+        /* ================== Helpers y estado ================== */
+        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const qs = s => document.querySelector(s);
+        const qsa = s => Array.from(document.querySelectorAll(s));
+        const todayISO = () => new Date().toISOString().slice(0,10);
+        
+        const slug = s => (s||'').toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+            .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+            
+        const normalize = s => slug(s||'').replace(/-/g,'');
+        
+        const asBool = v => {
+            if(typeof v==='boolean') return v;
+            const t=String(v).trim().toLowerCase();
+            return t==='si'||t==='sí'||t==='true'||t==='1'||t==='x';
+        };
+
+        const SERVICIOS = ['Urgencias','Hospitalización','UCI-UCE','Cirugía','Consulta externa'];
+
+        const state = {
+            anio: new Date().getFullYear(),
+            capacidadMes: 2,
+            ident: [],
+            perfil: [],
+            crono: [],
+            actu: [],
+            profes: [],
+            _evid: null
+        };
+
+        /* ================== UI Navigation ================== */
+        qsa('.tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                qsa('.tab').forEach(b => b.setAttribute('aria-selected','false'));
+                btn.setAttribute('aria-selected','true');
+                qsa('.panel').forEach(p => p.classList.remove('active'));
+                qs(`#panel-${btn.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        /* ================== Vigencia Logic ================== */
+        function tipoVigencia(codigo){
+            const s = String(codigo||'').toUpperCase();
+            return s.startsWith('GPC') ? 5 : 3;
+        }
+
+        function addYearsISO(iso, years){
+            if(!iso) return '';
+            const d = new Date(iso);
+            if (Number.isNaN(d.getTime())) return '';
+            d.setFullYear(d.getFullYear() + years);
+            return d.toISOString().slice(0,10);
+        }
+
+        function calcProxima(fchUlt, codigo){
+            if(!fchUlt) return '';
+            return addYearsISO(fchUlt, tipoVigencia(codigo));
+        }
+
+        function semaforoDe(fchProx){
+            if(!fchProx) return { text:'—', cls:'' };
+            const hoy = new Date();
+            const f = new Date(fchProx);
+            const meses = (f.getFullYear()-hoy.getFullYear())*12 + (f.getMonth()-hoy.getMonth());
+            if (f < hoy) return { text:'Vencida', cls:'b-alta' };
+            if (meses <= 6) return { text:'Por vencer', cls:'b-media' };
+            return { text:'Vigente', cls:'b-baja' };
+        }
+
+        /* ================== Data Loading ================== */
+        async function loadFromDB() {
+            try {
+                // Load IDs
+                const snapId = await getDocs(collection(db, 'gpc_identificacion'));
+                state.ident = snapId.docs.map(d => d.data());
+
+                // Load Perfil
+                const snapPerf = await getDocs(query(collection(db, 'gpc_perfil_anual'), where('anio', '==', state.anio)));
+                state.perfil = snapPerf.docs.map(d => d.data());
+
+                // Load Crono
+                const snapCrono = await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)));
+                state.crono = snapCrono.docs.map(d => d.data());
+
+                // Load Actu
+                const snapActu = await getDocs(query(collection(db, 'gpc_actualizaciones'), where('anio', '==', state.anio)));
+                state.actu = snapActu.docs.map(d => d.data());
+            } catch (e) {
+                console.error("Error loading data:", e);
+            }
+        }
+
+        async function loadProfesFromDB(){
+            try {
+                const snap = await getDocs(collection(db, 'gpc_profesionales'));
+                state.profes = snap.docs.map(d => d.data());
+            } catch (e) {
+                console.warn('profes:', e);
+            }
+        }
+
+        /* ================== Render Logic ================== */
+        function renderAll() {
+            renderIdent();
+            renderPerfil();
+            renderCrono();
+            renderActu();
+            renderProfsCatalog();
+        }
+
+        // --- Panel 1: Identificación ---
+        function renderIdent(){
+            const tbody = qs('#tblIdent tbody');
+            tbody.innerHTML = '';
+            state.ident.forEach((r, i) => {
+                const lamp = semaforoDe(r.fchProx);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input value="${r.codigo||''}" data-key="codigo"></td>
+                    <td><input value="${r.nombre||''}" data-key="nombre"></td>
+                    <td><input type="date" value="${r.fchUlt||''}" data-key="fchUlt"></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <input type="date" value="${r.fchProx||''}" data-key="fchProx" class="flex-grow-1">
+                            <span class="badge ${lamp.cls} ms-2" style="min-width:70px">${lamp.text}</span>
+                        </div>
+                    </td>
+                    <td class="text-center"><input type="checkbox" ${r.adaptada?'checked':''} data-key="adaptada" class="form-check-input"></td>
+                    <td class="text-center"><input type="checkbox" ${r.ajuste?'checked':''} data-key="ajuste" class="form-check-input"></td>
+                    <td class="text-center"><input type="checkbox" ${r.descarte?'checked':''} data-key="descarte" class="form-check-input"></td>
+                    <td><input value="${r.resp||''}" data-key="resp"></td>
+                    <td><input value="${r.esp||''}" data-key="esp"></td>
+                    <td><textarea rows="1" data-key="obs" class="form-control" style="font-size:0.8rem">${r.obs||''}</textarea></td>
+                    <td><input value="${r.prior||''}" data-key="prior"></td>
+                `;
+
+                tr.querySelectorAll('input,textarea').forEach(inp => {
+                    inp.addEventListener('input', () => {
+                        const k = inp.dataset.key;
+                        const v = (inp.type === 'checkbox') ? inp.checked : inp.value;
+                        state.ident[i][k] = v;
+                        if (k === 'fchUlt' || k === 'codigo') {
+                            state.ident[i].fchProx = calcProxima(state.ident[i].fchUlt, state.ident[i].codigo);
+                            renderIdent();
+                        }
+                    });
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Panel 2: Perfil ---
+        function paintBadge(el, prio){
+            if (!el) return;
+            el.className = 'badge';
+            if (!prio) { el.textContent=''; return; }
+            const cls = prio === 'Alta' ? 'b-alta' : prio === 'Media' ? 'b-media' : 'b-baja';
+            el.classList.add(cls);
+            el.textContent = prio;
+        }
+
+        function renderPerfil(){
+            const tbody = qs('#tblPerfil tbody');
+            tbody.innerHTML = '';
+            state.perfil.sort((a,b) => (b.freq||0) - (a.freq||0));
+            state.perfil.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input value="${r.diag||''}" data-key="diag"></td>
+                    <td><input type="number" class="text-end" value="${r.freq||0}" data-key="freq"></td>
+                    <td><input value="${r.docRelacionado||''}" data-key="docRelacionado"></td>
+                    <td><input value="${r.codigoDoc||''}" data-key="codigoDoc"></td>
+                    <td><input value="${r.accion||''}" data-key="accion"></td>
+                    <td class="text-center"><span class="badge" data-badge="prioridad"></span></td>
+                `;
+                paintBadge(tr.querySelector('[data-badge="prioridad"]'), r.prioridad||'');
+                
+                tr.querySelectorAll('input').forEach(inp => {
+                    inp.addEventListener('input', () => {
+                        const k = inp.dataset.key;
+                        state.perfil[i][k] = (inp.type === 'number' ? +inp.value : inp.value);
+                    });
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Panel 3: Cronograma ---
+        function computePriority(row){
+            const prox = row.fchProx || row.vence || '';
+            const lamp = semaforoDe(prox);
+            return { prioridad: lamp.text, score: lamp.text === 'Vencida' ? -1 : 1 };
+        }
+
+        function _isDelivered(t){
+            const st = String(t.estado || '').toLowerCase();
+            return !!t.entregado || st === 'entregada' || st === 'socializada';
+        }
+
+        function renderCrono(){
+            const tbody = qs('#tblCrono tbody');
+            tbody.innerHTML = '';
+            
+            // Calc stats
+            const plannedAll = state.crono.filter(x => (x.accion || '') !== 'Mantener');
+            const totalAll = plannedAll.length;
+            const doneAll = plannedAll.filter(_isDelivered).length;
+            const pctGlobal = totalAll ? Math.round((doneAll * 100) / totalAll) : 0;
+
+            const pctMes = Array.from({length:12}, (_,m) => {
+                const planM = state.crono.filter(x => x.mes === m && (x.accion || '') !== 'Mantener');
+                if (!planM.length) return 100;
+                const doneM = planM.filter(_isDelivered);
+                return Math.round((doneM.length * 100) / planM.length);
+            });
+
+            // Sorting
+            const arr = state.crono.map((r, i) => ({r, i}));
+            const rank = {Vencida:0, 'Por vencer':1, Vigente:2, '—':3};
+            arr.sort((A,B) => {
+                const ma = (A.r.mes==='' || A.r.mes==null) ? 99 : +A.r.mes;
+                const mb = (B.r.mes==='' || B.r.mes==null) ? 99 : +B.r.mes;
+                if (ma !== mb) return ma - mb;
+                
+                const pa = semaforoDe(A.r.fchProx || A.r.vence).text;
+                const pb = semaforoDe(B.r.fchProx || B.r.vence).text;
+                return (rank[pa] || 9) - (rank[pb] || 9);
+            });
+
+            let currentMonth = -1;
+            arr.forEach(({r, i}) => {
+                const m = (r.mes === '' || r.mes == null) ? -1 : +r.mes;
+                if (m !== -1 && m !== currentMonth) {
+                    currentMonth = m;
+                    const sep = document.createElement('tr');
+                    sep.className = 'month-sep';
+                    sep.innerHTML = `<td colspan="13" class="month-title">${MONTHS[m]} <span class="badge bg-white ms-2" style="color:var(--primary)">${pctMes[m]}% cumplimiento</span></td>`;
+                    tbody.appendChild(sep);
+                }
+
+                const lamp = semaforoDe(r.fchProx || r.vence);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input value="${r.codigo||''}" data-key="codigo"></td>
+                    <td class="small">${r.tema||''}</td>
+                    <td>
+                        <span class="badge ${lamp.cls}">${lamp.text}</span>
+                        <div class="small text-muted mt-1">${r.fchProx || r.vence || '-'}</div>
+                    </td>
+                    <td><select data-key="accion" class="form-select form-select-sm">
+                        <option value="Actualizar" ${r.accion==='Actualizar'?'selected':''}>Actualizar</option>
+                        <option value="Crear" ${r.accion==='Crear'?'selected':''}>Crear</option>
+                        <option value="Mantener" ${r.accion==='Mantener'?'selected':''}>Mantener</option>
+                    </select></td>
+                    <td><select data-key="mes" class="form-select form-select-sm">
+                        <option value="">Pendiente</option>
+                        ${MONTHS.map((name, midx) => `<option value="${midx}" ${r.mes===midx?'selected':''}>${name}</option>`).join('')}
+                    </select></td>
+                    <td class="text-center"><span class="badge ${r.prioridad==='Alta'?'b-alta':r.prioridad==='Media'?'b-media':'b-baja'}">${r.prioridad||'Media'}</span></td>
+                    <td><input type="date" value="${r.fchIni||''}" data-key="fchIni"></td>
+                    <td><input type="date" value="${r.fchFin||''}" data-key="fchFin"></td>
+                    <td class="text-center"><input type="checkbox" ${r.entregado?'checked':''} data-key="entregado" class="form-check-input"></td>
+                    <td class="text-end fw-bold">${pctGlobal}%</td>
+                    <td class="text-end text-muted">${m!==-1 ? pctMes[m] : 0}%</td>
+                    <td><input value="${r.estado||'Pendiente'}" data-key="estado"></td>
+                    <td class="text-center"><button class="btn btn-link link-danger p-0" data-act="del"><i data-lucide="trash-2" style="width:16px;"></i></button></td>
+                `;
+                
+                tr.querySelectorAll('input, select').forEach(inp => {
+                    inp.addEventListener('change', () => {
+                        const k = inp.dataset.key;
+                        const v = (inp.type === 'checkbox') ? inp.checked : (k === 'mes' ? (inp.value===''? '':+inp.value) : inp.value);
+                        state.crono[i][k] = v;
+                        renderCrono();
+                    });
+                });
+
+                tr.querySelector('[data-act="del"]').onclick = () => {
+                    if(confirm('¿Eliminar actividad?')) {
+                        state.crono.splice(i, 1);
+                        renderCrono();
+                    }
+                };
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        // --- Panel 4: Actualización ---
+        function renderActu(){
+            const tbody = qs('#tblActu tbody');
+            tbody.innerHTML = '';
+            state.actu.sort((a,b) => String(b.fchAct||'').localeCompare(String(a.fchAct||'')));
+            state.actu.forEach((r, i) => {
+                const prox = r.fchProx || calcProxima(r.fchAct, r.codigo);
+                const lamp = semaforoDe(prox);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.codigo||''}</td>
+                    <td>${r.tema||''}</td>
+                    <td><input type="date" value="${r.fchAct||''}" data-key="fchAct"></td>
+                    <td class="text-muted">${r.fchAct ? MONTHS[new Date(r.fchAct).getMonth()] : '-'}</td>
+                    <td><input type="date" value="${prox||''}" data-key="fchProx"></td>
+                    <td><span class="badge ${lamp.cls}">${lamp.text}</span></td>
+                    <td><input type="date" value="${r.fchSoc||''}" data-key="fchSoc"></td>
+                    <td><button class="btn btn-sm btn-dark" data-act="evid">Evidencias</button></td>
+                `;
+                
+                tr.querySelector('[data-act="evid"]').onclick = () => openEvidenciaModal(i);
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* ================== Modal Evidence ================== */
+        function openEvidenciaModal(idx) {
+            state._evid = { idx, row: state.actu[idx] };
+            const r = state._evid.row;
+
+            qs('#evidDocRef').textContent = `${r.codigo||''} — ${r.tema||''}`;
+            qs('#evidTipo').value = (r._tipoEvid || 'social');
+            qs('#evidFecha').value = r.fchSoc || r.fchAct || todayISO();
+            qs('#evidTema').value = r.tema || '';
+            qs('#evidFac').value = r.facilitador || '';
+            qs('#evidResp').value = r.responsable || '';
+            qs('#evidHora').value = r.hora || '7 - 8 AM';
+            qs('#evidDur').value = r.duracion || '1 HORA';
+            
+            // Impl fields
+            qs('#evidVersion').value = r.version || '';
+            qs('#evidVigencia').value = r.vigencia || 'VIGENTE';
+            
+            const isImpl = qs('#evidTipo').value === 'impl';
+            qsa('.impl-only').forEach(el => el.style.display = isImpl ? 'block' : 'none');
+
+            renderServiciosChecks();
+            const svcs = (r.servicios||'').split(',').map(s=>s.trim()).filter(Boolean);
+            svcs.forEach(s => { const cb = qs(`#svc_${slug(s)}`); if(cb) cb.checked = true; });
+
+            renderSelectedProfes();
+            qs('#evidModal').classList.remove('hidden');
+        }
+
+        function renderServiciosChecks() {
+            const box = qs('#evidServicios');
+            box.innerHTML = '';
+            SERVICIOS.forEach(s => {
+                const label = document.createElement('label');
+                label.className = 'btn btn-outline-secondary btn-sm';
+                label.innerHTML = `<input type="checkbox" id="svc_${slug(s)}" value="${s}" class="me-2"> ${s}`;
+                box.appendChild(label);
+            });
+        }
+
+        function renderSelectedProfes() {
+            const tbody = qs('#profsSelTable tbody');
+            tbody.innerHTML = '';
+            const r = state._evid.row;
+            const cedList = r._firmantesCed || [];
+            
+            cedList.forEach(ced => {
+                const p = state.profes.find(x => String(x.cedula) === String(ced));
+                if (p) addProfToSelected(p);
+            });
+        }
+
+        function addProfToSelected(p) {
+            const tbody = qs('#profsSelTable tbody');
+            const tr = document.createElement('tr');
+            tr.dataset.ced = p.cedula;
+            tr.innerHTML = `
+                <td>${p.cedula}</td>
+                <td>${p.nombre}</td>
+                <td><small>${p.cargo}</small></td>
+                <td><div class="div-svcs"></div></td>
+                <td class="text-center">${p.firmaDataURL ? `<img src="${p.firmaDataURL}" class="sig-thumb">` : '-'}</td>
+                <td class="text-center">
+                    <button class="btn btn-link btn-sm p-0" data-act="sig"><i data-lucide="pen-tool"></i></button>
+                    <button class="btn btn-link btn-sm link-danger p-0 ms-1" data-act="del"><i data-lucide="x"></i></button>
+                </td>
+            `;
+            
+            tr.querySelector('[data-act="sig"]').onclick = () => openSigPad(p, tr);
+            tr.querySelector('[data-act="del"]').onclick = () => tr.remove();
+            tbody.appendChild(tr);
+            lucide.createIcons();
+        }
+
+        function openSigPad(p, tr) {
+            const wrap = qs('#sigPadWrap');
+            qs('#sigFor').textContent = `Firmar: ${p.nombre}`;
+            wrap.style.display = 'block';
+            
+            const cnv = qs('#sigCanvas');
+            const ctx = cnv.getContext('2d');
+            ctx.clearRect(0, 0, cnv.width, cnv.height);
+            
+            let draw = false;
+            cnv.onmousedown = (e) => { draw = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
+            cnv.onmousemove = (e) => { if(draw) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
+            window.onmouseup = () => draw = false;
+            
+            qs('#sigSave').onclick = async () => {
+                const dataURL = cnv.toDataURL();
+                p.firmaDataURL = dataURL;
+                tr.querySelector('.text-center').innerHTML = `<img src="${dataURL}" class="sig-thumb">`;
+                await setDoc(doc(db, 'gpc_profesionales', String(p.cedula)), p, { merge: true });
+                wrap.style.display = 'none';
+            };
+        }
+
+        function renderProfsCatalog(f = '') {
+            const box = qs('#profsCatList');
+            const arr = state.profes.filter(p => !f || p.nombre.toLowerCase().includes(f.toLowerCase()) || p.esp.toLowerCase().includes(f.toLowerCase()));
+            box.innerHTML = '';
+            arr.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'd-flex justify-content-between align-items-center mb-2 p-2 border rounded';
+                div.innerHTML = `
+                    <div>
+                        <div class="fw-bold">${p.nombre}</div>
+                        <small class="text-muted">${p.esp}</small>
+                    </div>
+                    <button class="btn btn-xs btn-primary py-0 px-2">+</button>
+                `;
+                div.querySelector('button').onclick = () => addProfToSelected(p);
+                box.appendChild(div);
+            });
+        }
+
+        /* ================== Actions ================== */
+        qs('#btnSaveIdent').onclick = async () => {
+            const batch = writeBatch(db);
+            state.ident.forEach(r => {
+                const ref = doc(collection(db, 'gpc_identificacion'), r.codigo || `DOC-${slug(r.nombre)}`);
+                batch.set(ref, { ...r, updatedAt: serverTimestamp() }, { merge: true });
+            });
+            await batch.commit();
+            alert('Identificación guardada.');
+        };
+
+        qs('#btnSavePerfil').onclick = async () => {
+            const batch = writeBatch(db);
+            state.perfil.forEach(r => {
+                const ref = doc(db, 'gpc_perfil_anual', `${state.anio}__${slug(r.diag)}`);
+                batch.set(ref, { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+            });
+            await batch.commit();
+            alert('Perfil guardado.');
+        };
+
+        qs('#btnGuardarCrono').onclick = async () => {
+            const batch = writeBatch(db);
+            state.crono.forEach(r => {
+                const ref = doc(db, 'gpc_cronograma_anual', `${state.anio}__${slug(r.tema)}`);
+                batch.set(ref, { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+            });
+            await batch.commit();
+            alert('Cronograma guardado.');
+        };
+
+        qs('#evidSaveClose').onclick = async () => {
+            const idx = state._evid.idx;
+            const r = state.actu[idx];
+            
+            r.facilitador = qs('#evidFac').value;
+            r.responsable = qs('#evidResp').value;
+            r.hora = qs('#evidHora').value;
+            r.duracion = qs('#evidDur').value;
+            r._tipoEvid = qs('#evidTipo').value;
+            r.fchSoc = qs('#evidFecha').value;
+            r.version = qs('#evidVersion').value;
+            r.vigencia = qs('#evidVigencia').value;
+            
+            const svcs = [...qsa('#evidServicios input:checked')].map(x => x.value);
+            r.servicios = svcs.join(', ');
+            
+            const cedulas = [...qsa('#profsSelTable tbody tr')].map(tr => tr.dataset.ced);
+            r._firmantesCed = cedulas;
+            
+            await setDoc(doc(db, 'gpc_actualizaciones', `${state.anio}__${slug(r.tema)}`), r, { merge: true });
+            renderActu();
+            qs('#evidModal').classList.add('hidden');
+        };
+
+        /* ================== Init ================== */
+        onAuthStateChanged(auth, async (u) => {
+            if (!u) { location.href = "/login"; return; }
+            
+            const CUR = new Date().getFullYear();
+            const anioSel = qs('#anioSel');
+            for (let y = CUR - 1; y <= CUR + 3; y++) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                if (y === CUR) opt.selected = true;
+                anioSel.appendChild(opt);
+            }
+            
+            await loadFromDB();
+            await loadProfesFromDB();
+            renderAll();
+        });
+
+    </script>
+</body>
+</html>

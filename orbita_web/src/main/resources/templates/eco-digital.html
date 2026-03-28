@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Ecosistema Digital')}"></head>
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar from Layout -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar from Layout -->
+        <nav th:replace="~{layout :: navbar('Ecosistema Digital')}"></nav>
+
+        <main class="main-content">
+            <header class="dashboard-header fade-in">
+                <h1>Ecosistema Digital</h1>
+                <p>Sección en construcción para los contenidos de inducción.</p>
+            </header>
+
+            <div class="dashboard-grid fade-in">
+                <div class="prof-card" style="grid-column: span 12; padding: 4rem; text-align: center;">
+                    <div class="prof-card-icon" style="font-size: 4rem; margin-bottom: 2rem; margin-left: auto; margin-right: auto;">🏗️</div>
+                    <h2 style="color: #1e293b; margin-bottom: 1rem;">Módulo en Construcción</h2>
+                    <p style="max-width: 600px; margin: 0 auto 2rem; color: #64748b;">Estamos preparando los contenidos de inducción. Vuelve pronto para ver las actualizaciones.</p>
+                    <a href="/home" class="btn-icon" style="width: auto; padding: 0 1.5rem; gap: 0.5rem; text-decoration: none; color: #3b82f6; border-color: #3b82f6;">
+                        <i data-lucide="arrow-left"></i>
+                        <span>Volver al Dashboard</span>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer from Layout -->
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts from Layout -->
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

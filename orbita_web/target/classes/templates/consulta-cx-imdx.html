@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Citas, Cirugías e Imágenes DX')}"></head>
+
+<!-- Estilos Modernos y Premium -->
+<style>
+    /* ═══════════════════════════════════════
+       PAGE SPECIFIC: CONSULTA CX IMDX
+       ═══════════════════════════════════════ */
+    :root {
+        --cx-pri: #4e6c9f;
+        --cx-light: #e0e7ff;
+        --cx-dark: #1e293b;
+        --cx-accent: #38bdf8;
+        --cx-border: #e2e8f0;
+        --cx-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .cx-fade-in {
+        animation: cxFadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes cxFadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Page Content Wrapper (Prevents collision with layout) */
+    .cx-page-wrap {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    /* Local Dashboard/Form Components */
+    .cx-header {
+        background: linear-gradient(135deg, var(--cx-dark) 0%, var(--cx-pri) 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 24px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(30, 41, 59, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cx-header h1 {
+        margin: 0;
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: white !important;
+    }
+
+    .cx-header p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 5px;
+    }
+
+    .cx-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+    }
+
+    .cx-card {
+        background: white;
+        border: 1px solid var(--cx-border);
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: var(--cx-shadow);
+        transition: transform 0.2s;
+    }
+
+    .cx-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .cx-span-12 {
+        grid-column: span 12;
+    }
+
+    .cx-span-7 {
+        grid-column: span 7;
+    }
+
+    .cx-span-5 {
+        grid-column: span 5;
+    }
+
+    .cx-section-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--cx-dark);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid var(--cx-light);
+        padding-bottom: 10px;
+    }
+
+    .cx-label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .cx-input {
+        width: 100%;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1.5px solid var(--cx-border);
+        background: #fcfcfd;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .cx-kpi-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 16px;
+        margin-top: 1rem;
+    }
+
+    .cx-kpi-card {
+        background: #f8fafc;
+        border: 1px solid var(--cx-border);
+        border-radius: 16px;
+        padding: 1.25rem;
+        text-align: center;
+        border-top: 4px solid var(--cx-pri);
+    }
+
+    .cx-kpi-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .cx-kpi-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--cx-dark);
+    }
+
+    .cx-btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .cx-btn-pri {
+        background: var(--cx-pri);
+        color: white;
+    }
+
+    .cx-btn-pri:hover {
+        background: var(--cx-dark);
+    }
+
+    .cx-btn-out {
+        background: white;
+        border: 1.5px solid var(--cx-border);
+        color: #334155;
+    }
+
+    .cx-btn-out:hover {
+        background: #f8fafc;
+    }
+
+    .cx-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: var(--cx-light);
+        color: var(--cx-dark);
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+
+        .cx-span-7,
+        .cx-span-5 {
+            grid-column: span 12;
+        }
+    }
+</style>
+
+<!-- 
+    MATRIZ OFICIAL DE ROLES DE ÓRBITA - CONSULTA CX IMDX
+    - master admin: Acceso total (Lectura/Escritura).
+    - super admin: Acceso Operativo (Lectura/Escritura).
+    - admin: Acceso de Visualización y Descarga.
+    - auditor: Acceso de Visualización.
+    - analista: BLOQUEADO (Limitado a Alto Costo).
+-->
+<body class="dashboard-layout fade-in">
+    <!-- Shell fragments strictly enforced -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar fragment -->
+        <nav th:replace="~{layout :: navbar('Citas, Cirugías e Imágenes DX')}"></nav>
+
+        <!-- Bloqueo de Acceso para Analistas u otros roles no autorizados -->
+        <main class="main-content" sec:authorize="!hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div class="glass-card text-center py-20">
+                <div class="text-6xl mb-6">🚫</div>
+                <h2 class="text-3xl font-black text-slate-800 mb-4">Acceso Restringido</h2>
+                <p class="text-slate-500 font-bold max-w-lg mx-auto">Su perfil actual (**analista**) no tiene permisos para acceder a las consultas tácticas de hospitalización. Por favor, contacte al Administrador Maestro.</p>
+                <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex" style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; background: #0f172a; color: white;">Volver al Inicio</a>
+            </div>
+        </main>
+
+        <main class="main-content" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div class="cx-page-wrap">
+                <!-- Header Premium Section -->
+                <header class="cx-header">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+                        <div>
+                            <div class="cx-badge"><i class="fas fa-clinic-medical mr-2"></i> Gestión Ambulatoria</div>
+                            <h1 style="color: white; margin: 0;">Citas, Cirugías e Imágenes DX</h1>
+                            <p>Monitoreo táctico de efectividad, conversión y gestión de citas especializadas.</p>
+                        </div>
+                        <a href="/dashboard-citas-cx-imx" class="cx-btn cx-btn-out"
+                            style="background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); color: white; text-decoration: none;">
+                            <i class="fas fa-chart-line"></i> Ir al Dashboard
+                        </a>
+                    </div>
+                </header>
+
+                <div class="cx-grid">
+                    <!-- Filtros -->
+                    <div class="cx-card cx-span-12">
+                        <div class="cx-section-title">
+                            <i class="fas fa-calendar-alt" style="color:var(--cx-pri)"></i> Periodo de Gestión
+                        </div>
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: end;">
+                            <div class="cx-form-group">
+                                <label class="cx-label">Mes de Trabajo</label>
+                                <input type="month" id="mesSel" class="cx-input">
+                            </div>
+                            <div class="cx-form-group">
+                                <label class="cx-label">Especialidad Médica</label>
+                                <select id="espSel" class="cx-input"></select>
+                            </div>
+                            <div style="display: flex; gap: 12px; margin-bottom: 1.25rem;">
+                                <button id="consultarBtn" class="cx-btn cx-btn-pri" style="flex:2">
+                                    <i class="fas fa-search"></i> Consultar
+                                </button>
+                                <button id="limpiarBtn" class="cx-btn cx-btn-out" style="flex:1">
+                                    <i class="fas fa-eraser"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulario -->
+                    <div class="cx-card cx-span-7">
+                        <div class="cx-section-title">
+                            <i class="fas fa-edit" style="color:var(--cx-accent)"></i> Registro de Indicadores
+                        </div>
+
+                        <div class="row-2">
+                            <div class="cx-form-group">
+                                <label class="cx-label">Total Consultas Agendadas</label>
+                                <input id="totalConsultas" type="number" class="cx-input" placeholder="0">
+                            </div>
+                            <div class="cx-form-group">
+                                <label class="cx-label">Consultas Posoperatorias (POP)</label>
+                                <input id="consultasPOP" type="number" class="cx-input" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="cx-form-group">
+                                <label class="cx-label">Citas Primera Vez</label>
+                                <input id="consultasPrimeraVez" type="number" class="cx-input" placeholder="0">
+                            </div>
+                            <div class="cx-form-group">
+                                <label class="cx-label">Citas de Control (Incluye POP)</label>
+                                <input id="consultasControl" type="number" class="cx-input" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="row-2"
+                            style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed var(--cx-border);">
+                            <div class="cx-form-group" style="margin-bottom:0">
+                                <label class="cx-label">Inasistencias (Incumplidas)</label>
+                                <input id="citasIncumplidas" type="number" class="cx-input" placeholder="0">
+                            </div>
+                            <div class="cx-form-group" style="margin-bottom:0">
+                                <label class="cx-label">Citas Canceladas</label>
+                                <input id="citasCanceladas" type="number" class="cx-input" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="row-2"
+                            style="background: #f1f5f9; padding: 15px; border-radius: 12px; margin: 20px 0;">
+                            <div class="cx-form-group" style="margin-bottom:0">
+                                <label class="cx-label">Efectivas (Atendidas)</label>
+                                <input id="citasEfectivas" type="number" class="cx-input" readonly>
+                            </div>
+                            <div class="cx-form-group" style="margin-bottom:0">
+                                <label class="cx-label">Controles sin POP</label>
+                                <input id="consultasNoPOP" type="number" class="cx-input" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="cx-form-group">
+                                <label class="cx-label">Órdenes de Cirugía</label>
+                                <input id="ordenesCx" type="number" class="cx-input" placeholder="0">
+                            </div>
+                            <div class="cx-form-group">
+                                <label class="cx-label">Órdenes Imágenes (Total)</label>
+                                <input id="ordenesImgTotal" type="number" class="cx-input" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="row-2">
+                            <div class="cx-form-group">
+                                <label class="cx-label">Órdenes Imágenes Externas</label>
+                                <input id="ordenesImgExternas" type="number" class="cx-input" placeholder="0">
+                            </div>
+                            <div class="cx-form-group">
+                                <label class="cx-label">Procedimientos Externos</label>
+                                <input id="procedimientosExternos" type="number" class="cx-input" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem;">
+                            <button id="guardarBtn" class="cx-btn cx-btn-pri" style="width: 100%; height: 50px;">
+                                <i class="fas fa-save"></i> Guardar Registro del Mes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Análisis -->
+                    <div class="cx-card cx-span-5">
+                        <div class="cx-section-title">
+                            <i class="fas fa-chart-pie" style="color:var(--cx-accent)"></i> Análisis de Desempeño
+                        </div>
+
+                        <div class="cx-kpi-row">
+                            <div class="cx-kpi-card">
+                                <div class="cx-kpi-label">Efectividad Total</div>
+                                <div class="cx-kpi-value" id="k_pctEf">—</div>
+                            </div>
+                            <div class="cx-kpi-card">
+                                <div class="cx-kpi-label">% Incumplidas</div>
+                                <div class="cx-kpi-value" id="k_pctInc">—</div>
+                            </div>
+                            <div class="cx-kpi-card">
+                                <div class="cx-kpi-label">% Canceladas</div>
+                                <div class="cx-kpi-value" id="k_pctCanc">—</div>
+                            </div>
+                        </div>
+
+                        <div class="cx-kpi-row">
+                            <div class="cx-kpi-card">
+                                <div class="cx-kpi-label">Atendidas (n)</div>
+                                <div class="cx-kpi-value" id="k_efN">—</div>
+                            </div>
+                            <div class="cx-kpi-card">
+                                <div class="cx-kpi-label">Control sin POP</div>
+                                <div class="cx-kpi-value" id="k_noPOPN">—</div>
+                            </div>
+                            <div class="cx-kpi-card">
+                                <div class="cx-kpi-label">% Gestión POP</div>
+                                <div class="cx-kpi-value" id="k_pctPOP">—</div>
+                            </div>
+                        </div>
+
+                        <div class="cx-kpi-row">
+                            <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);">
+                                <div class="cx-kpi-label">Conv. Cirugía</div>
+                                <div class="cx-kpi-value" id="k_convCx">—</div>
+                            </div>
+                            <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);">
+                                <div class="cx-kpi-label">Conv. Imág. Tot.</div>
+                                <div class="cx-kpi-value" id="k_convImgTot">—</div>
+                            </div>
+                            <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);">
+                                <div class="cx-kpi-label">Conv. Imág. Int.</div>
+                                <div class="cx-kpi-value" id="k_convImgInt">—</div>
+                            </div>
+                        </div>
+
+                        <div class="cx-card"
+                            style="background:#f1f5f9; padding:1.25rem; border:none; margin-top:1.5rem;">
+                            <h4
+                                style="font-size: 0.8rem; font-weight: 800; color: var(--cx-dark); text-transform: uppercase;">
+                                Glosario Técnico</h4>
+                            <ul style="padding-left: 1.25rem; margin-top: 5px; color: #64748b; font-size: 0.85rem;">
+                                <li><b>Efectivas</b>: Consultas agendadas menos inasistencias y cancelaciones.</li>
+                                <li><b>POP</b>: Pacientes postquirúrgicos (incluidos en Controles).</li>
+                                <li><b>Conversión</b>: Porcentaje de órdenes emitidas sobre el total agendado.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+        </main>
+
+        <div th:replace="~{layout :: scripts}"></div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <div th:replace="~{layout :: scripts}"></div>
+    <script type="module" src="/js/consulta-cx-imdx.js"></script>
+</body>
+
+</html>

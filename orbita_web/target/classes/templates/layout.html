@@ -1,0 +1,1125 @@
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+     🎨 IDENTIDAD VISUAL OFICIAL - ÓRBITA CLÍNICA
+     
+     REGLAS DE DISEÑO:
+     1. SHELL INSTITUCIONAL: El Sidebar y Navbar definidos en este archivo (layout.html) son 
+        los componentes base oficiales del proyecto.
+     2. NO REINVENCIÓN: No se debe reconstruir o reemplazar localmente el sidebar o navbar 
+        en vistas individuales. Se deben usar los fragmentos 'th:fragment="sidebar"' 
+       o el shell completo.
+     3. ESTÉTICA PREMIUM: Respetar gradientes e iconografía Lucide. Cualquier cambio debe 
+        reflejarse primero en /docs/IDENTIDAD_VISUAL.md.
+
+     ---------------------------------------------------------------------------------
+     🛡️ MATRIZ OFICIAL DE ROLES DE ÓRBITA
+ 
+     Fuente de verdad (Valores Firebase):
+     - master admin: Control total, Usuarios, Edición, Descargas, Gestión CTC.
+     - super admin: Edición y descargas, sin Usuarios, sin Gestión CTC.
+     - admin: Visualización y descarga, sin edición, sin usuarios, sin Gestión CTC.
+     - analista: Solo Alto Costo, puede editar, no cargar excel, no descargas.
+     - auditor: Solo visualización de Predicción y Estadística.
+-->
+<head th:fragment="header(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title th:text="${title} + ' — Orbita Clínica'">Orbita Clínica</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" th:href="@{/assets/favicon.ico}" />
+    <link rel="stylesheet" href="/styles.css" th:href="@{/styles.css(v='2.0')}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ═══════════════════════════════════════
+           LAYOUT BASE
+        ═══════════════════════════════════════ */
+        :root {
+            --sidebar-width: 280px;
+            --navbar-height: 64px;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8fafc;
+        }
+
+        .sidebar {
+            position: fixed;
+            width: var(--sidebar-width);
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            background: #1e293b;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .content-wrapper {
+            width: 100%;
+            margin-left: 0;
+            padding-left: var(--sidebar-width);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: padding 0.3s ease;
+        }
+
+        /* ═══════════════════════════════════════
+           NAVBAR
+        ═══════════════════════════════════════ */
+        .navbar {
+            height: 64px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #f1f5f9;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            gap: 1rem;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .hamburger {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #64748b;
+        }
+
+        .hamburger:hover {
+            background: #f1f5f9;
+        }
+
+        .page-title-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .navbar-page-title {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(0.85);
+            }
+        }
+
+        .status-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        /* ═══════════════════════════════════════
+           NAVBAR ACTIONS (derecha)
+        ═══════════════════════════════════════ */
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .navbar-actions::before {
+            content: '';
+            width: 1px;
+            height: 28px;
+            background: #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .notification-bell {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            color: #64748b;
+        }
+
+        .notification-bell:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+            }
+        }
+
+        /* ═══════════════════════════════════════
+           AVATAR DROPDOWN & USER AREA
+        ═══════════════════════════════════════ */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+
+        .avatar-wrapper {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .user-avatar-circle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .avatar-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            background: white;
+            border-radius: 16px;
+            min-width: 220px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid #f1f5f9;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .avatar-dropdown.open {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .avatar-dropdown-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #1e293b, #334155);
+        }
+
+        .avatar-dropdown-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            font-weight: 800;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .avatar-dropdown-name {
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .avatar-dropdown-role {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .avatar-dropdown-divider {
+            height: 1px;
+            background: #f1f5f9;
+        }
+
+        .avatar-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .avatar-dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .avatar-dropdown-item.danger {
+            color: #dc2626;
+        }
+        .avatar-dropdown-item.danger:hover {
+            background: #fef2f2;
+        }
+
+        #userRoleBadge, .role-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+        
+        /* Colores Institucionales por Rol */
+        .role-master { background: #ef4444 !important; color: white !important; } /* Rojo Maestro */
+        .role-super { background: #3b82f6 !important; color: white !important; } /* Azul Operativo */
+        .role-admin { background: #06b6d4 !important; color: white !important; } /* Cyan Directivo */
+        .role-analista { background: #f97316 !important; color: white !important; } /* Naranja Técnico */
+        .role-auditor { background: #8b5cf6 !important; color: white !important; } /* Violeta Auditor */
+
+        /* ═══════════════════════════════════════
+           SIDEBAR REFINEMENTS
+        ═══════════════════════════════════════ */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-nav {
+            padding: 0 0.75rem 2rem;
+            flex: 1;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .nav-link i,
+        .nav-link [data-lucide] {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        .nav-group {
+            margin-bottom: 2px;
+        }
+
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .nav-group-header:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .nav-group-items {
+            display: none;
+            padding-left: 0.5rem;
+            margin-top: 2px;
+        }
+
+        .nav-group.open .nav-group-items {
+            display: block;
+        }
+
+        .nav-group .chevron {
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .nav-group.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        .nav-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            padding: 1.5rem 0.85rem 0.5rem;
+        }
+
+        .nav-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ═══════════════════════════════════════
+           PROFILE MODAL
+        ═══════════════════════════════════════ */
+        .profile-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .profile-modal-overlay.open {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .profile-modal {
+            background: white;
+            border-radius: 24px;
+            width: 95%;
+            max-width: 900px; /* Más horizontal */
+            max-height: 85vh; /* Altura óptima */
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalScaleUp {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .profile-modal-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 30px;
+            background: #1e293b;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-modal-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            font-weight: 800;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .profile-modal-title {
+            color: white;
+            font-weight: 800;
+            font-size: 17px;
+        }
+
+        .profile-modal-role {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .profile-modal-close {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        .profile-modal-body {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr; /* Dos columnas */
+            gap: 30px;
+            overflow-y: auto;
+            max-height: calc(90vh - 150px); /* Ajuste para footer/header */
+        }
+
+        @media (max-width: 768px) {
+            .profile-modal-body {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 24px;
+            }
+            .profile-modal {
+                max-width: 480px;
+            }
+        }
+
+        .profile-modal-info-col, .profile-modal-picker-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .profile-modal-body label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: -10px;
+        }
+
+        .profile-input {
+            padding: 11px 16px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+        
+        .profile-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        
+        .profile-input:disabled {
+            background: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .avatar-picker {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 480px) {
+            .avatar-picker {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        .picker-avatar-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            border: 2.5px solid transparent;
+            background: white;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .picker-avatar-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        
+        .picker-avatar-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .profile-modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel, .btn-save {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-cancel {
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .btn-cancel:hover {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-save:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-save:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ═══════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════ */
+        @media (max-width: 991px) {
+            .content-wrapper {
+                padding-left: 0;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .user-info {
+                display: none;
+            }
+
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .navbar-page-title {
+                font-size: 1rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .notification-bell {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" th:fragment="sidebar">
+        <div class="sidebar-brand" style="padding: 2.5rem 1.5rem;">
+            <div class="sidebar-logo-container" style="margin-bottom: 1rem;">
+                <img th:src="@{/assets/Logo_Clinica.png}" alt="Orbita Clínica" class="sidebar-logo"
+                    style="height: 75px; filter: brightness(0) invert(1);" />
+            </div>
+            <div class="brand-text">
+                <div class="brand-name"
+                    style="font-size: 1.3rem; font-weight: 800; color: white; letter-spacing: -0.02em;">Orbita Clínica
+                </div>
+                <div class="brand-tagline"
+                    style="font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px;">Ecosistema
+                    Científico</div>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <a th:href="@{/home}" class="nav-link" id="nav-home">
+                <i data-lucide="layout-grid"></i>
+                <span>Panel Principal</span>
+            </a>
+
+            <!-- 
+                 MATRIZ DE NAVEGACIÓN - REGLA DE VISIBILIDAD OFICIAL
+                 - Gestión Usuarios: Solo 'master admin'.
+                 - Gestión CTC: Solo 'master admin'.
+                 - Programas: master, super, admin y analista (quien solo ve Alto Costo).
+                 - Datos/Predictiva: master, super, admin y auditor.
+            -->
+            
+            <!-- ACCESO EXCLUSIVO: Administración de Usuarios (Solo master admin) -->
+            <a sec:authorize="hasAuthority('master admin')" th:href="@{/usuarios}" class="nav-link admin-only" id="nav-users-direct">
+                <i data-lucide="users"></i>
+                <span>Usuarios</span>
+            </a>
+
+             <div class="nav-section-title"
+                style="padding: 1.5rem 1.5rem 0.5rem; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">
+                Módulos del Sistema</div>
+
+            <!-- ACCESO EXCLUSIVO: Gestión CTC (Solo master admin) -->
+            <div class="nav-group" id="group-gtc" sec:authorize="hasAuthority('master admin')">
+                <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                    <div style="display: flex; align-items: center; gap: 0.85rem; color: inherit; flex: 1;">
+                        <i data-lucide="clipboard-list" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Gestión CTC</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a th:href="@{/cronogramagpc}" class="nav-link"><i data-lucide="calendar"></i><span>Cronograma
+                            GPC</span></a>
+                    <a th:href="@{/plananual-gpc}" class="nav-link"><i data-lucide="file-text"></i><span>Plan Anual
+                            GPC</span></a>
+                </div>
+            </div>
+ 
+            <div class="nav-group" id="group-programas" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'analista')">
+                <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="activity" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Programas</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a th:href="@{/altocosto}" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto Costo</span></a>
+                    <a th:href="@{/porfiria}" class="nav-link" sec:authorize="!hasAuthority('analista')"><i data-lucide="microscope"></i><span>PorfirIA</span></a>
+                </div>
+            </div>
+
+            <div class="nav-group" id="group-eco" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin')">
+                <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="boxes" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Ecosistema Digital</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <div style="padding: 0.5rem 1rem 0.2rem; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px;">Registro Clínico (RCF)</div>
+                    <a th:href="@{/auxiliares-enf-rcf}" class="nav-link"><i data-lucide="user-plus"></i><span>RCF: Auxiliares</span></a>
+                    <a th:href="@{/medicos-gen-rcf}" class="nav-link"><i data-lucide="user-check"></i><span>RCF: Médicos</span></a>
+                    
+                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0.4rem 1rem;"></div>
+                    
+                    <a th:href="@{/ams}" class="nav-link"><i data-lucide="stethoscope"></i><span>AMS</span></a>
+                    <a th:href="@{/isa}" class="nav-link"><i data-lucide="database"></i><span>ISA</span></a>
+                    <a th:href="@{/dasheco}" class="nav-link"><i data-lucide="pie-chart"></i><span>DashEco</span></a>
+                    <a th:href="@{/otroseco}" class="nav-link"><i data-lucide="plus-circle"></i><span>OtrosEco</span></a>
+                </div>
+            </div>
+
+            <div class="nav-group" id="group-datos" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+                <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="bar-chart-3" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Datos y Estadística</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a th:href="@{/consulta-cx-imdx}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i data-lucide="search"></i><span>Consulta Cx
+                            IMDX</span></a>
+                    <a th:href="@{/estadistica-diaria}" class="nav-link"><i data-lucide="calendar-days"></i><span>Estadística
+                            Diaria</span></a>
+                    <a th:href="@{/acumulado-mensual}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i data-lucide="trending-up"></i><span>Acumulado
+                            Mensual</span></a>
+                </div>
+            </div>
+
+            <div class="nav-group" id="group-predictiva" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+                <div class="nav-group-header" onclick="toggleNavGroup(this)">
+                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                        <i data-lucide="sparkles" style="width: 18px; opacity: 0.7;"></i>
+                        <span>Estancia Predictiva</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
+                </div>
+                <div class="nav-group-items">
+                    <a th:href="@{/predictor-los}" class="nav-link"><i data-lucide="wand-2"></i><span>Predictor LOS</span></a>
+                    <a th:href="@{/historico-los}" class="nav-link"><i data-lucide="history"></i><span>Histórico
+                            LOS</span></a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar Enhanced -->
+        <nav class="navbar" th:fragment="navbar(title)">
+            <div class="navbar-left">
+                <button class="hamburger" onclick="toggleSidebar()"
+                    style="color: #64748b; background:none; border:none; cursor:pointer; padding:0.5rem">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="page-title-container">
+                    <h1 class="navbar-page-title" th:text="${title != null ? title : 'Orbita Clínica'}">Dashboard</h1>
+                    <div class="status-badge">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Servidor Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navbar-actions">
+                <div class="notification-bell" title="Notificaciones">
+                    <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
+                    <span class="notif-dot"></span>
+                </div>
+
+                <div class="user-profile" style="position: relative;" sec:authorize="isAuthenticated()">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${#authentication.principal.username}">Nombre Usuario</span>
+                        <span class="role-badge" id="userRoleBadge" th:text="${#authentication.authorities[0].authority}">ROL</span>
+                    </div>
+
+                    <!-- Avatar clickeable -->
+                    <div class="avatar-wrapper" id="avatarWrapper">
+                        <div class="user-avatar-circle" id="userAvatarCircle" th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U</div>
+                    </div>
+
+                    <!-- Dropdown -->
+                    <div class="avatar-dropdown" id="avatarDropdown">
+                        <div class="avatar-dropdown-header">
+                            <div class="avatar-dropdown-avatar" id="avatarDropdownAvatar" th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U</div>
+                            <div>
+                                <div class="avatar-dropdown-name" th:text="${#authentication.principal.username}">Usuario</div>
+                                <div class="avatar-dropdown-role" th:text="${#authentication.authorities[0].authority}">ROL</div>
+                            </div>
+                        </div>
+                        <div class="avatar-dropdown-divider"></div>
+                        <button class="avatar-dropdown-item" id="openProfileBtn">
+                            <i data-lucide="user" style="width:15px;"></i>
+                            Ver Perfil / Editar
+                        </button>
+                        <form th:action="@{/logout}" method="post" style="display:inline;">
+                             <button type="submit" class="avatar-dropdown-item danger" style="width:100%; border:none; background:none; text-align:left; cursor:pointer;">
+                                <i data-lucide="log-out" style="width:15px;"></i>
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Placeholder -->
+        <main class="main-content" th:fragment="content">
+            <!-- Content goes here -->
+        </main>
+
+        <!-- Footer -->
+        <footer class="dashboard-footer" th:fragment="footer"
+            style="background: #f8fafc; border-top: 1px solid #f1f5f9; padding: 1.5rem 3rem;">
+            <div class="footer-text">
+                <div style="font-weight: 700; color: #334155; margin-bottom: 0.25rem;">&copy; 2026 Orbita Clínica</div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">Clínica Sagrado Corazón · Ecosistema Técnico-Científico
+                    Unificado</div>
+            </div>
+            <div class="footer-branding" style="display: flex; align-items: center; gap: 2rem;">
+                <img th:src="@{/assets/Supersalud_Logo.png}" alt="Vigilado Supersalud" class="footer-logo"
+                    style="height: 100px; opacity: 0.8; transition: opacity 0.3s;" onmouseover="this.style.opacity=1"
+                    onmouseout="this.style.opacity=0.8" />
+            </div>
+        </footer>
+    </div>
+
+    <!-- 👤 PERFIL MODAL CENTRALIZADO -->
+    <div class="profile-modal-overlay" id="profileModalOverlay" th:fragment="profile-modal">
+        <div class="profile-modal">
+            <div class="profile-modal-header">
+                <div class="profile-modal-avatar" id="profileModalAvatar">U</div>
+                <div>
+                    <div class="profile-modal-title">Mi Perfil Institucional</div>
+                    <div class="profile-modal-role" id="profileModalRole">Consultando...</div>
+                </div>
+                <button class="profile-modal-close" id="closeProfileBtn" title="Cerrar">×</button>
+            </div>
+            <div class="profile-modal-body">
+                <!-- Columna Izquierda: Información -->
+                <div class="profile-modal-info-col">
+                    <label>CORREO ELECTRÓNICO (ID)</label>
+                    <input type="text" id="profileEmail" disabled class="profile-input" />
+                    
+                    <label>NOMBRE COMPLETO</label>
+                    <input type="text" id="profileName" class="profile-input" placeholder="Tu nombre..." />
+                    
+                    <label>TELÉFONO O EXTENSIÓN</label>
+                    <input type="text" id="profilePhone" placeholder="Opcional" class="profile-input" />
+                </div>
+                
+                <!-- Columna Derecha: Selección de Avatar -->
+                <div class="profile-modal-picker-col">
+                    <label>IDENTIDAD VISUAL (ADVENTURER NEUTRAL)</label>
+                    <div class="avatar-picker" id="avatarPicker">
+                        <!-- Avatares dinámicos vía profile-v2.js -->
+                    </div>
+                </div>
+            </div>
+            <div class="profile-modal-footer">
+                <button class="btn-cancel" id="cancelProfileBtn">Cancelar</button>
+                <button class="btn-save" id="saveProfileBtn">
+                    <i data-lucide="save" style="width:16px;"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts Globales (UI Toggles & Lucide) -->
+    <div th:fragment="ui-scripts">
+        <!-- Global App State from Spring Security -->
+        <script th:inline="javascript" sec:authorize="isAuthenticated()">
+            /*<![CDATA[*/
+            window.orbitaUser = {
+                email: /*[[${#authentication.principal.username}]]*/ 'invitado@clinica.com.co',
+                displayName: /*[[${#authentication.principal.username}]]*/ 'Usuario',
+                role: /*[[${#authentication.authorities[0].authority}]]*/ 'UNAUTHORIZED'
+            };
+            
+            // Notificar a los módulos que el usuario está listo
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('user-ready', { detail: window.orbitaUser }));
+                }, 100);
+            });
+            /*]]>*/
+        </script>
+        
+        <!-- Firebase Shim (Official SDK Integration) -->
+        <script type="module" th:src="@{/js/firebase-shim.js}"></script>
+        
+        <!-- 👤 Componentes de Perfil -->
+        <div th:replace="~{this :: profile-modal}"></div>
+        <script th:src="@{/js/profile-v2.js}"></script>
+        
+        <script>
+            function toggleNavGroup(header) {
+                const group = header.parentElement;
+                group.classList.toggle('open');
+            }
+
+            function toggleSidebar() {
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (sidebar) sidebar.classList.toggle('active');
+                if (overlay) overlay.classList.toggle('active');
+            }
+        </script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Garantizar que el overlay del sidebar exista (para páginas que no usan main-layout)
+                if (!document.querySelector('.sidebar-overlay')) {
+                    const div = document.createElement('div');
+                    div.className = 'sidebar-overlay';
+                    div.onclick = toggleSidebar;
+                    document.body.prepend(div);
+                }
+                if (window.lucide) lucide.createIcons();
+            });
+        </script>
+    </div>
+
+    <!-- Retrocompatibilidad: Fragmento 'scripts' unificado -->
+    <div th:fragment="scripts">
+        <div th:replace="~{this :: ui-scripts}"></div>
+    </div>
+
+    <!-- Scripts de Autenticación y Navegación (Procesados por Spring Security) -->
+    <div th:fragment="auth-scripts">
+        <div th:replace="~{this :: ui-scripts}"></div>
+    </div>
+</body>
+
+</html>

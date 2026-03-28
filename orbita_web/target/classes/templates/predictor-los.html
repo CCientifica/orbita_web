@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Predictor Estancia LOS · IA')}"></head>
+
+<!-- Estilos y Configuración -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    orbita: { navy: '#1e293b', blue: '#3b82f6', gray: '#94a3b8', alert: '#f43f5e', warning: '#f59e0b', success: '#10b981' }
+                },
+                animation: {
+                    'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }
+            }
+        }
+    }
+</script>
+
+<style type="text/tailwindcss">
+    @layer components {
+        .glass-card { @apply bg-white/80 backdrop-blur-xl border border-slate-200 shadow-xl rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl; }
+        .stat-card { @apply relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all hover:shadow-md; }
+        .btn-predictive { @apply flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50; }
+        .btn-primary { @apply bg-slate-900 text-white hover:bg-blue-600 shadow-xl; }
+        .btn-secondary { @apply bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600; }
+        
+        .tab-los { @apply w-full border-separate border-spacing-y-2; }
+        .tab-los th { @apply px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-left; }
+        .tab-los td { @apply px-4 py-3 bg-white border-y border-slate-100 first:border-l first:rounded-l-2xl last:border-r last:rounded-r-2xl text-[12px] font-bold text-slate-600; }
+        
+        .upload-zone { @apply border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 text-center transition-all cursor-pointer hover:border-blue-400 hover:bg-blue-50/30; }
+        .upload-zone.active { @apply border-blue-500 bg-blue-50; }
+    }
+</style>
+
+<style>
+    .main-content { background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); padding: 2rem 3rem !important; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .dot-alert { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
+    .dot-success { background: #10b981; box-shadow: 0 0 10px #10b981; }
+    .dot-warning { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+    
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    #loadingOverlay {
+        backdrop-filter: blur(8px);
+        background: rgba(255,255,255,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+    }
+</style>
+
+<!-- 
+    MATRIZ OFICIAL DE ROLES DE ÓRBITA - PREDICCIÓN
+    - master admin: Acceso total.
+    - super admin: Acceso total (sin gestión usuarios/CTC).
+    - admin: Acceso total (visualización/descarga).
+    - auditor: Acceso limitado a Predicción y Estadística (Visor LOS).
+    - analista: BLOQUEADO (Limitado a Alto Costo).
+-->
+<body class="dashboard-layout fade-in">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('Predictor Estancia · LOS IA')}"></nav>
+
+        <!-- Bloqueo de Acceso para Analistas u otros roles no autorizados -->
+        <main class="main-content" sec:authorize="!hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div class="glass-card text-center py-20">
+                <div class="text-6xl mb-6">🚫</div>
+                <h2 class="text-3xl font-black text-slate-800 mb-4">Acceso Restringido</h2>
+                <p class="text-slate-500 font-bold max-w-lg mx-auto">Su perfil actual (**analista**) no tiene permisos para acceder a los modelos predictivos institucionales. Por favor, contacte al Administrador Maestro.</p>
+                <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex">Volver al Inicio</a>
+            </div>
+        </main>
+
+        <main class="main-content" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div id="loadingOverlay">
+                <div class="text-center">
+                    <div class="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="font-black text-slate-800 uppercase tracking-widest text-xs">Ejecutando Modelos Inferenciales...</p>
+                </div>
+            </div>
+
+            <div class="max-w-[1600px] mx-auto space-y-8">
+                
+                <!-- HEADER IA - REESTILIZADO SEGÚN TABLERO OFICIAL -->
+                <div class="flex flex-col xl:flex-row gap-8 items-center justify-between">
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">📊</span>
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Tablero de Control de Riesgo y Ocupación</h1>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="glass-card !p-3 !rounded-xl border-none shadow-sm flex items-center gap-4">
+                            <div id="engineStatusDot" class="status-dot dot-warning animate-pulse"></div>
+                            <div>
+                                <p id="engineStatusTxt" class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Motor IA</p>
+                                <p id="engineStatusDesc" class="text-[10px] font-black text-slate-700">Conectando...</p>
+                            </div>
+                        </div>
+                        <button id="saveFirebaseBtn" disabled class="btn-predictive bg-emerald-600 text-white shadow-lg py-3 px-6 !lowercase !text-[14px]" style="background: #10b981; border-radius: 12px;">
+                             <span class="material-icons text-sm">cloud_upload</span> sicronizar firebase
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CARGA DE CENSO -->
+                <div id="dropZone" class="upload-zone py-20">
+                    <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv, .txt">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500">
+                            <span class="material-icons text-3xl">upload_file</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800">Carga de Censo Diario</h3>
+                            <p class="text-slate-400 text-[11px] font-bold">PDF, Excel o TXT · Procesamiento en tiempo real</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD RESULTADOS -->
+                <div id="resultsBoard" class="hidden space-y-8">
+                    
+                    <!-- KPIs PREMIUM DE TABLERO -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="p-2">
+                            <p class="text-[12px] font-bold text-slate-500 mb-2">Pacientes Ingresados</p>
+                            <h2 id="kpiTotal" class="text-5xl font-black text-slate-800 tracking-tighter">0</h2>
+                        </div>
+                        <div class="p-2">
+                            <p class="text-[12px] font-bold text-slate-500 mb-2">Desviados (Superaron Límite Estimado)</p>
+                            <div class="flex items-baseline gap-4">
+                                <h2 id="kpiDesviados" class="text-5xl font-black text-slate-800 tracking-tighter">0</h2>
+                                <span class="px-2 py-1 bg-rose-100 text-rose-600 text-[10px] font-black rounded-lg flex items-center gap-1">
+                                    <span class="material-icons text-[12px]">north</span> <span id="kpiPctDesv">0%</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <p class="text-[12px] font-bold text-slate-500 mb-2">Predicción Estancias Prolongadas</p>
+                            <h2 id="kpiRiesgo" class="text-5xl font-black text-slate-800 tracking-tighter">0</h2>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICOS ANALÍTICOS (NUEVO) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div class="glass-card">
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6">Distribución de Riesgo de Estancia</h3>
+                            <div class="h-[400px]">
+                                <canvas id="riskDistributionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card">
+                            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-6">Alarmas de Desviación por Pabellón</h3>
+                            <div class="h-[400px]">
+                                <canvas id="pavilionDeviationsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABLA DETALLE -->
+                    <div class="glass-card !p-0 overflow-hidden">
+                        <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+                            <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest">Escrutinio Clínico Predictivo</h2>
+                            <div class="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 flex items-center gap-3">
+                                <span class="material-icons text-slate-400 text-sm">search</span>
+                                <input type="text" id="paxSearch" placeholder="Filtro rápido..." class="bg-transparent border-none outline-none text-xs font-bold w-48">
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 overflow-x-auto custom-scroll">
+                            <table class="tab-los" id="losTable">
+                                <thead>
+                                    <tr>
+                                        <th>Paciente</th>
+                                        <th>Cama</th>
+                                        <th>Especialidad</th>
+                                        <th>Diagnóstico</th>
+                                        <th class="text-center">Días Actuales</th>
+                                        <th class="text-center">Predicción IA</th>
+                                        <th class="text-center">Estado Auditoría</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Firebase y Scripts Orbita -->
+    <div th:replace="~{layout :: ui-scripts}"></div>
+    <div th:replace="~{layout :: auth-scripts}"></div>
+
+    <script th:inline="javascript">
+        const API_URL = "http://localhost:8001";
+        let analyzedData = null;
+        let riskChart = null;
+        let pavilionChart = null;
+
+        const getEl = id => document.getElementById(id);
+        const setTxt = (id, t) => { const el = getEl(id); if (el) el.textContent = t; };
+
+        // 1. Verificación de Salud de la API
+        async function checkEngineStatus() {
+            try {
+                const resp = await fetch(`${API_URL}/health`);
+                const data = await resp.json();
+                if (data.ready) {
+                    getEl('engineStatusDot').className = "status-dot dot-success";
+                    setTxt('engineStatusDesc', 'MOTOR ONLINE');
+                    setTxt('engineStatusTxt', `V ${data.v}`);
+                }
+            } catch (e) {
+                getEl('engineStatusDot').className = "status-dot dot-alert animate-pulse";
+                setTxt('engineStatusDesc', 'OFFLINE');
+                setTxt('engineStatusTxt', 'MOTOR');
+            }
+        }
+
+        // 2. Manejo de Carga de Archivos
+        const dropZone = getEl('dropZone');
+        const fileInput = getEl('fileInput');
+
+        if (dropZone) {
+            dropZone.onclick = () => fileInput.click();
+            dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('active'); };
+            dropZone.ondragleave = () => dropZone.classList.remove('active');
+            dropZone.ondrop = (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('active');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            };
+        }
+
+        if (fileInput) {
+            fileInput.onchange = () => {
+                if (fileInput.files.length) handleFile(fileInput.files[0]);
+            };
+        }
+
+        async function handleFile(file) {
+            const overlay = getEl('loadingOverlay');
+            if (overlay) overlay.style.display = 'flex';
+            
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const resp = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!resp.ok) throw new Error("Error en el procesador IA");
+
+                const result = await resp.json();
+                renderResults(result);
+                analyzedData = result;
+                if (getEl('saveFirebaseBtn')) getEl('saveFirebaseBtn').disabled = false;
+            } catch (e) {
+                alert("❌ Falló la conexión con el motor IA local. Asegúrate de que FastAPI esté ejecutándose en el puerto 8001.");
+                console.error(e);
+            } finally {
+                if (overlay) overlay.style.display = 'none';
+            }
+        }
+
+        function renderResults(res) {
+            const rb = getEl('resultsBoard');
+            const dz = getEl('dropZone');
+            if (rb) rb.classList.remove('hidden');
+            if (dz) dz.classList.add('hidden');
+
+            setTxt('kpiTotal', res.kpis.total_pacientes);
+            setTxt('kpiDesviados', res.kpis.desviados);
+            setTxt('kpiRiesgo', res.kpis.riesgo_prolongado);
+
+            // Calcular % Desviación
+            const pct = ((res.kpis.desviados / res.kpis.total_pacientes) * 100).toFixed(1);
+            setTxt('kpiPctDesv', `${pct}%`);
+
+            const tbody = getEl('tbody');
+            if (tbody) {
+                tbody.innerHTML = "";
+                res.pacientes.forEach(p => {
+                    const isDesviado = p.Estado_Auditoria.includes("Desviado");
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div class="flex flex-col">
+                                <span class="text-slate-900 font-bold">${p.Paciente_Nombre} ${p.Paciente_Apellido}</span>
+                                <span class="text-[10px] text-slate-400 font-black tracking-widest uppercase">${p.Identificacion || '---'}</span>
+                            </div>
+                        </td>
+                        <td class="font-black text-slate-500">${p.CAMA}</td>
+                        <td><span class="px-2 py-1 bg-slate-100 rounded-lg text-[10px] font-black text-slate-600 uppercase">${p.Esp.substring(0,20)}</span></td>
+                        <td class="max-w-[200px] truncate"><span class="font-black text-slate-800">${p.Dx_Analisis}</span></td>
+                        <td class="text-center font-black text-slate-900">${p.Dias_Actuales} d</td>
+                        <td class="text-center font-black text-blue-600">${p.Prediccion_Estancia}</td>
+                        <td class="text-center">
+                            <span class="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${isDesviado ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}">
+                                ${isDesviado ? '⚠️ Desviación' : '✅ Normal'}
+                            </span>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // --- RENDERIZADO DE GRÁFICOS (REQUISITO PREMIUM) ---
+            renderCharts(res);
+        }
+
+        function renderCharts(res) {
+            // 1. Distribución de Riesgo (Pie Chart)
+            const riskCounts = {};
+            res.pacientes.forEach(p => {
+                const label = p.Prediccion_Estancia;
+                riskCounts[label] = (riskCounts[label] || 0) + 1;
+            });
+
+            const labels = Object.keys(riskCounts);
+            const data = Object.values(riskCounts);
+
+            if (riskChart) riskChart.destroy();
+            const ctxRisk = getEl('riskDistributionChart').getContext('2d');
+            riskChart = new Chart(ctxRisk, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#818cf8', '#a78bfa', '#f472b6', '#fb923c', '#2dd4bf', '#a3e635']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { font: { weight: 'bold', size: 10 }, padding: 20 } }
+                    }
+                }
+            });
+
+            // 2. Desviaciones por Pabellón (Bar Chart)
+            const pavLabels = Object.keys(res.pabellones);
+            const pavData = Object.values(res.pabellones);
+
+            if (pavilionChart) pavilionChart.destroy();
+            const ctxPav = getEl('pavilionDeviationsChart').getContext('2d');
+            pavilionChart = new Chart(ctxPav, {
+                type: 'bar',
+                data: {
+                    labels: pavLabels,
+                    datasets: [{
+                        label: 'Pacientes Desviados',
+                        data: pavData,
+                        backgroundColor: '#1e293b',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { ticks: { font: { size: 9, weight: 'bold' }, maxRotation: 45, minRotation: 45 }, grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        const searchInput = getEl('paxSearch');
+        if (searchInput) {
+            searchInput.oninput = (e) => {
+                const val = e.target.value.toLowerCase();
+                const tbody = getEl('tbody');
+                if (tbody) {
+                    const rows = tbody.querySelectorAll('tr');
+                    rows.forEach(r => {
+                        const text = r.innerText.toLowerCase();
+                        r.style.display = text.includes(val) ? '' : 'none';
+                    });
+                }
+            };
+        }
+
+        // 3. Sincronización con Firebase
+        const saveBtn = getEl('saveFirebaseBtn');
+        if (saveBtn) {
+            saveBtn.onclick = async () => {
+                if (!analyzedData || !window.firebaseInstance) return;
+                const { db } = window.firebaseInstance;
+                const { doc, setDoc, serverTimestamp } = window.firebaseFirestore;
+
+                const confirmSave = confirm(`¿Deseas guardar los resultados de ${analyzedData.kpis.total_pacientes} pacientes en el histórico institucional?`);
+                if (!confirmSave) return;
+
+                try {
+                    const overlay = getEl('loadingOverlay');
+                    if (overlay) overlay.style.display = 'flex';
+                    const today = new Date().toISOString().split('T')[0];
+                    
+                    await setDoc(doc(db, "estancia_predictiva_diaria", today), {
+                        fecha: today,
+                        kpis: analyzedData.kpis,
+                        pabellones: analyzedData.pabellones,
+                        top_diagnosticos: analyzedData.top_diagnosticos,
+                        timestamp: serverTimestamp(),
+                        analista: window.OrbitaContext?.displayName || 'Sistema'
+                    });
+
+                    alert("✅ Sincronización Exitosa. Los datos han sido guardados en el histórico de Firebase.");
+                } catch (e) {
+                    alert("❌ Error al persistir datos: " + e.message);
+                } finally {
+                    const overlay = getEl('loadingOverlay');
+                    if (overlay) overlay.style.display = 'none';
+                }
+            };
+        }
+
+        // Inicialización
+        checkEngineStatus();
+        setInterval(checkEngineStatus, 15000); 
+
+    </script>
+</body>
+</html>

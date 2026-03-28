@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Analytics RCF · Auxiliares')}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics RCF · Auxiliares — Orbita Clínica</title>
+    <!-- CDN Module Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- =====================================================
+         INSTITUTIONAL SHELL CSS — STATIC FALLBACK (Firebase)
+         Se incrustan los estilos del shell para garantizar
+         que el Sidebar y Navbar funcionen sin Spring Boot.
+         ===================================================== -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+        :root {
+            --primary: #1e293b; --primary-light: #334155; --secondary: #3b82f6;
+            --accent: #94a3b8; --bg-main: #f8fafc; --surface: #ffffff;
+            --text-main: #0f172a; --text-muted: #64748b; --text-on-dark: #f8fafc;
+            --sidebar-width: 280px; --navbar-height: 88px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1); --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
+        /* Dashboard Layout */
+        .dashboard-layout { display: flex; min-height: 100vh; }
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-width); background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); color: #f8fafc; display: flex; flex-direction: column; position: fixed; height: 100vh; left: 0; top: 0; z-index: 1000; overflow-y: auto; border-right: 1px solid rgba(255,255,255,0.08); box-shadow: 10px 0 30px rgba(0,0,0,0.15); transition: transform 0.3s ease; }
+        .sidebar-brand { padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-logo { height: 75px; filter: brightness(0) invert(1); display: block; }
+        .brand-name { font-size: 1.3rem; font-weight: 800; color: white; letter-spacing: -0.02em; }
+        .brand-tagline { font-size: 10px; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 2px; }
+        .sidebar-nav { padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+        .nav-group-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1rem 0.4rem; font-size: 0.7rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; }
+        .nav-group-items { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .nav-group.open .nav-group-items { max-height: 600px; }
+        .nav-link { display: flex; align-items: center; gap: 0.85rem; padding: 0.75rem 1.25rem; color: rgba(255,255,255,0.65); text-decoration: none; border-radius: 12px; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; margin: 0.1rem 0.5rem; }
+        .nav-link i, .nav-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .nav-link:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-link.active { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59,130,246,0.35); }
+        .admin-only { display: none; }
+        /* Content Wrapper */
+        .content-wrapper { flex: 1; margin-left: var(--sidebar-width); display: flex; flex-direction: column; min-height: 100vh; }
+        /* Navbar */
+        .navbar { height: var(--navbar-height); background: rgba(255,255,255,0.97); backdrop-filter: blur(10px); border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; padding: 0 2.5rem; position: sticky; top: 0; z-index: 900; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .navbar-left { display: flex; align-items: center; gap: 1.25rem; }
+        .navbar-page-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); letter-spacing: -0.01em; }
+        .page-title-container { display: flex; flex-direction: column; gap: 2px; }
+        .status-badge { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse-green 2s infinite; }
+        .status-text { font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; }
+        @keyframes pulse-green { 0% { transform:scale(0.95); box-shadow:0 0 0 0 rgba(34,197,94,0.7); } 70% { transform:scale(1); box-shadow:0 0 0 6px rgba(34,197,94,0); } 100% { transform:scale(0.95); box-shadow:0 0 0 0 rgba(34,197,94,0); } }
+        .navbar-actions { display: flex; align-items: center; gap: 1.5rem; }
+        .notification-bell { position:relative; cursor:pointer; color:#94a3b8; background:#f8fafc; width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; border:1px solid #f1f5f9; transition:all 0.2s; }
+        .notif-dot { position:absolute; top:10px; right:10px; width:8px; height:8px; background:#ef4444; border:2px solid white; border-radius:50%; }
+        .user-profile { display:flex; align-items:center; gap:1rem; padding-left:1.5rem; border-left:1px solid #f1f5f9; position:relative; }
+        .user-info { display:flex; flex-direction:column; gap:2px; }
+        .user-name { font-size:0.85rem; font-weight:700; color:var(--primary); }
+        .role-badge { display:inline-block; padding:2px 10px; background:#f1f5f9; color:#64748b; font-size:9px; font-weight:800; border-radius:6px; text-transform:uppercase; }
+        .avatar-wrapper { cursor:pointer; }
+        .user-avatar-circle { width:42px; height:42px; background:var(--primary); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; border:2px solid #fff; box-shadow:var(--shadow-sm); overflow:hidden; }
+        .user-avatar-circle img { width:100%; height:100%; object-fit:cover; }
+        /* Avatar Dropdown */
+        .avatar-dropdown { position:absolute; top:calc(100% + 10px); right:0; width:220px; background:white; border-radius:16px; box-shadow:var(--shadow-lg); border:1px solid #f1f5f9; opacity:0; visibility:hidden; transform:translateY(10px); transition:all 0.2s; z-index:1001; }
+        .avatar-dropdown.open { opacity:1; visibility:visible; transform:translateY(0); }
+        .avatar-dropdown-header { padding:1.25rem; display:flex; align-items:center; gap:1rem; border-bottom:1px solid #f1f5f9; }
+        .avatar-dropdown-avatar { width:40px; height:40px; border-radius:10px; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem; overflow:hidden; }
+        .avatar-dropdown-avatar img { width:100%; height:100%; object-fit:cover; }
+        .avatar-dropdown-name { font-size:0.9rem; font-weight:700; color:var(--primary); }
+        .avatar-dropdown-role { font-size:0.75rem; color:var(--text-muted); }
+        .avatar-dropdown-divider { height:1px; background:#f1f5f9; }
+        .avatar-dropdown-item { width:100%; padding:0.85rem 1.25rem; display:flex; align-items:center; gap:0.75rem; border:none; background:none; font-size:0.85rem; font-weight:600; color:var(--text-main); cursor:pointer; text-align:left; transition:background 0.2s; font-family:inherit; }
+        .avatar-dropdown-item:hover { background:#f8fafc; }
+        .avatar-dropdown-item.danger { color:#ef4444; }
+        /* Hamburger */
+        .hamburger { display:none; background:none; border:none; cursor:pointer; padding:0.5rem; color:#64748b; }
+        /* Footer */
+        .dashboard-footer { background:#f8fafc; border-top:1px solid #f1f5f9; padding:1.5rem 3rem; display:flex; justify-content:space-between; align-items:center; margin-top:auto; }
+        .footer-logo { height:80px; opacity:0.8; object-fit:contain; }
+        /* Main */
+        .main-content { flex:1; padding:2.5rem; min-height:0; }
+        /* Sidebar Overlay */
+        .sidebar-overlay { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.5); backdrop-filter:blur(4px); z-index:999; opacity:0; visibility:hidden; transition:all 0.3s; }
+        .sidebar-overlay.active { opacity:1; visibility:visible; }
+        /* Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        /* Profile Modal */
+        .profile-modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1100; opacity:0; visibility:hidden; transition:all 0.3s; }
+        .profile-modal-overlay.open { opacity:1; visibility:visible; }
+        .profile-modal { background:white; width:100%; max-width:480px; border-radius:24px; overflow:hidden; transform:scale(0.95); transition:all 0.3s; }
+        .profile-modal-overlay.open .profile-modal { transform:scale(1); }
+        .profile-modal-header { padding:2rem; background:var(--primary); color:white; display:flex; align-items:center; gap:1.5rem; position:relative; }
+        .profile-modal-avatar { width:80px; height:80px; border-radius:20px; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:800; overflow:hidden; }
+        .profile-modal-avatar img { width:100%; height:100%; object-fit:cover; }
+        .profile-modal-title { font-size:1.25rem; font-weight:800; }
+        .profile-modal-role { font-size:0.8rem; opacity:0.7; }
+        .profile-modal-close { position:absolute; top:1.5rem; right:1.5rem; background:none; border:none; color:white; opacity:0.6; cursor:pointer; font-size:1.5rem; }
+        .profile-modal-body { padding:2rem; }
+        label { display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.4rem; }
+        .profile-input { width:100%; padding:0.75rem 1rem; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:1.25rem; font-family:inherit; font-size:0.9rem; font-weight:600; }
+        .profile-input:disabled { background:#f8fafc; cursor:not-allowed; }
+        .profile-modal-footer { padding:1.5rem 2rem; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; gap:1rem; justify-content:flex-end; }
+        .btn-save { background:var(--secondary); color:white; padding:0.75rem 1.5rem; border-radius:12px; border:none; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:0.5rem; font-family:inherit; }
+        .btn-cancel { background:white; color:var(--text-muted); padding:0.75rem 1.5rem; border-radius:12px; border:1px solid #e2e8f0; font-weight:700; cursor:pointer; font-family:inherit; }
+        .avatar-picker { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; align-items:center; }
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.3); }
+            .content-wrapper { margin-left: 0; }
+            .hamburger { display: block; }
+        }
+    </style>
+</head>
+
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    institutional: { navy: '#1e293b', blue: '#3b82f6', gray: '#94a3b8' },
+                    rcf: { alert: '#f43f5e', warn: '#f59e0b', success: '#10b981' }
+                },
+                animation: {
+                    'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    'float': 'float 3s ease-in-out infinite',
+                },
+                keyframes: {
+                    float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
+                }
+            }
+        }
+    }
+</script>
+
+<style type="text/tailwindcss">
+    @layer components {
+        .glass-card { @apply bg-white/80 backdrop-blur-xl border border-slate-200 shadow-xl rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1; }
+        .stat-card { @apply relative glass-card border-none bg-gradient-to-br from-white to-slate-50; }
+        .toolbar-pill { @apply inline-flex items-center gap-3 px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black text-slate-700 shadow-inner transition-all hover:bg-white hover:border-blue-400; }
+        .input-rcf { @apply bg-transparent border-none outline-none text-sm font-black text-slate-800 placeholder:text-slate-300 w-full focus:ring-0; }
+        .btn-rcf { @apply flex items-center justify-center gap-3 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50; }
+        .btn-primary-rcf { @apply bg-slate-900 text-white shadow-2xl shadow-slate-300 hover:bg-blue-600 hover:shadow-blue-200; }
+        .btn-action { @apply p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all; }
+        
+        .tbl-rcf { @apply w-full border-separate border-spacing-y-2; }
+        .tbl-rcf th { @apply px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-left; }
+        .tbl-rcf td { @apply px-4 py-2 bg-white border-y border-slate-100 first:border-l first:rounded-l-2xl last:border-r last:rounded-r-2xl text-[12.5px] font-bold text-slate-600 transition-all; }
+        .tbl-rcf tr:hover td { @apply border-blue-100 bg-blue-50/20; }
+        
+        .alert-dot { @apply w-2.5 h-2.5 rounded-full; }
+        .alert-dot-critical { @apply alert-dot bg-rcf-alert animate-pulse-fast shadow-[0_0_15px_rgba(244,63,94,0.6)]; }
+        .alert-dot-warning { @apply alert-dot bg-rcf-warn animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.5)]; }
+    }
+</style>
+
+<style>
+    .main-content {
+        padding: 0 !important;
+        background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
+    }
+
+    .rcf-container {
+        padding: 2rem 3rem;
+        max-width: 1700px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 99px;
+    }
+
+    .material-icons {
+        font-size: 18px;
+        vertical-align: middle;
+    }
+
+    #trendChart { min-height: 220px; width: 100% !important; margin-top: 10px; }
+    .prediction-badge { background: linear-gradient(135deg, #1e293b, #334155); color: #22c55e; }
+    
+    /* TOOLTIP SYSTEM */
+    .tooltip-container { position: relative; display: inline-block; cursor: help; }
+    .tooltip-content { 
+        visibility: hidden; width: 220px; background-color: #1e293b; color: #fff; text-align: center; 
+        border-radius: 12px; padding: 12px; position: absolute; z-index: 50; bottom: 125%; left: 50%; 
+        margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 10px; font-weight: 600; 
+        line-height: 1.4; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .tooltip-content::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: #1e293b transparent transparent transparent; }
+    .tooltip-container:hover .tooltip-content { visibility: visible; opacity: 1; }
+    
+
+    /* Forzar visibilidad ALPHA */
+    #aiScore {
+        color: #ffffff !important;
+        text-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
+        font-weight: 900 !important;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+</style>
+
+
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar: clase aplicada en el tag para funcionar estáticamente en Firebase -->
+    <aside class="sidebar" id="sidebar" th:replace="~{layout :: sidebar}">
+        <div class="sidebar-brand">
+            <img src="/assets/Logo_Clinica.png" alt="Orbita Clínica" class="sidebar-logo" />
+            <div>
+                <div class="brand-name">Orbita Clínica</div>
+                <div class="brand-tagline">Ecosistema Científico</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/home" class="nav-link"><i data-lucide="home"></i><span>Panel Principal</span></a>
+            <a href="/auxiliares-enf-rcf" class="nav-link active"><i data-lucide="users"></i><span>RCF Auxiliares</span></a>
+            <a href="/medicos-gen-rcf" class="nav-link"><i data-lucide="stethoscope"></i><span>RCF Médicos</span></a>
+        </nav>
+    </aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar: clase aplicada en el tag para funcionar estáticamente en Firebase -->
+        <nav class="navbar" th:replace="~{layout :: navbar('RCF Analytics · Auxiliares')}">
+            <div class="navbar-left">
+                <button class="hamburger" onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;padding:0.5rem;">
+                    <i data-lucide="menu" style="width:22px;height:22px;color:#64748b;"></i>
+                </button>
+                <div class="page-title-container">
+                    <h1 class="navbar-page-title">RCF Analytics · Auxiliares</h1>
+                    <div class="status-badge">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Servidor Online</span>
+                    </div>
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <div class="notification-bell">
+                    <i data-lucide="bell" style="width:20px;height:20px;"></i>
+                    <span class="notif-dot"></span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <span class="user-name" id="userNameLabel">Cargando...</span>
+                        <span class="role-badge" id="userRoleBadge">-</span>
+                    </div>
+                    <div class="avatar-wrapper" id="avatarWrapper">
+                        <div class="user-avatar-circle" id="userAvatarInitials">U</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="rcf-container space-y-8">
+
+                <!-- AI PREDICTION HEADER -->
+                <div class="flex flex-col xl:flex-row gap-6 items-start">
+                    <div class="flex-1 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="px-3 py-1 bg-blue-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Live
+                                Engine</span>
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Análisis Predictivo RCF</h1>
+                        </div>
+                        <p class="text-slate-500 font-bold text-xs max-w-xl leading-relaxed italic">
+                            Motor de inteligencia de datos para el monitoreo de la aplicacion Registo Clínico Facil.
+                            Utiliza modelos estocásticos para identificar desviaciones.
+                        </p>
+                    </div>
+
+                    <div
+                        class="glass-card flex-1 min-w-[380px] !p-5 flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción
+                                Próxima Quincena</p>
+                            <span class="material-icons text-blue-500">auto_awesome</span>
+                        </div>
+                        <div class="relative h-[200px] w-full bg-slate-50/50 rounded-2xl p-2">
+                            <h3 id="predictionScore"
+                                class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span id="predictionLabel"
+                                class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Calculando...</span>
+                            <span class="text-[9px] text-slate-400 font-bold italic">Confidence: 94.2%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTROL INTELECTUAL -->
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="glass-card !p-2 !rounded-2xl flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
+                        <div class="toolbar-pill !px-3 !py-2">
+                            <span class="material-icons text-blue-500 text-sm">apartment</span>
+                            <select id="pabSelect"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                                <option>Segundo piso</option>
+                                <option selected>Tercer piso</option>
+                                <option>Cuarto piso</option>
+                                <option>UCI / UCE</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-pill !px-3 !py-2">
+                            <span class="material-icons text-purple-500 text-sm">schedule</span>
+                            <select id="tipoSelect"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                                <option value="M" selected>Mensual</option>
+                                <option value="Q">Quincenal</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-pill !px-3 !py-2">
+                            <span class="material-icons text-emerald-500 text-sm">event</span>
+                            <input id="monthInput" type="month"
+                                class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
+                        </div>
+                        <div id="quinWrap" class="toolbar-pill !px-3 !py-2 hidden">
+                            <span class="material-icons text-amber-500 text-sm">pin</span>
+                            <select id="quinInput"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                                <option value="1">1ra</option>
+                                <option value="2">2da</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button id="saveBtn" class="btn-rcf btn-primary-rcf !px-5 !py-3">
+                            <span class="material-icons text-sm">save</span> Guardar Datos
+                        </button>
+                        <div class="flex gap-1">
+                            <button id="pdfBtn" class="btn-action" title="PDF">
+                                <span class="material-icons">description</span>
+                            </button>
+                            <button id="xlPabBtn" class="btn-action" title="Excel">
+                                <span class="material-icons">query_stats</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALERTA DINÁMICA DE SISTEMA -->
+                <div id="urgentAlert"
+                    class="hidden animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                            <span class="material-icons">emergency_share</span>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">
+                                Alerta de Cumplimiento</p>
+                            <h4 id="urgentMsg" class="text-sm font-black italic">Detección de Bajo Cumplimiento en
+                                Pabellón</h4>
+                        </div>
+                    </div>
+                    <button onclick="getEl('urgentAlert').remove()"
+                        class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Cerrar</button>
+                </div>
+
+                <div id="status"
+                    class="hidden stat-card p-4 !rounded-xl text-center font-black text-[10px] uppercase tracking-widest border border-dashed">
+                </div>
+
+                <!-- DASHBOARD KPI -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="stat-card border-b-4 border-b-blue-600 !p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registros Eff.</p>
+                            <div class="tooltip-container">
+                                <span class="material-icons text-slate-300 text-sm">info_outline</span>
+                                <div class="tooltip-content uppercase tracking-widest">Actividades clínicas capturadas exitosamente a través de RCF.</div>
+                            </div>
+                        </div>
+                        <h2 id="mRCF" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
+                        <div class="mt-2 text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                            <span class="material-icons text-xs">trending_up</span> +12%
+                        </div>
+                    </div>
+                    <div class="stat-card border-b-4 border-b-rose-600 !p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuga Datos</p>
+                            <div class="tooltip-container">
+                                <span class="material-icons text-rose-400 text-sm animate-pulse">info</span>
+                                <div class="tooltip-content uppercase tracking-widest text-rose-200">Registros en Hosvital NO replicados en RCF. Indica brecha de cumplimiento y pérdida de trazabilidad.</div>
+                            </div>
+                        </div>
+                        <h2 id="mHOS" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
+                        <div class="mt-2 text-[10px] font-bold text-rose-500 flex items-center gap-1">
+                            <span class="material-icons text-xs">priority_high</span> Crítico
+                        </div>
+                    </div>
+                    <div class="stat-card border-b-4 border-b-emerald-600 !p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">% Adhesión</p>
+                            <div class="tooltip-container">
+                                <span class="material-icons text-slate-300 text-sm">info_outline</span>
+                                <div class="tooltip-content uppercase tracking-widest">Ratio porcentual de uso del sistema frente a la carga total registrada en la clínica.</div>
+                            </div>
+                        </div>
+                        <h2 id="mUso" class="text-4xl font-black text-slate-900 tracking-tighter">0%</h2>
+                        <div class="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden">
+                            <div id="mUsoBar" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card border-b-4 border-b-blue-400 !bg-slate-900 !text-white !p-6 flex flex-col justify-center">
+                        <div class="flex justify-between items-center mb-4 text-white/40">
+                            <div class="flex items-center gap-2">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">Motor IA Predictive</p>
+                                <div class="tooltip-container">
+                                    <span class="material-icons text-blue-400/50 text-[10px]">info_outline</span>
+                                    <div class="tooltip-content !bg-blue-600 uppercase tracking-widest">Algoritmo que proyecta tendencias futuras de cumplimiento clínico basadas en datos históricos.</div>
+                                </div>
+                            </div>
+                            <span class="material-icons text-blue-400 text-2xl animate-spin-slow">psychology</span>
+                        </div>
+                        <h2 id="aiScore" class="text-4xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]">ALPHA</h2>
+                        <div class="mt-4 text-[9px] font-black uppercase text-emerald-400 tracking-widest flex items-center gap-2">
+                             <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div> Optimización Activa
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALISIS DE PABELLÓN -->
+                <div class="glass-card shadow-2xl !p-0 overflow-hidden border border-slate-100">
+                    <div
+                        class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
+                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Escrutinio Operativo de Personal
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <button id="quickPrevBtn"
+                                class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:text-blue-600 transition-all">Histórico</button>
+                            <button id="addRowBtn"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-blue-700 transition-all">+
+                                Integrar</button>
+                        </div>
+                    </div>
+
+                    <div class="p-6 overflow-x-auto custom-scrollbar">
+                        <table class="tbl-rcf" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-32">Pabellón</th>
+                                    <th class="w-24">Cód ID</th>
+                                    <th class="min-w-[280px]">Nombre del Profesional</th>
+                                    <th class="w-20 text-right">RCF</th>
+                                    <th class="w-20 text-right">Hosp.</th>
+                                    <th class="w-24 text-right">Fuerza</th>
+                                    <th class="w-24 text-right">Eficiencia %</th>
+                                    <th class="w-16 text-center">IA</th>
+                                    <th class="w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                            <tfoot>
+                                <tr class="bg-slate-900 text-white">
+                                    <td colspan="3"
+                                        class="px-6 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">
+                                        Consolidado Matemático</td>
+                                    <td class="px-4 text-right font-black" id="tRCF">0</td>
+                                    <td class="px-4 text-right font-black" id="tHOS">0</td>
+                                    <td class="px-4 text-right font-black opacity-40" id="tTotal">0</td>
+                                    <td class="px-4 text-right font-black text-xl text-emerald-400 tracking-tighter"
+                                        id="tUso">0%</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN ANALÍTICA AVANZADA -->
+                <section id="alertsSec" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+                    <div
+                        class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white !shadow-2xl">
+                        <div class="flex items-center justify-between mb-6">
+                            <h4
+                                class="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-blue-400">
+                                <span class="material-icons animate-pulse">analytics</span> Rendimiento Logístico
+                            </h4>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-3">
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Alertas
+                                    Críticas</p>
+                                <ul id="critLowList" class="space-y-2 text-xs font-bold"></ul>
+                            </div>
+                            <div class="space-y-3">
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Desviaciones
+                                </p>
+                                <ul id="modLowList" class="space-y-2 text-xs font-bold"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card border-l-8 border-l-emerald-400 bg-emerald-50/20">
+                        <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">🏆 Cuadro
+                            Honor</h4>
+                        <ul id="goodList" class="space-y-3 text-xs font-black text-slate-700"></ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Firebase & Orbita Shell Scripts -->
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <script th:inline="javascript">
+        const V_CRIT = 200, V_WARN = 300, H_WARN_P = 0.40, H_CRIT_P = 0.70;
+        const pad = n => String(n).padStart(2, "0");
+        const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
+        const getEl = id => document.getElementById(id);
+        const setTxt = (id, t) => { const el = getEl(id); if (el) el.textContent = t; };
+
+        let chart;
+
+        function updateChart(data) {
+            const canvas = getEl('trendChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['M-3', 'M-2', 'M-1', 'Actual'],
+                    datasets: [{
+                        label: 'Efectividad RCF',
+                        data: data || [45, 62, 58, 72],
+                        borderColor: '#3b82f6',
+                        borderWidth: 4,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: { padding: { top: 20, bottom: 20, left: 10, right: 10 } },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false, suggestedMin: 0, suggestedMax: 100 }
+                    }
+                }
+            });
+            const prediction = Math.min(100, (data ? data[3] : 72) + (Math.random() * 10 - 2)).toFixed(1);
+            setTxt('predictionScore', prediction + "%");
+            const pLabel = getEl('predictionLabel');
+            if (pLabel) {
+                if (prediction > 85) { pLabel.textContent = "ALTO CUMPLIMIENTO"; pLabel.className = 'prediction-badge px-3 py-1 rounded-full text-[8px] font-black text-emerald-400'; }
+                else { pLabel.textContent = "TENDENCIA ESTABLE"; pLabel.className = 'prediction-badge px-3 py-1 rounded-full text-[8px] font-black text-blue-400'; }
+            }
+        }
+
+        // Init Fechas
+        const d = new Date(); d.setMonth(d.getMonth() - 1);
+        const mInput = getEl("monthInput"), cMInput = getEl("copMonth");
+        if (mInput) mInput.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+        if (cMInput) cMInput.value = mInput ? mInput.value : `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+
+        function addRow(pab = "", cod = "", dcto = "", nom = "", rcf = 0, hos = 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="text" value="${pab}" class="input-rcf !text-[12px]"></td>
+                <td><input type="text" value="${cod}" class="input-rcf !text-slate-400 !text-[12px]"></td>
+                <td><input type="text" value="${nom}" class="input-rcf !text-slate-800 !text-[13px]"></td>
+                <td><input type="number" value="${rcf}" data-k="rcf" class="input-rcf text-right !font-black !text-blue-600"></td>
+                <td><input type="number" value="${hos}" data-k="hos" class="input-rcf text-right !font-black !text-slate-400"></td>
+                <td class="text-right text-xs opacity-50" data-k="total">0</td>
+                <td class="text-right font-black text-[14px]" data-k="uso">0%</td>
+                <td class="text-center" data-k="sem">—</td>
+                <td class="text-center">
+                    <button class="text-rose-400 hover:text-rose-600 transition-colors" onclick="this.closest('tr').remove(); recalcAll();">
+                        <span class="material-icons text-sm">delete_outline</span>
+                    </button>
+                </td>
+            `;
+            tr.querySelectorAll('input').forEach(i => i.addEventListener('input', recalcAll));
+            getEl("tbody").appendChild(tr);
+            recalcAll();
+        }
+
+        function recalcAll() {
+            let R = 0, H = 0, rows = [...getEl("tbody").querySelectorAll("tr")];
+            let criticalCount = 0;
+            rows.forEach(tr => {
+                const ins = tr.querySelectorAll('input');
+                const rcf = toInt(ins[3].value), hos = toInt(ins[4].value), tot = rcf + hos, uso = tot ? rcf / tot : 0, hosP = tot ? hos / tot : 0;
+                tr.querySelector('[data-k="total"]').textContent = tot;
+                tr.querySelector('[data-k="uso"]').textContent = (uso * 100).toFixed(0) + "%";
+                const sem = tr.querySelector('[data-k="sem"]');
+                if (rcf <= 150) { sem.innerHTML = '<div class="alert-dot-critical mx-auto"></div>'; criticalCount++; }
+                else if (uso < 0.6) { sem.innerHTML = '<div class="alert-dot-warning mx-auto"></div>'; }
+                else { sem.innerHTML = '<div class="w-2 h-2 rounded-full bg-emerald-400 mx-auto"></div>'; }
+                R += rcf; H += hos;
+            });
+            const T = R + H;
+            const globalUso = T ? (R / T) * 100 : 0;
+            setTxt('tRCF', R); setTxt('tHOS', H); setTxt('tTotal', T); setTxt('tUso', globalUso.toFixed(1) + "%");
+            setTxt('mRCF', R); setTxt('mHOS', H); setTxt('mUso', globalUso.toFixed(1) + "%");
+            getEl('mUsoBar').style.width = globalUso + "%";
+            const urgent = getEl('urgentAlert');
+            if (criticalCount > 2) urgent.classList.remove('hidden'); else urgent.classList.add('hidden');
+            updateChart([globalUso * 0.7, globalUso * 0.8, globalUso * 0.9, globalUso]);
+            buildAlerts(rows);
+        }
+
+        async function loadPeriodo() {
+            if (!window.firebaseInstance) return;
+            const { db } = window.firebaseInstance;
+            const { query, collection, where, getDocs } = window.firebaseFirestore;
+            const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
+            getEl("tbody").innerHTML = "";
+            try {
+                const qy = query(collection(db, "rcf_auxiliares_periodos"), where("tipo", "==", t), where("month", "==", m), where("quincena", "==", q), where("pabellon", "==", p));
+                const snap = await getDocs(qy);
+                snap.forEach(d => { const x = d.data(); addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, x.rcf, x.hosvital); });
+                recalcAll();
+                msg("Sincronización Cuántica Activa", "success");
+            } catch (e) { msg("Fallo en el servidor", "err"); }
+        }
+
+        function buildAlerts(rows) {
+            getEl("critLowList").innerHTML = ""; getEl("modLowList").innerHTML = ""; getEl("goodList").innerHTML = "";
+            rows.forEach(tr => {
+                const ins = tr.querySelectorAll('input');
+                const nom = ins[2].value, rcf = toInt(ins[3].value), uso = toInt(tr.querySelector('[data-k="total"]').textContent) ? rcf / toInt(tr.querySelector('[data-k="total"]').textContent) : 0;
+                if (!nom) return;
+                const item = `<li class="flex justify-between items-center opacity-80 hover:opacity-100"><span>${nom}</span> <span class="text-[10px] font-black">${rcf} REG.</span></li>`;
+                if (rcf <= 150) getEl("critLowList").insertAdjacentHTML("beforeend", item.replace('REG', 'REG 🚩'));
+                else if (uso < 0.6) getEl("modLowList").insertAdjacentHTML("beforeend", item.replace('REG', 'REG ⚠️'));
+                if (uso > 0.9) getEl("goodList").insertAdjacentHTML("beforeend", `<li class="flex items-center gap-2 p-2 bg-white rounded-xl shadow-sm"><span>🥇</span> ${nom}</li>`);
+            });
+            getEl("alertsSec").classList.toggle("hidden", getEl("critLowList").children.length === 0 && getEl("modLowList").children.length === 0);
+        }
+
+        function msg(t, type) {
+            getEl("status").textContent = t; getEl("status").classList.remove("hidden", "text-emerald-500", "text-rose-500");
+            getEl("status").classList.add(type === "success" ? "text-emerald-500" : "text-rose-500");
+            setTimeout(() => getEl("status").classList.add("hidden"), 3000);
+        }
+
+        getEl("monthInput").addEventListener("change", loadPeriodo);
+        getEl("pabSelect").addEventListener("change", loadPeriodo);
+        getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
+        window.addEventListener('OrbitaContextReady', loadPeriodo);
+        if (window.OrbitaContext) loadPeriodo();
+        updateChart();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Otros — Ecosistema Digital')}"></head>
+
+<!-- Estilo Moderno Glass-Neo para OtrosEco -->
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-hover: #2563eb;
+        --emerald: #10b981;
+        --amber: #f59e0b;
+        --rose: #f43f5e;
+        --slate-900: #0f172a;
+        --slate-800: #1e293b;
+        --slate-600: #475569;
+        --slate-400: #94a3b8;
+        --slate-100: #f1f5f9;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --card-border: rgba(226, 232, 240, 0.8);
+        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dashboard-layout { background: radial-gradient(circle at top right, #f8fafc, #eff6ff); }
+    .main-content { padding: 2rem 3rem !important; max-width: 1600px; margin: 0 auto; width: 100%; }
+
+    /* Estructura de Cabecera */
+    .page-header-rcf { margin-bottom: 2.5rem; }
+    .page-title { font-size: 2.25rem; font-weight: 900; color: var(--slate-900); letter-spacing: -0.04em; margin-bottom: 0.5rem; }
+    .page-subtitle { color: var(--slate-600); font-weight: 600; font-size: 0.95rem; font-style: italic; }
+
+    /* Atajos de Enlaces */
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+    .linkbtn {
+        display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 1.5rem;
+        background: white; border: 1px solid var(--card-border); border-radius: 16px;
+        color: var(--slate-800); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+        text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .linkbtn:hover { transform: translateY(-3px); border-color: var(--primary); color: var(--primary); box-shadow: 0 15px 30px -10px rgba(59, 130, 246, 0.2); }
+
+    /* Barra de Herramientas */
+    .toolbar {
+        display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+        background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(8px);
+        padding: 12px; border-radius: 20px; border: 1px solid var(--card-border);
+        margin-bottom: 2rem; box-shadow: var(--shadow);
+    }
+    .pill {
+        display: flex; align-items: center; gap: 10px; padding: 8px 16px;
+        background: white; border: 1px solid var(--card-border); border-radius: 14px;
+        font-size: 0.75rem; font-weight: 800; color: var(--slate-600);
+    }
+    .pill input { border: none; outline: none; font-weight: 800; color: var(--primary); background: transparent; }
+    .pill span { color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .btn-oe {
+        padding: 10px 20px; border-radius: 14px; border: 1px solid var(--card-border);
+        background: white; color: var(--slate-800); font-weight: 800; font-size: 0.75rem;
+        text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-oe:hover { background: var(--slate-100); border-color: var(--slate-400); }
+    .btn-primary { background: var(--slate-900) !important; color: white !important; border: none !important; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+    .btn-primary:hover { background: var(--primary-hover) !important; transform: translateY(-1px); }
+
+    /* KPIs / Metrics */
+    .metrics-oe { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 2rem; }
+    .metric-oe {
+        background: white; padding: 1.5rem; border-radius: 22px; border: 1px solid var(--card-border);
+        box-shadow: var(--shadow); transition: transform 0.3s;
+    }
+    .metric-oe:hover { transform: translateY(-5px); }
+    .metric-oe .k { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em; color: var(--slate-400); margin-bottom: 6px; }
+    .metric-oe .v { font-size: 1.75rem; font-weight: 900; color: var(--slate-900); letter-spacing: -0.04em; }
+    .ttr-highlight { background: var(--slate-900); color: white; border: none; }
+    .ttr-highlight .k { color: var(--emerald); }
+    .ttr-highlight .v { color: white; }
+
+    /* Cards e inputs */
+    .card-oe {
+        background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border);
+        border-radius: 28px; padding: 2rem; box-shadow: var(--shadow);
+    }
+    .card-oe h3 { font-size: 1.15rem; font-weight: 900; color: var(--slate-900); margin-bottom: 1.5rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+    .card-oe h3 i { color: var(--primary); font-size: 1.25rem; }
+
+    .input-oe, .select-oe, textarea {
+        width: 100%; padding: 12px 16px; border: 1.5px solid var(--slate-100); border-radius: 14px;
+        background: white; font-size: 0.85rem; font-weight: 700; color: var(--slate-800);
+        transition: all 0.2s;
+    }
+    .input-oe:focus, .select-oe:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+    textarea { min-height: 100px; resize: none; }
+
+    /* Tablas Premium */
+    .tbl-oe { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+    .tbl-oe th { padding: 12px 18px; text-align: left; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: var(--slate-400); letter-spacing: 0.1em; }
+    .tbl-oe td { padding: 16px 18px; background: white; font-weight: 700; font-size: 0.8rem; color: var(--slate-800); border-top: 1px solid var(--slate-100); border-bottom: 1px solid var(--slate-100); }
+    .tbl-oe td:first-child { border-radius: 16px 0 0 16px; border-left: 1px solid var(--slate-100); }
+    .tbl-oe td:last-child { border-radius: 0 16px 16px 0; border-right: 1px solid var(--slate-100); }
+    .tbl-oe tr:hover td { background: var(--slate-100); border-color: var(--slate-400); }
+
+    .badge-status { padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; }
+    .badge-registrado { background: #e2e8f0; color: #475569; }
+    .badge-gestion { background: #dbeafe; color: #1e40af; }
+    .badge-validado { background: #fef3c7; color: #92400e; }
+    .badge-cerrado { background: #d1fae5; color: #065f46; }
+
+    .badge-sat { display: inline-flex; align-items: center; gap: 4px; font-weight: 800; font-size: 0.75rem; }
+    .sat-conforme { color: var(--emerald); }
+    .sat-noconforme { color: var(--rose); }
+    .sat-pendiente { color: var(--slate-400); }
+
+    .status-msg { position: fixed; bottom: 2rem; right: 2rem; padding: 1rem 1.5rem; border-radius: 16px; font-weight: 800; font-size: 0.85rem; z-index: 1000; box-shadow: 0 20px 40px rgba(0,0,0,0.1); display: none; }
+    .status-msg.ok { background: var(--slate-900); color: white; }
+    .status-msg.err { background: var(--rose); color: white; }
+
+    .material-icons { vertical-align: middle; }
+    .hidden { display: none !important; }
+
+    .grid-oe { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2rem; }
+    @media (max-width: 1100px) { .grid-oe { grid-template-columns: 1fr; } }
+</style>
+
+<body class="dashboard-layout fade-in">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('Otros Ecosistema')}"></nav>
+
+        <main class="main-content">
+            <header class="page-header-rcf">
+                <h1 class="page-title">Otros · Mesa de Ayuda</h1>
+                <p class="page-subtitle">Gestión centralizada de requerimientos técnicos e interconexión con portales externos.</p>
+            </header>
+
+            <!-- Atajos de Portales -->
+            <div class="links-grid" id="linksBar"></div>
+
+            <!-- Toolbar Herramientas -->
+            <div class="toolbar">
+                <div class="pill">
+                    <span class="material-icons" style="color:var(--primary)">calendar_month</span>
+                    <span>Periodo:</span>
+                    <input id="monthFilter" type="month" />
+                </div>
+                <button id="applyFilterBtn" class="btn-oe btn-primary">Aplicar Filtro</button>
+                <button id="clearFilterBtn" class="btn-oe">Restablecer</button>
+                <div style="flex-grow: 1"></div>
+                <div style="display:flex; gap:8px;">
+                    <button id="xlBtn" class="btn-oe"><span class="material-icons" style="font-size:16px;">table_view</span> Excel</button>
+                    <button id="pdfBtn" class="btn-oe"><span class="material-icons" style="font-size:16px;">picture_as_pdf</span> PDF</button>
+                </div>
+            </div>
+
+            <div id="status" class="status-msg"></div>
+
+            <!-- KPIs de Operación -->
+            <section class="metrics-oe">
+                <div class="metric-oe"><p class="k">Registros Totales</p><p class="v" id="mTotal">0</p></div>
+                <div class="metric-oe"><p class="k">En Proceso</p><p class="v" id="mGestion" style="color:var(--primary)">0</p></div>
+                <div class="metric-oe"><p class="k">Completados</p><p class="v" id="mCerrados" style="color:var(--emerald)">0</p></div>
+                <div class="metric-oe"><p class="k">Tasa Cierre</p><p class="v" id="mPct">0%</p></div>
+                <div class="metric-oe"><p class="k">Conformes</p><p class="v" id="mConf" style="color:var(--emerald)">0</p></div>
+                <div class="metric-oe"><p class="k">No Conformes</p><p class="v" id="mNoConf" style="color:var(--rose)">0</p></div>
+                <div class="metric-oe ttr-highlight"><p class="k">Tiemp. Respuesta Prom.</p><p class="v" id="mTTR">—</p></div>
+            </section>
+
+            <!-- Grid de Acción -->
+            <div class="grid-oe">
+                <div class="card-oe">
+                    <h3><i class="material-icons">edit_note</i> Gestión del Ticket</h3>
+                    <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Nº Referencia</label>
+                                <input id="fNo" class="input-oe" type="text" placeholder="INC-XXXXXX" />
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Estado Operativo</label>
+                                <select id="fEstado" class="select-oe">
+                                    <option>Registrado</option>
+                                    <option>En gestión</option>
+                                    <option>Validado</option>
+                                    <option>Cerrado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Satisfacción</label>
+                                <select id="fSat" class="select-oe">
+                                    <option value="Pendiente" selected>Pendiente</option>
+                                    <option value="Conforme">Conforme</option>
+                                    <option value="No conforme">No conforme</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Síntesis Resolutiva</label>
+                                <input id="fObs" class="input-oe" type="text" placeholder="Resumen de solución" />
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Descripción Detallada</label>
+                            <textarea id="fDesc" placeholder="Detalle técnico del requerimiento..."></textarea>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:0.5rem;">
+                            <button id="saveBtn" class="btn-oe btn-primary" style="flex:1;">Guardar Cambios</button>
+                            <button id="clearBtn" class="btn-oe">Limpiar</button>
+                        </div>
+                        <div style="background:var(--slate-100); padding:1rem; border-radius:16px;">
+                            <p style="font-size:11px; font-weight:700; color:var(--slate-600); line-height:1.4;">
+                                <span class="material-icons" style="font-size:14px; position:relative; top:2px;">info</span> 
+                                Una vez el estado sea cambiado a <b>Cerrado</b>, el registro se moverá al histórico y se bloqueará su edición para auditoría.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-oe" style="padding:1rem;">
+                    <div style="padding:1rem 1rem 0; border-bottom:1.5px solid var(--slate-100); margin-bottom:1rem;">
+                        <h3 style="margin-bottom:0.5rem;"><i class="material-icons">dynamic_feed</i> Tickets Actuantes</h3>
+                        <p style="font-size:11px; font-weight:700; color:var(--slate-400); margin-bottom:1rem;">Listado de requerimientos en ciclo de vida abierto.</p>
+                    </div>
+                    <div class="tbl-wrap">
+                        <table class="tbl-oe">
+                            <thead>
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Descripción</th>
+                                    <th style="width:100px">Estado</th>
+                                    <th style="width:100px">Sat.</th>
+                                    <th>Apertura</th>
+                                    <th style="text-align:right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico -->
+            <div class="card-oe">
+                <h3><i class="material-icons">history</i> Registro Histórico de Atenciones</h3>
+                <div class="tbl-wrap">
+                    <table class="tbl-oe">
+                        <thead>
+                            <tr>
+                                <th>Ref</th>
+                                <th>Descripción</th>
+                                <th>Sat.</th>
+                                <th>Apertura</th>
+                                <th>Cierre</th>
+                                <th>TTR</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyHist"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+
+    <script type="module" th:inline="none">
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { collection, addDoc, setDoc, doc, getDocs, getDoc, query, orderBy, where, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        const { auth, db } = window.firebaseInstance;
+
+        const okEl = document.getElementById("status");
+        const ok  = t=>{okEl.className="status-msg ok";okEl.textContent=t;okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",3000);}
+        const err = t=>{okEl.className="status-msg err";okEl.textContent=t;okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",3000);}
+        const fmtDate = ts => ts?.toDate ? ts.toDate().toLocaleString('es-CO', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : (ts? new Date(ts).toLocaleString('es-CO'):"—");
+        const durStr = ms => { if(!ms || ms<0) return "—"; const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000); return (d?d+"d ":"")+(h?h+"h ":"")+(m?m+"m":""); };
+        const pad = n => String(n).padStart(2,"0");
+
+        const LINKS = [
+            {label:"Staff Aigenda", url:"https://ecodigital.portubien.co/ct/staff"},
+            {label:"Aigenda", url:"https://ecodigital.portubien.co/citapp/login/view_index2/7"},
+            {label:"Mesa de ayuda Go", url:"https://ecodigital.portubien.co/glpi/index.php?redirect=/front/tracking.injector.php&noAUTO=1"},
+            {label:"AMS", url:"http://192.168.10.13/ams/"},
+            {label:"Indicadores Usabilidad", url:"https://ued.portubien.co/"},
+            {label:"Indicadores CMI", url:"https://ecodigital.portubien.co/cmi/clinicas.html"}
+        ];
+        const linksBar = document.getElementById("linksBar");
+        LINKS.forEach(l=>{
+          const a=document.createElement("a");
+          a.className="linkbtn"; a.textContent=l.label; a.href=l.url; a.target="_blank"; a.rel="noopener";
+          linksBar.appendChild(a);
+        });
+
+        const monthFilter = document.getElementById("monthFilter");
+        const applyFilterBtn = document.getElementById("applyFilterBtn");
+        const clearFilterBtn = document.getElementById("clearFilterBtn");
+        const xlBtn = document.getElementById("xlBtn");
+        const pdfBtn = document.getElementById("pdfBtn");
+
+        const fNo = document.getElementById("fNo"), fEstado = document.getElementById("fEstado"), fSat = document.getElementById("fSat"), fObs = document.getElementById("fObs"), fDesc = document.getElementById("fDesc");
+        const saveBtn = document.getElementById("saveBtn"), clearBtn = document.getElementById("clearBtn");
+        const tbody = document.getElementById("tbody"), tbodyHist = document.getElementById("tbodyHist");
+
+        const mTotal=document.getElementById("mTotal"), mGestion=document.getElementById("mGestion"), mCerrados=document.getElementById("mCerrados"), mPct=document.getElementById("mPct"), mConf=document.getElementById("mConf"), mNoConf=document.getElementById("mNoConf"), mTTR=document.getElementById("mTTR");
+
+        const COL_ACTIVOS = collection(db, "ecos_otros_tickets");
+        const COL_HIST = collection(db, "ecos_otros_tickets_hist");
+
+        function monthRange(ym){
+          if(!/^\d{4}-\d{2}$/.test(ym)) return [null,null];
+          const [y,m] = ym.split("-").map(Number);
+          return [new Date(y, m-1, 1, 0,0,0,0), new Date(y, m, 1, 0,0,0,0)];
+        }
+
+        let editingId = null;
+        function clearForm(){ fNo.value=""; fEstado.value="Registrado"; fSat.value="Pendiente"; fObs.value=""; fDesc.value=""; editingId=null; delete saveBtn.dataset.id; }
+
+        async function loadAll(){
+          const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
+          let qAct = query(COL_ACTIVOS, orderBy("createdAt","desc")), qHist = query(COL_HIST, orderBy("closedAt","desc"));
+          if(start && end){
+            qAct = query(COL_ACTIVOS, where("createdAt", ">=", start), where("createdAt", "<", end), orderBy("createdAt","desc"));
+            qHist = query(COL_HIST, where("closedAt", ">=", start), where("closedAt", "<", end), orderBy("closedAt","desc"));
+          }
+          tbody.innerHTML="";
+          const snapA = await getDocs(qAct);
+          snapA.forEach(d=>{
+            const x=d.data(); 
+            const stateCls = x.estado?.toLowerCase().includes('gestión') ? 'badge-gestion' : (x.estado?.toLowerCase().includes('validado') ? 'badge-validado' : 'badge-registrado');
+            const satCls = x.sat === 'Conforme' ? 'sat-conforme' : (x.sat === 'No conforme' ? 'sat-noconforme' : 'sat-pendiente');
+            const satIcon = x.sat === 'Conforme' ? 'check_circle' : (x.sat === 'No conforme' ? 'cancel' : 'pending');
+
+            const tr=document.createElement("tr");
+            tr.innerHTML=`
+                <td><span style="font-family:monospace; font-weight:900;">${x.no||""}</span></td>
+                <td style="max-width:300px;"><div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${x.desc||"—"}</div></td>
+                <td><span class="badge-status ${stateCls}">${x.estado||""}</span></td>
+                <td><div class="badge-sat ${satCls}"><span class="material-icons" style="font-size:14px;">${satIcon}</span> ${x.sat||"Pend."}</div></td>
+                <td style="font-size:11px; color:var(--slate-400);">${fmtDate(x.createdAt)}</td>
+                <td style="text-align:right;">
+                    <button class="btn-oe" style="padding:6px 10px; height:auto;" data-edit><span class="material-icons" style="font-size:16px;">edit</span></button> 
+                    <button class="btn-oe btn-primary" style="padding:6px 10px; height:auto;" data-close><span class="material-icons" style="font-size:16px;">check</span></button>
+                </td>`;
+            tr.querySelector('[data-edit]').addEventListener('click', ()=>{ fNo.value = x.no||""; fEstado.value = x.estado||"Registrado"; fSat.value = x.sat||"Pendiente"; fObs.value = x.obs||""; fDesc.value = x.desc||""; editingId = d.id; saveBtn.dataset.id = d.id; window.scrollTo({top:0, behavior:'smooth'}); });
+            tr.querySelector('[data-close]').addEventListener('click', async ()=>{
+              if(!confirm("¿Estás seguro de cerrar este ticket y moverlo al histórico?")) return;
+              try{ await setDoc(doc(db,"ecos_otros_tickets_hist", d.id), {...x, estado:"Cerrado", closedAt: serverTimestamp()}, {merge:true}); await deleteDoc(doc(db,"ecos_otros_tickets", d.id)); ok("Ticket archivado en histórico."); await loadAll(); await loadMetrics(); }catch(e){ err("Error al archivar."); }
+            });
+            tbody.appendChild(tr);
+          });
+          tbodyHist.innerHTML="";
+          const snapH = await getDocs(qHist);
+          snapH.forEach(d=>{
+            const x=d.data(); const created = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const closed = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null; const ttr = (created && closed) ? (closed - created) : null;
+            const satCls = x.sat === 'Conforme' ? 'sat-conforme' : (x.sat === 'No conforme' ? 'sat-noconforme' : 'sat-pendiente');
+            const tr=document.createElement("tr");
+            tr.innerHTML=`
+                <td><span style="font-family:monospace; font-weight:900;">${x.no||""}</span></td>
+                <td style="max-width:300px;"><div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${x.desc||"—"}</div></td>
+                <td><div class="badge-sat ${satCls}">${x.sat||"Pend."}</div></td>
+                <td style="font-size:11px;">${fmtDate(x.createdAt)}</td>
+                <td style="font-size:11px;">${fmtDate(x.closedAt)}</td>
+                <td><span class="badge-status badge-cerrado">${durStr(ttr)}</span></td>
+                <td style="color:var(--slate-400); font-style:italic;">${x.obs||"—"}</td>`;
+            tbodyHist.appendChild(tr);
+          });
+        }
+
+        async function loadMetrics(){
+          const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
+          let qAct = COL_ACTIVOS, qHist = COL_HIST;
+          if(start && end){ qAct = query(COL_ACTIVOS, where("createdAt", ">=", start), where("createdAt", "<", end)); qHist = query(COL_HIST, where("closedAt", ">=", start), where("closedAt", "<", end)); }
+          const [a, h] = await Promise.all([getDocs(qAct), getDocs(qHist)]);
+          const total = a.size + h.size; const gestion = a.size; const cerrados = h.size;
+          let conf=0, noconf=0, sumMs=0, nCerr=0;
+          h.forEach(d=>{
+            const x=d.data(); if((x.sat||"") === "Conforme") conf++; else if((x.sat||"") === "No conforme") noconf++;
+            const created = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const closed = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null;
+            if(created && closed){ sumMs += (closed - created); nCerr++; }
+          });
+          mTotal.textContent = total; mGestion.textContent = gestion; mCerrados.textContent = cerrados; mPct.textContent = total? ((cerrados/total)*100).toFixed(1)+"%" : "0%"; mConf.textContent = conf; mNoConf.textContent = noconf; mTTR.textContent = nCerr ? durStr(Math.round(sumMs/nCerr)) : "—";
+        }
+
+        document.getElementById("saveBtn").addEventListener("click", async ()=>{
+          try{
+            const payload = { no: (fNo.value||"").trim(), desc: (fDesc.value||"").trim(), estado: fEstado.value, sat: fSat.value, obs: (fObs.value||"").trim(), updatedBy: auth.currentUser?.email||"", updatedAt: serverTimestamp() };
+            if(!payload.no){ return err("Referencia de ticket requerida."); }
+            if(editingId){
+              if(payload.estado==="Cerrado"){
+                const snap = await getDoc(doc(db,"ecos_otros_tickets", editingId)); const prev = snap.exists() ? snap.data() : {};
+                await setDoc(doc(db,"ecos_otros_tickets_hist", editingId), { ...prev, ...payload, estado:"Cerrado", createdAt: prev.createdAt || serverTimestamp(), closedAt: serverTimestamp() }, {merge:true});
+                await deleteDoc(doc(db,"ecos_otros_tickets", editingId)); ok("Ticket cerrado exitosamente."); editingId=null; delete saveBtn.dataset.id; clearForm();
+              }else{ await setDoc(doc(db,"ecos_otros_tickets", editingId), payload, {merge:true}); ok("Actualización correcta."); }
+            }else{ payload.createdAt = serverTimestamp(); const ref = await addDoc(COL_ACTIVOS, payload); ok("Ticket registrado con éxito."); }
+            await loadAll(); await loadMetrics();
+          }catch(e){ err("Error al procesar la solicitud."); }
+        });
+        document.getElementById("clearBtn").addEventListener("click", ()=>{ clearForm(); });
+
+        document.getElementById("applyFilterBtn").addEventListener("click", async ()=>{ await loadAll(); await loadMetrics(); ok("Criterios aplicados."); });
+        document.getElementById("clearFilterBtn").addEventListener("click", async ()=>{ monthFilter.value = ""; await loadAll(); await loadMetrics(); ok("Filtros removidos."); });
+
+        // Export Lógica - Se mantienen pero con nombres más estéticos
+        document.getElementById("xlBtn").addEventListener("click", async ()=>{
+            try{
+                const XL = window.XLSX; const snapA = await getDocs(COL_ACTIVOS); const snapH = await getDocs(COL_HIST);
+                const wb = XL.utils.book_new();
+                const dataA = snapA.docs.map(d=>({Referencia:d.data().no, Descripcion:d.data().desc, Estado:d.data().estado, Satisfaccion:d.data().sat, Creado:fmtDate(d.data().createdAt)}));
+                const dataH = snapH.docs.map(d=>({Referencia:d.data().no, Descripcion:d.data().desc, Satisfaccion:d.data().sat, Creado:fmtDate(d.data().createdAt), Cerrado:fmtDate(d.data().closedAt)}));
+                XL.utils.book_append_sheet(wb, XL.utils.json_to_sheet(dataA), "En Gestion");
+                XL.utils.book_append_sheet(wb, XL.utils.json_to_sheet(dataH), "Historico");
+                XL.writeFile(wb, `Reporte_OtrosEcos_${new Date().toLocaleDateString()}.xlsx`);
+            }catch(e){ err("Falla en exportación Excel."); }
+        });
+
+        document.getElementById("pdfBtn").addEventListener("click", async ()=>{
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            doc.text("Reporte de Gestión de Tickets - Orbita Clínica", 14, 15);
+            doc.autoTable({ html: '.tbl-oe', startY: 20, theme: 'striped', headStyles: {fillColor: [30, 41, 59]} });
+            doc.save("Reporte_Tickets.pdf");
+        });
+
+        onAuthStateChanged(auth, u=>{ if(u){ const now = new Date(); now.setMonth(now.getMonth()-1); monthFilter.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}`; loadAll().then(()=>loadMetrics()); } });
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Ecosistema Digital')}"></head>
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar from Layout -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar from Layout -->
+        <nav th:replace="~{layout :: navbar('Ecosistema')}"></nav>
+
+        <main class="main-content">
+            <header class="dashboard-header fade-in">
+                <h1>Ecosistema Digital</h1>
+                <p>Accede a las aplicaciones institucionales y monitorea su impacto en tiempo real.</p>
+            </header>
+
+            <div class="dashboard-grid fade-in">
+                <!-- RCF -->
+                <div class="prof-card">
+                    <div class="prof-card-icon">📂</div>
+                    <div class="prof-card-title">Registro Clínico Fácil (RCF) <span class="badge">HOSVITAL</span></div>
+                    <div class="prof-card-desc">Captura y consulta de historia clínica en módulos asistenciales por medio de dispositivo móvil.</div>
+                    <div class="card-links">
+                        <a href="/rcf">Entrar ↗</a>
+                    </div>
+                </div>
+
+                <!-- AMS / ASM -->
+                <div class="prof-card">
+                    <div class="prof-card-icon">💊</div>
+                    <div class="prof-card-title">Administración de Medicamentos (AMS) <span class="badge">HOSVITAL</span></div>
+                    <div class="prof-card-desc">Escaneo de medicamentos, verificación de dosis y registro de administración digital.</div>
+                    <div class="card-links">
+                        <a href="/ams">Entrar ↗</a>
+                    </div>
+                </div>
+
+                <!-- GPD -->
+                <div class="prof-card">
+                    <div class="prof-card-icon">🛡️</div>
+                    <div class="prof-card-title">Gestión Preventiva Digital (GPD) <span class="badge">HOSVITAL</span></div>
+                    <div class="prof-card-desc">Reportes automáticos y herramientas de prevención para la operación clínica.</div>
+                    <div class="card-links">
+                        <a href="/gpd">Entrar ↗</a>
+                    </div>
+                </div>
+
+                <!-- ISA BOT / Aigenda / Staff -->
+                <div class="prof-card">
+                    <div class="prof-card-icon">🤖</div>
+                    <div class="prof-card-title">ISA BOT, Aigenda, Staff <span class="badge">Externos</span></div>
+                    <div class="prof-card-desc">Bots inteligentes para agendamiento y flujos de comunicación automatizada.</div>
+                    <div class="card-links">
+                        <a href="/isa">Entrar ↗</a>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD ECODIGITAL -->
+                <div class="prof-card">
+                    <div class="prof-card-icon">📊</div>
+                    <div class="prof-card-title">Dashboard Ecosistema <span class="badge">Analytics</span></div>
+                    <div class="prof-card-desc">Tablero de control para monitoreo y análisis de indicadores digitales.</div>
+                    <div class="card-links">
+                        <a href="/dasheco">Entrar ↗</a>
+                    </div>
+                </div>
+
+                <!-- Otros -->
+                <div class="prof-card">
+                    <div class="prof-card-icon">🧩</div>
+                    <div class="prof-card-title">Otros Recursos</div>
+                    <div class="prof-card-desc">Accesos complementarios y herramientas de soporte institucional.</div>
+                    <div class="card-links">
+                        <a href="/otroseco">Entrar ↗</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer from Layout -->
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts from Layout -->
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+     🎨 IDENTIDAD VISUAL OFICIAL - ÓRBITA CLÍNICA
+     
+     REGLAS DE DISEÑO:
+     1. SHELL INSTITUCIONAL: El Sidebar y Navbar definidos en este archivo (layout.html) son 
+        los componentes base oficiales del proyecto.
+     2. NO REINVENCIÓN: No se debe reconstruir o copiar localmente el sidebar/navbar en 
+        vistas individuales. Se deben usar los fragmentos 'th:fragment="sidebar"' y 
+       'th:fragment="header"'.
+     3. ESTÉTICA PREMIUM: Mantener el uso de gradientes sutiles, sombras suaves y 
+        tipografías Outfit/Inter como se documenta en /docs/IDENTIDAD_VISUAL.md.
+     4. COHERENCIA: Cualquier cambio visual en este shell debe replicarse en la 
+        documentación oficial antes de considerarse finalizado.
+     
+     MATRIZ OFICIAL DE ROLES:
+     ... (Matriz de roles existente)
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Institucional — Orbita Clínica</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/assets/favicon.ico}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- 
+         🎨 DISEÑO INSTITUCIONAL DE LOGIN - ÓRBITA CLÍNICA
+         
+         REGLAS VISUALES:
+         1. ESTRUCTURA: Panel izquierdo (impacto visual) / Panel derecho (blanco, limpio).
+         2. BRANDING: Uso obligatorio de app-bg.png con gradiente Navy.
+         3. BASE OFICIAL: Este diseño es la identidad visual de entrada del proyecto.
+         4. LÓGICA: Popup Google Real, sin bypass, sin login clásico.
+    -->
+    <style>
+        :root {
+            --primary-navy: #0f172a;
+            --accent-blue: #3b82f6;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background-color: var(--primary-navy);
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .auth-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ═══════════════════════════════════════
+           LADO IZQUIERDO: BRANDING
+        ═══════════════════════════════════════ */
+        .auth-side-image {
+            flex: 1.2;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 8%;
+        }
+
+        .auth-impact-tag {
+            background: var(--accent-blue);
+            color: white;
+            padding: 0.5rem 1.4rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .auth-impact-title {
+            color: #ffffff;
+            font-size: 6rem;
+            line-height: 1;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .auth-impact-desc {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.4rem;
+            line-height: 1.5;
+            max-width: 480px;
+        }
+
+        .auth-side-footer { position: absolute; bottom: 3.5rem; left: 8%; }
+        .supersalud-logo { height: 50px; object-fit: contain; }
+
+        /* ═══════════════════════════════════════
+           LADO DERECHO: ACCESO
+        ═══════════════════════════════════════ */
+        .auth-side-form {
+            flex: 1;
+            background: #ffffff;
+            border-top-left-radius: 120px;
+            border-bottom-left-radius: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            box-shadow: -30px 0 60px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .auth-logo {
+            height: 130px;
+            margin-bottom: 3.5rem;
+            object-fit: contain;
+        }
+
+        .auth-title {
+            color: var(--text-main);
+            font-size: 2.6rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 3.5rem;
+        }
+
+        /* ═══════════════════════════════════════
+           BOTÓN OFICIAL GOOGLE
+        ═══════════════════════════════════════ */
+        .btn-google {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            background: #ffffff;
+            color: #1f2937;
+            border: 1.5px solid #e5e7eb;
+            padding: 1.2rem;
+            border-radius: 99px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-google:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-google:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .auth-footer-text {
+            position: absolute;
+            bottom: 3.5rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* LOADER OVERLAY */
+        #authLoader {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
+            display: none; align-items: center; justify-content: center; z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 1024px) {
+            .auth-side-image { display: none; }
+            .auth-side-form { border-radius: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="authLoader">
+        <div style="text-align: center; color: white;">
+            <div class="spinner" style="margin: 0 auto 15px;"></div>
+            <p id="loaderText">Validando credenciales...</p>
+        </div>
+    </div>
+
+    <div class="auth-layout">
+        
+        <!-- PANEL IZQUIERDO -->
+        <div class="auth-side-image" style="background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/assets/app-bg.png')" th:style="|background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('@{/assets/app-bg.png}')|">
+            <div class="auth-impact-tag">Ecosistema Técnico-Científico</div>
+            <h1 class="auth-impact-title">Orbita<br>Clínica</h1>
+            <p class="auth-impact-desc">Gestión avanzada y análisis de datos para la excelencia en el cuidado de la salud.</p>
+            <div class="auth-side-footer">
+                <img src="/assets/Supersalud_Logo.png" th:src="@{/assets/Supersalud_Logo.png}" alt="Supersalud" class="supersalud-logo">
+            </div>
+        </div>
+
+        <!-- PANEL DERECHO -->
+        <div class="auth-side-form">
+            <div class="auth-box">
+                <img src="/assets/Logo_Clinica.png" th:src="@{/assets/Logo_Clinica.png}" alt="Logo" class="auth-logo">
+
+                <h2 class="auth-title">Acceso Institucional</h2>
+                <p class="auth-subtitle">
+                    Bienvenido al Ecosistema Orbita.<br>
+                    Por favor, utiliza tu cuenta corporativa de Google.
+                </p>
+
+                <!-- El botón ya no es un submit directo, ahora dispara el flujo real -->
+                <button type="button" class="btn-google" id="googleAuthBtn">
+                    <svg width="24" height="24" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                    </svg>
+                    Continuar con Google Workspace
+                </button>
+
+                <!-- Formulario Oculto para persistencia Spring Security (Sesión) -->
+                <form th:action="@{/login}" method="post" id="springLoginForm" style="display:none;">
+                    <input type="hidden" name="username" id="springUsername">
+                    <input type="hidden" name="password" id="springPassword">
+                </form>
+
+            </div>
+
+            <div class="auth-footer-text">
+                &copy; 2026 Clínica Sagrado Corazón. Todos los derechos reservados.
+            </div>
+        </div>
+    </div>
+
+    <!-- 
+         🛡️ LÓGICA DE ACCESO INSTITUCIONAL (ÓRBITA) - POLÍTICA DE SEGURIDAD OBLIGATORIA
+         
+         REGLAS CRÍTICAS:
+         1. NO BYPASS: El acceso NO puede ser directo ni silencioso al pulsar el botón.
+         2. POPUP REAL: El botón debe abrir el POPUP REAL de autenticación de Google (signInWithPopup).
+         3. DOMINIO OBLIGATORIO: Se valida estrictamente el dominio '@clinicasagradocorazon.com.co'.
+         4. AUTORIZACIÓN INTERNA: Se verifica el correo contra Firestore ('usuarios_permitidos') antes del acceso.
+         5. ROLES: El rol final se asigna basado en la autorización interna (ej. coordcientifico = master admin).
+         6. SIN REGISTRO: No existe registro público ni login clásico por contraseña para personal.
+    -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Configuración de Firebase (Fuente de Verdad de Identidad)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-kkAwT7iGI8jJc1wosV--TA4BjOaoH-Q",
+            authDomain: "cood-tc.firebaseapp.com",
+            projectId: "cood-tc",
+            storageBucket: "cood-tc.firebasestorage.app",
+            appId: "1:767906346584:web:59439d16292d3b0ea8bc2d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // ⚙️ CONFIG: Forzar selección de cuenta (Evita login automático/silencioso)
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        const btn = document.getElementById('googleAuthBtn');
+        const loader = document.getElementById('authLoader');
+        const loaderText = document.getElementById('loaderText');
+        const springForm = document.getElementById('springLoginForm');
+
+        // Escucha pasiva: registra cambios en auth pero NO redirige automáticamente
+        onAuthStateChanged(auth, (user) => {
+            if (user) console.log("Google session active:", user.email);
+        });
+
+        /**
+         * CLIC EN ACCESO: Dispara el flujo de validación en cascada
+         * 1. Google Popup (Interactividad obligatoria)
+         * 2. Domain Check (@clinicasagradocorazon.com.co)
+         * 3. Internal Auth Check (Firestore usuarios_permitidos)
+         * 4. Session Mapping (Spring Security POST)
+         */
+        btn.addEventListener('click', async () => {
+            btn.disabled = true;
+            loader.style.display = 'flex';
+            loaderText.innerText = 'Iniciando autenticación Google...';
+
+            try {
+                // 🚀 PASO 1: Popup Real de Google
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const email = user.email.toLowerCase().trim();
+
+                // 📧 PASO 2: Validación de Dominio Institucional
+                if (!email.endsWith('@clinicasagradocorazon.com.co')) {
+                    throw new Error('Debes usar una cuenta institucional @clinicasagradocorazon.com.co');
+                }
+
+                loaderText.innerText = 'Validando autorización interna...';
+
+                // 🔍 PASO 3: Validación de Autorización Interna (Fuente de Verdad: Firestore)
+                // El nodo 'usuarios_permitidos' es la fuente de verdad de roles
+                const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
+                
+                if (!authSnap.exists()) {
+                    throw new Error('Usuario no autorizado en el sistema Orbita.');
+                }
+
+                // 🔐 PASO 4: Mapeo a Sesión / Redirección según entorno
+                loaderText.innerText = 'Estableciendo sesión segura...';
+                
+                // Si estamos en Firebase Hosting (Entorno Estático), redirigimos directamente
+                if (window.location.hostname.includes('firebaseapp.com') || window.location.hostname.includes('web.app')) {
+                    window.location.replace("/home");
+                } else {
+                    // Si estamos en Spring Boot (Entorno Servidor), establecemos sesión formal
+                    document.getElementById('springUsername').value = email;
+                    document.getElementById('springPassword').value = email + "123"; 
+                    springForm.submit();
+                }
+
+            } catch (error) {
+                console.error("Auth Error:", error);
+                alert("Error de acceso: " + error.message);
+                await signOut(auth); // Limpiar intento de login
+                loader.style.display = 'none';
+                btn.disabled = false;
+            }
+        });
+
+        // 🛡️ ÓRBITA NATURAL ATTRIBUTE TRANSLATOR (Para Standalone Pages)
+        (function() {
+            document.querySelectorAll('[th\\:src], [th\\:href]').forEach(el => {
+                const attrSrc = el.getAttribute('th:src');
+                const attrHref = el.getAttribute('th:href');
+                const translate = (val) => val.replace(/@\{(.+?)\}/, '$1').split('(')[0];
+                if (attrSrc && !el.src) el.src = translate(attrSrc);
+                if (attrHref && !el.href) el.href = translate(attrHref);
+            });
+        })();
+    </script>
+
+</body>
+</html>

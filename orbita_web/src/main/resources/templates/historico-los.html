@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Histórico LOS - Orbita Clínica')}"></head>
+<!-- 
+    MATRIZ OFICIAL DE ROLES DE ÓRBITA - HISTÓRICO LOS
+    - master admin: Acceso total.
+    - super admin: Acceso total.
+    - admin: Acceso de Visualización y Descarga.
+    - auditor: Acceso de Visualización.
+    - analista: BLOQUEADO (Limitado a Alto Costo).
+-->
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar from Layout -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar from Layout -->
+        <nav th:replace="~{layout :: navbar('Histórico LOS')}"></nav>
+
+        <!-- Bloqueo de Acceso para Analistas u otros roles no autorizados -->
+        <main class="main-content" sec:authorize="!hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div class="glass-card text-center py-20">
+                <div class="text-6xl mb-6">🚫</div>
+                <h2 class="text-3xl font-black text-slate-800 mb-4">Acceso Restringido</h2>
+                <p class="text-slate-500 font-bold max-w-lg mx-auto">Su perfil actual (**analista**) no tiene permisos para acceder al histórico de modelos predictivos. Por favor, contacte al Administrador Maestro.</p>
+                <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex" style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; background: #0f172a; color: white;">Volver al Inicio</a>
+            </div>
+        </main>
+
+        <main class="main-content" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <header class="dashboard-header fade-in">
+                <h1>Histórico LOS</h1>
+                <p>Usted se encuentra en la interfaz estandarizada de Orbita Clínica.</p>
+            </header>
+
+            <div class="dashboard-grid fade-in">
+                <div class="prof-card" style="grid-column: span 12; padding: 4rem; text-align: center;">
+                    <div class="prof-card-icon" style="font-size: 4rem; margin-bottom: 2rem; margin-left: auto; margin-right: auto;">⚙️</div>
+                    <h2 style="color: #1e293b; margin-bottom: 1rem;">Módulo en Construcción</h2>
+                    <p style="max-width: 600px; margin: 0 auto 2rem; color: #64748b;">Esta sección del ecosistema Orbita Clínica está siendo migrada a los nuevos estándares profesionales. La integración de datos estará disponible próximamente.</p>
+                    <a href="/home" class="btn-icon" style="width: auto; padding: 0 1.5rem; gap: 0.5rem; text-decoration: none; color: #3b82f6; border-color: #3b82f6;">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Volver al Panel Principal</span>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer from Layout -->
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts from Layout -->
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>
+    </script>
+</body>
+</html>

@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Ecosistema Digital — Dashboard')}">
+
+    <style>
+        /* ---------- Tokens */
+        :root {
+            --bg: #f5f7fb;
+            --card: #fff;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --shadow: 0 10px 24px rgba(15, 23, 42, .08);
+            --pri: #0b2240;
+            --pri-600: #132e57;
+            --sec: #00a6a6;
+            --sec-600: #028d8d;
+            --acc: #596aff;
+            --ok: #10b981;
+            --warn: #f59e0b;
+            --bad: #ef4444;
+            --ink: #111827;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif
+        }
+
+        /* ---------- Topbar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #fff;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .topbar-inner {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between
+        }
+
+        .brand-mini img {
+            height: 100px
+        }
+
+        /* Logo cabecera grande */
+        .userbar {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .user-email {
+            color: #374151
+        }
+
+        /* ---------- Layout */
+        .modules {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 14px 18px 64px
+        }
+
+        .page-title {
+            margin: 6px 0 2px;
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: .2px;
+            color: var(--pri)
+        }
+
+        .page-subtitle {
+            margin: 0 0 18px;
+            color: #4b5563
+        }
+
+        /* ---------- Toolbar */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 14px 0
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fff
+        }
+
+        .input {
+            height: 34px;
+            border: 0;
+            outline: 0
+        }
+
+        .btn {
+            height: 36px;
+            padding: 0 14px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: #fff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600
+        }
+
+        .btn:hover {
+            box-shadow: var(--shadow)
+        }
+
+        .btn-primary {
+            background: var(--acc);
+            color: #fff;
+            border: 0
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-left: 8px
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            margin-left: auto
+        }
+
+        .chip {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            cursor: pointer;
+            transition: .15s;
+            font-weight: 600
+        }
+
+        .chip:hover {
+            box-shadow: var(--shadow)
+        }
+
+        .chip[data-active="1"] {
+            background: var(--sec);
+            color: #fff;
+            border-color: transparent
+        }
+
+        /* ---------- Multi-month selector */
+        .monthbox {
+            position: relative
+        }
+
+        .month-drop {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 10px;
+            display: none;
+            max-height: 280px;
+            overflow: auto;
+            min-width: 240px
+        }
+
+        .monthbox[aria-expanded="true"] .month-drop {
+            display: block
+        }
+
+        .month-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .month-item:hover {
+            background: #f3f4f6
+        }
+
+        /* ---------- Tabs */
+        .tabbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 6px 0 12px
+        }
+
+        .tab {
+            padding: 10px 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #fff;
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .tab.active {
+            background: linear-gradient(90deg, var(--sec), var(--acc));
+            color: #fff;
+            border-color: transparent
+        }
+
+        /* ---------- Section pill */
+        .section-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 16px 0 10px
+        }
+
+        .section-pill {
+            background: linear-gradient(90deg, var(--acc), var(--sec));
+            color: #fff;
+            font-weight: 900;
+            padding: 8px 14px;
+            border-radius: 999px;
+            box-shadow: var(--shadow);
+            letter-spacing: .3px
+        }
+
+        .section-rule {
+            height: 6px;
+            background: linear-gradient(90deg, #dbeafe, #ccfbf1);
+            border-radius: 6px;
+            flex: 1
+        }
+
+        /* ---------- KPIs */
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin: 8px 0 16px
+        }
+
+        @media (max-width:1180px) {
+            .kpis {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        @media (max-width:680px) {
+            .kpis {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .kpi {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: var(--shadow)
+        }
+
+        .kpi .k {
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0 0 4px
+        }
+
+        .kpi .row {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 8px
+        }
+
+        .kpi .v {
+            font-size: 22px;
+            font-weight: 900
+        }
+
+        .delta {
+            font-size: 12px
+        }
+
+        .delta.pos {
+            color: #047857
+        }
+
+        .delta.neg {
+            color: #b91c1c
+        }
+
+        /* ---------- Cards y grids */
+        .grid-2-1 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 14px
+        }
+
+        @media (max-width:1020px) {
+            .grid-2-1 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .grid-1-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        @media (max-width:1020px) {
+            .grid-1-1 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .grid-1-1-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px
+        }
+
+        @media (max-width:1200px) {
+            .grid-1-1-1 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: var(--shadow)
+        }
+
+        .card h3 {
+            margin: 0 0 10px
+        }
+
+        .card .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+            flex-wrap: wrap
+        }
+
+        .canvas-wrap {
+            position: relative;
+            height: 360px
+        }
+
+        .small {
+            height: 280px
+        }
+
+        .select {
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            padding: 0 8px
+        }
+
+        .stack {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap
+        }
+
+        /* ---------- Tablas */
+        .tbl-wrap {
+            overflow: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            overflow: hidden
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid var(--line);
+            padding: 10px 12px;
+            font-size: 13px;
+            text-align: left
+        }
+
+        th {
+            background: linear-gradient(90deg, var(--pri-600), var(--sec-600));
+            color: #fff;
+            font-weight: 800
+        }
+
+        tr:last-child td {
+            border-bottom: 0
+        }
+
+        /* ---------- Badges & chips */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700
+        }
+
+        .badge.ok {
+            background: rgba(16, 185, 129, .12);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, .25)
+        }
+
+        .badge.warn {
+            background: rgba(245, 158, 11, .12);
+            color: #a16207;
+            border: 1px solid rgba(245, 158, 11, .25)
+        }
+
+        .badge.bad {
+            background: rgba(239, 68, 68, .12);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, .25)
+        }
+
+        .subtle {
+            color: #6b7280
+        }
+
+        /* ---------- IA panel */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px
+        }
+
+        @media (max-width:1200px) {
+            .ai-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .ai-card {
+            border: 1px dashed #cbd5e1;
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 12px
+        }
+
+        .ai-card h4 {
+            margin: 0 0 6px
+        }
+
+        .ai-list {
+            margin: 0;
+            padding-left: 18px
+        }
+
+        /* ---------- Status */
+        .status {
+            display: none;
+            margin: 8px 0 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #0f5132;
+            background: #d1e7dd;
+            border: 1px solid #badbcc
+        }
+
+        .status.err {
+            color: #842029;
+            background: #f8d7da;
+            border-color: #f5c2c7
+        }
+
+        /* ---------- Logos de esquina (SOLO uno) */
+        .corner-logos {
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            display: flex;
+            gap: 10px;
+            opacity: .95;
+            z-index: 9
+        }
+
+        .corner-logos img {
+            height: 56px
+        }
+
+        /* ---------- Footer */
+        .footer {
+            margin-top: 40px;
+            border-top: 1px solid var(--line);
+            background: #fff
+        }
+
+        .footer-inner {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #6b7280
+        }
+
+        .footer-left img,
+        .footer-right img {
+            height: 150px
+        }
+
+        /* logos inferiores a 150px */
+
+        .hidden {
+            display: none !important
+        }
+    </style>
+</head>
+
+<!-- 
+    MATRIZ OFICIAL DE ROLES DE ÓRBITA - DASHECO
+    - master admin: Acceso total (Lectura/Escritura de Metas).
+    - super admin: Acceso Operativo.
+    - admin: Acceso de Visualización Institucional.
+    - Otros roles: BLOQUEADO (Limitado por Área de Responsabilidad).
+-->
+<body class="dashboard-layout fade-in">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('DashEco')}"></nav>
+
+        <!-- Bloqueo de Acceso para roles no autorizados -->
+        <main class="main-content" sec:authorize="!hasAnyAuthority('master admin', 'super admin', 'admin')">
+            <div class="glass-card text-center py-20">
+                <div class="text-6xl mb-6">🚫</div>
+                <h2 class="text-3xl font-black text-slate-800 mb-4">Acceso Restringido</h2>
+                <p class="text-slate-500 font-bold max-w-lg mx-auto">Su perfil actual no posee permisos para acceder al ecosistema digital operativo (DashEco). Esta sección es exclusiva para el personal administrativo y de dirección.</p>
+                <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex" style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; background: #0f172a; color: white;">Volver al Inicio</a>
+            </div>
+        </main>
+
+    <main class="main-content" style="padding: 1.5rem; max-width: 1400px; margin: 0 auto;" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin')">
+        <h1 class="page-title">Ecosistema Digital — Dashboard</h1>
+        <p class="page-subtitle">Seguimiento por aplicativo con filtros por periodo, tendencias, detalle y análisis
+            automático.</p>
+
+        <!-- Filtros -->
+        <div class="toolbar">
+            <label class="pill"><span>Desde</span><input id="mFrom" type="month" class="input" /></label>
+            <label class="pill"><span>Hasta</span><input id="mTo" type="month" class="input" /></label>
+
+            <div class="monthbox pill" id="monthbox" aria-expanded="false" title="Selecciona meses específicos">
+                <span id="monthboxLabel">Meses (multi)</span>
+                <div class="month-drop" id="monthDrop"></div>
+            </div>
+
+            <div class="btn-group">
+                <button id="apply" class="btn btn-primary">Aplicar</button>
+                <button id="clear" class="btn">Limpiar</button>
+            </div>
+
+            <div class="chips">
+                <button class="chip" data-preset="3">Últimos 3M</button>
+                <button class="chip" data-preset="6">Últimos 6M</button>
+                <button class="chip" data-preset="ytd">YTD</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabbar" id="tabs">
+            <button class="tab active" data-tab="canales">Canales</button>
+            <button class="tab" data-tab="ams">AMS</button>
+            <button class="tab" data-tab="rcf">RCF (Global)</button>
+            <button class="tab" data-tab="estrategia">Estrategias TIC</button>
+            <button class="tab" data-tab="tickets">Tickets</button>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <!-- ===== Canales ===== -->
+        <section id="panel_canales">
+            <div class="section-bar">
+                <div class="section-pill">KPIs · Canales</div>
+                <div class="section-rule"></div>
+            </div>
+            <div class="kpis">
+                <div class="kpi">
+                    <p class="k">Total registros</p>
+                    <div class="row">
+                        <p class="v" id="c_total">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% Digital (Aig+ISA+Staff)</p>
+                    <div class="row">
+                        <p class="v" id="c_pct">—</p><span class="delta" id="c_mom"></span>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Aigenda</p>
+                    <div class="row">
+                        <p class="v" id="c_a">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">ISA BOT</p>
+                    <div class="row">
+                        <p class="v" id="c_i">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Staff</p>
+                    <div class="row">
+                        <p class="v" id="c_s">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Hosvital</p>
+                    <div class="row">
+                        <p class="v" id="c_h">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2-1">
+                <div class="card">
+                    <div class="header">
+                        <h3>Tendencia % digital (global)</h3>
+                        <span class="subtle">Promedio mensual por periodo</span>
+                    </div>
+                    <div class="canvas-wrap"><canvas id="ch_c_line"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="header">
+                        <h3>Volumen por canal</h3><span class="subtle">Stacked por mes</span>
+                    </div>
+                    <div class="canvas-wrap small"><canvas id="ch_c_stack"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid-1-1" style="margin-top:14px">
+                <div class="card">
+                    <h3>Top 10 especialidades por % digital</h3>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Especialidad</th>
+                                    <th>% Digital</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="c_top"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Bottom 10 especialidades</h3>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Especialidad</th>
+                                    <th>% Digital</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="c_bottom"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IA Canales -->
+            <div class="card" style="margin-top:14px">
+                <h3>Análisis IA (resumen automático)</h3>
+                <div class="ai-grid" id="c_ai"></div>
+            </div>
+        </section>
+
+        <!-- ===== AMS ===== -->
+        <section id="panel_ams" class="hidden">
+            <div class="section-bar">
+                <div class="section-pill">KPIs · AMS</div>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="kpis">
+                <div class="kpi">
+                    <p class="k">Total</p>
+                    <div class="row">
+                        <p class="v" id="a_total">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% uso AMS</p>
+                    <div class="row">
+                        <p class="v" id="a_pct">—</p><span class="delta" id="a_mom"></span>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">AMS</p>
+                    <div class="row">
+                        <p class="v" id="a_ams">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Hosvital</p>
+                    <div class="row">
+                        <p class="v" id="a_hos">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Mejor mes</p>
+                    <div class="row">
+                        <p class="v" id="a_best">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Peor mes</p>
+                    <div class="row">
+                        <p class="v" id="a_worst">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-1-1">
+                <div class="card">
+                    <div class="header stack">
+                        <h3>Tendencia % uso AMS</h3>
+                        <div class="stack">
+                            <label>Servicio:</label> <select id="a_srv_sel" class="select"></select>
+                            <label>Vista:</label>
+                            <select id="a_srv_mode" class="select">
+                                <option value="global">Global</option>
+                                <option value="srv_single">Servicio seleccionado</option>
+                                <option value="srv_multi">Servicios (multi-línea)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="canvas-wrap"><canvas id="ch_a_line"></canvas></div>
+                </div>
+
+                <div class="card">
+                    <div class="header stack">
+                        <h3>Distribución promedio (100% apilado)</h3>
+                        <div class="stack">
+                            <label>Ver:</label>
+                            <select id="a_dist_sel" class="select">
+                                <option value="G">Global</option>
+                                <option value="S">Por servicio (Top 8)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="canvas-wrap small"><canvas id="ch_a_dist"></canvas></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>Servicios (pabellón) — % uso promedio del periodo</h3>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Servicio</th>
+                                <th>% uso AMS</th>
+                                <th>Total</th>
+                                <th>Δ vs período prev.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="a_srv_tbl"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-bar">
+                <div class="section-pill">Colaboradores · AMS</div>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="card" style="margin-top:0">
+                <div class="header stack">
+                    <h3>Evolución por colaboradores</h3>
+                    <div class="stack">
+                        <label>Servicio:</label> <select id="a_user_srv_sel" class="select"></select>
+                        <label>Colaborador:</label> <select id="a_user_sel" class="select"></select>
+                        <label class="pill"><input type="checkbox" id="a_show_all" /> Ver todos (Top 12)</label>
+                    </div>
+                </div>
+                <div class="canvas-wrap"><canvas id="ch_a_user_line"></canvas></div>
+                <div id="a_alerts" class="subtle" style="margin-top:6px"></div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>Rankings</h3>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Top 10 — Mejor uso promedio</th>
+                                <th>%</th>
+                                <th>Volumen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="a_top_avg"></tbody>
+                    </table>
+                </div>
+                <div class="tbl-wrap" style="margin-top:10px">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Top 10 — Mayor mejora m/m (Felicitación doble)</th>
+                                <th>Δ pp</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="a_top_impr"></tbody>
+                    </table>
+                </div>
+                <div class="tbl-wrap" style="margin-top:10px">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Top 10 — Peor uso promedio</th>
+                                <th>%</th>
+                                <th>Volumen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="a_top_worst"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>Análisis IA (resumen automático)</h3>
+                <div class="ai-grid" id="a_ai"></div>
+            </div>
+        </section>
+
+        <!-- ===== RCF (GLOBAL) ===== -->
+        <section id="panel_rcf" class="hidden">
+            <div class="section-bar">
+                <div class="section-pill">KPIs · RCF</div>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="kpis">
+                <div class="kpi">
+                    <p class="k">Total Global</p>
+                    <div class="row">
+                        <p class="v" id="rg_total">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% uso RCF Global</p>
+                    <div class="row">
+                        <p class="v" id="rg_pct">—</p><span class="delta" id="rg_mom"></span>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Médicos — % uso</p>
+                    <div class="row">
+                        <p class="v" id="rm_pct">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Auxiliares — % uso</p>
+                    <div class="row">
+                        <p class="v" id="ra_pct">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">RCF total</p>
+                    <div class="row">
+                        <p class="v" id="rg_rcf">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Hosvital total</p>
+                    <div class="row">
+                        <p class="v" id="rg_hos">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-1-1-1">
+                <div class="card">
+                    <h3>Tendencia Global % uso RCF</h3>
+                    <div class="canvas-wrap"><canvas id="ch_rg_line"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>Médicos — % uso</h3>
+                    <div class="canvas-wrap"><canvas id="ch_rm_line"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>Auxiliares — % uso</h3>
+                    <div class="canvas-wrap"><canvas id="ch_ra_line"></canvas></div>
+                </div>
+            </div>
+
+            <div class="grid-1-1" style="margin-top:14px">
+                <div class="card">
+                    <div class="header stack">
+                        <h3>Evolución por Servicio (RCF)</h3>
+                        <div class="stack"><label>Servicio:</label> <select id="r_srv_sel" class="select"></select>
+                            <label>Rol:</label> <select id="r_role_sel" class="select">
+                                <option value="M">Médicos</option>
+                                <option value="A">Auxiliares</option>
+                            </select></div>
+                    </div>
+                    <div class="canvas-wrap"><canvas id="ch_r_srv_line"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="header stack">
+                        <h3>Evolución por Profesional</h3>
+                        <div class="stack"><label>Profesional:</label> <select id="r_user_sel" class="select"></select>
+                        </div>
+                    </div>
+                    <div class="canvas-wrap"><canvas id="ch_r_user_line"></canvas></div>
+                    <div id="r_alerts" class="subtle" style="margin-top:6px"></div>
+                </div>
+            </div>
+
+            <div class="grid-1-1" style="margin-top:14px">
+                <div class="card">
+                    <h3>Servicios — Médicos</h3>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th>% uso</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rm_srv_tbl"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Servicios — Auxiliares</h3>
+                    <div class="tbl-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th>% uso</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ra_srv_tbl"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>Análisis IA (resumen automático)</h3>
+                <div class="ai-grid" id="r_ai"></div>
+            </div>
+        </section>
+
+        <!-- ===== Estrategias TIC ===== -->
+        <section id="panel_estrategia" class="hidden">
+            <div class="section-bar">
+                <div class="section-pill">Índice · Estrategias TIC</div>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="kpis">
+                <div class="kpi">
+                    <p class="k">Índice (último mes)</p>
+                    <div class="row">
+                        <p class="v" id="e_idx">—</p><span id="e_badge" class="badge">—</span>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Meta</p>
+                    <div class="row">
+                        <p class="v">70%</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% Canales</p>
+                    <div class="row">
+                        <p class="v" id="e_can">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% AMS</p>
+                    <div class="row">
+                        <p class="v" id="e_ams">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% RCF</p>
+                    <div class="row">
+                        <p class="v" id="e_rcf">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% GPD</p>
+                    <div class="row">
+                        <p class="v" id="e_gpd">—</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="header">
+                    <h3>Índice Estrategias TIC — Tendencia</h3><span class="subtle">Promedio de (Canales, AMS, RCF,
+                        GPD)</span>
+                </div>
+                <div class="canvas-wrap"><canvas id="ch_e_line"></canvas></div>
+            </div>
+            <div class="card" style="margin-top:14px">
+                <h3>Análisis IA (resumen automático)</h3>
+                <div class="ai-grid" id="e_ai"></div>
+            </div>
+        </section>
+
+        <!-- ===== Tickets ===== -->
+        <section id="panel_tickets" class="hidden">
+            <div class="section-bar">
+                <div class="section-pill">KPIs · Tickets</div>
+                <div class="section-rule"></div>
+            </div>
+
+            <div class="kpis">
+                <div class="kpi">
+                    <p class="k">Total</p>
+                    <div class="row">
+                        <p class="v" id="t_total">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">En gestión</p>
+                    <div class="row">
+                        <p class="v" id="t_gestion">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Cerrados</p>
+                    <div class="row">
+                        <p class="v" id="t_cerrados">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">% gestionado</p>
+                    <div class="row">
+                        <p class="v" id="t_pct">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">Conformes</p>
+                    <div class="row">
+                        <p class="v" id="t_conf">—</p>
+                    </div>
+                </div>
+                <div class="kpi">
+                    <p class="k">TTR prom.</p>
+                    <div class="row">
+                        <p class="v" id="t_ttr">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-1-1">
+                <div class="card">
+                    <h3>Cierres por mes</h3>
+                    <div class="canvas-wrap"><canvas id="ch_t_line"></canvas></div>
+                </div>
+                <div class="card">
+                    <h3>Conformidad</h3>
+                    <div class="canvas-wrap small"><canvas id="ch_t_pie"></canvas></div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+                <h3>Análisis IA (resumen automático)</h3>
+                <div class="ai-grid" id="t_ai"></div>
+            </div>
+        </section>
+    </main>
+    <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <!-- Libs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+    <script type="module" th:inline="none">
+        /* ===== Firebase ===== */
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { getDocs, query, collection, where, orderBy } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        const { auth, db } = window.firebaseInstance;
+
+        /* ===== Helpers ===== */
+        const pad = n => String(n).padStart(2, "0");
+        function monthsBetween(from, to) { const [fy, fm] = from.split("-").map(Number), [ty, tm] = to.split("-").map(Number); const out = []; for (let y = fy, m = fm; (y < ty) || (y === ty && m <= tm);) { out.push(`${y}-${pad(m)}`); m++; if (m === 13) { m = 1; y++; } } return out; }
+        function momDelta(arr) { if (arr.length < 2) return null; const p = arr.at(-2), l = arr.at(-1); if (p === 0 && l === 0) return 0; if (p === 0) return 100; return ((l - p) / p) * 100; }
+        const fmtPct = v => Number.isFinite(v) ? `${v.toFixed(1)}%` : "—";
+        function setDelta(el, val) { if (val == null) { el.textContent = ""; el.className = "delta"; return; } el.textContent = (val >= 0 ? "+" : "") + val.toFixed(1) + "% vs mes prev."; el.className = "delta " + (val >= 0 ? "pos" : "neg"); }
+        const sum = (o, k) => o.reduce((a, x) => a + (+x[k] || 0), 0);
+        const pct = (a, b) => b ? (a / b * 100) : 0;
+        const COLORS = { teal: "#00a6a6", blue: "#596aff", green: "#16a34a", navy: "#0b2240", amber: "#f59e0b", red: "#ef4444", gray: "#6b7280", sky: "#38bdf8", purple: "#8b5cf6" };
+        const CHART_COLS = [COLORS.teal, COLORS.blue, COLORS.green, COLORS.sky, COLORS.purple, COLORS.amber, COLORS.navy];
+        const iconDelta = v => v == null ? "—" : (v > 0 ? "▲" : (v < 0 ? "▼" : "▬"));
+
+        /* ===== Colecciones ===== */
+        const COL_CAN = collection(db, "ecosistema_canales_mensual");
+        const COL_AMS = collection(db, "ams_registro_periodos");
+        const COL_RCF_M = collection(db, "rcf_medicos_periodos");
+        const COL_RCF_A = collection(db, "rcf_auxiliares_periodos");
+        const COL_GPD = collection(db, "gpd_mensual");
+        const COL_T_A = collection(db, "ecos_otros_tickets");
+        const COL_T_H = collection(db, "ecos_otros_tickets_hist");
+
+        /* ===== Filtros ===== */
+        const mFrom = document.getElementById("mFrom"), mTo = document.getElementById("mTo");
+        const monthbox = document.getElementById("monthbox"), monthDrop = document.getElementById("monthDrop"), monthboxLabel = document.getElementById("monthboxLabel");
+        let selectedMonths = new Set();
+        const now = new Date(); const defTo = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+        const d2 = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+        const defFrom = `${d2.getFullYear()}-${pad(d2.getMonth() + 1)}`;
+        mFrom.value = defFrom; mTo.value = defTo;
+
+        monthbox.addEventListener("click", (e) => { if (e.target.closest('.month-drop')) return; monthbox.setAttribute("aria-expanded", monthbox.getAttribute("aria-expanded") === "true" ? "false" : "true"); });
+        document.addEventListener("click", (e) => { if (!monthbox.contains(e.target)) monthbox.setAttribute("aria-expanded", "false"); });
+
+        function renderMonthChoices(list) {
+            monthDrop.innerHTML = list.map(m => `<div class="month-item"><input type="checkbox" data-month="${m}" ${selectedMonths.has(m) ? "checked" : ""}/> <span>${m}</span></div>`).join("");
+            monthDrop.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const mm = cb.getAttribute('data-month'); if (cb.checked) selectedMonths.add(mm); else selectedMonths.delete(mm);
+                    monthboxLabel.textContent = selectedMonths.size ? `Meses (${selectedMonths.size})` : "Meses (multi)"; refresh();
+                });
+            });
+        }
+
+        document.querySelectorAll('[data-preset]').forEach(ch => {
+            ch.addEventListener("click", () => {
+                const k = ch.getAttribute("data-preset");
+                document.querySelectorAll('.chip').forEach(x => x.dataset.active = "0"); ch.dataset.active = "1";
+                selectedMonths.clear(); monthboxLabel.textContent = "Meses (multi)";
+                const today = new Date(); let from; if (k === "ytd") { from = `${today.getFullYear()}-01`; }
+                else { const mm = k === "3" ? 2 : 5; const d = new Date(today.getFullYear(), today.getMonth() - mm, 1); from = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; }
+                mFrom.value = from; mTo.value = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`; refresh();
+            });
+        });
+        document.getElementById("apply").addEventListener("click", () => { selectedMonths.clear(); monthboxLabel.textContent = "Meses (multi)"; document.querySelectorAll('.chip').forEach(x => x.dataset.active = "0"); refresh(); });
+        document.getElementById("clear").addEventListener("click", () => { mFrom.value = ""; mTo.value = ""; selectedMonths.clear(); monthboxLabel.textContent = "Meses (multi)"; document.querySelectorAll('.chip').forEach(x => x.dataset.active = "0"); refresh(); });
+
+        /* ===== Tabs ===== */
+        const tabs = document.getElementById("tabs");
+        tabs.addEventListener("click", e => {
+            const t = e.target.closest(".tab"); if (!t) return;
+            document.querySelectorAll(".tab").forEach(x => x.classList.remove("active")); t.classList.add("active");
+            const id = t.dataset.tab;
+            ["canales", "ams", "rcf", "estrategia", "tickets"].forEach(k => document.getElementById("panel_" + k).classList.toggle("hidden", k !== id));
+        });
+
+        /* ===== Charts base ===== */
+        Chart.register(ChartDataLabels);
+        const gridHide = { grid: { display: false }, ticks: { display: true } };
+        const lineOpts = () => ({ responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false }, datalabels: { display: false } }, elements: { point: { radius: 3, hitRadius: 12 }, line: { tension: .35 } }, scales: { x: gridHide, y: { grid: { color: '#eef1f5' }, ticks: { callback: (v) => v + '%' } } } });
+        const stackedOpts = () => ({ responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false }, datalabels: { display: false } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, grid: { color: '#eef1f5' } } }, elements: { bar: { borderRadius: 6 } } });
+        const stackedH100 = () => ({ indexAxis: 'y', responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { mode: 'index', intersect: false }, datalabels: { formatter: (v, ctx) => { const t = ctx.dataset.data.reduce((a, b) => a + b, 0) || 1; return ((v * 100) / t).toFixed(1) + '%'; } } }, scales: { x: { stacked: true, grid: { color: '#eef1f5' }, ticks: { callback: (v) => v + '%' } }, y: { stacked: true, grid: { display: false } } }, elements: { bar: { borderRadius: 6 } } });
+        const ensure = (ref, ctx, opts) => { if (ref) ref.destroy(); return new Chart(ctx, opts); };
+        let ch_c_line, ch_c_stack, ch_a_line, ch_a_dist, ch_a_user_line, ch_rg_line, ch_rm_line, ch_ra_line, ch_r_srv_line, ch_r_user_line, ch_e_line, ch_t_line, ch_t_pie;
+
+        /* ===== Canales ===== */
+        async function loadCanales(months) {
+            let qy = query(COL_CAN, orderBy("month", "asc"));
+            if (months.length) { qy = query(COL_CAN, where("month", ">=", months[0]), where("month", "<=", months.at(-1)), orderBy("month", "asc")); }
+            const snap = await getDocs(qy); const rows = snap.docs.map(d => d.data());
+            const allMonths = [...new Set(rows.map(r => r.month))].sort(); renderMonthChoices(allMonths);
+            const useRows = selectedMonths.size ? rows.filter(r => selectedMonths.has(r.month)) : rows;
+
+            const byMonth = {}; useRows.forEach(x => {
+                const m = x.month; if (!byMonth[m]) byMonth[m] = { a: 0, i: 0, s: 0, h: 0, t: 0 };
+                byMonth[m].a += +x.aigenda || 0; byMonth[m].i += +x.isa || 0; byMonth[m].s += +x.staff || 0; byMonth[m].h += +x.hosvital || 0;
+                byMonth[m].t += +x.total || ((+x.aigenda || 0) + (+x.isa || 0) + (+x.staff || 0) + (+x.hosvital || 0));
+            });
+            const labels = Object.keys(byMonth).sort();
+            const pctArr = labels.map(m => { const v = byMonth[m]; return v.t ? +(((v.a + v.i + v.s) / v.t) * 100).toFixed(1) : 0; });
+            setDelta(document.getElementById("c_mom"), momDelta(pctArr));
+            c_total.textContent = labels.reduce((a, m) => a + byMonth[m].t, 0);
+            c_a.textContent = labels.reduce((a, m) => a + byMonth[m].a, 0); c_i.textContent = labels.reduce((a, m) => a + byMonth[m].i, 0);
+            c_s.textContent = labels.reduce((a, m) => a + byMonth[m].s, 0); c_h.textContent = labels.reduce((a, m) => a + byMonth[m].h, 0);
+            c_pct.textContent = fmtPct(pct(labels.reduce((a, m) => a + byMonth[m].a + byMonth[m].i + byMonth[m].s, 0), labels.reduce((a, m) => a + byMonth[m].t, 0)));
+
+            const ctxL = document.getElementById("ch_c_line").getContext('2d');
+            const grad = ctxL.createLinearGradient(0, 0, 0, 280); grad.addColorStop(0, 'rgba(89,106,255,.25)'); grad.addColorStop(1, 'rgba(89,106,255,0)');
+            ch_c_line = ensure(ch_c_line, ctxL, { type: 'line', data: { labels, datasets: [{ label: '% digital', data: pctArr, fill: true, backgroundColor: grad, borderColor: COLORS.blue }] }, options: lineOpts() });
+            ch_c_stack = ensure(ch_c_stack, document.getElementById("ch_c_stack"), {
+                type: 'bar', data: {
+                    labels, datasets: [
+                        { label: "Aigenda", data: labels.map(m => byMonth[m].a), backgroundColor: COLORS.teal },
+                        { label: "ISA BOT", data: labels.map(m => byMonth[m].i), backgroundColor: COLORS.blue },
+                        { label: "Staff", data: labels.map(m => byMonth[m].s), backgroundColor: COLORS.green },
+                        { label: "Hosvital", data: labels.map(m => byMonth[m].h), backgroundColor: COLORS.gray }]
+                }, options: stackedOpts()
+            });
+
+            // Top/bottom especialidades
+            const agg = {}; useRows.forEach(x => {
+                const dig = (+x.aigenda || 0) + (+x.isa || 0) + (+x.staff || 0);
+                const tot = (+x.total) || ((+x.aigenda || 0) + (+x.isa || 0) + (+x.staff || 0) + (+x.hosvital || 0));
+                const k = (x.especialidad || "").trim() || "(sin)"; if (!agg[k]) agg[k] = { dig: 0, tot: 0 }; agg[k].dig += dig; agg[k].tot += tot;
+            });
+            const items = Object.entries(agg).map(([k, v]) => ({ k, pct: v.tot ? (v.dig / v.tot) * 100 : 0, tot: v.tot })).sort((a, b) => b.pct - a.pct);
+            c_top.innerHTML = items.slice(0, 10).map(r => `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}%</td><td>${r.tot}</td></tr>`).join("");
+            const bottom = items.slice(-10).reverse(); c_bottom.innerHTML = bottom.map(r => `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}%</td><td>${r.tot}</td></tr>`).join("");
+
+            // IA Canales
+            const last = pctArr.at(-1) || 0, prev = pctArr.at(-2) || 0, d = last - prev;
+            const topGain = items.slice(0, 3).map(x => x.k).join(', ') || '—';
+            const lowSpec = bottom.slice(0, 3).map(x => x.k).join(', ') || '—';
+            document.getElementById('c_ai').innerHTML = `
+   <div class="ai-card"><h4>Panorama</h4><ul class="ai-list">
+     <li>Uso digital global en <b>${last.toFixed(1)}%</b> (${d >= 0 ? '+' : ''}${d.toFixed(1)} pp m/m).</li>
+     <li>Especialidades líderes: <b>${topGain}</b>.</li>
+   </ul></div>
+   <div class="ai-card"><h4>Oportunidades</h4><ul class="ai-list">
+     <li>Especialidades a trabajar: <b>${lowSpec}</b>.</li>
+     <li>Refuerzo de capacitación/flujo en las de menor %.</li>
+   </ul></div>
+   <div class="ai-card"><h4>Recomendaciones</h4><ul class="ai-list">
+     <li>Mantener campañas en líderes; atacar cuellos de botella de registro en bajo desempeño.</li>
+   </ul></div>`;
+            return { labels, pctArr };
+        }
+
+        /* ===== AMS ===== */
+        let AMS_DATA = { rows: [], months: [], allRows: [] };
+        const aSrvSel = document.getElementById('a_srv_sel');
+        const aUserSrvSel = document.getElementById('a_user_srv_sel'), aUserSel = document.getElementById('a_user_sel');
+        const aSrvMode = document.getElementById('a_srv_mode'), aShowAll = document.getElementById('a_show_all');
+        const aDistSel = document.getElementById('a_dist_sel');
+
+        function rowsToMonths(rows, pick) {
+            const o = {}; rows.forEach(r => { const m = r.month; if (!o[m]) o[m] = { a: 0, h: 0 }; o[m].a += +r.ams || 0; o[m].h += +r.hosvital || 0; });
+            const labels = Object.keys(o).sort(); const vals = labels.map(m => { const v = o[m]; return pick === 'pct' ? +(pct(v.a, v.a + v.h).toFixed(1)) : [v.a, v.h]; });
+            return { labels, vals };
+        }
+        function buildSrvOptions(rows) {
+            const set = [...new Set(rows.map(r => (r.pabellon || 'Otro').trim() || 'Otro'))].sort();
+            const opts = `<option value="__ALL__">Todos</option>` + set.map(s => `<option>${s}</option>`).join("");
+            aSrvSel.innerHTML = opts; aUserSrvSel.innerHTML = opts;
+            const names = [...new Set(rows.map(r => r.nombre || '(sin)'))].sort();
+            aUserSel.innerHTML = names.map(n => `<option>${n}</option>`).join("");
+        }
+        function srvTable(rows, monthsAll) {
+            const bySrv = {}; rows.forEach(r => { const k = (r.pabellon || 'Otro').trim() || 'Otro'; if (!bySrv[k]) bySrv[k] = { a: 0, t: 0 }; bySrv[k].a += +r.ams || 0; bySrv[k].t += (+r.ams || 0) + (+r.hosvital || 0); });
+            const avg = Object.entries(bySrv).map(([k, v]) => ({ k, pct: pct(v.a, v.t), tot: v.t }));
+            const n = monthsAll.length; const first = monthsAll[0];
+            const [y, m] = first.split('-').map(Number);
+            const prevRange = monthsBetween(`${m <= n ? y - 1 : y}-${pad(m <= n ? (12 - (n - m) + 1) : (m - n))}`, `${m <= n ? y - 1 : y}-${pad(m <= n ? 12 : (m - 1))}`);
+            const rowsPrev = AMS_DATA.allRows.filter(r => prevRange.includes(r.month));
+            const bySrvPrev = {}; rowsPrev.forEach(r => { const k = (r.pabellon || 'Otro').trim() || 'Otro'; if (!bySrvPrev[k]) bySrvPrev[k] = { a: 0, t: 0 }; bySrvPrev[k].a += +r.ams || 0; bySrvPrev[k].t += (+r.ams || 0) + (+r.hosvital || 0); });
+            const withDelta = avg.map(x => { const p = bySrvPrev[x.k]; const pPct = p ? pct(p.a, p.t) : null; const d = (pPct == null) ? null : (x.pct - pPct); return { ...x, delta: d }; })
+                .sort((a, b) => b.pct - a.pct).slice(0, 60);
+            document.getElementById('a_srv_tbl').innerHTML = withDelta.map(r => {
+                const d = r.delta == null ? '—' : `${iconDelta(r.delta)} ${r.delta >= 0 ? '+' : ''}${r.delta.toFixed(1)} pp`;
+                const cls = r.delta == null ? 'badge' : (r.delta > 0 ? 'badge ok' : 'badge bad');
+                return `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}%</td><td>${r.tot}</td><td><span class="${cls}">${d}</span></td></tr>`;
+            }).join("");
+        }
+        function rankingsPorUsuario(rows) {
+            const byUser = {}, byMonthUser = {};
+            rows.forEach(r => {
+                const name = (r.nombre || '(sin)').trim(); const m = r.month;
+                if (!byUser[name]) byUser[name] = { a: 0, t: 0 }; byUser[name].a += +r.ams || 0; byUser[name].t += (+r.ams || 0) + (+r.hosvital || 0);
+                if (!byMonthUser[name]) byMonthUser[name] = {}; if (!byMonthUser[name][m]) byMonthUser[name][m] = { a: 0, t: 0 };
+                byMonthUser[name][m].a += +r.ams || 0; byMonthUser[name][m].t += (+r.ams || 0) + (+r.hosvital || 0);
+            });
+            const avg = Object.entries(byUser).map(([k, v]) => ({ k, pct: pct(v.a, v.t), tot: v.t })).filter(x => x.tot > 0);
+            const lastDelta = (name) => { const mm = byMonthUser[name] || {}; const labs = Object.keys(mm).sort(); if (labs.length < 2) return null; const pcts = labs.map(m => pct(mm[m].a, mm[m].t)); return pcts.at(-1) - pcts.at(-2); };
+            const topAvg = [...avg].sort((a, b) => b.pct - a.pct).slice(0, 10);
+            const worst = [...avg].sort((a, b) => a.pct - b.pct).slice(0, 10);
+            const impr = Object.entries(byMonthUser).map(([k, mm]) => { const labs = Object.keys(mm).sort(); if (labs.length < 2) return { k, impr: 0 }; const pcts = labs.map(m => pct(mm[m].a, mm[m].t)); const delta = pcts.at(-1) - pcts.at(-2); return { k, impr: delta }; }).sort((a, b) => b.impr - a.impr).slice(0, 10);
+
+            document.getElementById('a_top_avg').innerHTML = topAvg.map(r => {
+                const d = lastDelta(r.k); const arrow = iconDelta(d);
+                return `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}% <span class="subtle">${arrow} ${d == null ? '—' : (d >= 0 ? '+' : '') + d.toFixed(1) + ' pp'}</span></td><td>${r.tot}</td></tr>`;
+            }).join("");
+            document.getElementById('a_top_worst').innerHTML = worst.map(r => {
+                const d = lastDelta(r.k); const arrow = iconDelta(d);
+                return `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}% <span class="subtle">${arrow} ${d == null ? '—' : (d >= 0 ? '+' : '') + d.toFixed(1) + ' pp'}</span></td><td>${r.tot}</td></tr>`;
+            }).join("");
+            document.getElementById('a_top_impr').innerHTML = impr.map(r => `<tr><td>${r.k}</td><td>${r.impr >= 0 ? '+' : ''}${r.impr.toFixed(1)} pp</td><td>—</td></tr>`).join("");
+        }
+        function analizaAMS(rows) {
+            const { labels: glLabs, vals: glPct } = rowsToMonths(rows, 'pct');
+            const last = glPct.at(-1) || 0, prev = glPct.at(-2) || 0, d = last - prev;
+
+            const bySrv = {}; rows.forEach(r => { const k = (r.pabellon || 'Otro').trim() || 'Otro'; if (!bySrv[k]) bySrv[k] = []; bySrv[k].push({ m: r.month, a: +r.ams || 0, h: +r.hosvital || 0 }); });
+            const srvArr = Object.entries(bySrv).map(([k, v]) => { const o = {}; v.forEach(x => { if (!o[x.m]) o[x.m] = { a: 0, h: 0 }; o[x.m].a += x.a; o[x.m].h += x.h; }); const labs = Object.keys(o).sort(); const pcts = labs.map(m => pct(o[m].a, o[m].a + o[m].h)); const mom = pcts.length > 1 ? (pcts.at(-1) - pcts.at(-2)) : 0; const level = pcts.at(-1) || 0; return { k, level, mom }; }).sort((a, b) => a.level - b.level);
+            const worstSrv = srvArr[0]?.k || '—';
+            const falling = srvArr.filter(x => x.mom < -5).slice(0, 3);
+            const rising = srvArr.filter(x => x.mom > 5).slice(0, 3);
+
+            document.getElementById('a_ai').innerHTML = `
+   <div class="ai-card"><h4>Panorama</h4>
+     <ul class="ai-list">
+       <li>Uso global AMS: <b>${last.toFixed(1)}%</b> (${d >= 0 ? '+' : ''}${d.toFixed(1)} pp m/m).</li>
+       <li>Servicio más bajo: <b>${worstSrv}</b>.</li>
+     </ul>
+   </div>
+   <div class="ai-card"><h4>Alertas</h4>
+     <ul class="ai-list">
+       <li>Caídas (&lt; −5 pp): ${falling.length ? falling.map(x => `<b>${x.k}</b> (${x.mom.toFixed(1)} pp)`).join(', ') : 'sin caídas marcadas'}.</li>
+       <li>Mejoras (&gt; +5 pp): ${rising.length ? rising.map(x => `<b>${x.k}</b> (+${x.mom.toFixed(1)} pp)`).join(', ') : 'sin mejoras destacadas'}.</li>
+     </ul>
+   </div>
+   <div class="ai-card"><h4>Recomendaciones</h4>
+     <ul class="ai-list">
+       <li>Focalizar coaching en <b>${falling.slice(0, 2).map(x => x.k).join(', ') || 'servicios con menores niveles'}</b>.</li>
+       <li>Reforzar buenas prácticas en <b>${rising.slice(0, 2).map(x => x.k).join(', ') || 'equipos con mejoras'}</b>.</li>
+       <li>Monitoreo semanal a colaboradores con caídas &gt; 20 pp.</li>
+     </ul>
+   </div>`;
+        }
+
+        async function loadAMS(months) {
+            let qy = query(COL_AMS, orderBy("month", "asc"));
+            if (months.length) { qy = query(COL_AMS, where("month", ">=", months[0]), where("month", "<=", months.at(-1)), orderBy("month", "asc")); }
+            const snap = await getDocs(qy);
+            const allRows = snap.docs.map(d => d.data()).filter(r => r);
+            const rows = selectedMonths.size ? allRows.filter(r => selectedMonths.has(r.month)) : allRows;
+            AMS_DATA = { rows, months: [...new Set(rows.map(r => r.month))].sort(), allRows };
+
+            const bm = rowsToMonths(rows, 'pct'); const mom = momDelta(bm.vals);
+            const A = sum(rows, "ams"), H = sum(rows, "hosvital"); const T = A + H; const P = pct(A, T);
+            a_total.textContent = T; a_ams.textContent = A; a_hos.textContent = H; a_pct.textContent = fmtPct(P); setDelta(a_mom, mom);
+            let best = "—", worst = "—", bestV = -1, worstV = 101; bm.labels.forEach((m, i) => { if (bm.vals[i] > bestV) { bestV = bm.vals[i]; best = m; } if (bm.vals[i] < worstV) { worstV = bm.vals[i]; worst = m; } });
+            a_best.textContent = best; a_worst.textContent = worst;
+
+            buildSrvOptions(rows);
+
+            // Tendencias
+            function drawTrend() {
+                const mode = aSrvMode.value; const srv = aSrvSel.value;
+                let datasets = [], labels = [];
+                if (mode === "global") {
+                    const { labels: l, vals } = rowsToMonths(rows, 'pct'); labels = l; datasets = [{ label: '% uso AMS (Global)', data: vals, borderColor: COLORS.teal, fill: false }];
+                } else if (mode === "srv_single") {
+                    const r = srv === "__ALL__" ? rows : rows.filter(x => (x.pabellon || 'Otro') === srv);
+                    const { labels: l, vals } = rowsToMonths(r, 'pct'); labels = l; datasets = [{ label: `% uso AMS — ${srv === "__ALL__" ? "Todos" : srv}`, data: vals, borderColor: COLORS.blue, fill: false }];
+                } else {
+                    const srvList = [...new Set(rows.map(r => (r.pabellon || 'Otro').trim() || 'Otro'))].sort();
+                    labels = [...new Set(rows.map(r => r.month))].sort();
+                    datasets = srvList.map((s, i) => { const r = rows.filter(x => (x.pabellon || 'Otro') === s); const { labels: l, vals } = rowsToMonths(r, 'pct'); const data = labels.map(m => { const j = l.indexOf(m); return j >= 0 ? vals[j] : null; }); return { label: s, data, borderColor: CHART_COLS[i % CHART_COLS.length], spanGaps: true }; });
+                }
+                ch_a_line = ensure(ch_a_line, document.getElementById("ch_a_line"), { type: 'line', data: { labels, datasets }, options: lineOpts() });
+            }
+            aSrvMode.onchange = drawTrend; aSrvSel.onchange = drawTrend; drawTrend();
+
+            // Distribución 100% apilado
+            function drawDist() {
+                const type = aDistSel.value;
+                ch_a_dist = ensure(ch_a_dist, document.getElementById('ch_a_dist'), (() => {
+                    if (type === 'G') {
+                        const pA = T ? (A / T * 100) : 0;
+                        return { type: 'bar', data: { labels: ['Promedio periodo'], datasets: [{ label: 'AMS', data: [pA], stack: 's', backgroundColor: COLORS.teal }, { label: 'Hosvital', data: [100 - pA], stack: 's', backgroundColor: COLORS.gray }] }, options: stackedH100() };
+                    } else {
+                        const bySrv = {}; rows.forEach(r => { const k = (r.pabellon || 'Otro').trim() || 'Otro'; if (!bySrv[k]) bySrv[k] = { a: 0, h: 0 }; bySrv[k].a += +r.ams || 0; bySrv[k].h += +r.hosvital || 0; });
+                        const items = Object.entries(bySrv).map(([k, v]) => ({ k, p: pct(v.a, v.a + v.h) })).sort((a, b) => b.p - a.p).slice(0, 8);
+                        return { type: 'bar', data: { labels: items.map(x => x.k), datasets: [{ label: 'AMS', data: items.map(x => x.p), backgroundColor: COLORS.blue, stack: 's' }, { label: 'Hosvital', data: items.map(x => 100 - x.p), backgroundColor: COLORS.gray, stack: 's' }] }, options: stackedH100() };
+                    }
+                })());
+            }
+            aDistSel.onchange = drawDist; drawDist();
+
+            // Tabla servicios + Δ
+            srvTable(rows, AMS_DATA.months);
+
+            // Rankings / colaboradores
+            rankingsPorUsuario(rows);
+
+            function drawUser() {
+                const srv = aUserSrvSel.value; const pool = srv === "__ALL__" ? rows : rows.filter(x => (x.pabellon || 'Otro') === srv);
+                let datasets = [], labels = [];
+                if (aShowAll.checked) {
+                    const vol = {}; pool.forEach(x => { const k = (x.nombre || '(sin)').trim(); vol[k] = (vol[k] || 0) + (+x.ams || 0) + (+x.hosvital || 0); });
+                    const top = [...Object.entries(vol)].sort((a, b) => b[1] - a[1]).slice(0, 12).map(x => x[0]);
+                    labels = [...new Set(pool.map(r => r.month))].sort();
+                    datasets = top.map((n, i) => { const rr = pool.filter(x => (x.nombre || '(sin)') === n); const { labels: l, vals } = rowsToMonths(rr, 'pct'); const data = labels.map(m => { const idx = l.indexOf(m); return idx >= 0 ? vals[idx] : null; }); return { label: n, data, borderColor: CHART_COLS[i % CHART_COLS.length], spanGaps: true }; });
+                    document.getElementById('a_alerts').innerHTML = '';
+                } else {
+                    const name = aUserSel.value; const r = pool.filter(x => (x.nombre || '(sin)') === name); const { labels: l, vals } = rowsToMonths(r, 'pct'); labels = l; datasets = [{ label: `% uso de ${name}`, data: vals, borderColor: COLORS.green, fill: false }];
+                    let alerts = []; for (let i = 1; i < vals.length; i++) { const d = vals[i] - vals[i - 1]; if (d <= -20) alerts.push(`Caída de ${(Math.abs(d)).toFixed(1)} pp entre ${labels[i - 1]} → ${labels[i]}`); }
+                    document.getElementById('a_alerts').innerHTML = alerts.length ? alerts.map(x => `• <span class="badge bad">ALERTA</span> ${x}`).join("<br/>") : '<span class="badge ok">Sin caídas fuertes detectadas</span>';
+                }
+                ch_a_user_line = ensure(ch_a_user_line, document.getElementById("ch_a_user_line"), { type: 'line', data: { labels, datasets }, options: lineOpts() });
+            }
+            aUserSrvSel.onchange = drawUser; aUserSel.onchange = drawUser; aShowAll.onchange = drawUser; drawUser();
+
+            // IA
+            analizaAMS(rows);
+
+            return { amsPctSeries: bm };
+        }
+
+        /* ===== RCF Global / Servicio / Profesional ===== */
+        let RCF_CACHE = { rowsM: [], rowsA: [] };
+        function rcfRowsToMonths(rows) { const o = {}; rows.forEach(x => { const m = x.month; if (!o[m]) o[m] = { r: 0, h: 0 }; o[m].r += +x.rcf || 0; o[m].h += +x.hosvital || 0; }); const labels = Object.keys(o).sort(); const pcts = labels.map(m => pct(o[m].r, o[m].r + o[m].h)); return { labels, pcts }; }
+        function analizaRCF(rowsM, rowsA) {
+            const g = rcfRowsToMonths([...rowsM, ...rowsA]); const last = g.pcts.at(-1) || 0, prev = g.pcts.at(-2) || 0, d = last - prev;
+            document.getElementById('r_ai').innerHTML = `
+   <div class="ai-card"><h4>Panorama</h4>
+     <ul class="ai-list">
+       <li>Uso global RCF: <b>${last.toFixed(1)}%</b> (${d >= 0 ? '+' : ''}${d.toFixed(1)} pp m/m).</li>
+       <li>Médicos prom.: <b>${(rcfRowsToMonths(rowsM).pcts.reduce((a, b) => a + b, 0) / Math.max(1, rcfRowsToMonths(rowsM).pcts.length) || 0).toFixed(1)}%</b> ·
+           Auxiliares: <b>${(rcfRowsToMonths(rowsA).pcts.reduce((a, b) => a + b, 0) / Math.max(1, rcfRowsToMonths(rowsA).pcts.length) || 0).toFixed(1)}%</b>.</li>
+     </ul>
+   </div>
+   <div class="ai-card"><h4>Alertas</h4><ul class="ai-list"><li>Revisar servicios con variación &lt; −5 pp.</li></ul></div>
+   <div class="ai-card"><h4>Recomendaciones</h4><ul class="ai-list"><li>Feedback rápido a equipos con caídas; compartir prácticas de quienes sostienen &gt;90%.</li></ul></div>`;
+        }
+        async function loadRCFGlobal(months) {
+            let qM = query(COL_RCF_M, orderBy("month", "asc")), qA = query(COL_RCF_A, orderBy("month", "asc"));
+            if (months.length) {
+                qM = query(COL_RCF_M, where("month", ">=", months[0]), where("month", "<=", months.at(-1)), orderBy("month", "asc"));
+                qA = query(COL_RCF_A, where("month", ">=", months[0]), where("month", "<=", months.at(-1)), orderBy("month", "asc"));
+            }
+            const [sM, sA] = await Promise.all([getDocs(qM), getDocs(qA)]);
+            const rowsMAll = sM.docs.map(d => d.data()).filter(r => r);
+            const rowsAAll = sA.docs.map(d => d.data()).filter(r => r);
+            const rowsM = selectedMonths.size ? rowsMAll.filter(r => selectedMonths.has(r.month)) : rowsMAll;
+            const rowsA = selectedMonths.size ? rowsAAll.filter(r => selectedMonths.has(r.month)) : rowsAAll;
+            RCF_CACHE = { rowsM, rowsA };
+
+            const bmM = rcfRowsToMonths(rowsM), bmA = rcfRowsToMonths(rowsA);
+            const labels = [...new Set([...bmM.labels, ...bmA.labels])].sort();
+            const pG = labels.map(m => {
+                const rM = rowsM.filter(x => x.month === m).reduce((s, x) => s + (+x.rcf || 0), 0);
+                const hM = rowsM.filter(x => x.month === m).reduce((s, x) => s + (+x.hosvital || 0), 0);
+                const rA = rowsA.filter(x => x.month === m).reduce((s, x) => s + (+x.rcf || 0), 0);
+                const hA = rowsA.filter(x => x.month === m).reduce((s, x) => s + (+x.hosvital || 0), 0);
+                return pct(rM + rA, rM + rA + hM + hA);
+            });
+            setDelta(document.getElementById('rg_mom'), momDelta(pG));
+
+            const RCFsum = rowsM.reduce((a, x) => a + (+x.rcf || 0), 0) + rowsA.reduce((a, x) => a + (+x.rcf || 0), 0);
+            const HOSsum = rowsM.reduce((a, x) => a + (+x.hosvital || 0), 0) + rowsA.reduce((a, x) => a + (+x.hosvital || 0), 0);
+            const T = RCFsum + HOSsum; const PG = pct(RCFsum, T);
+            rg_total.textContent = T; rg_rcf.textContent = RCFsum; rg_hos.textContent = HOSsum; rg_pct.textContent = fmtPct(PG);
+            rm_pct.textContent = fmtPct(bmM.pcts.reduce((a, b) => a + b, 0) / Math.max(1, bmM.pcts.length));
+            ra_pct.textContent = fmtPct(bmA.pcts.reduce((a, b) => a + b, 0) / Math.max(1, bmA.pcts.length));
+
+            ch_rg_line = ensure(ch_rg_line, document.getElementById("ch_rg_line"), { type: 'line', data: { labels, datasets: [{ label: '% uso RCF (Global)', data: pG, borderColor: COLORS.acc }] }, options: lineOpts() });
+            ch_rm_line = ensure(ch_rm_line, document.getElementById("ch_rm_line"), { type: 'line', data: { labels: bmM.labels, datasets: [{ label: '% uso RCF Médicos', data: bmM.pcts, borderColor: COLORS.teal }] }, options: lineOpts() });
+            ch_ra_line = ensure(ch_ra_line, document.getElementById("ch_ra_line"), { type: 'line', data: { labels: bmA.labels, datasets: [{ label: '% uso RCF Auxiliares', data: bmA.pcts, borderColor: COLORS.green }] }, options: lineOpts() });
+
+            const svcAgg = (rows) => {
+                const o = {}; rows.forEach(x => { const k = (x.pabellon || 'Otro').trim() || 'Otro'; if (!o[k]) o[k] = { r: 0, t: 0 }; const r = +x.rcf || 0; const t = (+x.total) || ((+x.rcf || 0) + (+x.hosvital || 0)); o[k].r += r; o[k].t += t; });
+                return Object.entries(o).map(([k, v]) => ({ k, pct: pct(v.r, v.t), tot: v.t })).sort((a, b) => b.pct - a.pct).slice(0, 12);
+            };
+            rm_srv_tbl.innerHTML = svcAgg(rowsM).map(r => `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}%</td><td>${r.tot}</td></tr>`).join("");
+            ra_srv_tbl.innerHTML = svcAgg(rowsA).map(r => `<tr><td>${r.k}</td><td>${r.pct.toFixed(1)}%</td><td>${r.tot}</td></tr>`).join("");
+
+            const rSrvSel = document.getElementById('r_srv_sel'), rRoleSel = document.getElementById('r_role_sel'), rUserSel = document.getElementById('r_user_sel');
+            const srvList = [...new Set([...rowsM, ...rowsA].map(r => (r.pabellon || 'Otro').trim() || 'Otro'))].sort();
+            rSrvSel.innerHTML = srvList.map(s => `<option>${s}</option>`).join("");
+            const userList = [...new Set([...rowsM, ...rowsA].map(r => r.nombre || '(sin)'))].sort(); rUserSel.innerHTML = userList.map(u => `<option>${u}</option>`).join("");
+
+            function drawSrv() {
+                const srv = rSrvSel.value, role = rRoleSel.value; const rr = (role === 'M' ? rowsM : rowsA).filter(x => (x.pabellon || 'Otro') === srv);
+                const { labels, pcts } = rcfRowsToMonths(rr);
+                ch_r_srv_line = ensure(ch_r_srv_line, document.getElementById("ch_r_srv_line"), { type: 'line', data: { labels, datasets: [{ label: `% uso RCF — ${srv} (${role === 'M' ? 'Médicos' : 'Auxiliares'})`, data: pcts, borderColor: COLORS.blue }] }, options: lineOpts() });
+            }
+            rSrvSel.onchange = drawSrv; rRoleSel.onchange = drawSrv; drawSrv();
+
+            function drawUser() {
+                const name = rUserSel.value; const rr = [...rowsM, ...rowsA].filter(x => (x.nombre || '(sin)') === name);
+                const o = {}; rr.forEach(x => { const m = x.month; if (!o[m]) o[m] = { r: 0, t: 0 }; o[m].r += +x.rcf || 0; o[m].t += (+x.rcf || 0) + (+x.hosvital || 0); });
+                const labels = Object.keys(o).sort(); const vals = labels.map(m => pct(o[m].r, o[m].t));
+                ch_r_user_line = ensure(ch_r_user_line, document.getElementById("ch_r_user_line"), { type: 'line', data: { labels, datasets: [{ label: `% uso ${name}`, data: vals, borderColor: COLORS.amber }] }, options: lineOpts() });
+                let alerts = []; for (let i = 1; i < vals.length; i++) { const d = vals[i] - vals[i - 1]; if (d <= -20) alerts.push(`Caída de ${Math.abs(d).toFixed(1)} pp entre ${labels[i - 1]} → ${labels[i]}`); }
+                document.getElementById('r_alerts').innerHTML = alerts.length ? alerts.map(x => `• <span class="badge bad">ALERTA</span> ${x}`).join("<br/>") : '<span class="badge ok">Sin caídas fuertes detectadas</span>';
+            }
+            rUserSel.onchange = drawUser; drawUser();
+
+            analizaRCF(rowsM, rowsA);
+
+            return { labels, pcts: pG };
+        }
+
+        /* ===== GPD (para estrategia) ===== */
+        async function loadGPD(months) {
+            let qy = query(COL_GPD, orderBy("month", "asc"));
+            if (months.length) { qy = query(COL_GPD, where("month", ">=", months[0]), where("month", "<=", months.at(-1)), orderBy("month", "asc")); }
+            const snap = await getDocs(qy); const rows = snap.docs.map(d => d.data());
+            const byM = {}; rows.forEach(r => { byM[r.month] = +r.uso || 0; });
+            const labels = Object.keys(byM).sort(); const vals = labels.map(k => byM[k]);
+            return { labels, vals };
+        }
+
+        /* ===== Tickets ===== */
+        async function loadTickets(months) {
+            let qA = COL_T_A, qH = COL_T_H;
+            if (months.length) {
+                qA = query(COL_T_A, where("createdAt", ">=", new Date(months[0] + "-01")), where("createdAt", "<=", new Date(months.at(-1) + "-31")));
+                qH = query(COL_T_H, where("closedAt", ">=", new Date(months[0] + "-01")), where("closedAt", "<=", new Date(months.at(-1) + "-31")));
+            }
+            const [sa, sh] = await Promise.all([getDocs(qA), getDocs(qH)]);
+            let activos = sa.docs.map(d => d.data()); let hist = sh.docs.map(d => d.data());
+            if (selectedMonths.size) {
+                const set = selectedMonths;
+                activos = activos.filter(x => { const c = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; if (!c) return false; const m = `${c.getFullYear()}-${pad(c.getMonth() + 1)}`; return set.has(m); });
+                hist = hist.filter(x => { const f = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null; if (!f) return false; const m = `${f.getFullYear()}-${pad(f.getMonth() + 1)}`; return set.has(m); });
+            }
+            const total = activos.length + hist.length, gestion = activos.length, cerrados = hist.length;
+            t_total.textContent = total; t_gestion.textContent = gestion; t_cerrados.textContent = cerrados; t_pct.textContent = total ? ((cerrados / total) * 100).toFixed(1) + "%" : "0%";
+            const conf = hist.filter(x => (x.sat || "") === "Conforme").length; t_conf.textContent = conf;
+            let sumMs = 0, n = 0; hist.forEach(x => { const c = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const f = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null; if (c && f) { sumMs += (f - c); n++; } });
+            const avg = n ? (sumMs / n) : null; const dur = ms => { if (!ms) return "—"; const d = Math.floor(ms / 86400000), h = Math.floor((ms % 86400000) / 3600000); return (d ? d + "d " : "") + h + "h"; };
+            t_ttr.textContent = dur(avg);
+            const counts = {}; const noconf = hist.filter(x => (x.sat || "") === "No conforme").length;
+            hist.forEach(x => { const f = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null; if (!f) return; const m = `${f.getFullYear()}-${pad(f.getMonth() + 1)}`; counts[m] = (counts[m] || 0) + 1; });
+            const labels = Object.keys(counts).sort(); const vals = labels.map(k => counts[k]);
+            ch_t_line = ensure(ch_t_line, document.getElementById("ch_t_line"), { type: 'bar', data: { labels, datasets: [{ label: 'Cerrados', data: vals, backgroundColor: COLORS.navy }] }, options: stackedOpts() });
+            ch_t_pie = ensure(ch_t_pie, document.getElementById("ch_t_pie"), { type: 'pie', data: { labels: ["Conforme", "No conforme", "Pendiente"], datasets: [{ data: [conf, noconf, (cerrados - conf - noconf)], backgroundColor: [COLORS.ok, COLORS.red, COLORS.gray] }] }, options: { plugins: { legend: { position: "bottom" }, datalabels: { formatter: (v, ctx) => { const t = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0) || 1; return ((v * 100) / t).toFixed(1) + '%'; } } } } });
+
+            const lastClose = vals.at(-1) || 0, prevClose = vals.at(-2) || 0, d = lastClose - prevClose;
+            const sat = cerrados ? (conf / cerrados * 100) : 0;
+            document.getElementById('t_ai').innerHTML = `
+   <div class="ai-card"><h4>Panorama</h4><ul class="ai-list">
+     <li>Tickets cerrados último mes: <b>${lastClose}</b> (${d >= 0 ? '+' : ''}${d} vs mes previo).</li>
+     <li>Conformidad: <b>${sat.toFixed(1)}%</b>. TTR prom.: <b>${t_ttr.textContent}</b>.</li>
+   </ul></div>
+   <div class="ai-card"><h4>Oportunidades</h4><ul class="ai-list">
+     <li>Revisar causas de “No conforme” y estandarizar tiempos.</li>
+   </ul></div>
+   <div class="ai-card"><h4>Recomendaciones</h4><ul class="ai-list">
+     <li>Balancear carga si crece backlog; SLA claros por tipo de ticket.</li>
+   </ul></div>`;
+        }
+
+        /* ===== Estrategia TIC ===== */
+        function drawEstrategia(can, ams, rcf, gpd) {
+            const labels = [...new Set([...can.labels, ...ams.labels, ...rcf.labels, ...gpd.labels])].sort();
+            function getVal(mapLabels, mapVals, m) { const i = mapLabels.indexOf(m); return i >= 0 ? mapVals[i] : null; }
+            const idx = [], cLast = [], aLast = [], rLast = [], gLast = [];
+            labels.forEach(m => {
+                const c = getVal(can.labels, can.pctArr, m); const a = getVal(ams.labels, ams.vals, m); const r = getVal(rcf.labels, rcf.pcts, m); const g = getVal(gpd.labels, gpd.vals, m);
+                const parts = [c, a, r, g].filter(v => v != null); idx.push(parts.length ? parts.reduce((s, x) => s + x, 0) / parts.length : null);
+                cLast.push(c); aLast.push(a); rLast.push(r); gLast.push(g);
+            });
+            const meta = labels.map(() => 70);
+            ch_e_line = ensure(ch_e_line, document.getElementById("ch_e_line"), {
+                type: 'line', data: {
+                    labels, datasets: [
+                        { label: 'Índice', data: idx, borderColor: COLORS.acc },
+                        { label: 'Meta 70', data: meta, borderColor: "#ef4444", borderDash: [6, 6] }
+                    ]
+                }, options: lineOpts()
+            });
+            const last = idx.filter(x => x != null).at(-1) || 0; e_idx.textContent = `${last.toFixed(1)}%`;
+            const badge = document.getElementById('e_badge'); badge.className = 'badge ' + (last >= 70 ? 'ok' : (last >= 60 ? 'warn' : 'bad')); badge.textContent = last >= 70 ? 'On track' : (last >= 60 ? 'Cerca' : 'Bajo');
+            e_can.textContent = fmtPct((cLast.filter(x => x != null).at(-1) || 0));
+            e_ams.textContent = fmtPct((aLast.filter(x => x != null).at(-1) || 0));
+            e_rcf.textContent = fmtPct((rLast.filter(x => x != null).at(-1) || 0));
+            e_gpd.textContent = fmtPct((gLast.filter(x => x != null).at(-1) || 0));
+
+            const comp = [{ n: 'Canales', v: cLast.filter(Boolean).at(-1) || 0 }, { n: 'AMS', v: aLast.filter(Boolean).at(-1) || 0 }, { n: 'RCF', v: rLast.filter(Boolean).at(-1) || 0 }, { n: 'GPD', v: gLast.filter(Boolean).at(-1) || 0 }].sort((a, b) => a.v - b.v);
+            const peor = comp[0], mejor = comp.at(-1);
+            document.getElementById('e_ai').innerHTML = `
+   <div class="ai-card"><h4>Panorama</h4><ul class="ai-list">
+     <li>Índice actual: <b>${last.toFixed(1)}%</b> (meta 70%).</li>
+     <li>Componente líder: <b>${mejor.n}</b> (${mejor.v.toFixed(1)}%).</li>
+   </ul></div>
+   <div class="ai-card"><h4>Oportunidades</h4><ul class="ai-list">
+     <li>Componente más bajo: <b>${peor.n}</b> (${peor.v.toFixed(1)}%).</li>
+   </ul></div>
+   <div class="ai-card"><h4>Recomendaciones</h4><ul class="ai-list">
+     <li>Acciones focalizadas en <b>${peor.n}</b> y mantener la tracción de <b>${mejor.n}</b>.</li>
+   </ul></div>`;
+        }
+
+        /* ===== Refresh ===== */
+        async function refresh() {
+            const from = mFrom.value, to = mTo.value;
+            const months = (!selectedMonths.size && from && to) ? monthsBetween(from, to) : [];
+            const st = document.getElementById("status"); st.style.display = "none";
+            try {
+                const can = await loadCanales(months);
+                const ams = await loadAMS(months);
+                const rcf = await loadRCFGlobal(months);
+                const gpd = await loadGPD(months);
+                drawEstrategia(
+                    { labels: can.labels, pctArr: can.pctArr },
+                    { labels: ams.amsPctSeries.labels, vals: ams.amsPctSeries.vals },
+                    { labels: rcf.labels, pcts: rcf.pcts },
+                    gpd
+                );
+                await loadTickets(months);
+            } catch (e) {
+                console.error(e); st.className = "status err"; st.textContent = "No se pudo cargar el dashboard."; st.style.display = "block";
+            }
+        }
+        onAuthStateChanged(auth, u => { if(u) refresh(); });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Módulo RCF')}"></head>
+<body class="dashboard-layout fade-in">
+    <!-- Sidebar from Layout -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar from Layout -->
+        <nav th:replace="~{layout :: navbar('RCF')}"></nav>
+
+        <main class="main-content">
+            <header class="dashboard-header fade-in">
+                <h1>Módulo RCF</h1>
+                <p>Gestión de personal de enfermería y protocolos médicos.</p>
+            </header>
+
+            <div class="dashboard-grid fade-in">
+                <div class="prof-card">
+                    <div class="prof-card-icon">👩‍⚕️</div>
+                    <div class="prof-card-title">Auxiliares de Enf. RCF</div>
+                    <div class="prof-card-desc">Ingreso y seguimiento para personal de enfermería.</div>
+                    <div class="card-links">
+                        <a href="/auxiliares-enf-rcf">Acceder al Módulo</a>
+                    </div>
+                </div>
+                <div class="prof-card">
+                    <div class="prof-card-icon">👨‍⚕️</div>
+                    <div class="prof-card-title">Médicos Gen. RCF</div>
+                    <div class="prof-card-desc">Herramientas y protocolos para medicina general.</div>
+                    <div class="card-links">
+                        <a href="/medicos-gen-rcf">Acceder al Módulo</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer from Layout -->
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts from Layout -->
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>
