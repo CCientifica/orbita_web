@@ -3718,7 +3718,7 @@
                                 }
 
                                 const val41 = getVal("41");
-                                if (val41 === "1" || val41 === "3" || val41 === "99") {
+                                if (val41 === "1" || (val41 === "3" && val45 !== "1") || val41 === "99") {
                                         enforce("45", "98", "V41 Observación/Seguimiento -> No Quimioterapia");
                                         enforce("74", "2", "V41 Observación/Seguimiento -> No Cirugía");
                                         enforce("86", "98", "V41 Observación/Seguimiento -> No Radioterapia");
@@ -3731,7 +3731,7 @@
                                 const val46 = getVal("46");
 
                                 // 🔥 NUEVO: Detección automática y forzada para VAR46=0
-                                if (val46 === "0") {
+                                if (val46 === "0" && val45 !== "1") {
                                         enforce("45", "98", "Si Fases (VAR46) = 0 -> No recibió Quimioterapia (VAR45=98).");
                                         enforceList(["46_1", "46_2", "46_3", "46_4", "46_5", "46_6", "46_7", "46_8"], "2", "Si Fases (VAR46) = 0 -> Subfase DEBE SER 2");
                                 }

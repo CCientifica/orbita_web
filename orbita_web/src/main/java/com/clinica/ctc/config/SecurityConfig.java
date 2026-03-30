@@ -1,3 +1,4 @@
+
 package com.clinica.ctc.config;
 
 import com.clinica.ctc.security.CustomUserDetailsService;
@@ -12,17 +13,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * CONFIGURACIÓN DE SEGURIDAD - ÓRBITA
- * 
- * Basada en la Matriz Oficial de Roles:
- * - master admin
- * - super admin
- * - admin
- * - analista
- * - auditor
+ * CONFIGURACIÓN DE SEGURIDAD - ÓRBITA CLÍNICA
  */
 @Configuration
 @EnableWebSecurity
@@ -62,17 +57,12 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
                 .crossOriginOpenerPolicy(coop -> coop
-                    .policy(org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
+                    .policy(CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
                 )
             )
             .authorizeHttpRequests(auth -> auth
-                // Acceso público a recursos estáticos y autenticación
                 .requestMatchers("/h2-console/**", "/assets/**", "/css/**", "/js/**", "/img/**", "/vendor/**", "/login", "/", "/api/auth/**").permitAll()
-                
-                // ADMINISTRACIÓN DE USUARIOS: Exclusivo para 'master admin' (Administración integral)
                 .requestMatchers("/usuarios/**").hasAuthority("master admin")
-                
-                // CUALQUIER OTRO MÓDULO: Requiere haber pasado el login básico
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

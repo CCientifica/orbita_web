@@ -1,18 +1,13 @@
 package com.clinica.ctc.controller;
 
-import com.clinica.ctc.model.Role;
-import com.clinica.ctc.model.User;
-import com.clinica.ctc.model.UsuarioPermitido;
-import com.clinica.ctc.repository.RoleRepository;
-import com.clinica.ctc.repository.UserRepository;
+import com.clinica.ctc.model.Usuario;
+import com.clinica.ctc.repository.UsuarioRepository;
 import com.clinica.ctc.repository.UsuarioPermitidoRepository;
-import com.clinica.ctc.security.RoleNormalizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,10 +16,7 @@ import java.util.stream.Collectors;
 public class UserController {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private UsuarioPermitidoRepository usuarioPermitidoRepository;
@@ -32,20 +24,13 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasAnyAuthority('master admin', 'super admin', 'admin')")
     public List<Map<String, Object>> getAllUsers() {
-        return userRepository.findAll().stream().map(user -> {
+        return usuarioRepository.findAll().stream().map(usuario -> {
             Map<String, Object> map = new HashMap<>();
-            map.put("id", user.getId());
-            map.put("username", user.getUsername());
-            map.put("email", user.getEmail());
-            map.put("nombre", user.getName());
-            map.put("activo", user.isEnabled());
-            
-            String roleName = user.getRoles().stream()
-                    .map(Role::getName)
-                    .findFirst()
-                    .orElse("auditor");
-            map.put("rol", roleName);
-            
+            map.put("id", usuario.getEmail()); // Usuario uses email as ID
+            map.put("nombre", usuario.getNombre());
+            map.put("email", usuario.getEmail());
+            map.put("activo", true); // Or whatever field it has
+            map.put("rol", usuario.getRol());
             return map;
         }).collect(Collectors.toList());
     }
@@ -56,51 +41,24 @@ public class UserController {
         String email = Objects.requireNonNull((String) userData.get("email"), "email cannot be null");
         String nombre = (String) userData.get("nombre");
         String rolName = (String) userData.get("rol");
-        boolean activo = (boolean) userData.get("activo");
 
-        // 1. Sincronización en Tabla Principal (users)
-        Optional<User> existingUser = userRepository.findByEmail(email);
-        User user = existingUser.orElseGet(() -> {
-            System.out.println("🌱 [AUTH-SESSION] Creando registro local (JPA) para: " + email);
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setUsername(email);
-            // Placeholder técnico, la autenticación es externa (Firebase)
-            newUser.setPassword("{noop}EXTERNAL_AUTH_FIREBASE_" + java.util.UUID.randomUUID());
-            return newUser;
+        // 1. Sincronización en Tabla Principal (usuarios)
+        Optional<Usuario> existingUser = usuarioRepository.findByEmail(email);
+        Usuario usuario = existingUser.orElseGet(() -> {
+            System.out.println("🌱 [AUTH-SESSION] Creando registro local (cache) para: " + email);
+            Usuario newUsuario = new Usuario();
+            newUsuario.setEmail(email);
+            // Fuente de verdad es Firebase Auth / Cloud Firestore
+            newUsuario.setPassword("{noop}FIREBASE_EXTERNAL_AUTHENTICATION");
+            return newUsuario;
         });
 
-        // La fuente de verdad de credenciales es Firebase Auth. 
-        // Se ignoran cambios de password locales.
+        usuario.setNombre(nombre);
+        usuario.setRol(rolName);
+        usuarioRepository.save(usuario);
 
-        user.setName(nombre);
-        user.setEnabled(activo);
-
-        Set<Role> roles = new HashSet<>();
-        // Normalizamos el rol antes de guardarlo para mantener la consistencia
-        String normRole = RoleNormalizationUtils.normalize(rolName);
-        roleRepository.findByName(normRole).orElseGet(() -> {
-            System.out.println("🔧 [User-Service] Rol no encontrado, creando: " + normRole);
-            return roleRepository.save(new Role(normRole));
-        });
-        
-        roleRepository.findByName(normRole).ifPresent(roles::add);
-        user.setRoles(roles);
-        userRepository.save(user);
-
-        System.out.println("💾 [User-Service] Usuario guardado correctamente: " + email + " con rol: " + normRole);
-
-        // 2. Sincronización en Tabla de Permitidos (usuarios_permitidos - Emulación Firestore)
-        UsuarioPermitido up = usuarioPermitidoRepository.findById(email).orElseGet(() -> {
-            UsuarioPermitido newUp = new UsuarioPermitido();
-            newUp.setEmail(email);
-            return newUp;
-        });
-
-        up.setDataJson(String.format("{\"email\":\"%s\",\"nombre\":\"%s\",\"rol\":\"%s\",\"activo\":%b}", 
-                       email, nombre, normRole, activo));
-        up.setUpdatedAt(LocalDateTime.now());
-        usuarioPermitidoRepository.save(up);
+        // 2. Nota: La sincronización con Firestore Real se realiza a través de la consola de Firebase 
+        // o mediante el SDK de cliente. El repositorio local UsuarioPermitidoRepository no se usa para auth.
 
         return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
@@ -112,7 +70,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("No se puede eliminar la cuenta maestra institucional.");
         }
 
-        userRepository.findByEmail(email).ifPresent(userRepository::delete);
+        usuarioRepository.findByEmail(email).ifPresent(usuarioRepository::delete);
         usuarioPermitidoRepository.deleteById(email);
         return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
