@@ -1100,10 +1100,10 @@
                 <!-- Columna Izquierda: Información -->
                 <div class="profile-modal-info-col">
                     <label>CORREO ELECTRÓNICO (ID)</label>
-                    <input type="text" id="profileEmail" disabled class="profile-input" />
+                    <input type="text" id="profileEmail" disabled class="profile-input" style="cursor:not-allowed;" />
 
                     <label>NOMBRE COMPLETO</label>
-                    <input type="text" id="profileName" class="profile-input" placeholder="Tu nombre..." />
+                    <input type="text" id="profileName" class="profile-input" placeholder="Tu nombre institucional..." />
 
                     <label>TELÉFONO O EXTENSIÓN</label>
                     <input type="text" id="profilePhone" placeholder="Opcional" class="profile-input" />
@@ -1112,15 +1112,15 @@
                 <!-- Columna Derecha: Selección de Avatar -->
                 <div class="profile-modal-picker-col">
                     <label>IDENTIDAD VISUAL (ADVENTURER NEUTRAL)</label>
-                    <div class="avatar-picker" id="avatarPicker">
+                    <div class="avatar-picker" id="avatarPicker" style="max-height: 250px; overflow-y: auto;">
                         <!-- Avatares dinámicos vía profile-v2.js -->
                     </div>
                 </div>
             </div>
             <div class="profile-modal-footer">
-                <button class="btn-cancel" id="cancelProfileBtn">Cancelar</button>
+                <button class="btn-cancel" id="cancelProfileBtn">Descartar</button>
                 <button class="btn-save" id="saveProfileBtn">
-                    <i data-lucide="save" style="width:16px;"></i> Guardar Cambios
+                    <i data-lucide="save" style="width:16px;"></i> Guardar Identidad
                 </button>
             </div>
         </div>

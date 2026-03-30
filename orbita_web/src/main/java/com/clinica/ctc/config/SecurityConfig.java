@@ -15,14 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
- * CONFIGURACIÓN DE SEGURIDAD - ÓRBITA
- * 
- * Basada en la Matriz Oficial de Roles:
- * - master admin
- * - super admin
- * - admin
- * - analista
- * - auditor
+ * CONFIGURACIÓN DE SEGURIDAD - ÓRBITA CLÍNICA
  */
 @Configuration
 @EnableWebSecurity
@@ -66,13 +59,8 @@ public class SecurityConfig {
                 )
             )
             .authorizeHttpRequests(auth -> auth
-                // Acceso público a recursos estáticos y autenticación
                 .requestMatchers("/h2-console/**", "/assets/**", "/css/**", "/js/**", "/img/**", "/vendor/**", "/login", "/", "/api/auth/**").permitAll()
-                
-                // ADMINISTRACIÓN DE USUARIOS: Exclusivo para 'master admin' (Administración integral)
                 .requestMatchers("/usuarios/**").hasAuthority("master admin")
-                
-                // CUALQUIER OTRO MÓDULO: Requiere haber pasado el login básico
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
