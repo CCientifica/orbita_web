@@ -78,7 +78,7 @@ public class DataInitializer {
         Optional<User> userOpt = userRepo.findByUsername(username);
         User user = userOpt.orElseGet(() -> {
             User newUser = new User();
-            newUser.setUsername(username);
+            newUser.setUsername(username); // Email completo como username
             newUser.setEmail(username);
             newUser.setPassword(encoder.encode(username + "123"));
             return newUser;

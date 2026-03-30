@@ -17,6 +17,7 @@
      MATRIZ OFICIAL DE ROLES:
      ... (Matriz de roles existente)
 -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +41,12 @@
             --text-muted: #64748b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
         body {
             height: 100vh;
@@ -101,8 +107,16 @@
             max-width: 480px;
         }
 
-        .auth-side-footer { position: absolute; bottom: 3.5rem; left: 8%; }
-        .supersalud-logo { height: 50px; object-fit: contain; }
+        .auth-side-footer {
+            position: absolute;
+            bottom: 3.5rem;
+            left: 8%;
+        }
+
+        .supersalud-logo {
+            height: 50px;
+            object-fit: contain;
+        }
 
         /* ═══════════════════════════════════════
            LADO DERECHO: ACCESO
@@ -177,7 +191,104 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
         }
 
-        .btn-google:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-google:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* ═══════════════════════════════════════
+           LOGIN CLÁSICO (CAMPOS)
+        ═══════════════════════════════════════ */
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .auth-divider span {
+            padding: 0 1rem;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            margin-left: 0.5rem;
+        }
+
+        .input-classic {
+            width: 100%;
+            padding: 1rem 1.4rem;
+            border-radius: 99px;
+            border: 1.5px solid #e5e7eb;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .input-classic:focus {
+            border-color: var(--accent-blue);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-classic {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 99px;
+            border: none;
+            background: var(--primary-navy);
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+        }
+
+        .btn-classic:hover {
+            background: #1e293b;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3);
+        }
+
+        .auth-error-chip {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            border: 1px solid #fee2e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
 
         .auth-footer-text {
             position: absolute;
@@ -188,19 +299,43 @@
 
         /* LOADER OVERLAY */
         #authLoader {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
-            display: none; align-items: center; justify-content: center; z-index: 9999;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
             backdrop-filter: blur(5px);
         }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         @media (max-width: 1024px) {
-            .auth-side-image { display: none; }
-            .auth-side-form { border-radius: 0; }
+            .auth-side-image {
+                display: none;
+            }
+
+            .auth-side-form {
+                border-radius: 0;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div id="authLoader">
@@ -211,14 +346,18 @@
     </div>
 
     <div class="auth-layout">
-        
+
         <!-- PANEL IZQUIERDO -->
-        <div class="auth-side-image" style="background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/assets/app-bg.png')" th:style="|background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('@{/assets/app-bg.png}')|">
+        <div class="auth-side-image"
+            style="background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/assets/app-bg.png')"
+            th:style="|background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('@{/assets/app-bg.png}')|">
             <div class="auth-impact-tag">Ecosistema Técnico-Científico</div>
             <h1 class="auth-impact-title">Orbita<br>Clínica</h1>
-            <p class="auth-impact-desc">Gestión avanzada y análisis de datos para la excelencia en el cuidado de la salud.</p>
+            <p class="auth-impact-desc">Gestión avanzada y análisis de datos para la excelencia en el cuidado de la
+                salud.</p>
             <div class="auth-side-footer">
-                <img src="/assets/Supersalud_Logo.png" th:src="@{/assets/Supersalud_Logo.png}" alt="Supersalud" class="supersalud-logo">
+                <img src="/assets/Supersalud_Logo.png" th:src="@{/assets/Supersalud_Logo.png}" alt="Supersalud"
+                    class="supersalud-logo">
             </div>
         </div>
 
@@ -233,21 +372,53 @@
                     Por favor, utiliza tu cuenta corporativa de Google.
                 </p>
 
-                <!-- El botón ya no es un submit directo, ahora dispara el flujo real -->
+                <!-- Alerta de Error (Spring Security) -->
+                <div th:if="${param.error}" class="auth-error-chip">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    Credenciales incorrectas o usuario no autorizado.
+                </div>
+
+                <!-- El botón dispara el flujo Google -->
                 <button type="button" class="btn-google" id="googleAuthBtn">
                     <svg width="24" height="24" viewBox="0 0 48 48">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z">
+                        </path>
+                        <path fill="#4285F4"
+                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z">
+                        </path>
+                        <path fill="#FBBC05"
+                            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z">
+                        </path>
+                        <path fill="#34A853"
+                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z">
+                        </path>
                     </svg>
                     Continuar con Google Workspace
                 </button>
 
-                <!-- Formulario Oculto para persistencia Spring Security (Sesión) -->
-                <form th:action="@{/login}" method="post" id="springLoginForm" style="display:none;">
-                    <input type="hidden" name="username" id="springUsername">
-                    <input type="hidden" name="password" id="springPassword">
+                <!-- Separador Visual -->
+                <div class="auth-divider">
+                    <span>o accede con credenciales</span>
+                </div>
+
+                <!-- Formulario Visible para acceso clásico y persistencia Spring Security -->
+                <form action="/login" method="post" id="springLoginForm">
+                    <div class="form-group">
+                        <label class="form-label">Correo Institucional / Usuario</label>
+                        <input type="text" name="username" id="springUsername" class="input-classic"
+                            placeholder="usuario@clinicasagradocorazon.com.co" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" name="password" id="springPassword" class="input-classic"
+                            placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-classic">Iniciar Sesión</button>
                 </form>
 
             </div>
@@ -296,9 +467,12 @@
         const loaderText = document.getElementById('loaderText');
         const springForm = document.getElementById('springLoginForm');
 
+        // Pasos de Diagnóstico en Producción (Render)
+        console.log("🚀 [ÓRBITA-AUTH] Inicializando flujo Google en:", window.location.hostname);
+
         // Escucha pasiva: registra cambios en auth pero NO redirige automáticamente
         onAuthStateChanged(auth, (user) => {
-            if (user) console.log("Google session active:", user.email);
+            if (user) console.log("✅ [ÓRBITA-AUTH] Sesión activa en Firebase:", user.email);
         });
 
         /**
@@ -309,55 +483,78 @@
          * 4. Session Mapping (Spring Security POST)
          */
         btn.addEventListener('click', async () => {
+            console.log("🔘 [ÓRBITA-AUTH] Clic en botón Google...");
             btn.disabled = true;
             loader.style.display = 'flex';
-            loaderText.innerText = 'Iniciando autenticación Google...';
+            loaderText.innerText = 'Abriendo ventana de Google...';
 
             try {
                 // 🚀 PASO 1: Popup Real de Google
+                // Si esto falla, verifica que el dominio esté en "Authorized domains" de Firebase Console
+                console.log("🔗 [ÓRBITA-AUTH] Llamando a signInWithPopup...");
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 const email = user.email.toLowerCase().trim();
 
+                console.log("👤 [ÓRBITA-AUTH] Autenticado en Google como:", email);
+
                 // 📧 PASO 2: Validación de Dominio Institucional
-                if (!email.endsWith('@clinicasagradocorazon.com.co')) {
-                    throw new Error('Debes usar una cuenta institucional @clinicasagradocorazon.com.co');
-                }
+                console.log("🔍 [ÓRBITA-AUTH] Validando dominio institucional...");
+                const isInstitutional = email.endsWith('@clinicasagradocorazon.com.co');
 
-                loaderText.innerText = 'Validando autorización interna...';
-
-                // 🔍 PASO 3: Validación de Autorización Interna (Fuente de Verdad: Firestore)
-                // El nodo 'usuarios_permitidos' es la fuente de verdad de roles
-                const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
-                
-                if (!authSnap.exists()) {
-                    throw new Error('Usuario no autorizado en el sistema Orbita.');
+                if (!isInstitutional) {
+                    loaderText.innerText = 'Validando autorización externa...';
+                    // 🔍 PASO 3: Validación para cuentas externas en Firestore
+                    const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
+                    if (!authSnap.exists()) {
+                        throw new Error('Debes usar una cuenta institucional @clinicasagradocorazon.com.co o estar autorizado.');
+                    }
+                    console.log("🔓 [ÓRBITA-AUTH] Usuario externo autorizado via Firestore.");
+                } else {
+                   console.log("🔓 [ÓRBITA-AUTH] Dominio institucional verificado: " + email);
                 }
 
                 // 🔐 PASO 4: Mapeo a Sesión / Redirección según entorno
-                loaderText.innerText = 'Estableciendo sesión segura...';
-                
-                // Si estamos en Firebase Hosting (Entorno Estático), redirigimos directamente
-                if (window.location.hostname.includes('firebaseapp.com') || window.location.hostname.includes('web.app')) {
+                loaderText.innerText = 'Estableciendo sesión en el servidor...';
+
+                // Entornos Estáticos (Firebase Hosting)
+                const isFirebaseEnv = window.location.hostname.includes('firebaseapp.com') ||
+                    window.location.hostname.includes('web.app');
+
+                if (isFirebaseEnv) {
+                    console.log("🌐 [ÓRBITA-AUTH] Entorno Detectado: Firebase Hosting. Redirigiendo a /home");
                     window.location.replace("/home");
                 } else {
-                    // Si estamos en Spring Boot (Entorno Servidor), establecemos sesión formal
+                    // Entornos de Producción Server-Side (Render / Spring Boot)
+                    console.log("🖥️ [ÓRBITA-AUTH] Entorno Detectado: Servidor (Render/Local). Iniciando POST a Spring Security...");
                     document.getElementById('springUsername').value = email;
-                    document.getElementById('springPassword').value = email + "123"; 
+                    document.getElementById('springPassword').value = email + "123";
+
+                    // Aseguramos que el formulario se envíe con el CSRF actual (si existe)
                     springForm.submit();
                 }
 
             } catch (error) {
-                console.error("Auth Error:", error);
-                alert("Error de acceso: " + error.message);
-                await signOut(auth); // Limpiar intento de login
+                console.error("📛 [ÓRBITA-AUTH] Error de autenticación:", error.code, error.message);
+
+                let userFriendlyMsg = error.message;
+                if (error.code === 'auth/popup-blocked') {
+                    userFriendlyMsg = 'El navegador bloqueó la ventana emergente. Por favor, permite los popups para este sitio.';
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    userFriendlyMsg = 'Este dominio no está autorizado en la consola de Firebase. Contacte a soporte.';
+                }
+
+                alert("Error de acceso: " + userFriendlyMsg);
+
+                try { await signOut(auth); } catch (e) { } // Limpiar estado fallido
+
                 loader.style.display = 'none';
                 btn.disabled = false;
             }
         });
 
         // 🛡️ ÓRBITA NATURAL ATTRIBUTE TRANSLATOR (Para Standalone Pages)
-        (function() {
+        (function () {
             document.querySelectorAll('[th\\:src], [th\\:href]').forEach(el => {
                 const attrSrc = el.getAttribute('th:src');
                 const attrHref = el.getAttribute('th:href');
@@ -369,4 +566,5 @@
     </script>
 
 </body>
+
 </html>

@@ -2,14 +2,17 @@ package com.clinica.ctc.controller;
 
 import com.clinica.ctc.model.Role;
 import com.clinica.ctc.model.User;
+import com.clinica.ctc.model.UsuarioPermitido;
 import com.clinica.ctc.repository.RoleRepository;
 import com.clinica.ctc.repository.UserRepository;
+import com.clinica.ctc.repository.UsuarioPermitidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,9 @@ public class UserController {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private UsuarioPermitidoRepository usuarioPermitidoRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -37,11 +43,10 @@ public class UserController {
             map.put("nombre", user.getName());
             map.put("activo", user.isEnabled());
             
-            // Get the first role name for simplicity in the UI table
             String roleName = user.getRoles().stream()
                     .map(Role::getName)
                     .findFirst()
-                    .orElse("ROLE_GENERAL");
+                    .orElse("auditor");
             map.put("rol", roleName);
             
             return map;
@@ -51,22 +56,20 @@ public class UserController {
     @PostMapping
     @PreAuthorize("hasAuthority('master admin')")
     public ResponseEntity<?> saveUser(@RequestBody Map<String, Object> userData) {
-        String email = (String) userData.get("email");
+        String email = Objects.requireNonNull((String) userData.get("email"), "email cannot be null");
         String nombre = (String) userData.get("nombre");
         String rolName = (String) userData.get("rol");
         boolean activo = (boolean) userData.get("activo");
 
+        // 1. Sincronización en Tabla Principal (users)
         Optional<User> existingUser = userRepository.findByEmail(email);
-        User user;
-
-        if (existingUser.isPresent()) {
-            user = existingUser.get();
-        } else {
-            user = new User();
-            user.setEmail(email);
-            user.setUsername(email.split("@")[0]); // Default username from email
-            user.setPassword(passwordEncoder.encode("Orbita2026*")); // Default temporary password
-        }
+        User user = existingUser.orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setUsername(email); // SIEMPRE el email completo para coincidir con Google Auth
+            newUser.setPassword(passwordEncoder.encode(email + "123")); // Contraseña estandarizada
+            return newUser;
+        });
 
         user.setName(nombre);
         user.setEnabled(activo);
@@ -74,20 +77,32 @@ public class UserController {
         Set<Role> roles = new HashSet<>();
         roleRepository.findByName(rolName).ifPresent(roles::add);
         user.setRoles(roles);
-
         userRepository.save(user);
+
+        // 2. Sincronización en Tabla de Permitidos (usuarios_permitidos - Emulación Firestore)
+        UsuarioPermitido up = usuarioPermitidoRepository.findById(email).orElseGet(() -> {
+            UsuarioPermitido newUp = new UsuarioPermitido();
+            newUp.setEmail(email);
+            return newUp;
+        });
+
+        up.setDataJson(String.format("{\"email\":\"%s\",\"nombre\":\"%s\",\"rol\":\"%s\",\"activo\":%b}", 
+                       email, nombre, rolName, activo));
+        up.setUpdatedAt(LocalDateTime.now());
+        usuarioPermitidoRepository.save(up);
+
         return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
 
     @DeleteMapping("/{email}")
     @PreAuthorize("hasAuthority('master admin')")
-    public ResponseEntity<?> deleteUser(@PathVariable String email) {
-        // We don't delete the admin user
-        if ("coordcientifico@funda-bio.org".equals(email)) {
-            return ResponseEntity.badRequest().body("No se puede eliminar la cuenta maestra.");
+    public ResponseEntity<?> deleteUser(@PathVariable @org.springframework.lang.NonNull String email) {
+        if ("coordcientifico@clinicasagradocorazon.com.co".equals(email)) {
+            return ResponseEntity.badRequest().body("No se puede eliminar la cuenta maestra institucional.");
         }
 
         userRepository.findByEmail(email).ifPresent(userRepository::delete);
+        usuarioPermitidoRepository.deleteById(email);
         return ResponseEntity.ok(Collections.singletonMap("success", true));
     }
 }
