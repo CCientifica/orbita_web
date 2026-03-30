@@ -57,10 +57,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/api/**")
+                .ignoringRequestMatchers("/h2-console/**", "/api/**", "/login")
             )
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
+                .crossOriginOpenerPolicy(coop -> coop
+                    .policy(org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
+                )
             )
             .authorizeHttpRequests(auth -> auth
                 // Acceso público a recursos estáticos y autenticación
