@@ -526,12 +526,25 @@
                     window.location.replace("/home");
                 } else {
                     // Entornos de Producción Server-Side (Render / Spring Boot)
-                    console.log("🖥️ [ÓRBITA-AUTH] Entorno Detectado: Servidor (Render/Local). Iniciando POST a Spring Security...");
-                    document.getElementById('springUsername').value = email;
-                    document.getElementById('springPassword').value = email + "123";
+                    console.log("🖥️ [ÓRBITA-AUTH] Entorno Detectado: Servidor. Iniciando handshake seguro...");
+                    
+                    const response = await fetch('/api/auth/google', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Si tienes CSRF habilitado, deberías enviarlo aquí. 
+                            // Dado que SecurityConfig lo ignora para /api/**, por ahora prosigo.
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
 
-                    // Aseguramos que el formulario se envíe con el CSRF actual (si existe)
-                    springForm.submit();
+                    if (response.ok) {
+                        console.log("✅ [ÓRBITA-AUTH] Autenticación de servidor exitosa.");
+                        window.location.replace("/home");
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'No autorizado por el servidor.');
+                    }
                 }
 
             } catch (error) {

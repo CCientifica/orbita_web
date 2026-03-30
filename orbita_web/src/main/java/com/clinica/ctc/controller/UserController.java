@@ -6,6 +6,7 @@ import com.clinica.ctc.model.UsuarioPermitido;
 import com.clinica.ctc.repository.RoleRepository;
 import com.clinica.ctc.repository.UserRepository;
 import com.clinica.ctc.repository.UsuarioPermitidoRepository;
+import com.clinica.ctc.security.RoleNormalizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -64,20 +65,41 @@ public class UserController {
         // 1. Sincronización en Tabla Principal (users)
         Optional<User> existingUser = userRepository.findByEmail(email);
         User user = existingUser.orElseGet(() -> {
+            System.out.println("🌱 [User-Service] Creando nuevo usuario: " + email);
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setUsername(email); // SIEMPRE el email completo para coincidir con Google Auth
-            newUser.setPassword(passwordEncoder.encode(email + "123")); // Contraseña estandarizada
+            newUser.setUsername(email);
+            // Default password sólo si es nuevo para evitar null en JPA, 
+            // pero se sobrescribirá si hay uno en el request.
+            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
             return newUser;
         });
+
+        // Solo actualizar password si se envía uno nuevo
+        if (userData.containsKey("password") && userData.get("password") != null) {
+            String newPass = (String) userData.get("password");
+            if (!newPass.trim().isEmpty()) {
+                System.out.println("🔐 [User-Service] Actualizando contraseña para: " + email);
+                user.setPassword(passwordEncoder.encode(newPass));
+            }
+        }
 
         user.setName(nombre);
         user.setEnabled(activo);
 
         Set<Role> roles = new HashSet<>();
-        roleRepository.findByName(rolName).ifPresent(roles::add);
+        // Normalizamos el rol antes de guardarlo para mantener la consistencia
+        String normRole = RoleNormalizationUtils.normalize(rolName);
+        roleRepository.findByName(normRole).orElseGet(() -> {
+            System.out.println("🔧 [User-Service] Rol no encontrado, creando: " + normRole);
+            return roleRepository.save(new Role(normRole));
+        });
+        
+        roleRepository.findByName(normRole).ifPresent(roles::add);
         user.setRoles(roles);
         userRepository.save(user);
+
+        System.out.println("💾 [User-Service] Usuario guardado correctamente: " + email + " con rol: " + normRole);
 
         // 2. Sincronización en Tabla de Permitidos (usuarios_permitidos - Emulación Firestore)
         UsuarioPermitido up = usuarioPermitidoRepository.findById(email).orElseGet(() -> {
@@ -87,7 +109,7 @@ public class UserController {
         });
 
         up.setDataJson(String.format("{\"email\":\"%s\",\"nombre\":\"%s\",\"rol\":\"%s\",\"activo\":%b}", 
-                       email, nombre, rolName, activo));
+                       email, nombre, normRole, activo));
         up.setUpdatedAt(LocalDateTime.now());
         usuarioPermitidoRepository.save(up);
 

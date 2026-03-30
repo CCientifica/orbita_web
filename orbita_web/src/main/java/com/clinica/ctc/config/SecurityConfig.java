@@ -67,7 +67,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // Acceso público a recursos estáticos y autenticación
-                .requestMatchers("/h2-console/**", "/assets/**", "/css/**", "/js/**", "/img/**", "/vendor/**", "/login", "/").permitAll()
+                .requestMatchers("/h2-console/**", "/assets/**", "/css/**", "/js/**", "/img/**", "/vendor/**", "/login", "/", "/api/auth/**").permitAll()
                 
                 // ADMINISTRACIÓN DE USUARIOS: Exclusivo para 'master admin' (Administración integral)
                 .requestMatchers("/usuarios/**").hasAuthority("master admin")

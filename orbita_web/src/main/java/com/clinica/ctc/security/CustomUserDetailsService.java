@@ -45,16 +45,32 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Buscar en la base de datos de usuarios ya creados/asignados
-        if (username == null) {
-            throw new UsernameNotFoundException("Username cannot be null");
+        System.out.println("🔍 [Auth-Debug] Intento de login para usuario: " + username);
+        
+        if (username == null || username.trim().isEmpty()) {
+            throw new UsernameNotFoundException("El nombre de usuario no puede estar vacío");
         }
-        User user = userRepository.findByUsername(username)
-                .orElseGet(() -> provisionUser(username));
+
+        String email = username.toLowerCase().trim();
+        
+        // 1. Buscar en la base de datos de usuarios ya sincronizados
+        User user = userRepository.findByUsername(email)
+                .orElseGet(() -> provisionUser(email));
+
+        if (!user.isEnabled()) {
+            System.out.println("❌ [Auth-Debug] Usuario desactivado: " + email);
+            throw new UsernameNotFoundException("Usuario desactivado");
+        }
 
         List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .map(role -> {
+                    String normRole = RoleNormalizationUtils.normalize(role.getName());
+                    System.out.println("✅ [Auth-Debug] Rol detectado y normalizado: " + role.getName() + " -> " + normRole);
+                    return new SimpleGrantedAuthority(normRole);
+                })
                 .collect(Collectors.toList());
+
+        System.out.println("🔓 [Auth-Debug] Acceso PERMITIDO para: " + email + " con roles: " + authorities);
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
@@ -65,36 +81,31 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     private User provisionUser(String email) {
-        if (email == null) {
-            throw new UsernameNotFoundException("Email cannot be null");
-        }
-        // CASO A: El usuario ya tiene una asignación específica en H2 (UsuarioPermitido)
+        System.out.println("🔍 [Auth-Debug] Usuario no encontrado en 'users', verificando 'usuarios_permitidos': " + email);
+        
+        // La fuente de verdad SIEMPRE es usuarios_permitidos
         return usuarioPermitidoRepository.findById(email)
                 .map(this::createUserFromPermitido)
-                .orElseGet(() -> {
-                    // CASO B: El usuario no está en H2 pero tiene el dominio oficial
-                    if (email.toLowerCase().endsWith(OFFICIAL_DOMAIN)) {
-                        return createNewAuditor(email);
-                    }
-                    throw new UsernameNotFoundException("Usuario no autorizado. Debe pertenecer al dominio " + OFFICIAL_DOMAIN);
+                .orElseThrow(() -> {
+                    System.out.println("❌ [Auth-Debug] Usuario NO autorizado en 'usuarios_permitidos': " + email);
+                    return new UsernameNotFoundException("Usuario no autorizado en la plataforma.");
                 });
     }
 
     private User createUserFromPermitido(UsuarioPermitido up) {
         try {
             JsonNode node = objectMapper.readTree(up.getDataJson());
-            String roleName = node.has("rol") ? node.get("rol").asText() : "auditor";
+            String rawRole = node.has("rol") ? node.get("rol").asText() : "auditor";
             String displayName = node.has("nombre") ? node.get("nombre").asText() : up.getEmail();
+            
+            String normalizedRole = RoleNormalizationUtils.normalize(rawRole);
+            System.out.println("✨ [Auth-Debug] Provisionando nuevo usuario desde lista permitida: " + up.getEmail() + " | Rol: " + normalizedRole);
 
-            return saveNewUser(up.getEmail(), displayName, roleName);
+            return saveNewUser(up.getEmail(), displayName, normalizedRole);
         } catch (Exception e) {
-            return createNewAuditor(up.getEmail());
+            System.out.println("⚠️ [Auth-Debug] Error parseando datos de permitidos para " + up.getEmail() + ": " + e.getMessage());
+            return saveNewUser(up.getEmail(), up.getEmail().split("@")[0], "auditor");
         }
-    }
-
-    private User createNewAuditor(String email) {
-        // Si tiene el dominio, entra automáticamente como 'auditor' por defecto
-        return saveNewUser(email, email.split("@")[0], "auditor");
     }
 
     private User saveNewUser(String email, String displayName, String roleName) {
@@ -103,16 +114,20 @@ public class CustomUserDetailsService implements UserDetailsService {
         newUser.setEmail(email);
         newUser.setName(displayName);
         newUser.setEnabled(true);
-        // Password unificada para el handshake Firebase -> Spring Security
-        newUser.setPassword(passwordEncoder.encode(email + "123"));
+        
+        // Para login social, generamos un password aleatorio
+        newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
 
         Set<Role> roles = new HashSet<>();
-        roleRepository.findByName(roleName).ifPresent(roles::add);
+        String normalizedRoleName = RoleNormalizationUtils.normalize(roleName);
+        roleRepository.findByName(normalizedRoleName).ifPresent(roles::add);
+        
         if (roles.isEmpty()) {
-            roleRepository.findByName("auditor").ifPresent(roles::add);
+            Role newRole = roleRepository.save(new Role(normalizedRoleName));
+            roles.add(newRole);
         }
+        
         newUser.setRoles(roles);
-
         return userRepository.save(newUser);
     }
 }
