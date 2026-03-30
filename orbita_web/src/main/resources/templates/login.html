@@ -178,6 +178,31 @@
         }
 
         .btn-google:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        /* ═══════════════════════════════════════
+           LOGIN CLÁSICO (CAMPOS)
+        ═══════════════════════════════════════ */
+        .auth-divider {
+            display: flex; align-items: center; margin: 2rem 0; color: #94a3b8; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+        }
+        .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+        .auth-divider span { padding: 0 1rem; }
+
+        .form-group { text-align: left; margin-bottom: 1.5rem; }
+        .form-label { display: block; color: var(--text-main); font-size: 0.9rem; font-weight: 700; margin-bottom: 0.6rem; margin-left: 0.5rem; }
+        .input-classic {
+            width: 100%; padding: 1rem 1.4rem; border-radius: 99px; border: 1.5px solid #e5e7eb; font-size: 1rem; font-weight: 600; color: var(--text-main); outline: none; transition: all 0.2s; background: #f8fafc;
+        }
+        .input-classic:focus { border-color: var(--accent-blue); background: #ffffff; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        .btn-classic {
+            width: 100%; padding: 1.1rem; border-radius: 99px; border: none; background: var(--primary-navy); color: white; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+        }
+        .btn-classic:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3); }
+
+        .auth-error-chip {
+            background: #fef2f2; color: #ef4444; padding: 0.8rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1.5rem; border: 1px solid #fee2e2; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
 
         .auth-footer-text {
             position: absolute;
@@ -233,7 +258,13 @@
                     Por favor, utiliza tu cuenta corporativa de Google.
                 </p>
 
-                <!-- El botón ya no es un submit directo, ahora dispara el flujo real -->
+                <!-- Alerta de Error (Spring Security) -->
+                <div th:if="${param.error}" class="auth-error-chip">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    Credenciales incorrectas o usuario no autorizado.
+                </div>
+
+                <!-- El botón dispara el flujo Google -->
                 <button type="button" class="btn-google" id="googleAuthBtn">
                     <svg width="24" height="24" viewBox="0 0 48 48">
                         <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
@@ -244,10 +275,22 @@
                     Continuar con Google Workspace
                 </button>
 
-                <!-- Formulario Oculto para persistencia Spring Security (Sesión) -->
-                <form th:action="@{/login}" method="post" id="springLoginForm" style="display:none;">
-                    <input type="hidden" name="username" id="springUsername">
-                    <input type="hidden" name="password" id="springPassword">
+                <!-- Separador Visual -->
+                <div class="auth-divider">
+                    <span>o accede con credenciales</span>
+                </div>
+
+                <!-- Formulario Visible para acceso clásico y persistencia Spring Security -->
+                <form th:action="@{/login}" method="post" id="springLoginForm">
+                    <div class="form-group">
+                        <label class="form-label">Correo Institucional / Usuario</label>
+                        <input type="text" name="username" id="springUsername" class="input-classic" placeholder="usuario@clinicasagradocorazon.com.co" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" name="password" id="springPassword" class="input-classic" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-classic">Iniciar Sesión</button>
                 </form>
 
             </div>
