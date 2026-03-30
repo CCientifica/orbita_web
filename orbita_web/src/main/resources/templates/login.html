@@ -296,9 +296,12 @@
         const loaderText = document.getElementById('loaderText');
         const springForm = document.getElementById('springLoginForm');
 
+        // Pasos de Diagnóstico en Producción (Render)
+        console.log("🚀 [ÓRBITA-AUTH] Inicializando flujo Google en:", window.location.hostname);
+
         // Escucha pasiva: registra cambios en auth pero NO redirige automáticamente
         onAuthStateChanged(auth, (user) => {
-            if (user) console.log("Google session active:", user.email);
+            if (user) console.log("✅ [ÓRBITA-AUTH] Sesión activa en Firebase:", user.email);
         });
 
         /**
@@ -309,15 +312,20 @@
          * 4. Session Mapping (Spring Security POST)
          */
         btn.addEventListener('click', async () => {
+            console.log("🔘 [ÓRBITA-AUTH] Clic en botón Google...");
             btn.disabled = true;
             loader.style.display = 'flex';
-            loaderText.innerText = 'Iniciando autenticación Google...';
+            loaderText.innerText = 'Abriendo ventana de Google...';
 
             try {
                 // 🚀 PASO 1: Popup Real de Google
+                // Si esto falla, verifica que el dominio esté en "Authorized domains" de Firebase Console
+                console.log("🔗 [ÓRBITA-AUTH] Llamando a signInWithPopup...");
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 const email = user.email.toLowerCase().trim();
+                
+                console.log("👤 [ÓRBITA-AUTH] Autenticado en Google como:", email);
 
                 // 📧 PASO 2: Validación de Dominio Institucional
                 if (!email.endsWith('@clinicasagradocorazon.com.co')) {
@@ -325,32 +333,52 @@
                 }
 
                 loaderText.innerText = 'Validando autorización interna...';
+                console.log("🔍 [ÓRBITA-AUTH] Verificando permisos en Firestore...");
 
-                // 🔍 PASO 3: Validación de Autorización Interna (Fuente de Verdad: Firestore)
-                // El nodo 'usuarios_permitidos' es la fuente de verdad de roles
+                // 🔍 PASO 3: Validación de Autorización Interna (Fuente de Verdad: Firestore Real)
                 const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
                 
                 if (!authSnap.exists()) {
-                    throw new Error('Usuario no autorizado en el sistema Orbita.');
+                    console.error("❌ [ÓRBITA-AUTH] Usuario no encontrado en colección 'usuarios_permitidos'");
+                    throw new Error('Usuario no autorizado en el sistema Orbita. Contacte al administrador.');
                 }
 
+                console.log("🔓 [ÓRBITA-AUTH] Permisos verificados con éxito.");
+
                 // 🔐 PASO 4: Mapeo a Sesión / Redirección según entorno
-                loaderText.innerText = 'Estableciendo sesión segura...';
+                loaderText.innerText = 'Estableciendo sesión en el servidor...';
                 
-                // Si estamos en Firebase Hosting (Entorno Estático), redirigimos directamente
-                if (window.location.hostname.includes('firebaseapp.com') || window.location.hostname.includes('web.app')) {
+                // Entornos Estáticos (Firebase Hosting)
+                const isFirebaseEnv = window.location.hostname.includes('firebaseapp.com') || 
+                                    window.location.hostname.includes('web.app');
+
+                if (isFirebaseEnv) {
+                    console.log("🌐 [ÓRBITA-AUTH] Entorno Detectado: Firebase Hosting. Redirigiendo a /home");
                     window.location.replace("/home");
                 } else {
-                    // Si estamos en Spring Boot (Entorno Servidor), establecemos sesión formal
+                    // Entornos de Producción Server-Side (Render / Spring Boot)
+                    console.log("🖥️ [ÓRBITA-AUTH] Entorno Detectado: Servidor (Render/Local). Iniciando POST a Spring Security...");
                     document.getElementById('springUsername').value = email;
                     document.getElementById('springPassword').value = email + "123"; 
+                    
+                    // Aseguramos que el formulario se envíe con el CSRF actual (si existe)
                     springForm.submit();
                 }
 
             } catch (error) {
-                console.error("Auth Error:", error);
-                alert("Error de acceso: " + error.message);
-                await signOut(auth); // Limpiar intento de login
+                console.error("📛 [ÓRBITA-AUTH] Error de autenticación:", error.code, error.message);
+                
+                let userFriendlyMsg = error.message;
+                if (error.code === 'auth/popup-blocked') {
+                    userFriendlyMsg = 'El navegador bloqueó la ventana emergente. Por favor, permite los popups para este sitio.';
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    userFriendlyMsg = 'Este dominio no está autorizado en la consola de Firebase. Contacte a soporte.';
+                }
+
+                alert("Error de acceso: " + userFriendlyMsg);
+                
+                try { await signOut(auth); } catch(e) {} // Limpiar estado fallido
+                
                 loader.style.display = 'none';
                 btn.disabled = false;
             }
