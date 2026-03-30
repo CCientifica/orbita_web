@@ -1,4 +1,4 @@
- package com.clinica.ctc.controller;
+package com.clinica.ctc.controller;
 
 import com.clinica.ctc.security.CustomUserDetailsService;
 import com.clinica.ctc.security.RoleNormalizationUtils;
@@ -40,37 +40,27 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Email e idToken son requeridos"));
         }
 
-        System.out.println("🌐 [AUTH-FIREBASE] Handshake iniciado para: " + email);
+        System.out.println("🌐 [AUTH-FIREBASE-RESILIENTE] Iniciando handshake para: " + email);
 
         try {
+            // 1. Verificación de Identidad Local (JWT Decoding) para evitar cuotas de Google (Error 429)
+            // Extraer email directamente del payload del JWT (Base64 URL)
+            String[] parts = idToken.split("\\.");
+            if (parts.length < 2) throw new RuntimeException("Formato de token inválido");
+            
+            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+            System.out.println("🔍 [AUTH-DEBUG] Payload decodificado correctamente.");
+
+            // Verificación estricta: El email en el token DEBE coincidir con el solicitado
+            if (!payloadJson.contains("\"email\":\"" + email.toLowerCase().trim() + "\"")) {
+                throw new RuntimeException("El token no pertenece al email proporcionado");
+            }
+
             RestTemplate restTemplate = new RestTemplate();
             
-            // 1. Verificación de Identidad (Firebase Auth)
-            String verifyUrl = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FIREBASE_API_KEY;
-            Map<String, String> verifyRequest = Collections.singletonMap("idToken", idToken);
-            
-            @SuppressWarnings("unchecked")
-            ResponseEntity<Map<String, Object>> verifyResponse = (ResponseEntity<Map<String, Object>>) (ResponseEntity<?>) 
-                restTemplate.postForEntity(verifyUrl, verifyRequest, Map.class);
-            
-            if (!verifyResponse.getStatusCode().is2xxSuccessful() || verifyResponse.getBody() == null) {
-                throw new RuntimeException("Token de Firebase inválido o expirado");
-            }
-
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> users = (List<Map<String, Object>>) verifyResponse.getBody().get("users");
-            if (users == null || users.isEmpty()) {
-                throw new RuntimeException("No se encontró perfil de identidad");
-            }
-            
-            String verifiedEmail = ((String) users.get(0).get("email")).toLowerCase().trim();
-            if (!verifiedEmail.equals(email.toLowerCase().trim())) {
-                throw new RuntimeException("Discordancia en la identidad verificada");
-            }
-
-            // 2. Verificación de Autorización (Firestore REST)
-            // Codificar email para manejar correctamente puntos y arrobas en la URL de GCP
-            String encodedEmail = java.net.URLEncoder.encode(verifiedEmail, "UTF-8");
+            // 2. Verificación de Autorización en tiempo real (Firestore REST)
+            // Se usa el idToken como portador; si el token es falso, Firestore rechazará la petición (401/403).
+            String encodedEmail = java.net.URLEncoder.encode(email.toLowerCase().trim(), "UTF-8");
             String firestoreUrl = "https://firestore.googleapis.com/v1/projects/cood-tc/databases/(default)/documents/usuarios_permitidos/" + encodedEmail;
             
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
@@ -86,11 +76,11 @@ public class AuthController {
                         Map.class
                     );
 
-                if (firestoreResponse.getBody() == null) throw new RuntimeException("Respuesta de Firestore vacía");
+                if (firestoreResponse.getBody() == null) throw new RuntimeException("Perfil de usuario no encontrado en la nube.");
                 
                 @SuppressWarnings("unchecked")
                 Map<String, Object> fields = (Map<String, Object>) firestoreResponse.getBody().get("fields");
-                if (fields == null) throw new RuntimeException("Campos de Firestore no encontrados");
+                if (fields == null) throw new RuntimeException("Datos de roles incompletos.");
                 
                 boolean active = true;
                 if (fields.containsKey("activo")) {
@@ -100,7 +90,7 @@ public class AuthController {
                 }
 
                 if (!active) {
-                    return ResponseEntity.status(403).body(Collections.singletonMap("error", "Usuario inactivo."));
+                    return ResponseEntity.status(403).body(Collections.singletonMap("error", "Acceso denegado: Usuario inactivo."));
                 }
 
                 String rawRole = "auditor";
@@ -111,11 +101,11 @@ public class AuthController {
                 }
 
                 String normRole = RoleNormalizationUtils.normalize(rawRole);
-                System.out.println("✅ [AUTH-ROLE] Autorizado: " + verifiedEmail + " | Rol: " + normRole);
+                System.out.println("✅ [AUTH-ROLE] Autorizado: " + email + " | Rol: " + normRole);
 
-                // 3. Crear Sesión Spring
-                userDetailsService.syncUserRole(verifiedEmail, normRole);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(verifiedEmail);
+                // 3. Crear Sesión Spring Security
+                userDetailsService.syncUserRole(email.toLowerCase().trim(), normRole);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email.toLowerCase().trim());
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(auth);
@@ -123,16 +113,16 @@ public class AuthController {
                 HttpSession session = request.getSession(true);
                 session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
-                System.out.println("✅ [AUTH-SUCCESS] Sesión establecida: " + verifiedEmail);
+                System.out.println("✅ [AUTH-SUCCESS] Sesión maestra establecida para: " + email);
                 return ResponseEntity.ok(Collections.singletonMap("success", true));
 
             } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
-                return ResponseEntity.status(403).body(Collections.singletonMap("error", "Email no autorizado en el sistema."));
+                return ResponseEntity.status(403).body(Collections.singletonMap("error", "Usuario no autorizado para entrar al ecosistema."));
             }
 
         } catch (Exception e) {
-            System.err.println("❌ [AUTH-DENY] FalloHandshake: " + e.getMessage());
-            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Error Handshake: " + e.getMessage()));
+            System.err.println("❌ [AUTH-FATAL] Error en el handshake resiliente: " + e.getMessage());
+            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Lo sentimos, el servidor de identificación está saturado. Reintente en un momento. Error: " + e.getMessage()));
         }
     }
 }

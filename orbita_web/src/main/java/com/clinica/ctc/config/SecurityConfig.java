@@ -1,3 +1,4 @@
+
 package com.clinica.ctc.config;
 
 import com.clinica.ctc.security.CustomUserDetailsService;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -55,7 +57,7 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
                 .crossOriginOpenerPolicy(coop -> coop
-                    .policy(org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
+                    .policy(CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
                 )
             )
             .authorizeHttpRequests(auth -> auth
