@@ -507,6 +507,7 @@
         googleBtn.addEventListener('click', async () => {
             console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Google...");
             googleBtn.disabled = true;
+            isAuthenticatingManually = true; // 🛡️ Bloquea handshake duplicado en onAuthStateChanged
             loader.style.display = 'flex';
 
             try {
@@ -515,10 +516,10 @@
                 const email = user.email.toLowerCase().trim();
                 const idToken = await user.getIdToken();
 
-                await validateAuthorization(email);
                 await establishSession(email, idToken);
 
             } catch (error) {
+                isAuthenticatingManually = false;
                 handleAuthError(error, googleBtn);
             }
         });
@@ -532,6 +533,7 @@
             const pass = document.getElementById('springPassword').value;
 
             console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Email/Password Firebase...");
+            isAuthenticatingManually = true; // 🛡️ Bloquea handshake duplicado
             loader.style.display = 'flex';
             loaderText.innerText = 'Validando con Firebase Auth...';
 
@@ -540,21 +542,15 @@
                 const user = result.user;
                 const idToken = await user.getIdToken();
 
-                await validateAuthorization(email);
                 await establishSession(email, idToken);
 
             } catch (error) {
+                isAuthenticatingManually = false;
                 handleAuthError(error);
             }
         });
 
-        async function validateAuthorization(email) {
-            loaderText.innerText = 'Verificando autorización interna...';
-            const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
-            if (!authSnap.exists()) {
-                throw new Error('Usuario no autorizado en el sistema Orbita. Contacte al administrador.');
-            }
-        }
+
 
         function handleAuthError(error, btnToReenable = null) {
             console.error("📛 [ÓRBITA-AUTH] Error:", error.code, error.message);

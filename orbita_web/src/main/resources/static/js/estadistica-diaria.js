@@ -3239,7 +3239,10 @@ async function verificarDatosPendientes() {
 
 /* ---------- Auth ---------- */
 onAuthStateChanged(auth, async (u) => {
-  if (!u) { location.href = "/"; return; }
+  if (!u) { 
+      console.warn("⚠️ [ESTADISTICA] Firebase Auth not ready.");
+      return; 
+  }
 
   [btnDesbloquear, btnBloquear, btnGuardarTodo, btnGenerarMetas, btnPreviewXLSX,
     btnGuardarDesdeModal, btnGuardarReal, btnBuscarHist, btnExcelHist, btnPdfHist]
