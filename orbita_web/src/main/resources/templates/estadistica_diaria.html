@@ -2,8 +2,8 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="layout :: header('Estadística Diaria')">
-    <link rel="stylesheet" href="/styles.css">
-    <script src="/js/orbita-layout-bridge.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/js/orbita-layout-bridge.js"></script>
 </head>
 
 
@@ -15,6 +15,7 @@
     - auditor: Acceso de Visualización (Visor de Datos).
     - analista: BLOQUEADO (Limitado a Alto Costo).
 -->
+
 <body class="dashboard-layout fade-in">
   <!-- Sidebar from Layout -->
   <aside th:replace="layout :: sidebar"></aside>
@@ -28,8 +29,11 @@
       <div class="glass-card text-center py-20">
         <div class="text-6xl mb-6">🚫</div>
         <h2 class="text-3xl font-black text-slate-800 mb-4">Acceso Restringido</h2>
-        <p class="text-slate-500 font-bold max-w-lg mx-auto">Su perfil actual (**analista**) no tiene permisos para acceder a los módulos de estadística institucional. Por favor, contacte al Administrador Maestro.</p>
-        <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex" style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Volver al Inicio</a>
+        <p class="text-slate-500 font-bold max-w-lg mx-auto">Su perfil actual (**analista**) no tiene permisos para
+          acceder a los módulos de estadística institucional. Por favor, contacte al Administrador Maestro.</p>
+        <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex"
+          style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Volver
+          al Inicio</a>
       </div>
     </main>
 
@@ -386,14 +390,15 @@
           flex-wrap: wrap;
           gap: 12px;
         }
-        
+
         @media (max-width: 768px) {
           .control-center .control-group {
             width: 100%;
             flex-direction: column;
             align-items: stretch;
           }
-          .control-center .control-group > div,
+
+          .control-center .control-group>div,
           .control-center .control-group select,
           .control-center .control-group input,
           .control-center .control-group button {
@@ -435,7 +440,7 @@
           overflow-x: auto;
           max-width: 100%;
         }
-        
+
         .nav-pills-modern .nav-btn {
           padding: 0.8rem 1.5rem;
           border-radius: 12px;
@@ -452,19 +457,36 @@
           white-space: nowrap;
         }
 
-        .nav-pills-modern .nav-btn:hover { background: #f8fafc; color: #0b365a; }
+        .nav-pills-modern .nav-btn:hover {
+          background: #f8fafc;
+          color: #0b365a;
+        }
+
         .nav-pills-modern .nav-btn.active {
           background: #0b365a;
           color: white;
           box-shadow: 0 4px 12px rgba(11, 54, 90, 0.3);
         }
 
-        .tab-pane { display: none; animation: slideUpFade 0.5s ease forwards; }
-        .tab-pane.active { display: block; }
+        .tab-pane {
+          display: none;
+          animation: slideUpFade 0.5s ease forwards;
+        }
 
-        @keyframes slideUpFade { 
-          from { opacity: 0; transform: translateY(15px); } 
-          to { opacity: 1; transform: translateY(0); } 
+        .tab-pane.active {
+          display: block;
+        }
+
+        @keyframes slideUpFade {
+          from {
+            opacity: 0;
+            transform: translateY(15px);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .modern-card {
@@ -476,10 +498,15 @@
         }
 
         @media (max-width: 1400px) {
-           .analytical-grid-3 { grid-template-columns: repeat(2, 1fr); }
+          .analytical-grid-3 {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
+
         @media (max-width: 900px) {
-           .analytical-grid-3 { grid-template-columns: 1fr; }
+          .analytical-grid-3 {
+            grid-template-columns: 1fr;
+          }
         }
 
         /* Glassmorphism Cards */
@@ -529,7 +556,7 @@
           font-size: 0.75rem;
           margin-bottom: 10px;
           text-transform: uppercase;
-        } 
+        }
 
         .control-center select,
         .control-center input[type="date"],
@@ -1258,13 +1285,17 @@
         }
 
         @media (max-width: 1400px) {
-          .metas-grid, #metasMensuales {
+
+          .metas-grid,
+          #metasMensuales {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
         }
 
         @media (max-width: 800px) {
-          .metas-grid, #metasMensuales {
+
+          .metas-grid,
+          #metasMensuales {
             grid-template-columns: 1fr !important;
           }
         }
@@ -2090,14 +2121,38 @@
             box-shadow: 0 0 14px #ef4444;
           }
         }
+
         @media (max-width: 1366px) {
-          .page-header-title { font-size: 20px; }
-          .control-center { padding: 10px 15px; gap: 10px; }
-          .btn-ai, .btn-report, .btn-forecast { padding: 5px 10px !important; font-size: 11px !important; }
-          .metas-grid, #metasMensuales { gap: 10px !important; }
-          .modern-card-wrapper { padding: 12px !important; }
-          .mc-stat-val { font-size: 12px !important; }
+          .page-header-title {
+            font-size: 20px;
+          }
+
+          .control-center {
+            padding: 10px 15px;
+            gap: 10px;
+          }
+
+          .btn-ai,
+          .btn-report,
+          .btn-forecast {
+            padding: 5px 10px !important;
+            font-size: 11px !important;
+          }
+
+          .metas-grid,
+          #metasMensuales {
+            gap: 10px !important;
+          }
+
+          .modern-card-wrapper {
+            padding: 12px !important;
+          }
+
+          .mc-stat-val {
+            font-size: 12px !important;
+          }
         }
+
         /* --- Inteligencia del Periodo Styles --- */
         .intel-grid {
           display: grid;
@@ -2202,7 +2257,7 @@
           position: relative;
           margin-bottom: 30px;
           overflow: hidden;
-          border: 1px solid rgba(255,255,255,0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .executive-callout::after {
@@ -2289,14 +2344,15 @@
           <i data-lucide="info" style="width:16px; height:16px; color:#3b82f6;"></i>
         </div>
         <div style="line-height:1.6;">
-          <strong style="font-size:13px; color:#1e3a5f; font-weight:800;">Información sobre la carga de datos</strong><br>
-          Los realizados del día anterior se cargan habitualmente antes de las <strong>12:00 m.</strong> de lunes a viernes,
+          <strong style="font-size:13px; color:#1e3a5f; font-weight:800;">Información sobre la carga de
+            datos</strong><br>
+          Los realizados del día anterior se cargan habitualmente antes de las <strong>12:00 m.</strong> de lunes a
+          viernes,
           excluyendo festivos colombianos. Los fines de semana y festivos, los datos se cargan el siguiente día hábil
           (ejemplo: el lunes se cargan los datos de viernes, sábado y domingo).
           Si después de las 12:00 m. no ve datos actualizados, por favor contacte al responsable de la información.
         </div>
-        <button onclick="document.getElementById('bannerHorarioCarga').style.display='none'"
-          style="margin-left:auto; flex-shrink:0; background:none; border:none; cursor:pointer;
+        <button onclick="document.getElementById('bannerHorarioCarga').style.display='none'" style="margin-left:auto; flex-shrink:0; background:none; border:none; cursor:pointer;
           color:#3b82f6; font-size:18px; line-height:1; padding:0 4px; font-weight:300;">×</button>
       </div>
 
@@ -2407,206 +2463,237 @@
           <section id="section-intel" class="fade-in">
             <div class="executive-callout" style="margin-bottom: 30px;">
               <div style="max-width: 850px; position: relative; z-index: 2;">
-                <h2 style="font-size: 2.2rem; font-weight: 900; margin-bottom: 12px; display: flex; align-items: center; gap: 18px; color: white;">
+                <h2
+                  style="font-size: 2.2rem; font-weight: 900; margin-bottom: 12px; display: flex; align-items: center; gap: 18px; color: white;">
                   <i data-lucide="brain-circuit" style="width:44px; height:44px; color:#818cf8;"></i>
                   Inteligencia del Periodo
                 </h2>
-            <p style="font-size: 1.15rem; opacity: 0.9; margin: 0; line-height: 1.6; color: rgba(255,255,255,0.9);">
-              Análisis predictivo en tiempo real basado en datos operativos. Proyectamos el cierre mensual,
-              detectamos desviaciones críticas y evaluamos el ritmo de cumplimiento institucional.
-            </p>
-          </div>
-          <div id="intel-date-badge"
-            style="position: absolute; top: 2.5rem; right: 2.5rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 10px 24px; border-radius: 14px; font-weight: 800; border: 1px solid rgba(255,255,255,0.2); font-size: 1.1rem;">
-            --
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 30px;" class="intel-main-grid">
-          <!-- Monitor de Desempeño Predictivo -->
-          <div class="modern-card" style="margin-top:0;">
-            <h3
-              style="display:flex; align-items:center; gap:12px; font-size:1.15rem; font-weight:850; color:#1e293b; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
-              <i data-lucide="activity" style="color:#4f46e5;"></i> MONITOR DE DESEMPEÑO PREDICTIVO
-            </h3>
-            <div id="intel-container" class="intel-grid">
-              <div style="grid-column: 1 / -1; padding: 80px 20px; text-align: center; color: #64748b;">
-                <i data-lucide="refresh-cw" class="spin"
-                  style="width:48px; height:48px; margin-bottom:20px; opacity:0.3;"></i>
-                <p style="font-weight:700; font-size:1.1rem;">Analizando comportamiento operativo y calculando
-                  proyecciones...</p>
+                <p style="font-size: 1.15rem; opacity: 0.9; margin: 0; line-height: 1.6; color: rgba(255,255,255,0.9);">
+                  Análisis predictivo en tiempo real basado en datos operativos. Proyectamos el cierre mensual,
+                  detectamos desviaciones críticas y evaluamos el ritmo de cumplimiento institucional.
+                </p>
               </div>
-            </div>
-          </div>
-
-          <!-- Panel de Alertas y Hallazgos -->
-          <div style="display: flex; flex-direction: column; gap: 30px;">
-            <div class="modern-card" style="margin-top:0;">
-              <h3
-                style="display:flex; align-items:center; gap:12px; font-size:1.05rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
-                <i data-lucide="alert-triangle" style="color:#ef4444;"></i> SEÑALES DE RIESGO
-              </h3>
-              <div id="intel-alerts" style="min-height: 120px;">
-                <p style="color: #94a3b8; font-size: 0.9rem; text-align: center; padding: 40px 0;">No se detectan
-                  anomalías críticas.</p>
+              <div id="intel-date-badge"
+                style="position: absolute; top: 2.5rem; right: 2.5rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 10px 24px; border-radius: 14px; font-weight: 800; border: 1px solid rgba(255,255,255,0.2); font-size: 1.1rem;">
+                --
               </div>
             </div>
 
-            <div class="modern-card" style="margin-top:0;">
-              <h3
-                style="display:flex; align-items:center; gap:12px; font-size:1.05rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
-                <i data-lucide="award" style="color:#f59e0b;"></i> TOP DESEMPEÑO (ESTE MES)
-              </h3>
-              <div id="intel-ranking"></div>
-            </div>
-          </div>
-        </div>
+            <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 30px;" class="intel-main-grid">
+              <!-- Monitor de Desempeño Predictivo -->
+              <div class="modern-card" style="margin-top:0;">
+                <h3
+                  style="display:flex; align-items:center; gap:12px; font-size:1.15rem; font-weight:850; color:#1e293b; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
+                  <i data-lucide="activity" style="color:#4f46e5;"></i> MONITOR DE DESEMPEÑO PREDICTIVO
+                </h3>
+                <div id="intel-container" class="intel-grid">
+                  <div style="grid-column: 1 / -1; padding: 80px 20px; text-align: center; color: #64748b;">
+                    <i data-lucide="refresh-cw" class="spin"
+                      style="width:48px; height:48px; margin-bottom:20px; opacity:0.3;"></i>
+                    <p style="font-weight:700; font-size:1.1rem;">Analizando comportamiento operativo y calculando
+                      proyecciones...</p>
+                  </div>
+                </div>
+              </div>
 
-        <!-- Matriz de Score Gerencial y Tendencia -->
-        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 30px;"
-          class="intel-secondary-grid">
-          <div class="modern-card" style="margin-top:0;">
-            <h3
-              style="display:flex; align-items:center; gap:12px; font-size:1.1rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
-              <i data-lucide="trending-up" style="color:#10b981;"></i> TENDENCIA DE ACTIVIDAD (CICLO ACTUAL)
-            </h3>
-            <div class="intel-chart-container" style="height: 350px;">
-              <canvas id="chart-intel-trend"></canvas>
-            </div>
-          </div>
+              <!-- Panel de Alertas y Hallazgos -->
+              <div style="display: flex; flex-direction: column; gap: 30px;">
+                <div class="modern-card" style="margin-top:0;">
+                  <h3
+                    style="display:flex; align-items:center; gap:12px; font-size:1.05rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
+                    <i data-lucide="alert-triangle" style="color:#ef4444;"></i> SEÑALES DE RIESGO
+                  </h3>
+                  <div id="intel-alerts" style="min-height: 120px;">
+                    <p style="color: #94a3b8; font-size: 0.9rem; text-align: center; padding: 40px 0;">No se detectan
+                      anomalías críticas.</p>
+                  </div>
+                </div>
 
-          <div class="modern-card" style="margin-top:0;">
-            <h3
-              style="display:flex; align-items:center; gap:12px; font-size:1.1rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
-              <i data-lucide="layout-grid" style="color:#3b82f6;"></i> SCORECARD OPERATIVO
-            </h3>
-            <div id="intel-perf-matrix" style="display:flex; flex-direction:column; gap:20px;">
-              <!-- Dinámico -->
+                <div class="modern-card" style="margin-top:0;">
+                  <h3
+                    style="display:flex; align-items:center; gap:12px; font-size:1.05rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
+                    <i data-lucide="award" style="color:#f59e0b;"></i> TOP DESEMPEÑO (ESTE MES)
+                  </h3>
+                  <div id="intel-ranking"></div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+
+            <!-- Matriz de Score Gerencial y Tendencia -->
+            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 30px;"
+              class="intel-secondary-grid">
+              <div class="modern-card" style="margin-top:0;">
+                <h3
+                  style="display:flex; align-items:center; gap:12px; font-size:1.1rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
+                  <i data-lucide="trending-up" style="color:#10b981;"></i> TENDENCIA DE ACTIVIDAD (CICLO ACTUAL)
+                </h3>
+                <div class="intel-chart-container" style="height: 350px;">
+                  <canvas id="chart-intel-trend"></canvas>
+                </div>
+              </div>
+
+              <div class="modern-card" style="margin-top:0;">
+                <h3
+                  style="display:flex; align-items:center; gap:12px; font-size:1.1rem; font-weight:850; color:#1e293b; margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:12px;">
+                  <i data-lucide="layout-grid" style="color:#3b82f6;"></i> SCORECARD OPERATIVO
+                </h3>
+                <div id="intel-perf-matrix" style="display:flex; flex-direction:column; gap:20px;">
+                  <!-- Dinámico -->
+                </div>
+              </div>
+            </div>
           </section>
         </div>
 
         <!-- TAB 2: Indicadores del Periodo -->
         <div class="tab-pane" id="tab-indicators">
           <section class="executive-dashboard-grid" id="indicators-grid">
-        <div class="modern-card">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
-             <h2 style="margin:0; font-size:1.3rem; font-weight:850; color:#1e293b; display:flex; align-items:center; gap:12px">
-               <i data-lucide="target" style="color:#3b82f6;"></i> Indicadores del Periodo
-             </h2>
-             <div style="display:flex; align-items:center; gap:12px">
-               <button id="btnPngMetas" class="btn-ghost" style="padding: 8px 16px; font-size: 11px; border: 1px solid #e2e8f0; border-radius: 10px;">Descargar Informe PNG</button>
-             </div>
-          </div>
-          <div id="metasMensuales" class="kpi-executive-grid">
-            <!-- Inyectado por JS -->
-          </div>
-        </div>
+            <div class="modern-card">
+              <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
+                <h2
+                  style="margin:0; font-size:1.3rem; font-weight:850; color:#1e293b; display:flex; align-items:center; gap:12px">
+                  <i data-lucide="target" style="color:#3b82f6;"></i> Indicadores del Periodo
+                </h2>
+                <div style="display:flex; align-items:center; gap:12px">
+                  <button id="btnPngMetas" class="btn-ghost"
+                    style="padding: 8px 16px; font-size: 11px; border: 1px solid #e2e8f0; border-radius: 10px;">Descargar
+                    Informe PNG</button>
+                </div>
+              </div>
+              <div id="metasMensuales" class="kpi-executive-grid">
+                <!-- Inyectado por JS -->
+              </div>
+            </div>
           </section>
         </div>
 
         <!-- TAB 3: Vista Mensual Consolidada -->
         <div class="tab-pane" id="tab-consolidated">
           <section class="executive-dashboard-grid" id="consolidated-table-grid">
-        <div class="modern-card">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
-             <h2 style="margin:0; font-size:1.3rem; font-weight:850; color:#1e293b; display:flex; align-items:center; gap:12px">
-               <i data-lucide="layout" style="color:#0ea5e9;"></i> VISTA MENSUAL CONSOLIDADA
-             </h2>
-             <div style="display:flex; justify-content: flex-end; gap:12px; flex-wrap:wrap">
-                <button id="btnCargarMensual" class="btn-primary"
-                  style="height:40px; padding: 0 16px; color:white !important; background:#253d5b !important; border-radius:10px;">
-                  <i data-lucide="refresh-cw"></i> Sincronizar
-                </button>
-                <button id="btnExportExcelMensual" class="btn"
-                  style="height:40px; padding: 0 16px; border: 1px solid #cbd5e1; background:white; color:#334155; border-radius:10px;">
-                  <i data-lucide="file-spreadsheet"></i> Excel
-                </button>
-                <button id="btnExportPngMensual" class="btn-ghost" style="height:40px; padding: 0 16px; border: 1px solid #e2e8f0; border-radius:10px;">
-                  <i data-lucide="image"></i> PNG
-                </button>
+            <div class="modern-card">
+              <div
+                style="display:flex; align-items:center; justify-content:space-between; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
+                <h2
+                  style="margin:0; font-size:1.3rem; font-weight:850; color:#1e293b; display:flex; align-items:center; gap:12px">
+                  <i data-lucide="layout" style="color:#0ea5e9;"></i> VISTA MENSUAL CONSOLIDADA
+                </h2>
+                <div style="display:flex; justify-content: flex-end; gap:12px; flex-wrap:wrap">
+                  <button id="btnCargarMensual" class="btn-primary"
+                    style="height:40px; padding: 0 16px; color:white !important; background:#253d5b !important; border-radius:10px;">
+                    <i data-lucide="refresh-cw"></i> Sincronizar
+                  </button>
+                  <button id="btnExportExcelMensual" class="btn"
+                    style="height:40px; padding: 0 16px; border: 1px solid #cbd5e1; background:white; color:#334155; border-radius:10px;">
+                    <i data-lucide="file-spreadsheet"></i> Excel
+                  </button>
+                  <button id="btnExportPngMensual" class="btn-ghost"
+                    style="height:40px; padding: 0 16px; border: 1px solid #e2e8f0; border-radius:10px;">
+                    <i data-lucide="image"></i> PNG
+                  </button>
+                </div>
               </div>
-          </div>
-          
-          <div class="table-wrap" style="margin-top:12px; overflow-x:auto; overflow-y:visible">
-            <table class="table-history" id="tblMensual" style="min-width:1800px;">
-              <thead id="theadMensual"></thead>
-              <tbody id="tbodyMensual"></tbody>
-            </table>
-          </div>
-          <div class="hint center" id="msgMensual" style="margin-top:12px; min-height: 20px;"></div>
-        </div>
+
+              <div class="table-wrap" style="margin-top:12px; overflow-x:auto; overflow-y:visible">
+                <table class="table-history" id="tblMensual" style="min-width:1800px;">
+                  <thead id="theadMensual"></thead>
+                  <tbody id="tbodyMensual"></tbody>
+                </table>
+              </div>
+              <div class="hint center" id="msgMensual" style="margin-top:12px; min-height: 20px;"></div>
+            </div>
           </section>
         </div>
 
         <!-- TAB 4: Tendencias Analíticas -->
         <div class="tab-pane" id="tab-trends">
           <section class="executive-dashboard-grid" id="trends-grid" style="margin-bottom: 60px;">
-        <div class="modern-card">
-          <div style="display:flex; align-items:center; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
-             <h2 style="margin:0; font-size:1.3rem; font-weight:850; color:#1e293b; display:flex; align-items:center; gap:12px">
-               <i data-lucide="trending-up" style="color:#10b981;"></i> TENDENCIAS ANALÍTICAS
-             </h2>
-          </div>
-
-          <div class="analytical-grid-3">
-            <!-- Bloque 1: Demanda -->
-            <div>
-              <div class="chart-container" style="height:280px; border:none; padding:0">
-                <h3 style="margin:0 0 15px; font-size:14px; color:#1e293b; font-weight:850; display:flex; align-items:center; gap:8px">
-                  <span style="width:10px; height:10px; border-radius:50%; background:#3b82f6;"></span> 1. GESTIÓN DE DEMANDA
-                </h3>
-                <canvas id="chartDemanda"></canvas>
+            <div class="modern-card">
+              <div
+                style="display:flex; align-items:center; margin-bottom:25px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
+                <h2
+                  style="margin:0; font-size:1.3rem; font-weight:850; color:#1e293b; display:flex; align-items:center; gap:12px">
+                  <i data-lucide="trending-up" style="color:#10b981;"></i> TENDENCIAS ANALÍTICAS
+                </h2>
               </div>
-              <div class="analytics-insight-box" id="insight-demanda">
-                <span class="insight-tag">Análisis Operativo</span>
-                <p>Relación entre Triages y Urgencias efectivas. Permite identificar la tasa de conversión y presión sobre el servicio de urgencias.</p>
+
+              <div class="analytical-grid-3">
+                <!-- Bloque 1: Demanda -->
+                <div>
+                  <div class="chart-container" style="height:280px; border:none; padding:0">
+                    <h3
+                      style="margin:0 0 15px; font-size:14px; color:#1e293b; font-weight:850; display:flex; align-items:center; gap:8px">
+                      <span style="width:10px; height:10px; border-radius:50%; background:#3b82f6;"></span> 1. GESTIÓN
+                      DE DEMANDA
+                    </h3>
+                    <canvas id="chartDemanda"></canvas>
+                  </div>
+                  <div class="analytics-insight-box" id="insight-demanda">
+                    <span class="insight-tag">Análisis Operativo</span>
+                    <p>Relación entre Triages y Urgencias efectivas. Permite identificar la tasa de conversión y presión
+                      sobre el servicio de urgencias.</p>
+                  </div>
+                </div>
+
+                <!-- Bloque 2: Ocupación -->
+                <div>
+                  <div class="chart-container" style="height:280px; border:none; padding:0">
+                    <h3
+                      style="margin:0 0 15px; font-size:14px; color:#1e293b; font-weight:850; display:flex; align-items:center; gap:8px">
+                      <span style="width:10px; height:10px; border-radius:50%; background:#10b981;"></span> 2. CAPACIDAD
+                      INSTALADA (%)
+                    </h3>
+                    <canvas id="chartOcupacion"></canvas>
+                  </div>
+                  <div class="analytics-insight-box" id="insight-ocupacion">
+                    <span class="insight-tag">Eficiencia de Camas</span>
+                    <p>Monitoreo de ocupación en UCI, UCE y Hospitalización. Niveles superiores al 95% indican
+                      saturación crítica.</p>
+                  </div>
+                </div>
+
+                <!-- Bloque 3: Quirúrgica -->
+                <div>
+                  <div class="chart-container" style="height:280px; border:none; padding:0">
+                    <h3
+                      style="margin:0 0 15px; font-size:14px; color:#1e293b; font-weight:850; display:flex; align-items:center; gap:8px">
+                      <span style="width:10px; height:10px; border-radius:50%; background:#8b5cf6;"></span> 3.
+                      PRODUCTIVIDAD QUIRÚRGICA
+                    </h3>
+                    <canvas id="chartCirugia"></canvas>
+                  </div>
+                  <div class="analytics-insight-box" id="insight-cirugia">
+                    <span class="insight-tag">Generación de Valor</span>
+                    <p>Relación entre procedimientos realizados y producción UVR. Mide el ritmo de facturación técnica
+                      del bloque quirúrgico.</p>
+                  </div>
+                </div>
+
+                <!-- Otros gráficos (Opcional: puedes agregar explicaciones a todos o agruparlos) -->
+                <div class="chart-container" style="height:250px;">
+                  <h3 style="font-size:12px;">Desglose Ocupación CR</em></h3><canvas id="chartOcupacionRO"></canvas>
+                </div>
+                <div class="chart-container" style="height:250px;">
+                  <h3 style="font-size:12px;">Volumen Triages</em></h3><canvas id="chartVsMetaRO"></canvas>
+                </div>
+                <div class="chart-container" style="height:250px;">
+                  <h3 style="font-size:12px;">Egresos por Piso</em></h3><canvas id="chartEgresosPisoRO"></canvas>
+                </div>
+                <div class="chart-container" style="height:250px;">
+                  <h3 style="font-size:12px;">Histórico Cx</em></h3><canvas id="chartCirugiaRO"></canvas>
+                </div>
+                <div class="chart-container" style="height:250px;">
+                  <h3 style="font-size:12px;">Egresos Críticos</em></h3><canvas id="chartEgresosRO"></canvas>
+                </div>
+                <div class="chart-container" style="height:250px;">
+                  <h3 style="font-size:12px;">Procedimientos Amb.</em></h3><canvas id="chartAmbRO"></canvas>
+                </div>
               </div>
             </div>
-
-            <!-- Bloque 2: Ocupación -->
-            <div>
-              <div class="chart-container" style="height:280px; border:none; padding:0">
-                <h3 style="margin:0 0 15px; font-size:14px; color:#1e293b; font-weight:850; display:flex; align-items:center; gap:8px">
-                  <span style="width:10px; height:10px; border-radius:50%; background:#10b981;"></span> 2. CAPACIDAD INSTALADA (%)
-                </h3>
-                <canvas id="chartOcupacion"></canvas>
-              </div>
-              <div class="analytics-insight-box" id="insight-ocupacion">
-                <span class="insight-tag">Eficiencia de Camas</span>
-                <p>Monitoreo de ocupación en UCI, UCE y Hospitalización. Niveles superiores al 95% indican saturación crítica.</p>
-              </div>
-            </div>
-
-            <!-- Bloque 3: Quirúrgica -->
-            <div>
-              <div class="chart-container" style="height:280px; border:none; padding:0">
-                <h3 style="margin:0 0 15px; font-size:14px; color:#1e293b; font-weight:850; display:flex; align-items:center; gap:8px">
-                  <span style="width:10px; height:10px; border-radius:50%; background:#8b5cf6;"></span> 3. PRODUCTIVIDAD QUIRÚRGICA
-                </h3>
-                <canvas id="chartCirugia"></canvas>
-              </div>
-              <div class="analytics-insight-box" id="insight-cirugia">
-                <span class="insight-tag">Generación de Valor</span>
-                <p>Relación entre procedimientos realizados y producción UVR. Mide el ritmo de facturación técnica del bloque quirúrgico.</p>
-              </div>
-            </div>
-            
-            <!-- Otros gráficos (Opcional: puedes agregar explicaciones a todos o agruparlos) -->
-            <div class="chart-container" style="height:250px;"><h3 style="font-size:12px;">Desglose Ocupación CR</em></h3><canvas id="chartOcupacionRO"></canvas></div>
-            <div class="chart-container" style="height:250px;"><h3 style="font-size:12px;">Volumen Triages</em></h3><canvas id="chartVsMetaRO"></canvas></div>
-            <div class="chart-container" style="height:250px;"><h3 style="font-size:12px;">Egresos por Piso</em></h3><canvas id="chartEgresosPisoRO"></canvas></div>
-            <div class="chart-container" style="height:250px;"><h3 style="font-size:12px;">Histórico Cx</em></h3><canvas id="chartCirugiaRO"></canvas></div>
-            <div class="chart-container" style="height:250px;"><h3 style="font-size:12px;">Egresos Críticos</em></h3><canvas id="chartEgresosRO"></canvas></div>
-            <div class="chart-container" style="height:250px;"><h3 style="font-size:12px;">Procedimientos Amb.</em></h3><canvas id="chartAmbRO"></canvas></div>
-          </div>
-        </div>
           </section>
         </div>
       </div>
-        <footer th:replace="~{layout :: footer}"></footer>
+      <footer th:replace="~{layout :: footer}"></footer>
     </main>
   </div>
 
@@ -2614,16 +2701,19 @@
   <!-- ===== MODAL CARGA DE DATOS ===== -->
   <div class="modal" id="modalCargaDatos" aria-hidden="true">
     <div class="modal-card" style="width:min(900px,95vw); max-height:90vh;" role="dialog">
-      <div class="modal-head" style="background:linear-gradient(135deg,#0b365a,#253d5b); color:white; padding:20px 28px; border:none;">
+      <div class="modal-head"
+        style="background:linear-gradient(135deg,#0b365a,#253d5b); color:white; padding:20px 28px; border:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%">
           <div style="display:flex; align-items:center; gap:12px;">
             <i data-lucide="upload-cloud" style="width:22px; height:22px; color:white;"></i>
             <div>
               <strong style="font-size:16px; color:white;">Captura de Realizados</strong>
-              <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-top:2px;">Ingrese los datos del día seleccionado</div>
+              <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-top:2px;">Ingrese los datos del día
+                seleccionado</div>
             </div>
           </div>
-          <button id="cerrarModalCarga" style="background:rgba(255,255,255,0.15); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; color:white; display:flex; align-items:center; justify-content:center;">
+          <button id="cerrarModalCarga"
+            style="background:rgba(255,255,255,0.15); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; color:white; display:flex; align-items:center; justify-content:center;">
             <i data-lucide="x" style="width:16px;height:16px;"></i>
           </button>
         </div>
@@ -2631,40 +2721,154 @@
       <div class="modal-body" style="padding:24px; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <span id="msgReal" class="hint"></span>
-          <button id="btnGuardarReal" class="btn-primary" style="height:44px; padding:0 24px; color:white !important; background:#253d5b !important; border-radius:12px; font-weight:800; display:flex; align-items:center; gap:8px;">
+          <button id="btnGuardarReal" class="btn-primary"
+            style="height:44px; padding:0 24px; color:white !important; background:#253d5b !important; border-radius:12px; font-weight:800; display:flex; align-items:center; gap:8px;">
             <i data-lucide="save" style="width:16px;height:16px;"></i> Guardar Día
           </button>
         </div>
         <div class="entry-grid">
-          <div class="kpi-micro-row"><b>Triages</b><div style="display:flex;gap:4px;align-items:center"><input id="real_triages" type="number" step="any" min="0" value="0"/><input id="meta_triages" type="hidden" value="0"/><span id="st_triages" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Atenciones Urg.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_urgencias" type="number" step="any" min="0" value="0"/><input id="meta_urgencias" type="hidden" value="0"/><span id="st_urgencias" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Camas UCE</b><div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uce" type="number" step="any" min="0" value="0"/><input id="meta_camas_uce" type="hidden" value="0"/><span id="st_camas_uce" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Bloqueo UCE</b><div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uce_bloq" type="number" step="any" min="0" value="0"/><input id="meta_camas_uce_bloq" type="hidden" value="0"/><span id="st_camas_uce_bloq" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Egresos UCE</b><div style="display:flex;gap:4px;align-items:center"><input id="real_egresos_uce" type="number" step="any" min="0" value="0"/><input id="meta_egresos_uce" type="hidden" value="0"/><span id="st_egresos_uce" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>% Ocup UCE</b><div style="display:flex;gap:4px;align-items:center"><input id="real_ocup_uce" type="number" step="any" min="0" value="0"/><input id="meta_ocup_uce" type="hidden" value="0"/><span id="st_ocup_uce" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Camas UCI</b><div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uci" type="number" step="any" min="0" value="0"/><input id="meta_camas_uci" type="hidden" value="0"/><span id="st_camas_uci" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Bloqueo UCI</b><div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uci_bloq" type="number" step="any" min="0" value="0"/><input id="meta_camas_uci_bloq" type="hidden" value="0"/><span id="st_camas_uci_bloq" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Egresos UCI</b><div style="display:flex;gap:4px;align-items:center"><input id="real_egresos_uci" type="number" step="any" min="0" value="0"/><input id="meta_egresos_uci" type="hidden" value="0"/><span id="st_egresos_uci" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>% Ocup UCI</b><div style="display:flex;gap:4px;align-items:center"><input id="real_ocup_uci" type="number" step="any" min="0" value="0"/><input id="meta_ocup_uci" type="hidden" value="0"/><span id="st_ocup_uci" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>PDE Crítico</b><div style="display:flex;gap:4px;align-items:center"><input id="real_pde_critico" type="number" step="any" min="0" value="0"/><input id="meta_pde_critico" type="hidden" value="0"/><span id="st_pde_critico" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Quirófanos</b><div style="display:flex;gap:4px;align-items:center"><input id="real_quirofanos" type="number" step="any" min="0" value="0"/><input id="meta_quirofanos" type="hidden" value="0"/><span id="st_quirofanos" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Bloqueo Quiróf.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_quirofanos_bloq" type="number" step="any" min="0" value="0"/><input id="meta_quirofanos_bloq" type="hidden" value="0"/><span id="st_quirofanos_bloq" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Proc. Quir.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_proc_quir" type="number" step="any" min="0" value="0"/><input id="meta_proc_quir" type="hidden" value="0"/><span id="st_proc_quir" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>UVR</b><div style="display:flex;gap:4px;align-items:center"><input id="real_uvr" type="number" step="any" min="0" value="0"/><input id="meta_uvr" type="hidden" value="0"/><span id="st_uvr" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Fibrobroncos.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_fibro" type="number" step="any" min="0" value="0"/><input id="meta_fibro" type="hidden" value="0"/><span id="st_fibro" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Endoscopias</b><div style="display:flex;gap:4px;align-items:center"><input id="real_endoscopia" type="number" step="any" min="0" value="0"/><input id="meta_endoscopia" type="hidden" value="0"/><span id="st_endoscopia" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Colonoscopias</b><div style="display:flex;gap:4px;align-items:center"><input id="real_colonoscopia" type="number" step="any" min="0" value="0"/><input id="meta_colonoscopia" type="hidden" value="0"/><span id="st_colonoscopia" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Camas Hosp.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_camas_hosp" type="number" step="any" min="0" value="0"/><input id="meta_camas_hosp" type="hidden" value="0"/><span id="st_camas_hosp" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Bloqueo Hosp.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_camas_hosp_bloq" type="number" step="any" min="0" value="0"/><input id="meta_camas_hosp_bloq" type="hidden" value="0"/><span id="st_camas_hosp_bloq" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Egresos Hosp.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_egresos_hosp" type="number" step="any" min="0" value="0"/><input id="meta_egresos_hosp" type="hidden" value="0"/><span id="st_egresos_hosp" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>2 piso</b><div style="display:flex;gap:4px;align-items:center"><input id="real_piso2" type="number" step="any" min="0" value="0"/><input id="meta_piso2" type="hidden" value="0"/><span id="st_piso2" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>3 piso</b><div style="display:flex;gap:4px;align-items:center"><input id="real_piso3" type="number" step="any" min="0" value="0"/><input id="meta_piso3" type="hidden" value="0"/><span id="st_piso3" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>4 piso</b><div style="display:flex;gap:4px;align-items:center"><input id="real_piso4" type="number" step="any" min="0" value="0"/><input id="meta_piso4" type="hidden" value="0"/><span id="st_piso4" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>% Ocup Hosp</b><div style="display:flex;gap:4px;align-items:center"><input id="real_ocup_hosp" type="number" step="any" min="0" value="0"/><input id="meta_ocup_hosp" type="hidden" value="0"/><span id="st_ocup_hosp" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>PDE Hosp</b><div style="display:flex;gap:4px;align-items:center"><input id="real_pde" type="number" step="any" min="0" value="0"/><input id="meta_pde" type="hidden" value="0"/><span id="st_pde" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Consulta Ext.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_ce" type="number" step="any" min="0" value="0"/><input id="meta_ce" type="hidden" value="0"/><span id="st_ce" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Labs Amb.</b><div style="display:flex;gap:4px;align-items:center"><input id="real_examenes_ambulatorios" type="number" step="any" min="0" value="0"/><input id="meta_examenes_ambulatorios" type="hidden" value="0"/><span id="st_examenes_ambulatorios" class="chip">—</span></div></div>
-          <div class="kpi-micro-row"><b>Quimio</b><div style="display:flex;gap:4px;align-items:center"><input id="real_quimio" type="number" step="any" min="0" value="0"/><input id="meta_quimio" type="hidden" value="0"/><span id="st_quimio" class="chip">—</span></div></div>
+          <div class="kpi-micro-row"><b>Triages</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_triages" type="number" step="any"
+                min="0" value="0" /><input id="meta_triages" type="hidden" value="0" /><span id="st_triages"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Atenciones Urg.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_urgencias" type="number" step="any"
+                min="0" value="0" /><input id="meta_urgencias" type="hidden" value="0" /><span id="st_urgencias"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Camas UCE</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uce" type="number" step="any"
+                min="0" value="0" /><input id="meta_camas_uce" type="hidden" value="0" /><span id="st_camas_uce"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Bloqueo UCE</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uce_bloq" type="number"
+                step="any" min="0" value="0" /><input id="meta_camas_uce_bloq" type="hidden" value="0" /><span
+                id="st_camas_uce_bloq" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Egresos UCE</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_egresos_uce" type="number" step="any"
+                min="0" value="0" /><input id="meta_egresos_uce" type="hidden" value="0" /><span id="st_egresos_uce"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>% Ocup UCE</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_ocup_uce" type="number" step="any"
+                min="0" value="0" /><input id="meta_ocup_uce" type="hidden" value="0" /><span id="st_ocup_uce"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Camas UCI</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uci" type="number" step="any"
+                min="0" value="0" /><input id="meta_camas_uci" type="hidden" value="0" /><span id="st_camas_uci"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Bloqueo UCI</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_camas_uci_bloq" type="number"
+                step="any" min="0" value="0" /><input id="meta_camas_uci_bloq" type="hidden" value="0" /><span
+                id="st_camas_uci_bloq" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Egresos UCI</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_egresos_uci" type="number" step="any"
+                min="0" value="0" /><input id="meta_egresos_uci" type="hidden" value="0" /><span id="st_egresos_uci"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>% Ocup UCI</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_ocup_uci" type="number" step="any"
+                min="0" value="0" /><input id="meta_ocup_uci" type="hidden" value="0" /><span id="st_ocup_uci"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>PDE Crítico</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_pde_critico" type="number" step="any"
+                min="0" value="0" /><input id="meta_pde_critico" type="hidden" value="0" /><span id="st_pde_critico"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Quirófanos</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_quirofanos" type="number" step="any"
+                min="0" value="0" /><input id="meta_quirofanos" type="hidden" value="0" /><span id="st_quirofanos"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Bloqueo Quiróf.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_quirofanos_bloq" type="number"
+                step="any" min="0" value="0" /><input id="meta_quirofanos_bloq" type="hidden" value="0" /><span
+                id="st_quirofanos_bloq" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Proc. Quir.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_proc_quir" type="number" step="any"
+                min="0" value="0" /><input id="meta_proc_quir" type="hidden" value="0" /><span id="st_proc_quir"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>UVR</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_uvr" type="number" step="any" min="0"
+                value="0" /><input id="meta_uvr" type="hidden" value="0" /><span id="st_uvr" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Fibrobroncos.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_fibro" type="number" step="any" min="0"
+                value="0" /><input id="meta_fibro" type="hidden" value="0" /><span id="st_fibro" class="chip">—</span>
+            </div>
+          </div>
+          <div class="kpi-micro-row"><b>Endoscopias</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_endoscopia" type="number" step="any"
+                min="0" value="0" /><input id="meta_endoscopia" type="hidden" value="0" /><span id="st_endoscopia"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Colonoscopias</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_colonoscopia" type="number" step="any"
+                min="0" value="0" /><input id="meta_colonoscopia" type="hidden" value="0" /><span id="st_colonoscopia"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Camas Hosp.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_camas_hosp" type="number" step="any"
+                min="0" value="0" /><input id="meta_camas_hosp" type="hidden" value="0" /><span id="st_camas_hosp"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Bloqueo Hosp.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_camas_hosp_bloq" type="number"
+                step="any" min="0" value="0" /><input id="meta_camas_hosp_bloq" type="hidden" value="0" /><span
+                id="st_camas_hosp_bloq" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Egresos Hosp.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_egresos_hosp" type="number" step="any"
+                min="0" value="0" /><input id="meta_egresos_hosp" type="hidden" value="0" /><span id="st_egresos_hosp"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>2 piso</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_piso2" type="number" step="any" min="0"
+                value="0" /><input id="meta_piso2" type="hidden" value="0" /><span id="st_piso2" class="chip">—</span>
+            </div>
+          </div>
+          <div class="kpi-micro-row"><b>3 piso</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_piso3" type="number" step="any" min="0"
+                value="0" /><input id="meta_piso3" type="hidden" value="0" /><span id="st_piso3" class="chip">—</span>
+            </div>
+          </div>
+          <div class="kpi-micro-row"><b>4 piso</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_piso4" type="number" step="any" min="0"
+                value="0" /><input id="meta_piso4" type="hidden" value="0" /><span id="st_piso4" class="chip">—</span>
+            </div>
+          </div>
+          <div class="kpi-micro-row"><b>% Ocup Hosp</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_ocup_hosp" type="number" step="any"
+                min="0" value="0" /><input id="meta_ocup_hosp" type="hidden" value="0" /><span id="st_ocup_hosp"
+                class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>PDE Hosp</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_pde" type="number" step="any" min="0"
+                value="0" /><input id="meta_pde" type="hidden" value="0" /><span id="st_pde" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Consulta Ext.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_ce" type="number" step="any" min="0"
+                value="0" /><input id="meta_ce" type="hidden" value="0" /><span id="st_ce" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Labs Amb.</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_examenes_ambulatorios" type="number"
+                step="any" min="0" value="0" /><input id="meta_examenes_ambulatorios" type="hidden" value="0" /><span
+                id="st_examenes_ambulatorios" class="chip">—</span></div>
+          </div>
+          <div class="kpi-micro-row"><b>Quimio</b>
+            <div style="display:flex;gap:4px;align-items:center"><input id="real_quimio" type="number" step="any"
+                min="0" value="0" /><input id="meta_quimio" type="hidden" value="0" /><span id="st_quimio"
+                class="chip">—</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -2950,7 +3154,7 @@
     <input type="date" id="histDesde" value="2026-01-01">
     <input type="date" id="histHasta" value="2026-12-31">
     <button id="btnBuscarHist"></button>
-    <div id="histSummary"></div>
+    <div id="histMsg"></div>
   </div>
 
   <!-- 
@@ -2965,22 +3169,22 @@
       /* ================= Lógica de Pestañas (Tabs) ================= */
       const btns = document.querySelectorAll('#mainTabs .nav-btn');
       const panes = document.querySelectorAll('#tab-views > .tab-pane');
-      
+
       btns.forEach(btn => {
         btn.addEventListener('click', () => {
           btns.forEach(b => b.classList.remove('active'));
           panes.forEach(p => p.classList.remove('active'));
-          
+
           btn.classList.add('active');
           const targetId = btn.getAttribute('data-target');
           const target = document.getElementById(targetId);
           if (target) target.classList.add('active');
-          
+
           // Re-trigger layout things if needed
           if (window.lucide) lucide.createIcons();
         });
       });
-      
+
       // Aseguramos que lucide funcione en los íconos de las pestañas
       if (window.lucide) lucide.createIcons();
     });

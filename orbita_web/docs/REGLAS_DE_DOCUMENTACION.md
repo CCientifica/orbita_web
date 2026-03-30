@@ -137,5 +137,41 @@ Cualquier desarrollador que intervenga en el sistema asume la responsabilidad de
    - Se dividió la pantalla de auditoría visual en secciones independientes: **🔴 CAMPOS REQUERIDOS** (vacíos reales), **🔴 ERRORES DE CONSISTENCIA** (incoherencias detectadas por el motor), **🔵 CONFIRMAR DATOS** (azules/volátiles) y **🟠 AUTOCORRECCIONES**.
 5. **Resultado**: La interfaz de usuario es ahora más clara y precisa, listando cada incidencia en su categoría correspondiente y manteniendo el bloqueo del botón de guardado mientras existan elementos en rojo o azul.
 
+### Caso: Corrección de Redeclaración updateAllDashboard (Abril 2026)
+
+1. **Documentos leídos antes de intervenir**: Toda la carpeta `/docs` (15 archivos). Lectura especial de `ARQUITECTURA_PROYECTO.md`, `ESTRUCTURA_PROYECTO.md`, `IDENTIDAD_VISUAL.md`, `PAGINAS_Y_FUNCIONES.md` y `UAT_Y_VALIDACION.md`.
+2. **Error exacto**: `Uncaught SyntaxError: Identifier 'updateAllDashboard' has already been declared`.
+3. **Diagnóstico**: Se detectó una duplicidad dentro de `estadistica-diaria.js`. Existía una declaración `const updateAllDashboard` (línea 867) y simultáneamente una `async function updateAllDashboard()` (línea 880). Esto bloqueaba la ejecución del motor JS del módulo.
+4. **Archivos revisados**: 
+    - `estadistica-diaria.js` (Lógica de orquestación)
+    - `estadistica_diaria.html` (Carga de scripts)
+5. **Corrección puntual**: Se eliminó el bloque `const updateAllDashboard` (líneas 867-874). Se mantuvo la `async function updateAllDashboard()` como orquestador único, ya que integra el motor de caché mensual y la recarga de las 4 grillas analíticas.
+6. **Verificación de funcionalidad**: 
+    - Se confirmó la eliminación de la redeclaración mediante `findstr`.
+    - La ejecución del script ahora es completa, permitiendo que la inicialización de Firebase y los listeners de auth se disparen correctamente.
+    - Se verificó que el dashboard vuelve a mostrar información sincronizada a través de `updateAllDashboard()`.
+7. **Verificación de no regresión**: No se alteraron los nombres de otras funciones, no se modificó el shell institucional (layout) ni se afectó la lógica de roles de `master admin`.
+
+### Caso: Corrección null histMsg y ReferenceError cargarVistaMensual (Abril 2026)
+
+1. **Documentos leídos antes de intervenir**: Toda la carpeta `/docs` (15 archivos). Lectura especial de `IDENTIDAD_VISUAL.md`, `PAGINAS_Y_FUNCIONES.md` y `UAT_Y_VALIDACION.md`.
+2. **Errores exactos**: 
+   - `Uncaught (in promise) TypeError: Cannot set properties of null (setting 'textContent')` en `buscarHistorico`.
+   - `Uncaught ReferenceError: cargarVistaMensual is not defined`.
+3. **Diagnóstico**: 
+   - Se debía a una discrepancia entre la restauración manual del HTML (donde no estaba el ID `histMsg`) y la JS (que lo esperaba en el bloque de compatibilidad).
+   - Se presentaba una pérdida de la función `cargarVistaMensual` fuera de su declaración oficial, probablemente por un renombrado incompleto durante una fase previa de estabilización.
+4. **Archivos revisados**: 
+   - `estadistica-diaria.js` (Lógica de orquestación y funciones auxiliares)
+   - `estadistica_diaria.html` (Mapeo de IDs compatibles y bloques ocultos)
+5. **Corrección puntual**: 
+   - Se restauró el ID `histMsg` en el bloque de compatibilidad del HTML (línea 3157), sincronizándolo con la variable global del JS.
+   - Se renombró la función `renderMonthlyTable` de nuevo a `cargarVistaMensual` en su declaración y en el orquestador `updateAllDashboard()`, asegurando que todos los listeners vuelvan a funcionar.
+6. **Verificación de funcionalidad**: 
+   - Se confirmó que la inicialización del dashboard ocurre sin errores en la consola.
+   - Las llamadas secuenciales en `updateAllDashboard` ahora invocan a `cargarVistaMensual` de forma transparente.
+   - La búsqueda histórica ahora puede actualizar el mensaje de estado sin provocar el error de nulo.
+7. **Verificación de no regresión**: No se alteraron los nombres de otras funciones críticas ni se rediseñó la UI.
+
 ---
 © 2026 Clínica Sagrado Corazón · Departamento de Coordinación Científica

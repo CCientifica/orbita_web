@@ -21,6 +21,7 @@
      - analista: Solo Alto Costo, puede editar, no cargar excel, no descargas.
      - auditor: Solo visualización de Predicción y Estadística.
 -->
+
 <head th:fragment="header(title)">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -374,11 +375,13 @@
         .avatar-dropdown-item.danger {
             color: #dc2626;
         }
+
         .avatar-dropdown-item.danger:hover {
             background: #fef2f2;
         }
 
-        #userRoleBadge, .role-badge {
+        #userRoleBadge,
+        .role-badge {
             font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
@@ -389,13 +392,38 @@
             color: #64748b;
             transition: all 0.3s ease;
         }
-        
+
         /* Colores Institucionales por Rol */
-        .role-master { background: #ef4444 !important; color: white !important; } /* Rojo Maestro */
-        .role-super { background: #3b82f6 !important; color: white !important; } /* Azul Operativo */
-        .role-admin { background: #06b6d4 !important; color: white !important; } /* Cyan Directivo */
-        .role-analista { background: #f97316 !important; color: white !important; } /* Naranja Técnico */
-        .role-auditor { background: #8b5cf6 !important; color: white !important; } /* Violeta Auditor */
+        .role-master {
+            background: #ef4444 !important;
+            color: white !important;
+        }
+
+        /* Rojo Maestro */
+        .role-super {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+
+        /* Azul Operativo */
+        .role-admin {
+            background: #06b6d4 !important;
+            color: white !important;
+        }
+
+        /* Cyan Directivo */
+        .role-analista {
+            background: #f97316 !important;
+            color: white !important;
+        }
+
+        /* Naranja Técnico */
+        .role-auditor {
+            background: #8b5cf6 !important;
+            color: white !important;
+        }
+
+        /* Violeta Auditor */
 
         /* ═══════════════════════════════════════
            SIDEBAR REFINEMENTS
@@ -536,16 +564,23 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .profile-modal {
             background: white;
             border-radius: 24px;
             width: 95%;
-            max-width: 900px; /* Más horizontal */
-            max-height: 85vh; /* Altura óptima */
+            max-width: 900px;
+            /* Más horizontal */
+            max-height: 85vh;
+            /* Altura óptima */
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             display: flex;
@@ -554,8 +589,15 @@
         }
 
         @keyframes modalScaleUp {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         .profile-modal-header {
@@ -623,10 +665,12 @@
         .profile-modal-body {
             padding: 30px;
             display: grid;
-            grid-template-columns: 1fr 1.2fr; /* Dos columnas */
+            grid-template-columns: 1fr 1.2fr;
+            /* Dos columnas */
             gap: 30px;
             overflow-y: auto;
-            max-height: calc(90vh - 150px); /* Ajuste para footer/header */
+            max-height: calc(90vh - 150px);
+            /* Ajuste para footer/header */
         }
 
         @media (max-width: 768px) {
@@ -635,12 +679,14 @@
                 padding: 24px;
                 gap: 24px;
             }
+
             .profile-modal {
                 max-width: 480px;
             }
         }
 
-        .profile-modal-info-col, .profile-modal-picker-col {
+        .profile-modal-info-col,
+        .profile-modal-picker-col {
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -665,14 +711,14 @@
             background: #f8fafc;
             transition: all 0.2s ease;
         }
-        
+
         .profile-input:focus {
             outline: none;
             border-color: #3b82f6;
             background: white;
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
-        
+
         .profile-input:disabled {
             background: #f1f5f9;
             color: #94a3b8;
@@ -694,7 +740,7 @@
                 grid-template-columns: repeat(4, 1fr);
             }
         }
-        
+
         .picker-avatar-option {
             width: 100%;
             aspect-ratio: 1;
@@ -704,15 +750,15 @@
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             padding: 2px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
-        
+
         .picker-avatar-option:hover {
             transform: scale(1.15);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             z-index: 2;
         }
-        
+
         .picker-avatar-option.selected {
             border-color: #3b82f6;
             background: #eff6ff;
@@ -727,7 +773,8 @@
             gap: 12px;
         }
 
-        .btn-cancel, .btn-save {
+        .btn-cancel,
+        .btn-save {
             padding: 10px 20px;
             border-radius: 10px;
             font-size: 13px;
@@ -758,7 +805,7 @@
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
         }
-        
+
         .btn-save:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -835,14 +882,15 @@
                  - Programas: master, super, admin y analista (quien solo ve Alto Costo).
                  - Datos/Predictiva: master, super, admin y auditor.
             -->
-            
+
             <!-- ACCESO EXCLUSIVO: Administración de Usuarios (Solo master admin) -->
-            <a sec:authorize="hasAuthority('master admin')" th:href="@{/usuarios}" class="nav-link admin-only" id="nav-users-direct">
+            <a sec:authorize="hasAuthority('master admin')" th:href="@{/usuarios}" class="nav-link admin-only"
+                id="nav-users-direct">
                 <i data-lucide="users"></i>
                 <span>Usuarios</span>
             </a>
 
-             <div class="nav-section-title"
+            <div class="nav-section-title"
                 style="padding: 1.5rem 1.5rem 0.5rem; font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">
                 Módulos del Sistema</div>
 
@@ -862,8 +910,9 @@
                             GPC</span></a>
                 </div>
             </div>
- 
-            <div class="nav-group" id="group-programas" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'analista')">
+
+            <div class="nav-group" id="group-programas"
+                sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'analista')">
                 <div class="nav-group-header" onclick="toggleNavGroup(this)">
                     <div style="display: flex; align-items: center; gap: 0.85rem;">
                         <i data-lucide="activity" style="width: 18px; opacity: 0.7;"></i>
@@ -872,12 +921,15 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
-                    <a th:href="@{/altocosto}" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto Costo</span></a>
-                    <a th:href="@{/porfiria}" class="nav-link" sec:authorize="!hasAuthority('analista')"><i data-lucide="microscope"></i><span>PorfirIA</span></a>
+                    <a th:href="@{/altocosto}" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto
+                            Costo</span></a>
+                    <a th:href="@{/porfiria}" class="nav-link" sec:authorize="!hasAuthority('analista')"><i
+                            data-lucide="microscope"></i><span>PorfirIA</span></a>
                 </div>
             </div>
 
-            <div class="nav-group" id="group-eco" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin')">
+            <div class="nav-group" id="group-eco"
+                sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin')">
                 <div class="nav-group-header" onclick="toggleNavGroup(this)">
                     <div style="display: flex; align-items: center; gap: 0.85rem;">
                         <i data-lucide="boxes" style="width: 18px; opacity: 0.7;"></i>
@@ -886,20 +938,26 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
-                    <div style="padding: 0.5rem 1rem 0.2rem; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px;">Registro Clínico (RCF)</div>
-                    <a th:href="@{/auxiliares-enf-rcf}" class="nav-link"><i data-lucide="user-plus"></i><span>RCF: Auxiliares</span></a>
-                    <a th:href="@{/medicos-gen-rcf}" class="nav-link"><i data-lucide="user-check"></i><span>RCF: Médicos</span></a>
-                    
+                    <div
+                        style="padding: 0.5rem 1rem 0.2rem; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.5px;">
+                        Registro Clínico (RCF)</div>
+                    <a th:href="@{/auxiliares-enf-rcf}" class="nav-link"><i data-lucide="user-plus"></i><span>RCF:
+                            Auxiliares</span></a>
+                    <a th:href="@{/medicos-gen-rcf}" class="nav-link"><i data-lucide="user-check"></i><span>RCF:
+                            Médicos</span></a>
+
                     <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0.4rem 1rem;"></div>
-                    
+
                     <a th:href="@{/ams}" class="nav-link"><i data-lucide="stethoscope"></i><span>AMS</span></a>
                     <a th:href="@{/isa}" class="nav-link"><i data-lucide="database"></i><span>ISA</span></a>
                     <a th:href="@{/dasheco}" class="nav-link"><i data-lucide="pie-chart"></i><span>DashEco</span></a>
-                    <a th:href="@{/otroseco}" class="nav-link"><i data-lucide="plus-circle"></i><span>OtrosEco</span></a>
+                    <a th:href="@{/otroseco}" class="nav-link"><i
+                            data-lucide="plus-circle"></i><span>OtrosEco</span></a>
                 </div>
             </div>
 
-            <div class="nav-group" id="group-datos" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div class="nav-group" id="group-datos"
+                sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
                 <div class="nav-group-header" onclick="toggleNavGroup(this)">
                     <div style="display: flex; align-items: center; gap: 0.85rem;">
                         <i data-lucide="bar-chart-3" style="width: 18px; opacity: 0.7;"></i>
@@ -908,16 +966,20 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
-                    <a th:href="@{/consulta-cx-imdx}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i data-lucide="search"></i><span>Consulta Cx
+                    <a th:href="@{/consulta-cx-imdx}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i
+                            data-lucide="search"></i><span>Consulta Cx
                             IMDX</span></a>
-                    <a th:href="@{/estadistica-diaria}" class="nav-link"><i data-lucide="calendar-days"></i><span>Estadística
+                    <a th:href="@{/estadistica-diaria}" class="nav-link"><i
+                            data-lucide="calendar-days"></i><span>Estadística
                             Diaria</span></a>
-                    <a th:href="@{/acumulado-mensual}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i data-lucide="trending-up"></i><span>Acumulado
+                    <a th:href="@{/acumulado-mensual}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i
+                            data-lucide="trending-up"></i><span>Acumulado
                             Mensual</span></a>
                 </div>
             </div>
 
-            <div class="nav-group" id="group-predictiva" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
+            <div class="nav-group" id="group-predictiva"
+                sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
                 <div class="nav-group-header" onclick="toggleNavGroup(this)">
                     <div style="display: flex; align-items: center; gap: 0.85rem;">
                         <i data-lucide="sparkles" style="width: 18px; opacity: 0.7;"></i>
@@ -926,7 +988,8 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
-                    <a th:href="@{/predictor-los}" class="nav-link"><i data-lucide="wand-2"></i><span>Predictor LOS</span></a>
+                    <a th:href="@{/predictor-los}" class="nav-link"><i data-lucide="wand-2"></i><span>Predictor
+                            LOS</span></a>
                     <a th:href="@{/historico-los}" class="nav-link"><i data-lucide="history"></i><span>Histórico
                             LOS</span></a>
                 </div>
@@ -960,21 +1023,28 @@
                 <div class="user-profile" style="position: relative;" sec:authorize="isAuthenticated()">
                     <div class="user-info">
                         <span class="user-name" th:text="${#authentication.principal.username}">Nombre Usuario</span>
-                        <span class="role-badge" id="userRoleBadge" th:text="${#authentication.authorities[0].authority}">ROL</span>
+                        <span class="role-badge" id="userRoleBadge"
+                            th:text="${#authentication.authorities[0].authority}">ROL</span>
                     </div>
 
                     <!-- Avatar clickeable -->
                     <div class="avatar-wrapper" id="avatarWrapper">
-                        <div class="user-avatar-circle" id="userAvatarCircle" th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U</div>
+                        <div class="user-avatar-circle" id="userAvatarCircle"
+                            th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U
+                        </div>
                     </div>
 
                     <!-- Dropdown -->
                     <div class="avatar-dropdown" id="avatarDropdown">
                         <div class="avatar-dropdown-header">
-                            <div class="avatar-dropdown-avatar" id="avatarDropdownAvatar" th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U</div>
+                            <div class="avatar-dropdown-avatar" id="avatarDropdownAvatar"
+                                th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U
+                            </div>
                             <div>
-                                <div class="avatar-dropdown-name" th:text="${#authentication.principal.username}">Usuario</div>
-                                <div class="avatar-dropdown-role" th:text="${#authentication.authorities[0].authority}">ROL</div>
+                                <div class="avatar-dropdown-name" th:text="${#authentication.principal.username}">
+                                    Usuario</div>
+                                <div class="avatar-dropdown-role" th:text="${#authentication.authorities[0].authority}">
+                                    ROL</div>
                             </div>
                         </div>
                         <div class="avatar-dropdown-divider"></div>
@@ -983,7 +1053,8 @@
                             Ver Perfil / Editar
                         </button>
                         <form th:action="@{/logout}" method="post" style="display:inline;">
-                             <button type="submit" class="avatar-dropdown-item danger" style="width:100%; border:none; background:none; text-align:left; cursor:pointer;">
+                            <button type="submit" class="avatar-dropdown-item danger"
+                                style="width:100%; border:none; background:none; text-align:left; cursor:pointer;">
                                 <i data-lucide="log-out" style="width:15px;"></i>
                                 Cerrar Sesión
                             </button>
@@ -1030,14 +1101,14 @@
                 <div class="profile-modal-info-col">
                     <label>CORREO ELECTRÓNICO (ID)</label>
                     <input type="text" id="profileEmail" disabled class="profile-input" />
-                    
+
                     <label>NOMBRE COMPLETO</label>
                     <input type="text" id="profileName" class="profile-input" placeholder="Tu nombre..." />
-                    
+
                     <label>TELÉFONO O EXTENSIÓN</label>
                     <input type="text" id="profilePhone" placeholder="Opcional" class="profile-input" />
                 </div>
-                
+
                 <!-- Columna Derecha: Selección de Avatar -->
                 <div class="profile-modal-picker-col">
                     <label>IDENTIDAD VISUAL (ADVENTURER NEUTRAL)</label>
@@ -1066,7 +1137,7 @@
                 displayName: /*[[${#authentication.principal.username}]]*/ 'Usuario',
                 role: /*[[${#authentication.authorities[0].authority}]]*/ 'UNAUTHORIZED'
             };
-            
+
             // Notificar a los módulos que el usuario está listo
             document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
@@ -1075,14 +1146,14 @@
             });
             /*]]>*/
         </script>
-        
+
         <!-- Firebase Shim (Official SDK Integration) -->
         <script type="module" th:src="@{/js/firebase-shim.js}"></script>
-        
+
         <!-- 👤 Componentes de Perfil -->
         <div th:replace="~{this :: profile-modal}"></div>
         <script th:src="@{/js/profile-v2.js}"></script>
-        
+
         <script>
             function toggleNavGroup(header) {
                 const group = header.parentElement;

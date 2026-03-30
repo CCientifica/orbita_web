@@ -67,3 +67,8 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+*.db
+*.log
+orbita_web/data/
+target/
