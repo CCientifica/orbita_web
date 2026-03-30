@@ -14,12 +14,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,11 +35,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private RoleRepository roleRepository;
 
-    @Autowired
-    @org.springframework.context.annotation.Lazy
-    private PasswordEncoder passwordEncoder;
-
-    private static final String OFFICIAL_DOMAIN = "@clinicasagradocorazon.com.co";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -84,6 +79,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         System.out.println("🔍 [Auth-Debug] Usuario no encontrado en 'users', verificando 'usuarios_permitidos': " + email);
         
         // La fuente de verdad SIEMPRE es usuarios_permitidos
+        Objects.requireNonNull(email, "email cannot be null");
         return usuarioPermitidoRepository.findById(email)
                 .map(this::createUserFromPermitido)
                 .orElseThrow(() -> {
@@ -95,19 +91,33 @@ public class CustomUserDetailsService implements UserDetailsService {
     private User createUserFromPermitido(UsuarioPermitido up) {
         try {
             JsonNode node = objectMapper.readTree(up.getDataJson());
-            String rawRole = node.has("rol") ? node.get("rol").asText() : "auditor";
-            String displayName = node.has("nombre") ? node.get("nombre").asText() : up.getEmail();
+            String rawRole = "auditor";
+            if (node.has("rol")) {
+                JsonNode r = node.get("rol");
+                if (r != null) rawRole = r.asText();
+            }
+            
+            String displayName = up.getEmail();
+            if (node.has("nombre")) {
+                JsonNode n = node.get("nombre");
+                if (n != null) displayName = n.asText();
+            }
             
             String normalizedRole = RoleNormalizationUtils.normalize(rawRole);
-            System.out.println("✨ [Auth-Debug] Provisionando nuevo usuario desde lista permitida: " + up.getEmail() + " | Rol: " + normalizedRole);
+            System.out.println("✨ [AUTH-FIREBASE] Provisionando registro local desde permitidos: " + up.getEmail() + " | Rol: " + normalizedRole);
 
             return saveNewUser(up.getEmail(), displayName, normalizedRole);
         } catch (Exception e) {
-            System.out.println("⚠️ [Auth-Debug] Error parseando datos de permitidos para " + up.getEmail() + ": " + e.getMessage());
+            System.out.println("⚠️ [AUTH-DENY] Error parseando datos de permitidos para " + up.getEmail() + ": " + e.getMessage());
             return saveNewUser(up.getEmail(), up.getEmail().split("@")[0], "auditor");
         }
     }
 
+    /**
+     * Sincroniza el usuario autenticado por Firebase con la base de datos local.
+     * El password almacenado es un placeholder técnico ya que la autenticación real
+     * sucede en el frontend/handshake via Firebase Auth.
+     */
     private User saveNewUser(String email, String displayName, String roleName) {
         User newUser = new User();
         newUser.setUsername(email);
@@ -115,8 +125,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         newUser.setName(displayName);
         newUser.setEnabled(true);
         
-        // Para login social, generamos un password aleatorio
-        newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+        // 🛡️ POLÍTICA ÓRBITA: Fuente de verdad es Firebase Auth. 
+        // Este valor es un placeholder técnico requerido por la interfaz de Spring Security/JPA
+        // pero NO se utiliza para validar credenciales en el servidor.
+        newUser.setPassword("{noop}FIREBASE_EXTERNAL_AUTHENTICATION");
 
         Set<Role> roles = new HashSet<>();
         String normalizedRoleName = RoleNormalizationUtils.normalize(roleName);
@@ -128,6 +140,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         
         newUser.setRoles(roles);
-        return userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
+        System.out.println("✅ [AUTH-SESSION] Usuario sincronizado para sesión: " + email + " | Rol final: " + normalizedRoleName);
+        return savedUser;
     }
 }

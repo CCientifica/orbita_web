@@ -442,7 +442,7 @@
     -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Configuración de Firebase (Fuente de Verdad de Identidad)
@@ -462,111 +462,113 @@
         // ⚙️ CONFIG: Forzar selección de cuenta (Evita login automático/silencioso)
         provider.setCustomParameters({ prompt: 'select_account' });
 
-        const btn = document.getElementById('googleAuthBtn');
+        const googleBtn = document.getElementById('googleAuthBtn');
+        const loginForm = document.getElementById('springLoginForm');
         const loader = document.getElementById('authLoader');
         const loaderText = document.getElementById('loaderText');
-        const springForm = document.getElementById('springLoginForm');
 
         // Pasos de Diagnóstico en Producción (Render)
-        console.log("🚀 [ÓRBITA-AUTH] Inicializando flujo Google en:", window.location.hostname);
-
-        // Escucha pasiva: registra cambios en auth pero NO redirige automáticamente
-        onAuthStateChanged(auth, (user) => {
-            if (user) console.log("✅ [ÓRBITA-AUTH] Sesión activa en Firebase:", user.email);
-        });
+        console.log("🚀 [ÓRBITA-AUTH] Inicializando flujo Firebase Auth en:", window.location.hostname);
 
         /**
-         * CLIC EN ACCESO: Dispara el flujo de validación en cascada
-         * 1. Google Popup (Interactividad obligatoria)
-         * 2. Domain Check (@clinicasagradocorazon.com.co)
-         * 3. Internal Auth Check (Firestore usuarios_permitidos)
-         * 4. Session Mapping (Spring Security POST)
+         * HANDSHAKE: Establece sesión en Spring Security tras validación Firebase
          */
-        btn.addEventListener('click', async () => {
-            console.log("🔘 [ÓRBITA-AUTH] Clic en botón Google...");
-            btn.disabled = true;
+        async function establishSession(email, idToken) {
+            loaderText.innerText = 'Estableciendo sesión en el servidor...';
+
+            const isFirebaseEnv = window.location.hostname.includes('firebaseapp.com') ||
+                                window.location.hostname.includes('web.app');
+
+            if (isFirebaseEnv) {
+                console.log("🌐 [ÓRBITA-AUTH] Entorno Firebase: Redirigiendo a /home");
+                window.location.replace("/home");
+                return;
+            }
+
+            console.log("🖥️ [ÓRBITA-AUTH] Entorno Servidor: Handshake seguro...");
+            const response = await fetch('/api/auth/session', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, idToken })
+            });
+
+            if (response.ok) {
+                console.log("✅ [ÓRBITA-AUTH] Sesión establecida exitosamente.");
+                window.location.replace("/home");
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'No autorizado por el servidor.');
+            }
+        }
+
+        /**
+         * LÓGICA GOOGLE
+         */
+        googleBtn.addEventListener('click', async () => {
+            console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Google...");
+            googleBtn.disabled = true;
             loader.style.display = 'flex';
-            loaderText.innerText = 'Abriendo ventana de Google...';
 
             try {
-                // 🚀 PASO 1: Popup Real de Google
-                // Si esto falla, verifica que el dominio esté en "Authorized domains" de Firebase Console
-                console.log("🔗 [ÓRBITA-AUTH] Llamando a signInWithPopup...");
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 const email = user.email.toLowerCase().trim();
+                const idToken = await user.getIdToken();
 
-                console.log("👤 [ÓRBITA-AUTH] Autenticado en Google como:", email);
-
-                // 📧 PASO 2: Validación de Dominio Institucional
-                console.log("🔍 [ÓRBITA-AUTH] Validando dominio institucional...");
-                const isInstitutional = email.endsWith('@clinicasagradocorazon.com.co');
-
-                if (!isInstitutional) {
-                    loaderText.innerText = 'Validando autorización externa...';
-                    // 🔍 PASO 3: Validación para cuentas externas en Firestore
-                    const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
-                    if (!authSnap.exists()) {
-                        throw new Error('Debes usar una cuenta institucional @clinicasagradocorazon.com.co o estar autorizado.');
-                    }
-                    console.log("🔓 [ÓRBITA-AUTH] Usuario externo autorizado via Firestore.");
-                } else {
-                   console.log("🔓 [ÓRBITA-AUTH] Dominio institucional verificado: " + email);
-                }
-
-                // 🔐 PASO 4: Mapeo a Sesión / Redirección según entorno
-                loaderText.innerText = 'Estableciendo sesión en el servidor...';
-
-                // Entornos Estáticos (Firebase Hosting)
-                const isFirebaseEnv = window.location.hostname.includes('firebaseapp.com') ||
-                    window.location.hostname.includes('web.app');
-
-                if (isFirebaseEnv) {
-                    console.log("🌐 [ÓRBITA-AUTH] Entorno Detectado: Firebase Hosting. Redirigiendo a /home");
-                    window.location.replace("/home");
-                } else {
-                    // Entornos de Producción Server-Side (Render / Spring Boot)
-                    console.log("🖥️ [ÓRBITA-AUTH] Entorno Detectado: Servidor. Iniciando handshake seguro...");
-                    
-                    const response = await fetch('/api/auth/google', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            // Si tienes CSRF habilitado, deberías enviarlo aquí. 
-                            // Dado que SecurityConfig lo ignora para /api/**, por ahora prosigo.
-                        },
-                        body: JSON.stringify({ email: email })
-                    });
-
-                    if (response.ok) {
-                        console.log("✅ [ÓRBITA-AUTH] Autenticación de servidor exitosa.");
-                        window.location.replace("/home");
-                    } else {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'No autorizado por el servidor.');
-                    }
-                }
+                await validateAuthorization(email);
+                await establishSession(email, idToken);
 
             } catch (error) {
-                console.error("📛 [ÓRBITA-AUTH] Error de autenticación:", error.code, error.message);
-
-                let userFriendlyMsg = error.message;
-                if (error.code === 'auth/popup-blocked') {
-                    userFriendlyMsg = 'El navegador bloqueó la ventana emergente. Por favor, permite los popups para este sitio.';
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    userFriendlyMsg = 'Este dominio no está autorizado en la consola de Firebase. Contacte a soporte.';
-                }
-
-                alert("Error de acceso: " + userFriendlyMsg);
-
-                try { await signOut(auth); } catch (e) { } // Limpiar estado fallido
-
-                loader.style.display = 'none';
-                btn.disabled = false;
+                handleAuthError(error, googleBtn);
             }
         });
 
-        // 🛡️ ÓRBITA NATURAL ATTRIBUTE TRANSLATOR (Para Standalone Pages)
+        /**
+         * LÓGICA EMAIL/PASSWORD (ACCESO CLÁSICO VIA FIREBASE)
+         */
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('springUsername').value.toLowerCase().trim();
+            const pass = document.getElementById('springPassword').value;
+
+            console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Email/Password Firebase...");
+            loader.style.display = 'flex';
+            loaderText.innerText = 'Validando con Firebase Auth...';
+
+            try {
+                const result = await signInWithEmailAndPassword(auth, email, pass);
+                const user = result.user;
+                const idToken = await user.getIdToken();
+
+                await validateAuthorization(email);
+                await establishSession(email, idToken);
+
+            } catch (error) {
+                handleAuthError(error);
+            }
+        });
+
+        async function validateAuthorization(email) {
+            loaderText.innerText = 'Verificando autorización interna...';
+            const authSnap = await getDoc(doc(db, 'usuarios_permitidos', email));
+            if (!authSnap.exists()) {
+                throw new Error('Usuario no autorizado en el sistema Orbita. Contacte al administrador.');
+            }
+        }
+
+        function handleAuthError(error, btnToReenable = null) {
+            console.error("📛 [ÓRBITA-AUTH] Error:", error.code, error.message);
+            let msg = error.message;
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = 'Credenciales inválidas.';
+            if (error.code === 'auth/popup-blocked') msg = 'Habilita los popups para este sitio.';
+            
+            alert("Error de acceso: " + msg);
+            loader.style.display = 'none';
+            if (btnToReenable) btnToReenable.disabled = false;
+            signOut(auth).catch(() => {});
+        }
+
+        // 🛡️ TRANSLATOR
         (function () {
             document.querySelectorAll('[th\\:src], [th\\:href]').forEach(el => {
                 const attrSrc = el.getAttribute('th:src');
@@ -579,5 +581,4 @@
     </script>
 
 </body>
-
 </html>

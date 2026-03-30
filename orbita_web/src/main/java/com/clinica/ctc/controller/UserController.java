@@ -10,7 +10,6 @@ import com.clinica.ctc.security.RoleNormalizationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -29,9 +28,6 @@ public class UserController {
 
     @Autowired
     private UsuarioPermitidoRepository usuarioPermitidoRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('master admin', 'super admin', 'admin')")
@@ -65,24 +61,17 @@ public class UserController {
         // 1. Sincronización en Tabla Principal (users)
         Optional<User> existingUser = userRepository.findByEmail(email);
         User user = existingUser.orElseGet(() -> {
-            System.out.println("🌱 [User-Service] Creando nuevo usuario: " + email);
+            System.out.println("🌱 [AUTH-SESSION] Creando registro local (JPA) para: " + email);
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setUsername(email);
-            // Default password sólo si es nuevo para evitar null en JPA, 
-            // pero se sobrescribirá si hay uno en el request.
-            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            // Placeholder técnico, la autenticación es externa (Firebase)
+            newUser.setPassword("{noop}EXTERNAL_AUTH_FIREBASE_" + java.util.UUID.randomUUID());
             return newUser;
         });
 
-        // Solo actualizar password si se envía uno nuevo
-        if (userData.containsKey("password") && userData.get("password") != null) {
-            String newPass = (String) userData.get("password");
-            if (!newPass.trim().isEmpty()) {
-                System.out.println("🔐 [User-Service] Actualizando contraseña para: " + email);
-                user.setPassword(passwordEncoder.encode(newPass));
-            }
-        }
+        // La fuente de verdad de credenciales es Firebase Auth. 
+        // Se ignoran cambios de password locales.
 
         user.setName(nombre);
         user.setEnabled(activo);
