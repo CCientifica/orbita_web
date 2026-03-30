@@ -1,4 +1,4 @@
-package com.clinica.ctc.controller;
+ package com.clinica.ctc.controller;
 
 import com.clinica.ctc.security.CustomUserDetailsService;
 import com.clinica.ctc.security.RoleNormalizationUtils;
@@ -46,29 +46,32 @@ public class AuthController {
             RestTemplate restTemplate = new RestTemplate();
             
             // 1. Verificación de Identidad (Firebase Auth)
+            String verifyUrl = "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FIREBASE_API_KEY;
             Map<String, String> verifyRequest = Collections.singletonMap("idToken", idToken);
+            
             @SuppressWarnings("unchecked")
             ResponseEntity<Map<String, Object>> verifyResponse = (ResponseEntity<Map<String, Object>>) (ResponseEntity<?>) 
-                restTemplate.postForEntity(FIREBASE_VERIFY_URL, verifyRequest, Map.class);
+                restTemplate.postForEntity(verifyUrl, verifyRequest, Map.class);
             
             if (!verifyResponse.getStatusCode().is2xxSuccessful() || verifyResponse.getBody() == null) {
-                throw new RuntimeException("Token de Firebase inválido");
+                throw new RuntimeException("Token de Firebase inválido o expirado");
             }
 
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> users = (List<Map<String, Object>>) verifyResponse.getBody().get("users");
             if (users == null || users.isEmpty()) {
-                throw new RuntimeException("No se encontró el usuario en el token");
+                throw new RuntimeException("No se encontró perfil de identidad");
             }
             
             String verifiedEmail = ((String) users.get(0).get("email")).toLowerCase().trim();
-            
             if (!verifiedEmail.equals(email.toLowerCase().trim())) {
-                throw new RuntimeException("Email no coincide con el token");
+                throw new RuntimeException("Discordancia en la identidad verificada");
             }
 
-            // 2. Verificación de Autorización (Firestore Cloud)
-            String firestoreUrl = "https://firestore.googleapis.com/v1/projects/cood-tc/databases/(default)/documents/usuarios_permitidos/" + verifiedEmail;
+            // 2. Verificación de Autorización (Firestore REST)
+            // Codificar email para manejar correctamente puntos y arrobas en la URL de GCP
+            String encodedEmail = java.net.URLEncoder.encode(verifiedEmail, "UTF-8");
+            String firestoreUrl = "https://firestore.googleapis.com/v1/projects/cood-tc/databases/(default)/documents/usuarios_permitidos/" + encodedEmail;
             
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setBearerAuth(idToken);
@@ -89,7 +92,7 @@ public class AuthController {
                 Map<String, Object> fields = (Map<String, Object>) firestoreResponse.getBody().get("fields");
                 if (fields == null) throw new RuntimeException("Campos de Firestore no encontrados");
                 
-                boolean active = false;
+                boolean active = true;
                 if (fields.containsKey("activo")) {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> activeField = (Map<String, Object>) fields.get("activo");
@@ -97,8 +100,7 @@ public class AuthController {
                 }
 
                 if (!active) {
-                    System.err.println("❌ [AUTH-DENY] Usuario inactivo: " + verifiedEmail);
-                    return ResponseEntity.status(403).body(Collections.singletonMap("error", "Usuario inactivo en el sistema."));
+                    return ResponseEntity.status(403).body(Collections.singletonMap("error", "Usuario inactivo."));
                 }
 
                 String rawRole = "auditor";
@@ -121,17 +123,16 @@ public class AuthController {
                 HttpSession session = request.getSession(true);
                 session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
-                System.out.println("✅ [AUTH-SESSION] Sesión establecida para: " + verifiedEmail);
+                System.out.println("✅ [AUTH-SUCCESS] Sesión establecida: " + verifiedEmail);
                 return ResponseEntity.ok(Collections.singletonMap("success", true));
 
             } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
-                System.err.println("❌ [AUTH-DENY] No autorizado en Firestore: " + verifiedEmail);
-                return ResponseEntity.status(403).body(Collections.singletonMap("error", "No tienes permisos de acceso."));
+                return ResponseEntity.status(403).body(Collections.singletonMap("error", "Email no autorizado en el sistema."));
             }
 
         } catch (Exception e) {
-            System.err.println("❌ [AUTH-DENY] Error general: " + e.getMessage());
-            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Autenticación fallida o error en el handshake."));
+            System.err.println("❌ [AUTH-DENY] FalloHandshake: " + e.getMessage());
+            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Error Handshake: " + e.getMessage()));
         }
     }
 }
