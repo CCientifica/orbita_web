@@ -39,6 +39,7 @@
                     background: #f8fafc; padding: 1.25rem 2.5rem;
                     border-bottom: 1px solid var(--crono-border);
                     display: flex; justify-content: space-between; align-items: center;
+                    gap: 20px; flex-wrap: wrap;
                 }
                 .crono-tabs { display: flex; gap: 8px; }
                 .crono-tab {
@@ -47,6 +48,15 @@
                     border: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em;
                 }
                 .crono-tab.active { background: #0f172a; color: white; border-color: #0f172a; }
+
+                /* Selector de Año */
+                .crono-year-picker {
+                    display: flex; align-items: center; gap: 12px;
+                    background: white; padding: 6px 16px; border-radius: 14px;
+                    border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+                }
+                .crono-year-picker label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin: 0; }
+                .crono-year-picker select { border: none; font-weight: 900; color: #0f172a; cursor: pointer; outline: none; background: none; }
 
                 /* Premium Table Layout */
                 .crono-table-container { padding: 1.5rem; overflow-x: auto; }
@@ -103,7 +113,19 @@
                             <div class="crono-tab" data-tab="plan">02. Plan Anual</div>
                             <div class="crono-tab" data-tab="seg">03. Seguimiento</div>
                         </div>
-                        <div id="panelActions"></div>
+
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <!-- Year Selector -->
+                            <div class="crono-year-picker">
+                                <label>Vigencia Fiscal</label>
+                                <select id="yearSelect">
+                                    <option value="2024">2024</option>
+                                    <option value="2025" selected>2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                            </div>
+                            <div id="panelActions"></div>
+                        </div>
                     </div>
 
                     <div class="crono-table-container">
@@ -118,6 +140,22 @@
                                         <th style="width: 80px" class="text-center">Ajuste</th>
                                         <th style="width: 80px" class="text-center">Desc</th>
                                         <th style="width: 120px">Líder</th>
+                                        <th style="width: 140px">Prioridad</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Panel Plan Anual -->
+                        <div id="panel-plan" class="crono-panel" style="display:none">
+                            <table class="crono-table" id="tblPlan">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 140px">Código</th>
+                                        <th style="white-space:nowrap">Tema / Título Científico</th>
+                                        <th style="width: 120px">Acción</th>
+                                        <th style="width: 120px">Mes</th>
                                         <th style="width: 140px">Prioridad</th>
                                     </tr>
                                 </thead>
@@ -151,9 +189,10 @@
     <div th:replace="~{layout :: scripts}"></div>
 
     <script type="module" th:inline="javascript">
+        /*<![CDATA[*/
         const qs = s => document.querySelector(s);
         const qsa = s => Array.from(document.querySelectorAll(s));
-        const state = { anio: new Date().getFullYear(), inventario: [], plan: [], seg: [] };
+        const state = { anio: 2025, inventario: [], plan: [], seg: [] };
 
         /* ================== NAVIGATION ================== */
         function initTabs() {
@@ -166,6 +205,15 @@
                     renderActions(btn.dataset.tab);
                 };
             });
+            
+            const yr = qs('#yearSelect');
+            if(yr) {
+                yr.onchange = () => {
+                    state.anio = parseInt(yr.value);
+                    console.log("📅 Cambiando año a:", state.anio);
+                    loadFromDB();
+                };
+            }
         }
 
         function renderActions(tab) {
@@ -209,7 +257,7 @@
         async function initModule() {
             const { db, auth } = window.firebaseInstance || {};
             if (!db || !auth) { setTimeout(initModule, 300); return; }
-            initTabs(); await loadFromDB(); renderAll();
+            initTabs(); await loadFromDB(); 
         }
 
         async function loadFromDB() {
@@ -217,16 +265,13 @@
             const { collection, getDocs, query, where } = window.firebaseFirestore || {};
             if(!db) return;
             try {
-                // Carga de Inventario
+                console.log("📥 Cargando datos de Firebase...");
                 state.inventario = (await getDocs(collection(db, 'gpc_identificacion'))).docs.map(d => d.data());
-                
-                // Carga de Plan Anual
                 state.plan = (await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)))).docs.map(d=>d.data());
-                
-                // Carga de Seguimiento (si existe colección aparte o se deriva del plan)
                 state.seg = (await getDocs(collection(db, 'gpc_seguimiento'))).docs.map(d => d.data());
-                if(state.seg.length === 0 \u0026\u0026 state.plan.length \u003e 0) {
-                    state.seg = state.plan.map(p =\u003e ({ ...p, status: 'Pendiente', socialized: false }));
+                
+                if(state.seg.length === 0 && state.plan.length > 0) {
+                    state.seg = state.plan.map(p => ({ ...p, status: 'Pendiente', socialized: false }));
                 }
 
                 renderAll();
@@ -255,14 +300,14 @@
                         ${['Alta','Media','Baja'].map(p=>`<option value="${p}" ${r.prior===p?'selected':''}>${p}</option>`).join('')}
                     </select></td>
                 `;
-                tr.querySelectorAll('input').forEach(inp =\u003e {
+                tr.querySelectorAll('input').forEach(inp => {
                     if(inp.type === 'checkbox') {
-                        inp.onchange = () =\u003e {
+                        inp.onchange = () => {
                              state.inventario[i][inp.dataset.key] = inp.checked;
                              renderInvent();
                         };
                     } else {
-                        inp.onchange = () =\u003e { state.inventario[i][inp.dataset.key] = inp.value; };
+                        inp.onchange = () => { state.inventario[i][inp.dataset.key] = inp.value; };
                     }
                 });
                 tbody.appendChild(tr);
@@ -325,6 +370,7 @@
         };
 
         initModule();
+        /*]]>*/
     </script>
 </body>
 </html>

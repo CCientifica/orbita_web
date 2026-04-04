@@ -40,7 +40,7 @@ window.firebaseFirestore = {
     collection: _smartColl,
     doc: _smartDoc,
     getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-    query, where, orderBy, onSnapshot, serverTimestamp, limit
+    query, where, orderBy, onSnapshot, serverTimestamp, limit, writeBatch
 };
 
 
