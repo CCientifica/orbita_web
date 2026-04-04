@@ -75,9 +75,9 @@ public class EmailController {
                 .filter(email -> email != null && !email.trim().isEmpty())
                 .toArray(String[]::new) : new String[0];
 
-            helper.setTo(cleanTo.length > 0 ? cleanTo : new String[]{"soporte@clinicasagradocorazon.com.co"});
+            helper.setTo(java.util.Objects.requireNonNull(cleanTo.length > 0 ? cleanTo : new String[]{"soporte@clinicasagradocorazon.com.co"}));
             if (cleanCc.length > 0) {
-                helper.setCc(cleanCc);
+                helper.setCc(java.util.Objects.requireNonNull(cleanCc));
             }
 
             String asunto = esCierreMes
@@ -124,7 +124,7 @@ public class EmailController {
                 """.formatted(mes, anio, fecha, intro);
 
             // Proveer un string explícitamente no nulo para resolver el warning @NonNull
-            helper.setText(html != null ? html : "Contenido no disponible", true);
+            helper.setText(java.util.Objects.requireNonNull(html != null ? html : "Contenido no disponible"), true);
             if (png1Bytes != null) {
                 helper.addAttachment("Metas_Diarias_" + fecha.replace("/", "-") + ".png",
                     () -> new java.io.ByteArrayInputStream(png1Bytes), "image/png");

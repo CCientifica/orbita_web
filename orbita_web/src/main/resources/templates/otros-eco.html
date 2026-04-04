@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Otros — Ecosistema Digital')}"></head>
+
+<body class="dashboard-layout fade-in eco-page eco-otros">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('Otros Ecosistema')}"></nav>
+
+        <main class="main-content">
+            <!-- Compliance Banner -->
+            <div id="complianceBar" class="compliance-banner" style="display:none">
+                <div class="flex items-center gap-4" style="position:relative; z-index:10">
+                    <div id="compIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400" style="background:rgba(16, 185, 129, 0.2); width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                        <span class="material-icons">event_available</span>
+                    </div>
+                    <div>
+                        <p style="font-size:9px; font-weight:900; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.5); margin:0;">Estatus de Cumplimiento Logístico</p>
+                        <h4 id="compMsg" style="font-size:0.75rem; font-weight:900; font-style:italic; margin:0;">--</h4>
+                    </div>
+                </div>
+                <div id="compBadge" style="padding:6px 16px; background:#10b981; color:white; border-radius:8px; font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:0.1em; position:relative; z-index:10">
+                    Sincronizado
+                </div>
+            </div>
+
+            <header class="page-header-rcf">
+                <h1 class="page-title">Otros · Mesa de Ayuda</h1>
+                <p class="page-subtitle">Gestión centralizada de requerimientos técnicos e interconexión con portales externos.</p>
+            </header>
+
+            <!-- Atajos de Portales -->
+            <div class="links-grid" id="linksBar"></div>
+
+            <!-- Toolbar Herramientas -->
+            <div class="toolbar">
+                <div class="pill">
+                    <span class="material-icons" style="color:var(--primary)">calendar_month</span>
+                    <span>Periodo:</span>
+                    <input id="monthFilter" type="month" />
+                </div>
+                <button id="applyFilterBtn" class="btn-oe btn-primary">Aplicar Filtro</button>
+                <button id="clearFilterBtn" class="btn-oe">Restablecer</button>
+                <div style="flex-grow: 1"></div>
+                <div style="display:flex; gap:8px;">
+                    <button id="xlBtn" class="btn-oe"><span class="material-icons" style="font-size:16px;">table_view</span> Excel</button>
+                    <button id="pdfBtn" class="btn-oe"><span class="material-icons" style="font-size:16px;">picture_as_pdf</span> PDF</button>
+                </div>
+            </div>
+
+            <div id="status" class="status-msg"></div>
+
+            <!-- KPIs de Operación -->
+            <section class="metrics-oe">
+                <div class="metric-oe"><p class="k">Registros Totales</p><p class="v" id="mTotal">0</p></div>
+                <div class="metric-oe"><p class="k">En Proceso</p><p class="v" id="mGestion" style="color:var(--primary)">0</p></div>
+                <div class="metric-oe"><p class="k">Completados</p><p class="v" id="mCerrados" style="color:var(--emerald)">0</p></div>
+                <div class="metric-oe"><p class="k">Tasa Cierre</p><p class="v" id="mPct">0%</p></div>
+                <div class="metric-oe"><p class="k">Conformes</p><p class="v" id="mConf" style="color:var(--emerald)">0</p></div>
+                <div class="metric-oe"><p class="k">No Conformes</p><p class="v" id="mNoConf" style="color:var(--rose)">0</p></div>
+                <div class="metric-oe ttr-highlight"><p class="k">Tiemp. Respuesta Prom.</p><p class="v" id="mTTR">—</p></div>
+            </section>
+
+            <!-- Grid de Acción -->
+            <div class="grid-oe">
+                <div class="card-oe">
+                    <h3><i class="material-icons">edit_note</i> Gestión del Ticket</h3>
+                    <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Nº Referencia</label>
+                                <input id="fNo" class="input-oe" type="text" placeholder="INC-XXXXXX" />
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Estado Operativo</label>
+                                <select id="fEstado" class="select-oe">
+                                    <option>Registrado</option>
+                                    <option>En gestión</option>
+                                    <option>Validado</option>
+                                    <option>Cerrado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Satisfacción</label>
+                                <select id="fSat" class="select-oe">
+                                    <option value="Pendiente" selected>Pendiente</option>
+                                    <option value="Conforme">Conforme</option>
+                                    <option value="No conforme">No conforme</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Síntesis Resolutiva</label>
+                                <input id="fObs" class="input-oe" type="text" placeholder="Resumen de solución" />
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:10px; font-weight:900; color:var(--slate-400); margin-bottom:6px; text-transform:uppercase;">Descripción Detallada</label>
+                            <textarea id="fDesc" placeholder="Detalle técnico del requerimiento..."></textarea>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:0.5rem;">
+                            <button id="saveBtn" class="btn-oe btn-primary" style="flex:1;">Guardar Cambios</button>
+                            <button id="clearBtn" class="btn-oe">Limpiar</button>
+                        </div>
+                        <div style="background:var(--slate-100); padding:1rem; border-radius:16px;">
+                            <p style="font-size:11px; font-weight:700; color:var(--slate-600); line-height:1.4;">
+                                <span class="material-icons" style="font-size:14px; position:relative; top:2px;">info</span> 
+                                Una vez el estado sea cambiado a <b>Cerrado</b>, el registro se moverá al histórico y se bloqueará su edición para auditoría.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-oe" style="padding:1rem;">
+                    <div style="padding:1rem 1rem 0; border-bottom:1.5px solid var(--slate-100); margin-bottom:1rem;">
+                        <h3 style="margin-bottom:0.5rem;"><i class="material-icons">dynamic_feed</i> Tickets Actuantes</h3>
+                        <p style="font-size:11px; font-weight:700; color:var(--slate-400); margin-bottom:1rem;">Listado de requerimientos en ciclo de vida abierto.</p>
+                    </div>
+                    <div class="tbl-wrap">
+                        <table class="tbl-oe">
+                            <thead>
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Descripción</th>
+                                    <th style="width:100px">Estado</th>
+                                    <th style="width:100px">Sat.</th>
+                                    <th>Apertura</th>
+                                    <th style="text-align:right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Histórico -->
+            <div class="card-oe">
+                <h3><i class="material-icons">history</i> Registro Histórico de Atenciones</h3>
+                <div class="tbl-wrap">
+                    <table class="tbl-oe">
+                        <thead>
+                            <tr>
+                                <th>Ref</th>
+                                <th>Descripción</th>
+                                <th>Sat.</th>
+                                <th>Apertura</th>
+                                <th>Cierre</th>
+                                <th>TTR</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyHist"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts Globales -->
+    <div th:replace="~{layout :: ui-scripts}"></div>
+    <div th:replace="~{layout :: auth-scripts}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+
+    <script type="module" th:inline="none">
+        let isOtrosInitialized = false;
+
+        const initOtrosEco = async () => {
+            if (isOtrosInitialized) return;
+            if (!window.firebaseInstance || !window.firebaseFirestore) return;
+            isOtrosInitialized = true;
+
+            const { auth, db } = window.firebaseInstance;
+            const { collection, addDoc, setDoc, doc, getDocs, getDoc, query, orderBy, where, serverTimestamp, deleteDoc, limit } = window.firebaseFirestore;
+            const { onAuthStateChanged } = window.firebaseAuth;
+
+            const okEl = document.getElementById("status");
+            const ok  = t => { if(!okEl) return; okEl.className="status-msg ok"; okEl.textContent=t; okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",3000); }
+            const err = t => { if(!okEl) return; okEl.className="status-msg err"; okEl.textContent=t; okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",3000); }
+            const fmtDate = ts => ts?.toDate ? ts.toDate().toLocaleString('es-CO', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : (ts? new Date(ts).toLocaleString('es-CO'):"—");
+            const durStr = ms => { if(!ms || ms<0) return "—"; const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000); return (d?d+"d ":"")+(h?h+"h ":"")+(m?m+"m":""); };
+            const pad = n => String(n).padStart(2,"0");
+            const getEl = id => document.getElementById(id);
+
+            const LINKS = [
+                {label:"Staff Aigenda", url:"https://ecodigital.portubien.co/ct/staff"},
+                {label:"Aigenda", url:"https://ecodigital.portubien.co/citapp/login/view_index2/7"},
+                {label:"Mesa de ayuda Go", url:"https://ecodigital.portubien.co/glpi/index.php?redirect=/front/tracking.injector.php&noAUTO=1"},
+                {label:"AMS", url:"http://192.168.10.13/ams/"},
+                {label:"Indicadores Usabilidad", url:"https://ued.portubien.co/"},
+                {label:"Indicadores CMI", url:"https://ecodigital.portubien.co/cmi/clinicas.html"}
+            ];
+            const linksBar = document.getElementById("linksBar");
+            if(linksBar){
+                linksBar.innerHTML = "";
+                LINKS.forEach(l=>{
+                    const a=document.createElement("a");
+                    a.className="linkbtn"; a.textContent=l.label; a.href=l.url; a.target="_blank"; a.rel="noopener";
+                    linksBar.appendChild(a);
+                });
+            }
+
+            const monthFilter = document.getElementById("monthFilter");
+            const fNo = document.getElementById("fNo"), fEstado = document.getElementById("fEstado"), fSat = document.getElementById("fSat"), fObs = document.getElementById("fObs"), fDesc = document.getElementById("fDesc");
+            const saveBtn = document.getElementById("saveBtn");
+            const tbody = document.getElementById("tbody"), tbodyHist = document.getElementById("tbodyHist");
+            const mTotal=document.getElementById("mTotal"), mGestion=document.getElementById("mGestion"), mCerrados=document.getElementById("mCerrados"), mPct=document.getElementById("mPct"), mConf=document.getElementById("mConf"), mNoConf=document.getElementById("mNoConf"), mTTR=document.getElementById("mTTR");
+
+            const COL_ACTIVOS = collection(db, "ecos_otros_tickets");
+            const COL_HIST = collection(db, "ecos_otros_tickets_hist");
+
+            function monthRange(ym){
+                if(!/^\d{4}-\d{2}$/.test(ym)) return [null,null];
+                const [y,m] = ym.split("-").map(Number);
+                return [new Date(y, m-1, 1, 0,0,0,0), new Date(y, m, 1, 0,0,0,0)];
+            }
+
+            let editingId = null;
+            function clearForm(){ fNo.value=""; fEstado.value="Registrado"; fSat.value="Pendiente"; fObs.value=""; fDesc.value=""; editingId=null; if(saveBtn) delete saveBtn.dataset.id; }
+
+            async function loadTickets() {
+                const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
+                let qAct = query(COL_ACTIVOS, orderBy("createdAt","desc")), qHist = query(COL_HIST, orderBy("closedAt","desc"));
+                
+                // Compliance Engine Otros
+                const updateCompliance = async () => {
+                    const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+                    const now = new Date();
+                    const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
+                    const mPrevStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
+                    
+                    let workDay = 0, currCheck = new Date(now.getFullYear(), now.getMonth(), 1);
+                    while(currCheck <= now){
+                        const day = currCheck.getDay(); const iso = currCheck.toISOString().split('T')[0];
+                        if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
+                        currCheck.setDate(currCheck.getDate()+1);
+                    }
+
+                    const snap = await getDocs(query(collection(db, "ecos_otros_tickets_hist"), where("month", "==", mPrevStr), limit(1)));
+                    const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
+                    if(!bar) return;
+                    bar.style.display = "flex";
+                    if(snap.size > 0){
+                        msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+                        badge.textContent = "Sincronizado";
+                    } else {
+                        const remains = 5 - workDay;
+                        if(remains >= 0){
+                            msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                            badge.textContent = "EN PLAZO";
+                        } else {
+                            msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                            badge.textContent = "VENCIDO";
+                            badge.style.background = "#f43f5e";
+                            icon.style.background = "rgba(244, 63, 94, 0.2)";
+                            icon.style.color = "#f43f5e";
+                        }
+                    }
+                };
+                updateCompliance();
+
+                if(start && end){
+                    qAct = query(COL_ACTIVOS, where("createdAt", ">=", start), where("createdAt", "<", end), orderBy("createdAt","desc"));
+                    qHist = query(COL_HIST, where("closedAt", ">=", start), where("closedAt", "<", end), orderBy("closedAt","desc"));
+                }
+                tbody.innerHTML="";
+                try {
+                    const snapA = await getDocs(qAct);
+                    snapA.forEach(d=>{
+                        const x=d.data(); 
+                        const stateCls = x.estado?.toLowerCase().includes('gestión') ? 'badge-gestion' : (x.estado?.toLowerCase().includes('validado') ? 'badge-validado' : 'badge-registrado');
+                        const satCls = x.sat === 'Conforme' ? 'sat-conforme' : (x.sat === 'No conforme' ? 'sat-noconforme' : 'sat-pendiente');
+                        const satIcon = x.sat === 'Conforme' ? 'check_circle' : (x.sat === 'No conforme' ? 'cancel' : 'pending');
+
+                        const tr=document.createElement("tr");
+                        tr.innerHTML=`
+                            <td><span style="font-family:monospace; font-weight:900;">${x.no||""}</span></td>
+                            <td style="max-width:300px;"><div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${x.desc||"—"}</div></td>
+                            <td><span class="badge-status ${stateCls}">${x.estado||""}</span></td>
+                            <td><div class="badge-sat ${satCls}"><span class="material-icons" style="font-size:14px;">${satIcon}</span> ${x.sat||"Pend."}</div></td>
+                            <td style="font-size:11px; color:var(--slate-400);">${fmtDate(x.createdAt)}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-oe" style="padding:6px 10px; height:auto;" data-edit><span class="material-icons" style="font-size:16px;">edit</span></button> 
+                                <button class="btn-oe btn-primary" style="padding:6px 10px; height:auto;" data-close><span class="material-icons" style="font-size:16px;">check</span></button>
+                            </td>`;
+                        tr.querySelector('[data-edit]').addEventListener('click', ()=>{ fNo.value = x.no||""; fEstado.value = x.estado||"Registrado"; fSat.value = x.sat||"Pendiente"; fObs.value = x.obs||""; fDesc.value = x.desc||""; editingId = d.id; if(saveBtn) saveBtn.dataset.id = d.id; window.scrollTo({top:0, behavior:'smooth'}); });
+                        tr.querySelector('[data-close]').addEventListener('click', async ()=>{
+                            if(!confirm("¿Estás seguro de cerrar este ticket y moverlo al histórico?")) return;
+                            try{ 
+                                const mNow = new Date();
+                                const mStr = `${mNow.getFullYear()}-${pad(mNow.getMonth()+1)}`;
+                                await setDoc(doc(db,"ecos_otros_tickets_hist", d.id), {...x, estado:"Cerrado", month:mStr, closedAt: serverTimestamp()}, {merge:true}); 
+                                await deleteDoc(doc(db,"ecos_otros_tickets", d.id)); 
+                                ok("Ticket archivado en histórico."); 
+                                await loadTickets(); await loadMetrics(); 
+                            }catch(e){ err("Error al archivar."); }
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    tbodyHist.innerHTML="";
+                    const snapH = await getDocs(qHist);
+                    snapH.forEach(d=>{
+                        const x=d.data(); const created = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const closed = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null; const ttr = (created && closed) ? (closed - created) : null;
+                        const satCls = x.sat === 'Conforme' ? 'sat-conforme' : (x.sat === 'No conforme' ? 'sat-noconforme' : 'sat-pendiente');
+                        const tr=document.createElement("tr");
+                        tr.innerHTML=`
+                            <td><span style="font-family:monospace; font-weight:900;">${x.no||""}</span></td>
+                            <td style="max-width:300px;"><div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${x.desc||"—"}</div></td>
+                            <td><div class="badge-sat ${satCls}">${x.sat||"Pend."}</div></td>
+                            <td style="font-size:11px;">${fmtDate(x.createdAt)}</td>
+                            <td style="font-size:11px;">${fmtDate(x.closedAt)}</td>
+                            <td><span class="badge-status badge-cerrado">${durStr(ttr)}</span></td>
+                            <td style="color:var(--slate-400); font-style:italic;">${x.obs||"—"}</td>`;
+                        tbodyHist.appendChild(tr);
+                    });
+                } catch(e) { console.error("[OTROS] Error loadTickets:", e); }
+            }
+
+            async function loadMetrics(){
+                const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
+                let qAct = COL_ACTIVOS, qHist = COL_HIST;
+                if(start && end){ qAct = query(COL_ACTIVOS, where("createdAt", ">=", start), where("createdAt", "<", end)); qHist = query(COL_HIST, where("closedAt", ">=", start), where("closedAt", "<", end)); }
+                try {
+                    const [a, h] = await Promise.all([getDocs(qAct), getDocs(qHist)]);
+                    const total = a.size + h.size; const gestion = a.size; const cerrados = h.size;
+                    let conf=0, noconf=0, sumMs=0, nCerr=0;
+                    h.forEach(d=>{
+                        const x=d.data(); if((x.sat||"") === "Conforme") conf++; else if((x.sat||"") === "No conforme") noconf++;
+                        const created = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const closed = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null;
+                        if(created && closed){ sumMs += (closed - created); nCerr++; }
+                    });
+                    if(mTotal) mTotal.textContent = total; 
+                    if(mGestion) mGestion.textContent = gestion; 
+                    if(mCerrados) mCerrados.textContent = cerrados; 
+                    if(mPct) mPct.textContent = total? ((cerrados/total)*100).toFixed(1)+"%" : "0%"; 
+                    if(mConf) mConf.textContent = conf; 
+                    if(mNoConf) mNoConf.textContent = noconf; 
+                    if(mTTR) mTTR.textContent = nCerr ? durStr(Math.round(sumMs/nCerr)) : "—";
+                } catch(e) { console.error("[OTROS] Error loadMetrics:", e); }
+            }
+
+            if(saveBtn) saveBtn.addEventListener("click", async ()=>{
+                try{
+                    const mNow = new Date();
+                    const mStr = `${mNow.getFullYear()}-${pad(mNow.getMonth()+1)}`;
+                    const payload = { no: (fNo.value||"").trim(), desc: (fDesc.value||"").trim(), estado: fEstado.value, sat: fSat.value, obs: (fObs.value||"").trim(), updatedBy: auth.currentUser?.email||"", updatedAt: serverTimestamp() };
+                    if(!payload.no){ return err("Referencia de ticket requerida."); }
+                    if(editingId){
+                        if(payload.estado==="Cerrado"){
+                            const snap = await getDoc(doc(db,"ecos_otros_tickets", editingId)); const prev = snap.exists() ? snap.data() : {};
+                            await setDoc(doc(db,"ecos_otros_tickets_hist", editingId), { ...prev, ...payload, estado:"Cerrado", month:mStr, createdAt: prev.createdAt || serverTimestamp(), closedAt: serverTimestamp() }, {merge:true});
+                            await deleteDoc(doc(db,"ecos_otros_tickets", editingId)); ok("Ticket cerrado exitosamente."); editingId=null; clearForm();
+                        }else{ await setDoc(doc(db,"ecos_otros_tickets", editingId), payload, {merge:true}); ok("Actualización correcta."); }
+                    }else{ payload.createdAt = serverTimestamp(); await addDoc(COL_ACTIVOS, payload); ok("Ticket registrado con éxito."); }
+                    await loadTickets(); await loadMetrics();
+                }catch(e){ err("Error al procesar la solicitud."); }
+            });
+
+            const clearBtn = document.getElementById("clearBtn");
+            if(clearBtn) clearBtn.addEventListener("click", clearForm);
+            
+            const applyFilterBtn = document.getElementById("applyFilterBtn");
+            if(applyFilterBtn) applyFilterBtn.addEventListener("click", async ()=>{ await loadTickets(); await loadMetrics(); ok("Criterios aplicados."); });
+            
+            const clearFilterBtn = document.getElementById("clearFilterBtn");
+            if(clearFilterBtn) clearFilterBtn.addEventListener("click", async ()=>{ if(monthFilter) monthFilter.value = ""; await loadTickets(); await loadMetrics(); ok("Filtros removidos."); });
+
+            const xlBtn = document.getElementById("xlBtn");
+            if(xlBtn) xlBtn.addEventListener("click", async ()=>{
+                try{
+                    const XL = window.XLSX; const snapA = await getDocs(COL_ACTIVOS); const snapH = await getDocs(COL_HIST);
+                    const wb = XL.utils.book_new();
+                    const dataA = snapA.docs.map(d=>({Referencia:d.data().no, Descripcion:d.data().desc, Estado:d.data().estado, Satisfaccion:d.data().sat, Creado:fmtDate(d.data().createdAt)}));
+                    const dataH = snapH.docs.map(d=>({Referencia:d.data().no, Descripcion:d.data().desc, Satisfaccion:d.data().sat, Creado:fmtDate(d.data().createdAt), Cerrado:fmtDate(d.data().closedAt)}));
+                    XL.utils.book_append_sheet(wb, XL.utils.json_to_sheet(dataA), "En Gestion");
+                    XL.utils.book_append_sheet(wb, XL.utils.json_to_sheet(dataH), "Historico");
+                    XL.writeFile(wb, `Reporte_OtrosEcos_${new Date().toLocaleDateString()}.xlsx`);
+                }catch(e){ err("Falla en exportación Excel."); }
+            });
+
+            const pdfBtn = document.getElementById("pdfBtn");
+            if(pdfBtn) pdfBtn.addEventListener("click", async ()=>{
+                const { jsPDF } = window.jspdf; const docP = new jsPDF();
+                docP.text("Reporte de Gestión de Tickets - Orbita Clínica", 14, 15);
+                docP.autoTable({ html: '.tbl-oe', startY: 20, theme: 'striped', headStyles: {fillColor: [30, 41, 59]} });
+                docP.save("Reporte_Tickets.pdf");
+            });
+
+            onAuthStateChanged(auth, u=>{ 
+                if(u){ 
+                    const now = new Date(); now.setMonth(now.getMonth()-1); 
+                    if(monthFilter) monthFilter.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}`; 
+                    loadTickets().then(()=>loadMetrics()); 
+                } 
+            });
+        }
+
+        window.addEventListener('firebase-ready', initOtrosEco);
+        if (window.firebaseInstance) initOtrosEco();
+    </script>
+    <!-- Tailwind CDN for layout utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (typeof tailwind !== 'undefined') tailwind.config = {
+            theme: { extend: { colors: { rcf: { alert: '#f43f5e', warn: '#f59e0b', success: '#10b981' } }, animation: { 'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite' } } }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

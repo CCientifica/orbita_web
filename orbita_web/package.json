@@ -1,0 +1,13 @@
+{
+  "name": "orbita-web",
+  "private": true,
+  "scripts": {
+    "build:isa": "npx @tailwindcss/cli -i ./src/main/resources/tailwind/isa.input.css -o ./src/main/resources/static/css/isa-tailwind.css",
+    "build:medicos": "npx @tailwindcss/cli -i ./src/main/resources/tailwind/medicos-gen-rcf.input.css -o ./src/main/resources/static/css/medicos-gen-rcf-tailwind.css",
+    "build:tailwind": "npm run build:isa && npm run build:medicos"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

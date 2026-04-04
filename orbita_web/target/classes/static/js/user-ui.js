@@ -156,7 +156,7 @@ const userUI = (function () {
 
         users.forEach(user => {
             const tr = document.createElement('tr');
-            const isMaster = user.email === 'coordcientifico@clinicasagradocorazon.com.co';
+            const isMaster = user.email.toLowerCase().trim() === userManagement.getMasterEmail().toLowerCase().trim();
             const initials = user.nombre.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
             // Buscar configuración de avatar

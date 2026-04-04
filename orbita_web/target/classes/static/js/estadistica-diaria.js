@@ -127,7 +127,8 @@ const histHasta = document.getElementById("histHasta");
 const btnBuscarHist = document.getElementById("btnBuscarHist");
 const btnExcelHist = document.getElementById("btnExcelHist");
 const btnPdfHist = document.getElementById("btnPdfHist");
-const tblHistBody = document.getElementById("tblHist") ? document.getElementById("tblHist").querySelector("tbody") : null;
+const tblHist = document.getElementById("tblHist");
+const tblHistBody = tblHist ? tblHist.querySelector("tbody") : null;
 const histMsg = document.getElementById("histMsg");
 
 
@@ -1861,6 +1862,10 @@ function renderHist(rows) {
   }
 
   const tbody = tblHistBody;
+  if (!tbody) {
+    console.warn("Table body 'tblHistBody' not found. Skipping render.");
+    return;
+  }
   tbody.innerHTML = rows.map(r => {
     const kpi = String(r.kpi || "");
     const val = Number(r.valor || 0);
@@ -2131,16 +2136,11 @@ if (btnPdfHist) btnPdfHist.addEventListener("click", async () => {
 
 // (4) Valores por defecto y búsqueda inicial
 
-function setDefaultHistRange() {
-  const today = new Date();
-  const y = today.getFullYear();
-  const m = String(today.getMonth() + 1).padStart(2, "0");
-  const d = String(today.getDate()).padStart(2, "0");
-  histDesde.value = `${y}-${m}-01`;
-  histHasta.value = `${y}-${m}-${d}`;
+// Cargar al iniciar (con seguridad)
+if (tblHist) {
+  setDefaultHistRange();
+  buscarHistorico();
 }
-setDefaultHistRange();
-buscarHistorico();
 
 /* ========== METAS ANUALES CONFIGURABLES ========== */
 const anioAnuales = document.getElementById("anioAnuales");
@@ -2247,7 +2247,7 @@ if (btnGuardarAnuales) {
 refrescarMetasAnuales();
 
 /* inicializar UI */
-await refreshDailyUI();
+refreshDailyUI().catch(e => console.error("Error initial loading UI:", e));
 
 /* ========== LÓGICA MODAL CARGA + GRÁFICAS READONLY ========== */
 function inicializarVistaSegunRol() {
@@ -3144,16 +3144,17 @@ async function verificarDatosPendientes() {
   try {
     const ahora = new Date();
     const horaActual = ahora.getHours() + ahora.getMinutes() / 60;
+    const isoHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+    const festivos = getColombiaHolidays(ahora.getFullYear());
     const diaSemanaHoy = ahora.getDay(); // 0=Dom, 6=Sab
 
-    // Solo verificar lunes a viernes
-    if (diaSemanaHoy === 0 || diaSemanaHoy === 6) return;
+    // Solo verificar días hábiles (No sábados, No domingos, No Festivos)
+    if (diaSemanaHoy === 0 || diaSemanaHoy === 6 || festivos.has(isoHoy)) return;
 
     // Solo mostrar alerta a partir de las 12:00
     if (horaActual < 12) return;
 
     // Calcular el día hábil anterior
-    const festivos = getColombiaHolidays(ahora.getFullYear());
 
     function diaHabilAnterior(fecha) {
       let d = new Date(fecha);
@@ -3239,7 +3240,10 @@ async function verificarDatosPendientes() {
 
 /* ---------- Auth ---------- */
 onAuthStateChanged(auth, async (u) => {
-  if (!u) { location.href = "/"; return; }
+  if (!u) { 
+      console.warn("⚠️ [ESTADISTICA] Firebase Auth not ready.");
+      return; 
+  }
 
   [btnDesbloquear, btnBloquear, btnGuardarTodo, btnGenerarMetas, btnPreviewXLSX,
     btnGuardarDesdeModal, btnGuardarReal, btnBuscarHist, btnExcelHist, btnPdfHist]
@@ -3295,76 +3299,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape") closeForecastModal();
   });
 
-  window.abrirAnalisisIA = async function () {
-    const aiModal = document.getElementById("aiModal");
-    const aiContent = document.getElementById("aiContent");
-    if (!aiModal || !aiContent) { alert("Modal no encontrado"); return; }
-
-    aiModal.classList.add("is-open");
-    aiContent.innerHTML = `
-    <div class="ai-loading">
-      <i data-lucide="loader-2" class="spin" style="width:40px;height:40px;color:#3b82f6"></i>
-      <div style="width:100%">
-        <div class="ai-shimmer"></div>
-        <div class="ai-shimmer" style="width:80%"></div>
-        <div class="ai-shimmer" style="width:90%"></div>
-      </div>
-      <p style="font-weight:600;color:#64748b">Recopilando datos y consultando a Gemini...</p>
-    </div>`;
-    if (window.lucide) lucide.createIcons();
-
-    let statsData = "";
-    document.querySelectorAll(".metas-grid > div").forEach(card => {
-      const allText = card.innerText.split("\n").map(t => t.trim()).filter(Boolean);
-      if (allText.length >= 2) statsData += `${allText[0]} | ${allText.slice(1).join(" ")}\n`;
-    });
-    const tbl = document.getElementById("tblMensual");
-    if (tbl) {
-      statsData += "\n--- VISTA MENSUAL ---\n";
-      tbl.querySelectorAll("tbody tr").forEach(row => {
-        const cells = row.querySelectorAll("td");
-        if (cells.length >= 10)
-          statsData += `${cells[0].innerText.trim()} | Meta: ${cells[1].innerText.trim()} | Logro: ${cells[cells.length - 5].innerText.trim()} | %: ${cells[cells.length - 4].innerText.trim()}\n`;
-      });
-    }
-    if (!statsData.trim()) {
-      aiContent.innerHTML = "<p style='color:#ef4444;padding:20px'>Carga los datos antes de analizar.</p>";
-      return;
-    }
-
-    const mesEl = document.getElementById("mesDaily");
-    const mes = mesEl ? mesEl.options[mesEl.selectedIndex].text : "";
-    const anio = document.getElementById("anioDaily")?.value || "";
-
-    try {
-      const resp = await fetch("/api/ai/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          month: mes, year: anio, stats: statsData,
-          systemPrompt: "Eres analista clínico experto de la Clínica Sagrado Corazón. Analiza los datos. Usa ## para títulos, ### para secciones, 🔴🟡🟢 para KPIs. No inventes datos. Sé ejecutivo y profesional."
-        })
-      });
-      if (resp.ok) {
-        const result = await resp.json();
-        const raw = result.candidates[0].content.parts[0].text;
-        const html = raw
-          .replace(/^### (.*$)/gm, '<h3 style="color:#1e293b;margin-top:1.2rem">$1</h3>')
-          .replace(/^## (.*$)/gm, '<h2 style="color:#0b365a;border-bottom:2px solid #e2e8f0;padding-bottom:8px">$1</h2>')
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/---/g, '<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">')
-          .replace(/^([🔴🟡🟢].*)$/gm, '<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:10px 14px;margin:8px 0;border-radius:0 8px 8px 0">$1</div>')
-          .replace(/\n\n/g, '<br>');
-        aiContent.innerHTML = `<div class="ai-response-content" style="padding:8px">${html}</div>`;
-      } else {
-        aiContent.innerHTML = `<p style="color:#ef4444;padding:20px">Error: ${await resp.text()}</p>`;
-      }
-    } catch (err) {
-      aiContent.innerHTML = `<p style="color:#ef4444;padding:20px">Error de red: ${err.message}</p>`;
-    }
-    if (window.lucide) lucide.createIcons();
-  };
-
   // Copiar análisis
   const btnCopy = document.getElementById("btnCopyAi");
   if (btnCopy) {
@@ -3381,6 +3315,81 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
+
+/* ========== ANÁLISIS IA (MOVILIZADO A GLOBAL) ========== */
+window.abrirAnalisisIA = async function () {
+  const aiModal = document.getElementById("aiModal");
+  const aiContent = document.getElementById("aiContent");
+  if (!aiModal || !aiContent) { alert("Modal de IA no encontrado en el DOM"); return; }
+
+  aiModal.classList.add("is-open");
+  aiContent.innerHTML = `
+  <div class="ai-loading">
+    <i data-lucide="loader-2" class="spin" style="width:40px;height:40px;color:#3b82f6"></i>
+    <div style="width:100%">
+      <div class="ai-shimmer"></div>
+      <div class="ai-shimmer" style="width:80%"></div>
+      <div class="ai-shimmer" style="width:90%"></div>
+    </div>
+    <p style="font-weight:600;color:#64748b">Recopilando datos actuales y consultando a Gemini Pro...</p>
+  </div>`;
+  if (window.lucide) lucide.createIcons();
+
+  let statsData = "";
+  // Captura de datos de las tarjetas de metas
+  document.querySelectorAll(".metas-grid > div").forEach(card => {
+    const allText = card.innerText.split("\n").map(t => t.trim()).filter(Boolean);
+    if (allText.length >= 2) statsData += `${allText[0]} | ${allText.slice(1).join(" ")}\n`;
+  });
+  
+  const tbl = document.getElementById("tblMensual");
+  if (tbl) {
+    statsData += "\n--- VISTA MENSUAL (EJECUCIÓN) ---\n";
+    tbl.querySelectorAll("tbody tr").forEach(row => {
+      const cells = row.querySelectorAll("td");
+      if (cells.length >= 10)
+        statsData += `${cells[0].innerText.trim()} | Meta: ${cells[1].innerText.trim()} | Logro: ${cells[cells.length - 5].innerText.trim()} | %: ${cells[cells.length - 4].innerText.trim()}\n`;
+    });
+  }
+
+  if (!statsData.trim()) {
+    aiContent.innerHTML = "<p style='color:#ef4444;padding:20px'>No hay datos suficientes para analizar. Por favor sincronice la vista mensual.</p>";
+    return;
+  }
+
+  const mesEl = document.getElementById("mesDaily");
+  const mesNom = mesEl ? mesEl.options[mesEl.selectedIndex].text : "";
+  const anioVal = document.getElementById("anioDaily")?.value || "";
+
+  try {
+    const resp = await fetch("/api/ai/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        month: mesNom, year: anioVal, stats: statsData,
+        systemPrompt: "Eres un analista de gestión clínica experto de la Clínica Sagrado Corazón. Analiza el cumplimiento de metas. Usa ## para títulos, ### para secciones, 🔴🟡🟢 para resaltar estados. Sé ejecutivo, crítico y profesional. Proporciona recomendaciones accionables."
+      })
+    });
+
+    if (resp.ok) {
+      const result = await resp.json();
+      const raw = result.candidates[0].content.parts[0].text;
+      const html = raw
+        .replace(/^### (.*$)/gm, '<h3 style="color:#1e293b;margin-top:1.2rem">$1</h3>')
+        .replace(/^## (.*$)/gm, '<h2 style="color:#0b365a;border-bottom:2px solid #e2e8f0;padding-bottom:8px">$1</h2>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/---/g, '<hr style="border:none;border-top:1px solid #e2e8f0;margin:16px 0">')
+        .replace(/^([🔴🟡🟢].*)$/gm, '<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:10px 14px;margin:8px 0;border-radius:0 8px 8px 0">$1</div>')
+        .replace(/\n\n/g, '<br>');
+      aiContent.innerHTML = `<div class="ai-response-content" style="padding:8px">${html}</div>`;
+    } else {
+      aiContent.innerHTML = `<p style="color:#ef4444;padding:20px">Error del servidor de IA: ${await resp.text()}</p>`;
+    }
+  } catch (err) {
+    aiContent.innerHTML = `<p style="color:#ef4444;padding:20px">Error de conexión: ${err.message}</p>`;
+  }
+  if (window.lucide) lucide.createIcons();
+};
 
 /* =================== NÚCLEO DE INTELIGENCIA Y PROYECCIONES DIARIAS =================== */
 

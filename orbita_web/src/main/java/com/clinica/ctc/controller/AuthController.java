@@ -14,9 +14,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.List;
 
 /**
  * CONTROLADOR DE AUTENTICACIÓN - ÓRBITA CLÍNICA
@@ -28,8 +26,7 @@ public class AuthController {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-    private static final String FIREBASE_API_KEY = "AIzaSyD-kkAwT7iGI8jJc1wosV--TA4BjOaoH-Q";
-    private static final String FIREBASE_VERIFY_URL = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=" + FIREBASE_API_KEY;
+
 
     @PostMapping("/session")
     public ResponseEntity<Map<String, Object>> establishSession(@RequestBody Map<String, String> payload, HttpServletRequest request) {
@@ -37,7 +34,7 @@ public class AuthController {
         String idToken = payload.get("idToken");
         
         if (email == null || idToken == null) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Email e idToken son requeridos"));
+            return ResponseEntity.badRequest().body(java.util.Objects.requireNonNull(Map.<String, Object>of("error", "Email e idToken son requeridos")));
         }
 
         System.out.println("🌐 [AUTH-FIREBASE-RESILIENTE] Iniciando handshake para: " + email);
@@ -66,20 +63,24 @@ public class AuthController {
             org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
             headers.setBearerAuth(idToken);
             
-            try {
+             try {
+                // Usar URI para prevenir doble codificación por parte de RestTemplate
+                java.net.URI uri = new java.net.URI(firestoreUrl);
+                
                 @SuppressWarnings("unchecked")
                 ResponseEntity<Map<String, Object>> firestoreResponse = (ResponseEntity<Map<String, Object>>) (ResponseEntity<?>) 
                     restTemplate.exchange(
-                        firestoreUrl, 
-                        org.springframework.http.HttpMethod.GET, 
+                        uri, 
+                        java.util.Objects.requireNonNull(org.springframework.http.HttpMethod.GET), 
                         new org.springframework.http.HttpEntity<>(headers), 
                         Map.class
                     );
 
-                if (firestoreResponse.getBody() == null) throw new RuntimeException("Perfil de usuario no encontrado en la nube.");
+                Map<String, Object> responseBody = firestoreResponse.getBody();
+                if (responseBody == null) throw new RuntimeException("Perfil de usuario no encontrado en la nube.");
                 
                 @SuppressWarnings("unchecked")
-                Map<String, Object> fields = (Map<String, Object>) firestoreResponse.getBody().get("fields");
+                Map<String, Object> fields = (Map<String, Object>) responseBody.get("fields");
                 if (fields == null) throw new RuntimeException("Datos de roles incompletos.");
                 
                 boolean active = true;
@@ -90,7 +91,7 @@ public class AuthController {
                 }
 
                 if (!active) {
-                    return ResponseEntity.status(403).body(Collections.singletonMap("error", "Acceso denegado: Usuario inactivo."));
+                    return ResponseEntity.status(403).body(java.util.Objects.requireNonNull(Map.<String, Object>of("error", "Acceso denegado: Usuario inactivo.")));
                 }
 
                 String rawRole = "auditor";
@@ -114,15 +115,15 @@ public class AuthController {
                 session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
 
                 System.out.println("✅ [AUTH-SUCCESS] Sesión maestra establecida para: " + email);
-                return ResponseEntity.ok(Collections.singletonMap("success", true));
+                return ResponseEntity.ok(java.util.Objects.requireNonNull(Map.<String, Object>of("success", true)));
 
             } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
-                return ResponseEntity.status(403).body(Collections.singletonMap("error", "Usuario no autorizado para entrar al ecosistema."));
+                return ResponseEntity.status(403).body(java.util.Objects.requireNonNull(Map.<String, Object>of("error", "Usuario no autorizado para entrar al ecosistema.")));
             }
 
         } catch (Exception e) {
             System.err.println("❌ [AUTH-FATAL] Error en el handshake resiliente: " + e.getMessage());
-            return ResponseEntity.status(401).body(Collections.singletonMap("error", "Lo sentimos, el servidor de identificación está saturado. Reintente en un momento. Error: " + e.getMessage()));
+            return ResponseEntity.status(401).body(java.util.Objects.requireNonNull(Map.<String, Object>of("error", "Lo sentimos, el servidor de identificación está saturado. Reintente en un momento. Error: " + e.getMessage())));
         }
     }
 }

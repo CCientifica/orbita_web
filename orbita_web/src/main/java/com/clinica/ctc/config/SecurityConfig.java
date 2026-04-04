@@ -1,4 +1,3 @@
-
 package com.clinica.ctc.config;
 
 import com.clinica.ctc.security.CustomUserDetailsService;
@@ -14,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * CONFIGURACIÓN DE SEGURIDAD - ÓRBITA CLÍNICA
@@ -32,8 +30,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -51,33 +48,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**", "/api/**", "/login")
-            )
-            .headers(headers -> headers
-                .frameOptions(frame -> frame.sameOrigin())
-                .crossOriginOpenerPolicy(coop -> coop
-                    .policy(CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
-                )
-            )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/h2-console/**", "/assets/**", "/css/**", "/js/**", "/img/**", "/vendor/**", "/login", "/", "/api/auth/**").permitAll()
-                .requestMatchers("/usuarios/**").hasAuthority("master admin")
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .defaultSuccessUrl("/home", true)
-                .failureUrl("/login?error=true")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login?logout=true")
-                .deleteCookies("JSESSIONID")
-                .invalidateHttpSession(true)
-                .permitAll()
-            );
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/h2-console/**", "/api/**", "/login"))
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
+                        .crossOriginOpenerPolicy(coop -> coop
+                                .policy(CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**", "/assets/**", "/css/**", "/js/**", "/img/**", "/vendor/**",
+                                "/login", "/", "/api/auth/**")
+                        .permitAll()
+                        .requestMatchers("/usuarios/**").hasAuthority("master admin")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/home", true)
+                        .failureUrl("/login?error=true")
+                        .permitAll())
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
+                        .permitAll());
 
         return http.build();
     }

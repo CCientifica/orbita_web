@@ -20,7 +20,8 @@ public class ReporteScheduler {
     // Flag para evitar envío doble en el mismo día
     private LocalDate ultimoEnvioAutomatico = null;
 
-    // ===== Ejecutar todos los días a las 16:00 hora Colombia (UTC-5 = 21:00 UTC) =====
+    // ===== Ejecutar todos los días a las 16:00 hora Colombia (UTC-5 = 21:00 UTC)
+    // =====
     @Scheduled(cron = "0 0 21 * * MON-FRI", zone = "UTC")
     public void enviarReporteAutomatico() {
         try {
@@ -40,7 +41,8 @@ public class ReporteScheduler {
 
             System.out.println("[SCHEDULER] Iniciando envío automático de reporte para " + hoy);
 
-            // El envío automático no tiene PNGs (se envía sin imágenes adjuntas como recordatorio)
+            // El envío automático no tiene PNGs (se envía sin imágenes adjuntas como
+            // recordatorio)
             // Para envío con imágenes se requiere interacción del usuario
             Map<String, Object> body = new HashMap<>();
             body.put("mes", getNombreMes(hoy.getMonthValue()));
@@ -64,15 +66,14 @@ public class ReporteScheduler {
     private boolean esFestivoColombia(LocalDate fecha) {
         int y = fecha.getYear(), m = fecha.getMonthValue(), d = fecha.getDayOfMonth();
         Set<String> fijos = Set.of(
-            y+"-01-01", y+"-05-01", y+"-07-20",
-            y+"-08-07", y+"-12-08", y+"-12-25"
-        );
+                y + "-01-01", y + "-05-01", y + "-07-20",
+                y + "-08-07", y + "-12-08", y + "-12-25");
         return fijos.contains(String.format("%d-%02d-%02d", y, m, d));
     }
 
     private String getNombreMes(int mes) {
-        String[] nombres = {"","Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                            "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"};
+        String[] nombres = { "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
         return mes >= 1 && mes <= 12 ? nombres[mes] : "";
     }
 

@@ -5,8 +5,28 @@
  */
 
 const userManagement = (function() {
-    const AUTHORIZED_DOMAIN = '@clinicasagradocorazon.com.co';
-    const MASTER_EMAIL = 'coordcientifico@funda-bio.org';
+    let AUTHORIZED_DOMAIN = '@clinicasagradocorazon.com.co';
+    let MASTER_EMAIL = 'coordcientifico@funda-bio.org';
+
+    /**
+     * Carga la configuración desde el servidor para evitar hardcode
+     */
+    async function fetchConfig() {
+        try {
+            const resp = await fetch('/api/users/config');
+            if (resp.ok) {
+                const config = await resp.json();
+                AUTHORIZED_DOMAIN = config.authorizedDomain || AUTHORIZED_DOMAIN;
+                MASTER_EMAIL = config.masterEmail || MASTER_EMAIL;
+                console.log('[USER-MGMT] Configuración institucional cargada:', { AUTHORIZED_DOMAIN, MASTER_EMAIL });
+            }
+        } catch (e) {
+            console.warn('[USER-MGMT] No se pudo cargar config remota, usando fallback local.');
+        }
+    }
+
+    // Iniciar carga de config inmediatamente
+    fetchConfig();
 
     /**
      * Valida si un correo es de dominio autorizado
@@ -167,6 +187,8 @@ const userManagement = (function() {
         updateUser,
         deleteUser,
         checkUserExists,
-        isValidDomain
+        isValidDomain,
+        getMasterEmail: () => MASTER_EMAIL,
+        getAuthorizedDomain: () => AUTHORIZED_DOMAIN
     };
 })();

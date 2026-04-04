@@ -3,213 +3,6 @@
 
 <head th:replace="~{layout :: header('Citas, Cirugías e Imágenes DX')}"></head>
 
-<!-- Estilos Modernos y Premium -->
-<style>
-    /* ═══════════════════════════════════════
-       PAGE SPECIFIC: CONSULTA CX IMDX
-       ═══════════════════════════════════════ */
-    :root {
-        --cx-pri: #4e6c9f;
-        --cx-light: #e0e7ff;
-        --cx-dark: #1e293b;
-        --cx-accent: #38bdf8;
-        --cx-border: #e2e8f0;
-        --cx-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-
-    .cx-fade-in {
-        animation: cxFadeIn 0.5s ease-in-out;
-    }
-
-    @keyframes cxFadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    /* Page Content Wrapper (Prevents collision with layout) */
-    .cx-page-wrap {
-        padding: 2rem;
-        max-width: 1400px;
-        margin: 0 auto;
-        width: 100%;
-    }
-
-    /* Local Dashboard/Form Components */
-    .cx-header {
-        background: linear-gradient(135deg, var(--cx-dark) 0%, var(--cx-pri) 100%);
-        color: white;
-        padding: 2.5rem;
-        border-radius: 24px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 25px -5px rgba(30, 41, 59, 0.2);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .cx-header h1 {
-        margin: 0;
-        font-size: 2.2rem;
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        color: white !important;
-    }
-
-    .cx-header p {
-        color: rgba(255, 255, 255, 0.8);
-        margin-top: 5px;
-    }
-
-    .cx-grid {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 24px;
-    }
-
-    .cx-card {
-        background: white;
-        border: 1px solid var(--cx-border);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: var(--cx-shadow);
-        transition: transform 0.2s;
-    }
-
-    .cx-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
-    }
-
-    .cx-span-12 {
-        grid-column: span 12;
-    }
-
-    .cx-span-7 {
-        grid-column: span 7;
-    }
-
-    .cx-span-5 {
-        grid-column: span 5;
-    }
-
-    .cx-section-title {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--cx-dark);
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-bottom: 2px solid var(--cx-light);
-        padding-bottom: 10px;
-    }
-
-    .cx-label {
-        display: block;
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 0.5rem;
-    }
-
-    .cx-input {
-        width: 100%;
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 1.5px solid var(--cx-border);
-        background: #fcfcfd;
-        font-size: 0.95rem;
-        font-weight: 500;
-    }
-
-    .cx-kpi-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 16px;
-        margin-top: 1rem;
-    }
-
-    .cx-kpi-card {
-        background: #f8fafc;
-        border: 1px solid var(--cx-border);
-        border-radius: 16px;
-        padding: 1.25rem;
-        text-align: center;
-        border-top: 4px solid var(--cx-pri);
-    }
-
-    .cx-kpi-label {
-        font-size: 0.65rem;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 5px;
-    }
-
-    .cx-kpi-value {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--cx-dark);
-    }
-
-    .cx-btn {
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.2s;
-    }
-
-    .cx-btn-pri {
-        background: var(--cx-pri);
-        color: white;
-    }
-
-    .cx-btn-pri:hover {
-        background: var(--cx-dark);
-    }
-
-    .cx-btn-out {
-        background: white;
-        border: 1.5px solid var(--cx-border);
-        color: #334155;
-    }
-
-    .cx-btn-out:hover {
-        background: #f8fafc;
-    }
-
-    .cx-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        background: var(--cx-light);
-        color: var(--cx-dark);
-        font-size: 0.7rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-    }
-
-    @media (max-width: 1024px) {
-
-        .cx-span-7,
-        .cx-span-5 {
-            grid-column: span 12;
-        }
-    }
-</style>
-
 <body class="dashboard-layout fade-in">
     <!-- Shell fragments strictly enforced -->
     <aside th:replace="~{layout :: sidebar}"></aside>
@@ -219,344 +12,218 @@
         <nav th:replace="~{layout :: navbar('Citas, Cirugías e Imágenes DX')}"></nav>
 
         <main class="main-content">
+            <style>
+                /* ====== PREMIUM DASHBOARD: CONSULTA CX & IMDX ====== */
+                .cx-page-wrap {
+                    --cx-pri: #0f172a; --cx-sec: #1e293b; --cx-accent: #38bdf8;
+                    --cx-light: #f8fafc; --cx-border: #e2e8f0; --cx-text: #334155;
+                    --cx-muted: #64748b; --cx-radius-lg: 24px; --cx-radius-md: 16px;
+                    --cx-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+                }
+                .cx-header {
+                    background: linear-gradient(135deg, var(--cx-pri) 0%, var(--cx-sec) 100%);
+                    padding: 2.5rem 3rem; border-radius: var(--cx-radius-lg);
+                    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4);
+                    position: relative; overflow: hidden; margin-bottom: 2.5rem; border: 1px solid rgba(255,255,255,0.05);
+                }
+                .cx-header::before { content: ''; position: absolute; top: -50%; right: -10%; width: 60%; height: 200%; background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%); transform: rotate(-15deg); pointer-events: none; }
+                .cx-badge { display: inline-flex; align-items: center; background: rgba(56, 189, 248, 0.1); color: var(--cx-accent); border: 1px solid rgba(56, 189, 248, 0.2); padding: 0.35rem 1rem; border-radius: 10px; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.2rem; }
+                .cx-header h1 { font-size: 2.5rem; font-weight: 900; color: white; letter-spacing: -0.04em; margin-bottom: 0.5rem; }
+                .cx-header p { color: #94a3b8; font-weight: 600; font-size: 1.05rem; max-width: 600px; margin-top: 0; }
+                .cx-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+                .cx-span-12 { grid-column: span 12; } .cx-span-7 { grid-column: span 7; } .cx-span-5 { grid-column: span 5; }
+                @media(max-width: 1024px) { .cx-span-7, .cx-span-5 { grid-column: span 12; } }
+                .cx-card { background: white; border-radius: var(--cx-radius-lg); padding: 2rem; box-shadow: var(--cx-shadow); border: 1px solid var(--cx-border); }
+                .cx-section-title { font-size: 1.1rem; font-weight: 800; color: var(--cx-pri); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid var(--cx-light); padding-bottom: 1rem; }
+                .cx-form-group { margin-bottom: 1.25rem; }
+                .cx-label { display: block; font-size: 0.8rem; font-weight: 800; color: var(--cx-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+                .cx-input { box-sizing: border-box; width: 100%; background: white; border: 2px solid var(--cx-border); border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.95rem; font-weight: 600; color: var(--cx-pri); transition: all 0.2s ease; }
+                .cx-input[readonly] { background: var(--cx-light); color: var(--cx-muted); cursor: not-allowed; }
+                .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+                .cx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s ease; border: none; }
+                .cx-btn-pri { background: linear-gradient(135deg, #0284c7, #38bdf8); color: white; box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.4); }
+                .cx-btn-out { background: white; border: 2px solid var(--cx-border); color: var(--cx-text); }
+                .cx-kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+                .cx-kpi-card { background: var(--cx-light); border-radius: var(--cx-radius-md); padding: 1.25rem 0.5rem; border: 1px solid var(--cx-border); text-align: center; transition: transform 0.2s; border-top: 4px solid var(--cx-pri); }
+                .cx-kpi-label { font-size: 0.65rem; font-weight: 900; color: var(--cx-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+                .cx-kpi-value { font-size: 1.4rem; font-weight: 900; color: var(--cx-pri); }
+                .compliance-banner { position: relative; z-index: 2; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1.5rem; min-width: 320px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+                .compliance-icon { width: 55px; height: 55px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; }
+                .compliance-status { font-size: 1.4rem; font-weight: 900; color: white; margin: 0; letter-spacing: -0.02em; }
+                .compliance-msg { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin: 0.4rem 0 0 0; }
+            </style>
+            
             <div class="cx-page-wrap">
-                <!-- Header Premium Section -->
                 <header class="cx-header">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
-                        <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 300px;">
                             <div class="cx-badge"><i class="fas fa-clinic-medical mr-2"></i> Gestión Ambulatoria</div>
                             <h1 style="color: white; margin: 0;">Citas, Cirugías e Imágenes DX</h1>
                             <p>Monitoreo táctico de efectividad, conversión y gestión de citas especializadas.</p>
                         </div>
-                        <a href="/dashboard-citas-cx-imx" class="cx-btn cx-btn-out"
-                            style="background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.3); color: white; text-decoration: none;">
+                        
+                        <div id="complianceBanner" class="compliance-banner" style="display: none;">
+                           <div class="compliance-icon" id="complianceIcon" style="background: #10b981; box-shadow: 0 0 25px rgba(16,185,129,0.4);">
+                               <span class="material-icons" id="complianceIconText" style="font-size:30px">done_all</span>
+                           </div>
+                           <div class="compliance-text-container">
+                               <span style="font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; color: #94a3b8; margin-bottom: 0.3rem;">Estado de Cierre</span>
+                               <h4 class="compliance-status" id="complianceStatus">SINCRONIZADO</h4>
+                               <p class="compliance-msg" id="complianceMsg">Analizando días hábiles restantes...</p>
+                           </div>
+                        </div>
+
+                        <a href="/dashboard-citas-cx-imx" class="cx-btn cx-btn-out" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; text-decoration: none;">
                             <i class="fas fa-chart-line"></i> Ir al Dashboard
                         </a>
                     </div>
                 </header>
 
-                <div class="cx-grid">
-                    <!-- Filtros -->
-                    <div class="cx-card cx-span-12">
-                        <div class="cx-section-title">
-                            <i class="fas fa-calendar-alt" style="color:var(--cx-pri)"></i> Periodo de Gestión
-                        </div>
-                        <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: end;">
-                            <div class="cx-form-group">
-                                <label class="cx-label">Mes de Trabajo</label>
-                                <input type="month" id="mesSel" class="cx-input">
-                            </div>
-                            <div class="cx-form-group">
-                                <label class="cx-label">Especialidad Médica</label>
-                                <select id="espSel" class="cx-input"></select>
-                            </div>
-                            <div style="display: flex; gap: 12px; margin-bottom: 1.25rem;">
-                                <button id="consultarBtn" class="cx-btn cx-btn-pri" style="flex:2">
-                                    <i class="fas fa-search"></i> Consultar
-                                </button>
-                                <button id="limpiarBtn" class="cx-btn cx-btn-out" style="flex:1">
-                                    <i class="fas fa-eraser"></i> Limpiar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <script type="module">
+                    import { query, collection, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+                    const NAMES = { "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril", "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto", "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre" };
+                    const CO_HOLIDAYS_2026 = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
 
-                    <!-- Formulario -->
-                    <div class="cx-card cx-span-7">
-                        <div class="cx-section-title">
-                            <i class="fas fa-edit" style="color:var(--cx-accent)"></i> Registro de Indicadores
-                        </div>
+                    window.checkCompliance = async function(targetMonth, alreadyExists = false) {
+                        const banner = document.getElementById('complianceBanner');
+                        const status = document.getElementById('complianceStatus');
+                        const msg = document.getElementById('complianceMsg');
+                        const icon = document.getElementById('complianceIcon');
+                        const iconText = document.getElementById('complianceIconText');
+                        if (!banner) return; banner.style.display = 'flex';
 
-                        <div class="row-2">
-                            <div class="cx-form-group">
-                                <label class="cx-label">Total Consultas Agendadas</label>
-                                <input id="totalConsultas" type="number" class="cx-input" placeholder="0">
-                            </div>
-                            <div class="cx-form-group">
-                                <label class="cx-label">Consultas Posoperatorias (POP)</label>
-                                <input id="consultasPOP" type="number" class="cx-input" placeholder="0">
-                            </div>
-                        </div>
+                        const db = window.firebaseInstance?.db;
+                        if(!db) { setTimeout(() => window.checkCompliance(targetMonth, alreadyExists), 800); return; }
 
-                        <div class="row-2">
-                            <div class="cx-form-group">
-                                <label class="cx-label">Citas Primera Vez</label>
-                                <input id="consultasPrimeraVez" type="number" class="cx-input" placeholder="0">
-                            </div>
-                            <div class="cx-form-group">
-                                <label class="cx-label">Citas de Control (Incluye POP)</label>
-                                <input id="consultasControl" type="number" class="cx-input" placeholder="0">
-                            </div>
-                        </div>
+                        try {
+                            const snap = await getDocs(query(collection(db, 'estadistica_ce'), orderBy('mes', 'asc')));
+                            const registered = new Set();
+                            snap.forEach(d => registered.add(d.data().mes));
 
-                        <div class="row-2"
-                            style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed var(--cx-border);">
-                            <div class="cx-form-group" style="margin-bottom:0">
-                                <label class="cx-label">Inasistencias (Incumplidas)</label>
-                                <input id="citasIncumplidas" type="number" class="cx-input" placeholder="0">
-                            </div>
-                            <div class="cx-form-group" style="margin-bottom:0">
-                                <label class="cx-label">Citas Canceladas</label>
-                                <input id="citasCanceladas" type="number" class="cx-input" placeholder="0">
-                            </div>
-                        </div>
-
-                        <div class="row-2"
-                            style="background: #f1f5f9; padding: 15px; border-radius: 12px; margin: 20px 0;">
-                            <div class="cx-form-group" style="margin-bottom:0">
-                                <label class="cx-label">Efectivas (Atendidas)</label>
-                                <input id="citasEfectivas" type="number" class="cx-input" readonly>
-                            </div>
-                            <div class="cx-form-group" style="margin-bottom:0">
-                                <label class="cx-label">Controles sin POP</label>
-                                <input id="consultasNoPOP" type="number" class="cx-input" readonly>
-                            </div>
-                        </div>
-
-                        <div class="row-2">
-                            <div class="cx-form-group">
-                                <label class="cx-label">Órdenes de Cirugía</label>
-                                <input id="ordenesCx" type="number" class="cx-input" placeholder="0">
-                            </div>
-                            <div class="cx-form-group">
-                                <label class="cx-label">Órdenes Imágenes (Total)</label>
-                                <input id="ordenesImgTotal" type="number" class="cx-input" placeholder="0">
-                            </div>
-                        </div>
-
-                        <div class="row-2">
-                            <div class="cx-form-group">
-                                <label class="cx-label">Órdenes Imágenes Externas</label>
-                                <input id="ordenesImgExternas" type="number" class="cx-input" placeholder="0">
-                            </div>
-                            <div class="cx-form-group">
-                                <label class="cx-label">Procedimientos Externos</label>
-                                <input id="procedimientosExternos" type="number" class="cx-input" placeholder="0">
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 1.5rem;">
-                            <button id="guardarBtn" class="cx-btn cx-btn-pri" style="width: 100%; height: 50px;">
-                                <i class="fas fa-save"></i> Guardar Registro del Mes
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Análisis -->
-                    <div class="cx-card cx-span-5">
-                        <div class="cx-section-title">
-                            <i class="fas fa-chart-pie" style="color:var(--cx-accent)"></i> Análisis de Desempeño
-                        </div>
-
-                        <div class="cx-kpi-row">
-                            <div class="cx-kpi-card">
-                                <div class="cx-kpi-label">Efectividad Total</div>
-                                <div class="cx-kpi-value" id="k_pctEf">—</div>
-                            </div>
-                            <div class="cx-kpi-card">
-                                <div class="cx-kpi-label">% Incumplidas</div>
-                                <div class="cx-kpi-value" id="k_pctInc">—</div>
-                            </div>
-                            <div class="cx-kpi-card">
-                                <div class="cx-kpi-label">% Canceladas</div>
-                                <div class="cx-kpi-value" id="k_pctCanc">—</div>
-                            </div>
-                        </div>
-
-                        <div class="cx-kpi-row">
-                            <div class="cx-kpi-card">
-                                <div class="cx-kpi-label">Atendidas (n)</div>
-                                <div class="cx-kpi-value" id="k_efN">—</div>
-                            </div>
-                            <div class="cx-kpi-card">
-                                <div class="cx-kpi-label">Control sin POP</div>
-                                <div class="cx-kpi-value" id="k_noPOPN">—</div>
-                            </div>
-                            <div class="cx-kpi-card">
-                                <div class="cx-kpi-label">% Gestión POP</div>
-                                <div class="cx-kpi-value" id="k_pctPOP">—</div>
-                            </div>
-                        </div>
-
-                        <div class="cx-kpi-row">
-                            <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);">
-                                <div class="cx-kpi-label">Conv. Cirugía</div>
-                                <div class="cx-kpi-value" id="k_convCx">—</div>
-                            </div>
-                            <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);">
-                                <div class="cx-kpi-label">Conv. Imág. Tot.</div>
-                                <div class="cx-kpi-value" id="k_convImgTot">—</div>
-                            </div>
-                            <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);">
-                                <div class="cx-kpi-label">Conv. Imág. Int.</div>
-                                <div class="cx-kpi-value" id="k_convImgInt">—</div>
-                            </div>
-                        </div>
-
-                        <div class="cx-card"
-                            style="background:#f1f5f9; padding:1.25rem; border:none; margin-top:1.5rem;">
-                            <h4
-                                style="font-size: 0.8rem; font-weight: 800; color: var(--cx-dark); text-transform: uppercase;">
-                                Glosario Técnico</h4>
-                            <ul style="padding-left: 1.25rem; margin-top: 5px; color: #64748b; font-size: 0.85rem;">
-                                <li><b>Efectivas</b>: Consultas agendadas menos inasistencias y cancelaciones.</li>
-                                <li><b>POP</b>: Pacientes postquirúrgicos (incluidos en Controles).</li>
-                                <li><b>Conversión</b>: Porcentaje de órdenes emitidas sobre el total agendado.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-        </main>
-
-        <div th:replace="~{layout :: auth-scripts}">
-            <!-- ▼ FALLBACK para Firebase / Browsers estáticos ▼ -->
-            <div class="profile-modal-overlay" id="profileModalOverlay">
-                <div class="profile-modal">
-                    <div class="profile-modal-header">
-                        <div class="profile-modal-avatar" id="profileModalAvatar">U</div>
-                        <div>
-                            <div class="profile-modal-title">Mi Perfil</div>
-                            <div class="profile-modal-role" id="profileModalRole">-</div>
-                        </div>
-                        <button class="profile-modal-close" id="closeProfileBtn">×</button>
-                    </div>
-                    <div class="profile-modal-body">
-                        <label>NOMBRE COMPLETO</label>
-                        <input type="text" id="profileName" class="profile-input" placeholder="Nombre de usuario" />
-                        <label>AVATARES SUGERIDOS</label>
-                        <div id="avatarPicker" class="avatar-picker"
-                            style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;"></div>
-                    </div>
-                    <div class="profile-modal-footer">
-                        <button class="btn-cancel" id="cancelProfileBtn">Cancelar</button>
-                        <button class="btn-save" id="saveProfileBtn"><i data-lucide="save" style="width:14px;"></i>
-                            Guardar Cambios</button>
-                    </div>
-                </div>
-            </div>
-            <script type="module">
-                import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-                import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-                import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-                const firebaseConfig = {
-                    apiKey: "AIzaSyD-kkAwT7iGI8jJc1wosV--TA4BjOaoH-Q",
-                    authDomain: "cood-tc.firebaseapp.com",
-                    projectId: "cood-tc",
-                    storageBucket: "cood-tc.firebasestorage.app",
-                    messagingSenderId: "767906346584",
-                    appId: "1:767906346584:web:59439d16292d3b0ea8bc2d"
-                };
-
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                const db = getFirestore(app);
-
-                window.firebaseInstance = { app, auth, db };
-
-                const s = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (!user) { location.href = "/"; return; }
-
-                    const email = user.email.toLowerCase().trim();
-                    const displayName = user.displayName || email.split('@')[0];
-                    s('userNameLabel', displayName);
-                    s('avatarDropdownName', displayName);
-
-                    let initials = displayName.substring(0, 2).toUpperCase();
-                    s('userAvatarInitials', initials);
-                    s('avatarDropdownInitials', initials);
-
-                    try {
-                        const snap = await getDoc(doc(db, 'usuarios_permitidos', email));
-                        let rol = 'general';
-                        if (snap.exists()) {
-                            rol = (snap.data().rol || 'General').toLowerCase().trim();
-                            if (snap.data().avatarUrl) {
-                                const img = `<img src="${snap.data().avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>`;
-                                document.getElementById('userAvatarInitials').innerHTML = img;
-                                document.getElementById('avatarDropdownInitials').innerHTML = img;
+                            const now = new Date();
+                            const currentYear = now.getFullYear();
+                            const currentMonthStr = now.toISOString().slice(0, 7);
+                            
+                            let workDaysThisMonth = 0;
+                            let temp = new Date(now.getFullYear(), now.getMonth(), 1);
+                            while(temp <= now) {
+                                const d = temp.getDay();
+                                const iso = temp.toISOString().split('T')[0];
+                                if(d !== 0 && d !== 6 && !CO_HOLIDAYS_2026.includes(iso)) workDaysThisMonth++;
+                                temp.setDate(temp.setDate() + 1);
                             }
-                        }
 
-                        const perms = (() => {
-                            const r = (rol || "").toLowerCase().trim();
-                            switch (r) {
-                                case "master admin": return { canSee: ['all'], canEdit: true, canSeeCtc: true };
-                                case "super admin": return { canSee: ['altocosto', 'porfiria', 'rcf', 'eco', 'datos', 'predictivos', 'usuarios'], canEdit: true, canSeeCtc: false };
-                                case "administrador": return { canSee: ['altocosto', 'porfiria', 'rcf', 'eco', 'datos', 'predictivos'], canEdit: false, canSeeCtc: false };
-                                case "auditoría": case "auditoria": return { canSee: ['datos', 'predictivos'], canEdit: false, canSeeCtc: false };
-                                case "analista de alto costo": return { canSee: ['altocosto'], canEdit: true, canSeeCtc: false };
-                                default: return { canSee: ['datos', 'eco'], canEdit: false, canSeeCtc: false };
-                            }
-                        })();
-
-                        // 1. Verificación de acceso
-                        const canSeeThis = perms.canSee.includes('all') || perms.canSee.includes('datos') || perms.canSee.includes('predictivos');
-                        if (!canSeeThis) {
-                            location.href = '/home';
-                            return;
-                        }
-
-                        const rt = { 'master admin': 'Master Admin', 'super admin': 'Super Admin', 'administrador': 'Administrador', 'analista de alto costo': 'Analista AC', 'auditoría': 'Auditoría', 'auditoria': 'Auditoría', 'general': 'General' };
-                        const rText = rt[rol] || rol;
-                        s('userRoleBadge', rText);
-
-                        const bEl = document.getElementById('userRoleBadge');
-                        if (bEl && (rol === 'master admin' || rol === 'super admin')) {
-                            bEl.classList.add('master');
-                        } else if (bEl) {
-                            bEl.classList.remove('master');
-                        }
-                        s('avatarDropdownRole', rText);
-                        s('profileModalRole', rText);
-
-                        window.OrbitaContext = { user, email, displayName, rol: rText, rolNormalized: rol, isMaster: rol === 'master admin', permissions: perms };
-
-                        // 2. Control de visibilidad del Sidebar
-                        if (perms.canSee.includes('all')) {
-                            document.querySelectorAll('.admin-only, .nav-group, .nav-link').forEach(el => el.style.setProperty('display', '', 'important'));
-                        } else {
-                            if (!perms.canSee.includes('usuarios')) document.querySelectorAll('.admin-only').forEach(el => el.style.setProperty('display', 'none', 'important'));
-                            if (!perms.canSeeCtc) document.getElementById('group-gtc')?.style.setProperty('display', 'none', 'important');
-                            if (!perms.canSee.includes('altocosto') && !perms.canSee.includes('porfiria')) document.getElementById('group-programas')?.style.setProperty('display', 'none', 'important');
-                            if (!perms.canSee.includes('eco')) document.getElementById('group-eco')?.style.setProperty('display', 'none', 'important');
-                            if (!perms.canSee.includes('datos') && !perms.canSee.includes('predictivos')) document.getElementById('group-datos')?.style.setProperty('display', 'none', 'important');
-                        }
-
-                        // 3. Control de Edición
-                        if (!perms.canEdit) {
-                            document.querySelectorAll('input, select, button.btn-save, .btn-edit, .btn-delete').forEach(el => {
-                                if (el.id !== 'openProfileBtn' && el.id !== 'logoutBtn' && !el.classList.contains('hamburger')) {
-                                    el.disabled = true;
-                                    if (el.tagName === 'BUTTON') el.style.opacity = '0.5';
+                            let lagging = [];
+                            for(let m=0; m < now.getMonth(); m++) {
+                                const mStr = String(m+1).padStart(2, '0');
+                                const checkM = `${currentYear}-${mStr}`;
+                                if(!registered.has(checkM)) {
+                                    if(m === now.getMonth() - 1 && workDaysThisMonth <= 5) continue;
+                                    lagging.push(NAMES[mStr]);
                                 }
-                            });
-                        }
+                            }
 
-                        window.dispatchEvent(new CustomEvent('OrbitaContextReady', { detail: window.OrbitaContext }));
-                    } catch (e) { console.warn("Error cargando perfil:", e); }
-                });
+                            if (alreadyExists) {
+                                status.textContent = "SINCRONIZADO"; msg.textContent = "Información oficial capturada.";
+                                icon.style.background = "#10b981"; iconText.textContent = "done_all";
+                            } else if (lagging.length > 0) {
+                                status.textContent = "CON REZAGO"; 
+                                let lagText = `Vencido: ${lagging.join(', ')}.`;
+                                
+                                // Si el mes seleccionado está en plazo, lo mencionamos explícitamente
+                                if (targetMonth < currentMonthStr && workDaysThisMonth <= 5) {
+                                    const rem = 5 - workDaysThisMonth;
+                                    msg.textContent = `${lagText} | MARZO: Día ${workDaysThisMonth} de 5 (Quedan ${rem} días).`;
+                                } else {
+                                    msg.textContent = lagText;
+                                }
+                                
+                                icon.style.background = "#ef4444"; iconText.textContent = "history";
+                            } else {
+                                if (targetMonth === currentMonthStr) {
+                                    status.textContent = "EN CURSO"; msg.textContent = "Mes actual en curso.";
+                                    icon.style.background = "#3b82f6"; iconText.textContent = "update";
+                                } else if (workDaysThisMonth <= 5) {
+                                    status.textContent = "EN PLAZO"; 
+                                    const rem = 5 - workDaysThisMonth;
+                                    msg.textContent = `Día 1 de 5. Quedan ${rem} días hábiles restantes.`;
+                                    icon.style.background = "#f59e0b"; iconText.textContent = "priority_high";
+                                } else {
+                                    status.textContent = "VENCIDO"; msg.textContent = "Plazo excedido.";
+                                    icon.style.background = "#ef4444"; iconText.textContent = "error";
+                                }
+                            }
+                        } catch(e) { console.error("Banner Error:", e); }
+                    };
+                </script>
 
-                document.getElementById('avatarWrapper')?.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('avatarDropdown').classList.toggle('open'); });
-                document.addEventListener('click', () => document.getElementById('avatarDropdown')?.classList.remove('open'));
-                document.getElementById('openProfileBtn')?.addEventListener('click', () => document.getElementById('profileModalOverlay').classList.add('open'));
-                document.getElementById('closeProfileBtn')?.addEventListener('click', () => document.getElementById('profileModalOverlay').classList.remove('open'));
-                document.getElementById('cancelProfileBtn')?.addEventListener('click', () => document.getElementById('profileModalOverlay').classList.remove('open'));
-                document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth).then(() => location.href = '/'));
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            </script>
-        </div>
+                <div class="cx-grid">
+                    <div class="cx-card cx-span-12">
+                        <div class="cx-section-title"><i class="fas fa-calendar-alt"></i> Periodo de Gestión</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: end;">
+                            <div class="cx-form-group"><label class="cx-label">Mes de Trabajo</label><input type="month" id="mesSel" class="cx-input"></div>
+                            <div class="cx-form-group"><label class="cx-label">Especialidad Médica</label><select id="espSel" class="cx-input"></select></div>
+                            <div style="display: flex; gap: 12px; margin-bottom: 1.25rem;">
+                                <button id="consultarBtn" class="cx-btn cx-btn-pri" style="flex:2"><i class="fas fa-search"></i> Consultar</button>
+                                <button id="limpiarBtn" class="cx-btn cx-btn-out" style="flex:1"><i class="fas fa-eraser"></i> Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cx-card cx-span-7">
+                        <div class="cx-section-title"><i class="fas fa-edit"></i> Registro de Indicadores</div>
+                        <div class="row-2">
+                             <div class="cx-form-group"><label class="cx-label">Total Consultas Agendadas</label><input id="totalConsultas" type="number" class="cx-input" placeholder="0"></div>
+                             <div class="cx-form-group"><label class="cx-label">Consultas Posoperatorias (POP)</label><input id="consultasPOP" type="number" class="cx-input" placeholder="0"></div>
+                        </div>
+                        <div class="row-2">
+                             <div class="cx-form-group"><label class="cx-label">Citas Primera Vez</label><input id="consultasPrimeraVez" type="number" class="cx-input" placeholder="0"></div>
+                             <div class="cx-form-group"><label class="cx-label">Citas de Control (Incluye POP)</label><input id="consultasControl" type="number" class="cx-input" placeholder="0"></div>
+                        </div>
+                        <div class="row-2" style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #e2e8f0; margin-bottom: 1rem;">
+                             <div class="cx-form-group" style="margin-bottom:0"><label class="cx-label">Inasistencias (Incumplidas)</label><input id="citasIncumplidas" type="number" class="cx-input" placeholder="0"></div>
+                             <div class="cx-form-group" style="margin-bottom:0"><label class="cx-label">Citas Canceladas</label><input id="citasCanceladas" type="number" class="cx-input" placeholder="0"></div>
+                        </div>
+                        <div class="row-2" style="background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                             <div class="cx-form-group" style="margin-bottom:0"><label class="cx-label">Efectivas (Atendidas)</label><input id="citasEfectivas" type="number" class="cx-input" readonly></div>
+                             <div class="cx-form-group" style="margin-bottom:0"><label class="cx-label">Controles sin POP</label><input id="consultasNoPOP" type="number" class="cx-input" readonly></div>
+                        </div>
+                        <div class="row-2">
+                             <div class="cx-form-group"><label class="cx-label">Órdenes de Cirugía</label><input id="ordenesCx" type="number" class="cx-input" placeholder="0"></div>
+                             <div class="cx-form-group"><label class="cx-label">Órdenes Imágenes (Total)</label><input id="ordenesImgTotal" type="number" class="cx-input" placeholder="0"></div>
+                        </div>
+                        <div class="row-2">
+                             <div class="cx-form-group"><label class="cx-label">Órdenes Imágenes Externas</label><input id="ordenesImgExternas" type="number" class="cx-input" placeholder="0"></div>
+                             <div class="cx-form-group"><label class="cx-label">Procedimientos Externos</label><input id="procedimientosExternos" type="number" class="cx-input" placeholder="0"></div>
+                        </div>
+                        <div style="margin-top: 1.5rem;"><button id="guardarBtn" class="cx-btn cx-btn-pri" style="width: 100%; height: 50px;"><i class="fas fa-save"></i> Guardar Registro del Mes</button></div>
+                    </div>
+
+                    <div class="cx-card cx-span-5">
+                        <div class="cx-section-title"><i class="fas fa-chart-pie"></i> Análisis de Desempeño</div>
+                        <div class="cx-kpi-row">
+                             <div class="cx-kpi-card"><div class="cx-kpi-label">Efectividad Total</div><div class="cx-kpi-value" id="k_pctEf">—</div></div>
+                             <div class="cx-kpi-card"><div class="cx-kpi-label">% Incumplidas</div><div class="cx-kpi-value" id="k_pctInc">—</div></div>
+                             <div class="cx-kpi-card"><div class="cx-kpi-label">% Canceladas</div><div class="cx-kpi-value" id="k_pctCanc">—</div></div>
+                        </div>
+                        <div class="cx-kpi-row">
+                             <div class="cx-kpi-card"><div class="cx-kpi-label">Atendidas (n)</div><div class="cx-kpi-value" id="k_efN">—</div></div>
+                             <div class="cx-kpi-card"><div class="cx-kpi-label">Control sin POP</div><div class="cx-kpi-value" id="k_noPOPN">—</div></div>
+                             <div class="cx-kpi-card"><div class="cx-kpi-label">% Gestión POP</div><div class="cx-kpi-value" id="k_pctPOP">—</div></div>
+                        </div>
+                        <div class="cx-kpi-row">
+                             <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);"><div class="cx-kpi-label">Conv. Cirugía</div><div class="cx-kpi-value" id="k_convCx">—</div></div>
+                             <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);"><div class="cx-kpi-label">Conv. Imág. Tot.</div><div class="cx-kpi-value" id="k_convImgTot">—</div></div>
+                             <div class="cx-kpi-card" style="border-top-color: var(--cx-accent);"><div class="cx-kpi-label">Conv. Imág. Int.</div><div class="cx-kpi-value" id="k_convImgInt">—</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End Page Wrap -->
         </main>
-
         <footer th:replace="~{layout :: footer}"></footer>
     </div>
-
-    <div th:replace="~{layout :: scripts}"></div>
+    <div th:replace="~{layout :: auth-scripts}"></div>
     <script type="module" src="/js/consulta-cx-imdx.js"></script>
+    <div th:replace="~{layout :: scripts}"></div>
 </body>
-
 </html>

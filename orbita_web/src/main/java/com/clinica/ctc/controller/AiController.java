@@ -1,6 +1,5 @@
 package com.clinica.ctc.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.net.URI;
@@ -14,13 +13,12 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class AiController {
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
-
-    @Value("${gemini.api.url}")
-    private String apiUrl;
-
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final GeminiProperties geminiProperties;
+
+    public AiController(GeminiProperties geminiProperties) {
+        this.geminiProperties = geminiProperties;
+    }
 
     @PostMapping("/analyze")
     public ResponseEntity<String> analyzeData(@RequestBody Map<String, Object> data) {
@@ -44,9 +42,9 @@ public class AiController {
             String requestBody = "{\"contents\":[{\"parts\":[{\"text\":\"" + escapeJson(prompt) + "\"}]}]}";
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(apiUrl))
+                    .uri(URI.create(geminiProperties.getApi().getUrl()))
                     .header("Content-Type", "application/json")
-                    .header("X-goog-api-key", apiKey)
+                    .header("X-goog-api-key", geminiProperties.getApi().getKey())
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
@@ -55,7 +53,8 @@ public class AiController {
             if (response.statusCode() == 200) {
                 return ResponseEntity.ok(response.body());
             } else {
-                return ResponseEntity.status(response.statusCode()).body("Error de la API de Gemini: " + response.body());
+                return ResponseEntity.status(response.statusCode())
+                        .body("Error de la API de Gemini: " + response.body());
             }
 
         } catch (Exception e) {
@@ -64,11 +63,12 @@ public class AiController {
     }
 
     private String escapeJson(String input) {
-        if (input == null) return "";
+        if (input == null)
+            return "";
         return input.replace("\\", "\\\\")
-                    .replace("\"", "\\\"")
-                    .replace("\n", "\\n")
-                    .replace("\r", "\\r")
-                    .replace("\t", "\\t");
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 }

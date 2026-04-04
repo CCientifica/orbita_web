@@ -7,9 +7,10 @@ Este documento establece los lineamientos estéticos y de diseño oficiales del 
 ## 🏛️ Principios Visuales Generales
 
 1.  **Estética Premium**: El sistema debe sentirse como una herramienta de alta gama. Se utilizan sombras sutiles, bordes redondeados (12px a 24px) y tipografía moderna.
-2.  **Enfoque Corporativo e Institucional**: Los colores deben ser sobrios (Navy, Slate, White) con acentos vibrantes solo en elementos de accion o estados (Blue, Emerald, Rose).
-3.  **Apariencia Limpia (Clean Design)**: Se prioriza el espacio en blanco para reducir la carga cognitiva del personal médico y administrativo.
-4.  **Consistencia entre Módulos**: No se permite la improvisación visual. Cada nuevo módulo debe heredar el layout, sidebar y navbar oficiales definidos en `layout.html`.
+2.  **Tier Visual: Advanced Glassmorphism**: Para módulos directivos (GPC, Analytics), se implementa una capa de diseño superior basada en **Backdrop Blurs (20px+)**, bordes semi-transparentes y **Floating Cards** que reaccionan al cursor (Shadow scaling), logrando el "Efecto Wow" institucional.
+3.  **Enfoque Corporativo e Institucional**: Los colores deben ser sobrios (Navy, Slate, White) con acentos vibrantes solo en elementos de accion o estados (Blue, Emerald, Rose).
+4.  **Apariencia Limpia (Clean Design)**: Se prioriza el espacio en blanco para reducir la carga cognitiva del personal médico y administrativo.
+5.  **Consistencia entre Módulos**: No se permite la improvisación visual. Cada nuevo módulo debe heredar el layout, sidebar y navbar oficiales definidos en `layout.html`.
 
 ---
 

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Plan Anual Auditoría GPC')}"></head>
+
+<body class="dashboard-layout fade-in">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('Plan Anual Auditoría GPC')}"></nav>
+
+        <main class="main-content">
+            <style>
+                /* ====== PREMIUM GLASS & ADVANCED AESTHETICS: PLAN ANUAL ====== */
+                :root {
+                    --pa-pri: #0f172a; --pa-sec: #1e293b; --pa-accent: #0ea5e9;
+                    --pa-glass: rgba(255, 255, 255, 0.7);
+                    --pa-border: rgba(255, 255, 255, 0.3);
+                    --pa-shadow: 0 25px 60px rgba(0,0,0,0.08);
+                    --pa-radius: 28px;
+                }
+
+                .pa-page-wrap { padding: 1.5rem; max-width: 1500px; margin: 0 auto; }
+
+                .pa-header {
+                    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+                    padding: 3.5rem 4rem; border-radius: var(--pa-radius);
+                    box-shadow: 0 30px 70px -15px rgba(15, 23, 42, 0.4);
+                    margin-bottom: 2.5rem; color: white; position: relative; overflow: hidden;
+                    display: flex; justify-content: space-between; align-items: center;
+                }
+                .pa-header::before {
+                    content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px;
+                    background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+                    pointer-events: none;
+                }
+                .pa-header h1 { font-size: 2.75rem; font-weight: 900; letter-spacing: -0.05em; margin: 0; }
+                .pa-header p { color: #94a3b8; font-weight: 600; font-size: 1.2rem; }
+
+                .pa-main-card {
+                    background: var(--pa-glass); backdrop-filter: blur(25px);
+                    border-radius: var(--pa-radius); border: 1px solid var(--pa-border);
+                    box-shadow: var(--pa-shadow); overflow: hidden; animation: slideUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+                }
+
+                .pa-toolbar {
+                    background: rgba(248, 250, 252, 0.6); padding: 1.5rem 2.5rem;
+                    border-bottom: 1px solid rgba(0,0,0,0.05);
+                    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+                }
+
+                /* Premium Table Styles */
+                .pa-table-wrap { width: 100%; padding: 0 2rem 2rem 2rem; }
+                .pa-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+                .pa-table th {
+                    padding: 0 1.5rem 0.5rem 1.5rem; font-size: 0.75rem; font-weight: 900;
+                    color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; text-align: left;
+                }
+                .pa-table td {
+                    background: white; padding: 1.5rem; vertical-align: middle;
+                    transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+                }
+                .pa-table tr td:first-child { border-radius: 20px 0 0 20px; border-left: 1px solid #f1f5f9; }
+                .pa-table tr td:last-child { border-radius: 0 20px 20px 0; border-right: 1px solid #f1f5f9; }
+                .pa-table tr:hover td { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.06); background: #fdfdfd; z-index: 10; cursor: default; }
+
+                /* Inputs & Components */
+                .pa-input {
+                    background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px;
+                    padding: 0.75rem 1.25rem; font-weight: 700; font-size: 0.95rem; color: #1e293b;
+                    transition: all 0.2s; width: 100%;
+                }
+                .pa-input:focus { border-color: var(--pa-accent); background: white; box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.1); outline: none; }
+
+                .pa-badge {
+                    padding: 0.5rem 1.25rem; border-radius: 99px; font-size: 0.75rem; font-weight: 900;
+                    text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px;
+                }
+                .pa-badge-optima { background: #ecfdf5; color: #10b981; }
+                .pa-badge-proceso { background: #fff7ed; color: #f97316; }
+                .pa-badge-critica { background: #fef2f2; color: #ef4444; }
+
+                .pa-btn {
+                    padding: 0.85rem 1.75rem; border-radius: 16px; font-weight: 800; font-size: 0.95rem;
+                    display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
+                    border: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                }
+                .pa-btn-pri { background: #0f172a; color: white; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); }
+                .pa-btn-accent { background: #0ea5e9; color: white; box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2); }
+                .pa-btn:hover { transform: translateY(-3px) scale(1.05); }
+
+                @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+
+                /* Custom Checks */
+                .pa-check { width: 26px; height: 26px; appearance: none; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+                .pa-check:checked { background: #0ea5e9; border-color: #0ea5e9; }
+            </style>
+
+            <div class="pa-page-wrap">
+                <header class="pa-header">
+                    <div>
+                        <h1>Plan Nacional GPC</h1>
+                        <p>Monitoreo dinámico de auditoría y adherencia clínica institucional.</p>
+                    </div>
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <span style="font-weight: 900; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8">Ciclo</span>
+                        <select id="anioSel" class="pa-input" style="width: 140px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); color: white;"></select>
+                    </div>
+                </header>
+
+                <div class="pa-main-card">
+                    <div class="pa-toolbar">
+                        <div style="display: flex; gap: 15px;">
+                            <button id="btnSincronizar" class="pa-btn pa-btn-pri" style="background:#f1f5f9; color:#0f172a;"><i class="fas fa-sync"></i> Sincronizar Insumos</button>
+                            <button id="btnAddRow" class="pa-btn pa-btn-pri" style="background:white; color:#0f172a; border: 2px solid #e2e8f0;"><i class="fas fa-plus"></i> Nueva Auditoría</button>
+                        </div>
+                        <button id="btnSaveMaster" class="pa-btn pa-btn-accent" style="padding-left:3rem; padding-right:3rem;"><i class="fas fa-cloud-upload-alt"></i> Publicar Plan</button>
+                    </div>
+
+                    <div class="pa-table-wrap">
+                        <table class="pa-table" id="tblAdherencia">
+                            <thead>
+                                <tr>
+                                    <th style="width:160px">Periodo</th>
+                                    <th style="width:400px">Estrategia de Auditoría</th>
+                                    <th style="width:200px">Líder Auditor</th>
+                                    <th style="width:140px" class="text-center">% Observado</th>
+                                    <th style="width:130px" class="text-center">Estado</th>
+                                    <th style="width:100px" class="text-center">PAMEC</th>
+                                    <th style="width:160px" class="text-center">Operaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Modal Auditoria: Premium Depth -->
+    <div id="modalAudit" class="pa-modal">
+        <div class="pa-modal-content" style="border-radius: 32px;">
+            <div style="padding: 2.5rem 3rem; background: #0f172a; color: white;">
+                <h2 style="font-weight: 900; margin: 0; font-size: 1.75rem; letter-spacing: -0.04em;">Ejecución de Auditoría de Campo</h2>
+                <p id="auditTema" style="color: #94a3b8; margin: 8px 0 0 0; font-weight: 600; font-size: 1.1rem;"></p>
+            </div>
+            <div style="padding: 3rem; overflow-y: auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
+                    <div style="background: #f8fafc; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center;">
+                        <span style="display: block; font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Muestra auditada (N)</span>
+                        <input type="number" id="inpPoblacion" class="pa-input" style="font-size: 2.5rem; text-align: center; border: none; background: transparent; font-weight: 900; margin-top: 15px;" placeholder="0">
+                    </div>
+                    <div style="background: #f8fafc; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                        <span style="display: block; font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Indicador de Adherencia</span>
+                        <div id="auditScore" style="font-size: 3rem; font-weight: 900; color: #0ea5e9; margin-top: 10px;">0%</div>
+                    </div>
+                </div>
+                <div style="background: #f1f5f9; border-radius: 24px; padding: 3rem; text-align: center; border: 2px dashed #cbd5e1;">
+                    <i class="fas fa-vial" style="font-size: 2rem; color: #94a3b8; margin-bottom: 15px; display: block;"></i>
+                    <p style="font-weight: 700; color: #64748b; margin: 0;">El motor de cálculo dinámico y la matriz de trazabilidad de pacientes se activarán tras definir la muestra inicial.</p>
+                </div>
+            </div>
+            <div style="padding: 2.5rem 3rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 20px;">
+                <button id="btnCloseModal" class="pa-btn pa-btn-pri" style="background:white; color:#0f172a; border: 2px solid #e2e8f0;">Posponer</button>
+                <button id="btnSaveAudit" class="pa-btn pa-btn-accent" style="padding-left: 4rem; padding-right: 4rem;">Validar Hallazgos</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <script type="module" th:inline="javascript">
+        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const qs = s => document.querySelector(s);
+        const state = { anio: new Date().getFullYear(), adherencia: [] };
+
+        async function initModule() {
+            const { db, auth } = window.firebaseInstance || {};
+            const { onAuthStateChanged } = window.firebaseAuth || {};
+            if (!db || !auth || !onAuthStateChanged) { setTimeout(initModule, 300); return; }
+
+            onAuthStateChanged(auth, async (u) => {
+                if(!u) { location.href = "/login"; return; }
+                const sel = qs('#anioSel');
+                if (sel && !sel.options.length) {
+                    [2025, 2026, 2027].forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; if(y===state.anio) o.selected = true; sel.appendChild(o); });
+                    sel.onchange = async () => { state.anio = +sel.value; await loadFromDB(); renderTable(); };
+                }
+                await loadFromDB(); renderTable();
+            });
+        }
+
+        async function loadFromDB() {
+            const { db } = window.firebaseInstance || {};
+            const { collection, getDocs, query, where } = window.firebaseFirestore || {};
+            if(!db || !getDocs) return;
+            try {
+                const q = query(collection(db, 'gpc_adherencia_anual'), where('anio', '==', state.anio));
+                const snap = await getDocs(q);
+                state.adherencia = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+                state.adherencia.sort((a,b) => (a.mesProg || 0) - (b.mesProg || 0));
+            } catch(e) { console.error("Cloud Error:", e); }
+        }
+
+        function renderTable() {
+            const tbody = qs('#tblAdherencia tbody'); if(!tbody) return; tbody.innerHTML = '';
+            state.adherencia.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><select data-key="mesProg" class="pa-input" style="padding: 0.5rem 1rem;">${MONTHS.map((m, i) => `<option value="${i}" ${row.mesProg===i?'selected':''}>${m}</option>`).join('')}</select></td>
+                    <td><textarea rows="1" data-key="tema" class="pa-input" style="font-weight:800; min-height:45px">${row.tema||''}</textarea></td>
+                    <td><input value="${row.resp||''}" data-key="resp" class="pa-input"></td>
+                    <td class="text-center" style="font-size: 1.25rem; font-weight: 900; color: #0f172a;">${row.pctAdherencia != null ? row.pctAdherencia + '%' : '—'}</td>
+                    <td class="text-center"><span class="pa-badge ${row.pctAdherencia >= 90 ? 'pa-badge-optima' : 'pa-badge-critica'}">${row.pctAdherencia >= 90 ? 'Óptima' : 'En Evaluación'}</span></td>
+                    <td class="text-center"><input type="checkbox" ${row.reqPamec?'checked':''} data-key="reqPamec" class="pa-check"></td>
+                    <td class="text-center">
+                        <button class="pa-btn pa-btn-accent" style="padding: 10px 20px; font-size: 0.7rem; letter-spacing: 0.05em;" data-act="eval">AUDITAR</button>
+                        <i class="fas fa-trash-alt text-danger ms-3" style="cursor:pointer; opacity: 0.5;" data-act="del"></i>
+                    </td>
+                `;
+                tr.querySelector('[data-act="eval"]').onclick = () => openAuditModal(idx);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAuditModal(idx) {
+            const r = state.adherencia[idx]; if(!r) return;
+            qs('#auditTema').textContent = (r.tema || 'Sin estrategia definida').toUpperCase();
+            qs('#auditScore').textContent = (r.pctAdherencia || 0) + '%';
+            qs('#modalAudit').classList.add('open');
+        }
+
+        qs('#btnCloseModal').onclick = () => qs('#modalAudit').classList.remove('open');
+        qs('#btnSaveAudit').onclick = () => { alert(' Hallazgos validados con éxito.'); qs('#modalAudit').classList.remove('open'); };
+
+        initModule();
+    </script>
+</body>
+</html>

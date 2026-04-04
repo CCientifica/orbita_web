@@ -331,6 +331,52 @@
 
             .auth-side-form {
                 border-radius: 0;
+                padding: 3rem 2rem;
+            }
+            
+            .auth-title {
+                font-size: 2.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .auth-side-form {
+                padding: 2rem 1.5rem;
+            }
+
+            .auth-box {
+                max-width: 100%;
+            }
+
+            .auth-title {
+                font-size: 1.8rem;
+                margin-bottom: 1rem;
+            }
+
+            .auth-subtitle {
+                font-size: 0.95rem;
+                margin-bottom: 2rem;
+            }
+
+            .auth-logo {
+                height: 100px;
+                margin-bottom: 2.5rem;
+            }
+
+            .btn-google {
+                font-size: 1rem;
+                padding: 1rem;
+                gap: 0.8rem;
+            }
+
+            .btn-google svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .input-classic, .btn-classic {
+                padding: 0.9rem 1.2rem;
+                font-size: 0.95rem;
             }
         }
     </style>
@@ -441,9 +487,9 @@
          6. SIN REGISTRO: No existe registro público ni login clásico por contraseña para personal.
     -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
         // Configuración de Firebase (Fuente de Verdad de Identidad)
         const firebaseConfig = {
@@ -451,15 +497,24 @@
             authDomain: "cood-tc.firebaseapp.com",
             projectId: "cood-tc",
             storageBucket: "cood-tc.firebasestorage.app",
+            messagingSenderId: "767906346584",
             appId: "1:767906346584:web:59439d16292d3b0ea8bc2d"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+        console.log("🚀 [ÓRBITA-AUTH] Inicializando Ecosistema Firebase en:", window.location.hostname);
+        
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("✅ [ÓRBITA-AUTH] SDK v10.13.2 listo.");
+        } catch (err) {
+            console.error("❌ [ÓRBITA-AUTH] Fallo crítico de inicialización:", err);
+            alert("Error crítico: No se pudo conectar con los servicios de identificación de Google.");
+        }
 
-        // ⚙️ CONFIG: Forzar selección de cuenta (Evita login automático/silencioso)
+        const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
         const googleBtn = document.getElementById('googleAuthBtn');
@@ -467,114 +522,113 @@
         const loader = document.getElementById('authLoader');
         const loaderText = document.getElementById('loaderText');
 
-        // Pasos de Diagnóstico en Producción (Render)
-        console.log("🚀 [ÓRBITA-AUTH] Inicializando flujo Firebase Auth en:", window.location.hostname);
+        let isAuthenticating = false;
 
         /**
-         * HANDSHAKE: Establece sesión en Spring Security tras validación Firebase
+         * HANDSHAKE: Sincronización de Sesión Spring Security
          */
         async function establishSession(email, idToken) {
-            loaderText.innerText = 'Estableciendo sesión en el servidor...';
+            if (!email || !idToken) return;
+            isAuthenticating = true;
+            loader.style.display = 'flex';
+            loaderText.innerText = 'Sincronizando sesión local...';
 
-            const isFirebaseEnv = window.location.hostname.includes('firebaseapp.com') ||
-                                window.location.hostname.includes('web.app');
+            try {
+                console.log("🖥️ [ÓRBITA-AUTH] Iniciando Handshake para:", email);
+                const response = await fetch('/api/auth/session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, idToken })
+                });
 
-            if (isFirebaseEnv) {
-                console.log("🌐 [ÓRBITA-AUTH] Entorno Firebase: Redirigiendo a /home");
-                window.location.replace("/home");
-                return;
-            }
-
-            console.log("🖥️ [ÓRBITA-AUTH] Entorno Servidor: Handshake seguro...");
-            const response = await fetch('/api/auth/session', { 
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, idToken })
-            });
-
-            if (response.ok) {
-                console.log("✅ [ÓRBITA-AUTH] Sesión establecida exitosamente.");
-                window.location.replace("/home");
-            } else {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'No autorizado por el servidor.');
+                if (response.ok) {
+                    console.log("✅ [ÓRBITA-AUTH] Sesión activa. Redirigiendo...");
+                    window.location.replace("/home");
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Acceso denegado por políticas institucionales.');
+                }
+            } catch (error) {
+                console.error("❌ [ÓRBITA-AUTH] Error de Sincronización:", error);
+                alert("Error de Acceso: " + error.message);
+                loader.style.display = 'none';
+                isAuthenticating = false;
+                await signOut(auth);
             }
         }
 
         /**
-         * LÓGICA GOOGLE
+         * MONITOR GLOBAL DE ESTADO (Safety Net)
          */
-        googleBtn.addEventListener('click', async () => {
-            console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Google...");
-            googleBtn.disabled = true;
-            isAuthenticatingManually = true; // 🛡️ Bloquea handshake duplicado en onAuthStateChanged
-            loader.style.display = 'flex';
-
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const email = user.email.toLowerCase().trim();
+        onAuthStateChanged(auth, async (user) => {
+            if (user && !isAuthenticating) {
+                console.log("👤 [ÓRBITA-AUTH] Sesión existente detectada:", user.email);
                 const idToken = await user.getIdToken();
-
-                await establishSession(email, idToken);
-
-            } catch (error) {
-                isAuthenticatingManually = false;
-                handleAuthError(error, googleBtn);
+                await establishSession(user.email.toLowerCase().trim(), idToken);
             }
         });
 
         /**
-         * LÓGICA EMAIL/PASSWORD (ACCESO CLÁSICO VIA FIREBASE)
+         * ACCESO GOOGLE (POPUP)
+         */
+        googleBtn.addEventListener('click', async () => {
+            if (isAuthenticating) return;
+            console.log("🔘 [ÓRBITA-AUTH] Click en Google Workspace...");
+            
+            try {
+                isAuthenticating = true;
+                const result = await signInWithPopup(auth, provider);
+                const idToken = await result.user.getIdToken();
+                console.log("✅ [ÓRBITA-AUTH] Identidad verificada (Google).");
+                await establishSession(result.user.email.toLowerCase().trim(), idToken);
+            } catch (error) {
+                console.error("📛 [ÓRBITA-AUTH] Error en Popup:", error.code);
+                isAuthenticating = false;
+                let userMsg = "Error al conectar con Google.";
+                if (error.code === 'auth/popup-blocked') userMsg = "Por favor, habilita los popups.";
+                alert(userMsg);
+            }
+        });
+
+        /**
+         * ACCESO MANUAL (EMAIL/PASS)
          */
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isAuthenticating) return;
+            
             const email = document.getElementById('springUsername').value.toLowerCase().trim();
             const pass = document.getElementById('springPassword').value;
 
-            console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Email/Password Firebase...");
-            isAuthenticatingManually = true; // 🛡️ Bloquea handshake duplicado
+            console.log("🔘 [ÓRBITA-AUTH] Intento de acceso manual...");
+            isAuthenticating = true;
             loader.style.display = 'flex';
-            loaderText.innerText = 'Validando con Firebase Auth...';
-
+            
             try {
                 const result = await signInWithEmailAndPassword(auth, email, pass);
-                const user = result.user;
-                const idToken = await user.getIdToken();
-
+                const idToken = await result.user.getIdToken();
+                console.log("✅ [ÓRBITA-AUTH] Credenciales válidas.");
                 await establishSession(email, idToken);
-
             } catch (error) {
-                isAuthenticatingManually = false;
-                handleAuthError(error);
+                console.error("📛 [ÓRBITA-AUTH] Error manual:", error.code);
+                isAuthenticating = false;
+                loader.style.display = 'none';
+                alert("Error: Correo o contraseña incorrectos.");
             }
         });
 
-
-
-        function handleAuthError(error, btnToReenable = null) {
-            console.error("📛 [ÓRBITA-AUTH] Error:", error.code, error.message);
-            let msg = error.message;
-            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = 'Credenciales inválidas.';
-            if (error.code === 'auth/popup-blocked') msg = 'Habilita los popups para este sitio.';
-            
-            alert("Error de acceso: " + msg);
-            loader.style.display = 'none';
-            if (btnToReenable) btnToReenable.disabled = false;
-            signOut(auth).catch(() => {});
-        }
-
-        // 🛡️ TRANSLATOR
-        (function () {
+        // Aux: Sincronizar atributos Thymeleaf si fallan en estático
+        (function() {
             document.querySelectorAll('[th\\:src], [th\\:href]').forEach(el => {
-                const attrSrc = el.getAttribute('th:src');
-                const attrHref = el.getAttribute('th:href');
-                const translate = (val) => val.replace(/@\{(.+?)\}/, '$1').split('(')[0];
-                if (attrSrc && !el.src) el.src = translate(attrSrc);
-                if (attrHref && !el.href) el.href = translate(attrHref);
+                const s = el.getAttribute('th:src');
+                const h = el.getAttribute('th:href');
+                const fix = (v) => v.replace(/@\{(.+?)\}/, '$1').split('(')[0];
+                if (s && !el.src) el.src = fix(s);
+                if (h && !el.href) el.href = fix(h);
             });
         })();
     </script>
 
 </body>
+
 </html>

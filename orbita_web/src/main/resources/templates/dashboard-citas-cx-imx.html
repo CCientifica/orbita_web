@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Dashboard — Citas, Cirugías e Imágenes DX')}"></head>
+
+<body class="dashboard-layout fade-in">
+    <!-- Shell fragments strictly enforced -->
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <!-- Navbar fragment -->
+        <nav th:replace="~{layout :: navbar('Análisis de Producción (CXI)')}"></nav>
+
+        <main class="main-content">
+            <style>
+                /* ====== PREMIUM DASHBOARD: DASHBOARD CX & IMDX ====== */
+                .db-page-wrap {
+                    --db-pri: #0f172a; --db-sec: #1e293b; --db-accent: #38bdf8;
+                    --db-light: #f8fafc; --db-border: #e2e8f0; --db-text: #334155;
+                    --db-muted: #64748b; --db-radius: 24px; --db-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+                }
+
+                .db-header {
+                    background: linear-gradient(135deg, var(--db-pri) 0%, var(--db-sec) 100%);
+                    padding: 2rem 2.5rem; border-radius: var(--db-radius);
+                    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4);
+                    margin-bottom: 2rem; color: white; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;
+                }
+
+                .db-header h1 { font-size: 2rem; font-weight: 900; margin: 0; letter-spacing: -0.04em; }
+                .db-header p { color: #94a3b8; font-weight: 600; margin: 0.25rem 0 0 0; }
+
+                .db-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+                .db-card { background: white; border-radius: var(--db-radius); padding: 1.5rem; box-shadow: var(--db-shadow); border: 1px solid var(--db-border); }
+
+                .db-filters { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; }
+                .db-filter-item { flex: 1; min-width: 200px; }
+                .db-label { display: block; font-size: 0.7rem; font-weight: 800; color: var(--db-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+                .db-input { width: 100%; border: 2px solid var(--db-border); border-radius: 12px; padding: 0.6rem 1rem; font-weight: 600; transition: border-color 0.2s; }
+                .db-input:focus { border-color: var(--db-accent); outline: none; }
+
+                .db-btn { padding: 0.7rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; }
+                .db-btn-pri { background: linear-gradient(135deg, #0284c7, #38bdf8); color: white; box-shadow: 0 10px 20px rgba(2, 132, 199, 0.3); }
+                .db-btn-sec { background: white; color: var(--db-text); border: 2px solid var(--db-border); }
+                .db-btn:hover { transform: translateY(-2px); }
+
+                .db-kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+                .db-kpi-card { background: white; border-radius: 20px; padding: 1.5rem; border: 1px solid var(--db-border); text-align: center; border-bottom: 4px solid var(--db-pri); }
+                .db-kpi-card.accent { border-bottom-color: var(--db-accent); }
+                .db-kpi-val { font-size: 2rem; font-weight: 900; color: var(--db-pri); margin-bottom: 0.25rem; }
+                .db-kpi-label { font-size: 0.7rem; font-weight: 800; color: var(--db-muted); text-transform: uppercase; }
+
+                .db-chart-container { height: 320px; position: relative; }
+                .db-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 10px; }
+                .db-table th { padding: 12px 15px; font-size: 0.75rem; color: var(--db-muted); font-weight: 800; text-align: left; text-transform: uppercase; border-bottom: 2px solid var(--db-light); }
+                .db-table td { padding: 15px; background: var(--db-light); font-weight: 600; color: var(--db-text); font-size: 0.9rem; }
+                .db-table tr td:first-child { border-radius: 12px 0 0 12px; }
+                .db-table tr td:last-child { border-radius: 0 12px 12px 0; }
+                .text-r { text-align: right; }
+
+                /* Custom Multiselect Panel */
+                .picker-panel { display: none; position: absolute; top: 100%; left: 0; width: 100%; min-width: 250px; background: white; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--db-border); z-index: 100; padding: 15px; margin-top: 5px; }
+                .picker-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+                .picker-item:hover { background: var(--db-light); }
+                .picker-open .picker-panel { display: block; }
+            </style>
+
+            <div class="db-page-wrap">
+                <header class="db-header">
+                    <div>
+                        <h1>Dashboard de Gestión CX / IMDX</h1>
+                        <p>Visión predictiva y analítica de la producción quirúrgica y ambulatoria.</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button id="exportX" class="db-btn db-btn-sec"><i class="fas fa-file-excel"></i> Exportar</button>
+                        <button id="aplicar" class="db-btn db-btn-pri"><i class="fas fa-sync-alt"></i> Actualizar Análisis</button>
+                    </div>
+                </header>
+
+                <!-- Filtros Premium -->
+                <div class="db-card" style="margin-bottom: 20px;">
+                    <div class="db-filters">
+                        <div class="db-filter-item" style="position: relative;" id="mesPicker">
+                            <label class="db-label">Ventana Temporal (Meses)</label>
+                            <button class="db-input" id="mesBtn" style="background: white; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                                <span>6 Meses Seleccionados</span> <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="picker-panel" id="mesPanel">
+                                <input type="text" id="mesSearch" placeholder="Filtro rápido..." class="db-input" style="margin-bottom:10px; font-size:0.8rem">
+                                <div id="mesList" style="max-height: 200px; overflow-y: auto;"></div>
+                                <div style="margin-top:10px; display:flex; justify-content:flex-end;"><button id="mesOk" class="db-btn db-btn-pri" style="padding:4px 12px; font-size:0.7rem">Listo</button></div>
+                            </div>
+                        </div>
+
+                        <div class="db-filter-item" style="position: relative;" id="espPicker">
+                            <label class="db-label">Línea de Especialidad</label>
+                            <button class="db-input" id="espBtn" style="background: white; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                                <span>Todas las Especialidades</span> <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="picker-panel" id="espPanel">
+                                <div id="espList" style="max-height: 200px; overflow-y: auto;"></div>
+                                <div style="margin-top:10px; display:flex; justify-content:flex-end;"><button id="espOk" class="db-btn db-btn-pri" style="padding:4px 12px; font-size:0.7rem">Listo</button></div>
+                            </div>
+                        </div>
+
+                        <div class="db-filter-item"><label class="db-label">Desde</label><input id="desde" type="month" class="db-input"></div>
+                        <div class="db-filter-item"><label class="db-label">Hasta</label><input id="hasta" type="month" class="db-input"></div>
+                    </div>
+                </div>
+
+                <!-- KPIs Premium -->
+                <div class="db-kpi-row">
+                    <div class="db-kpi-card"><div class="db-kpi-val" id="k_total">0</div><div class="db-kpi-label">Volumen Consultas</div></div>
+                    <div class="db-kpi-card accent"><div class="db-kpi-val" id="k_cx">0.0%</div><div class="db-kpi-label">% Conversión Cirugía</div></div>
+                    <div class="db-kpi-card"><div class="db-kpi-val" id="k_inc" style="color: #ef4444;">0</div><div class="db-kpi-label">Inasistencias</div></div>
+                    <div class="db-kpi-card accent"><div class="db-kpi-val" id="k_img">0</div><div class="db-kpi-label">Órdenes Imágenes</div></div>
+                </div>
+
+                <div class="db-grid">
+                    <!-- Gráfico Principal -->
+                    <div class="db-card" style="grid-column: span 8;">
+                        <h3 class="db-label" style="font-size:1rem; margin-bottom:1.5rem"><i class="fas fa-chart-line mr-2"></i> Tendencia Mensual de Producción</h3>
+                        <div class="db-chart-container"><canvas id="chartMain"></canvas></div>
+                    </div>
+
+                    <!-- Diagnóstico / Insights -->
+                    <div class="db-card" style="grid-column: span 4; background: linear-gradient(to bottom, #ffffff, #f1f5f9);">
+                        <h3 class="db-label" style="font-size:1rem; margin-bottom:1.5rem"><i class="fas fa-magic mr-2"></i> Lectura Táctica (IA)</h3>
+                        <div id="insight_list" style="display:flex; flex-direction:column; gap:12px">
+                            <div style="text-align:center; padding:2rem; color:var(--db-muted); font-size:0.85rem">Procesando diagnóstico...</div>
+                        </div>
+                    </div>
+
+                    <!-- Distribución -->
+                    <div class="db-card" style="grid-column: span 4;">
+                        <h3 class="db-label"><i class="fas fa-pizza-slice mr-2"></i> Mezcla de Pacientes</h3>
+                        <div class="db-chart-container" style="height:250px"><canvas id="chartMix"></canvas></div>
+                    </div>
+                    <div class="db-card" style="grid-column: span 4;">
+                        <h3 class="db-label"><i class="fas fa-layer-group mr-2"></i> Concentración x Especialidad</h3>
+                        <div class="db-chart-container" style="height:250px"><canvas id="chartConcentration"></canvas></div>
+                    </div>
+                    <div class="db-card" style="grid-column: span 4;">
+                        <h3 class="db-label"><i class="fas fa-exclamation-triangle mr-2"></i> Tasa de Fallos</h3>
+                        <div class="db-chart-container" style="height:250px"><canvas id="chartFails"></canvas></div>
+                    </div>
+
+                    <!-- Tabla Detalle -->
+                    <div class="db-card" style="grid-column: span 12;">
+                        <h3 class="db-label" style="font-size:1rem; margin-bottom:1.5rem"><i class="fas fa-table mr-2"></i> Detalle Maestro de Ejecución</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="db-table">
+                                <thead>
+                                    <tr>
+                                        <th>Periodo</th><th>Especialidad</th><th class="text-r">Citas</th><th class="text-r">Inasist (%)</th><th class="text-r">Canc (%)</th><th class="text-r">Conv Cx (%)</th><th class="text-r">Conv Img (%)</th><th class="text-r">POP</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div style="height: 50px;"></div>
+            </div>
+        </main>
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts Oficiales -->
+    <div th:replace="~{layout :: scripts}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script type="module">
+        const { db } = window.firebaseInstance;
+        const { collection, query, orderBy, getDocs } = window.firebaseFirestore;
+
+        const el = (id) => document.getElementById(id);
+        const fmtPct = (v) => isFinite(v) ? (v * 100).toFixed(1) + '%' : '0.0%';
+        const fmtNum = (v) => Math.round(Number(v) || 0).toLocaleString();
+        const n = (v) => Number(v) || 0;
+
+        const ESPECIALIDADES = ["ANESTESIOLOGIA Y REANIMACION", "CIRUGIA GENERAL", "CIRUGIA MAXILOFACIAL", "CIRUGIA VASCULAR", "GINECOLOGIA Y OBSTETRICIA", "HEMATO ONCOLOGIA", "HEMATOLOGIA", "MEDICINA INTERNA", "NEUROCIRUGIA", "NEUROLOGIA", "ORTOPEDIA Y TRAUMATOLOGIA", "OTORRINOLARINGOLOGIA", "PEDIATRIA", "PSICOLOGIA", "PSIQUIATRIA", "UROLOGIA"];
+        let CHARTS = { main: null, mix: null, concentration: null, fails: null };
+
+        function init() {
+            const now = new Date();
+            for (let i = 0; i < 24; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const v = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                const dv = document.createElement('div');
+                dv.className = 'picker-item';
+                dv.innerHTML = `<label style="display:flex; gap:10px; width:100%; cursor:pointer;"><input type="checkbox" value="${v}" ${i < 6 ? 'checked' : ''}> ${v}</label>`;
+                el('mesList').appendChild(dv);
+            }
+            ESPECIALIDADES.forEach(s => {
+                const dv = document.createElement('div');
+                dv.className = 'picker-item';
+                dv.innerHTML = `<label style="display:flex; gap:10px; width:100%; cursor:pointer;"><input type="checkbox" value="${s}"> ${s}</label>`;
+                el('espList').appendChild(dv);
+            });
+
+            [el('mesBtn'), el('espBtn')].forEach(btn => {
+                btn.onclick = (e) => { e.stopPropagation(); btn.parentElement.classList.toggle('picker-open'); };
+            });
+            document.onclick = () => { document.querySelectorAll('.db-filter-item').forEach(p => p.classList.remove('picker-open')); };
+            [el('mesPanel'), el('espPanel')].forEach(p => p.onclick = (e) => e.stopPropagation());
+
+            el('mesOk').onclick = () => { syncLabels(); loadData(); };
+            el('espOk').onclick = () => { syncLabels(); loadData(); };
+            el('aplicar').onclick = loadData;
+
+            syncLabels();
+            loadData();
+        }
+
+        function syncLabels() {
+            const mc = el('mesList').querySelectorAll('input:checked').length;
+            el('mesBtn').querySelector('span').innerText = mc === 0 ? "Meses" : `${mc} meses seleccionados`;
+            const ec = el('espList').querySelectorAll('input:checked').length;
+            el('espBtn').querySelector('span').innerText = ec === 0 ? "Todas las Líneas" : `${ec} selecc.`;
+        }
+
+        async function loadData() {
+            try {
+                const mCheck = Array.from(el('mesList').querySelectorAll('input:checked')).map(i => i.value);
+                const eCheck = Array.from(el('espList').querySelectorAll('input:checked')).map(i => i.value);
+                const ds = el('desde').value;
+                const hs = el('hasta').value;
+
+                let filterMeses = mCheck;
+                if (ds) {
+                    filterMeses = [];
+                    const start = new Date(ds + "-01"); const end = hs ? new Date(hs + "-01") : new Date();
+                    for (let dt = new Date(start); dt <= end; dt.setMonth(dt.getMonth() + 1)) {
+                        filterMeses.push(`${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`);
+                    }
+                }
+
+                const snap = await getDocs(query(collection(db, 'estadistica_ce'), orderBy('mes')));
+                const rows = [];
+                snap.forEach(d => {
+                    const r = d.data();
+                    if (filterMeses.length && !filterMeses.includes(r.mes)) return;
+                    if (eCheck.length && !eCheck.includes(r.especialidad)) return;
+                    rows.push({
+                        ...r, t: n(r.totalConsultas), cx: n(r.ordenesCx), img: n(r.ordenesImgTotal),
+                        inc: n(r.citasIncumplidas), canc: n(r.citasCanceladas),
+                        pv: n(r.consultasPrimeraVez), ctrl: n(r.consultasControl), pop: n(r.consultasPOP)
+                    });
+                });
+                render(rows);
+            } catch (e) { console.error(e); }
+        }
+
+        function render(rows) {
+            const sum = rows.reduce((acc, r) => {
+                acc.t += r.t; acc.cx += r.cx; acc.inc += r.inc; acc.canc += r.canc; acc.pop += r.pop; acc.img += r.img;
+                acc.pv += r.pv; acc.ctrl += r.ctrl;
+                return acc;
+            }, { t: 0, cx: 0, inc: 0, canc: 0, pop: 0, img: 0, pv: 0, ctrl: 0 });
+
+            el('k_total').innerText = fmtNum(sum.t);
+            el('k_cx').innerText = fmtPct(sum.t > 0 ? sum.cx / sum.t : 0);
+            el('k_inc').innerText = fmtNum(sum.inc);
+            el('k_img').innerText = fmtNum(sum.img);
+
+            el('tbody').innerHTML = rows.sort((a, b) => b.mes.localeCompare(a.mes)).slice(0, 50).map(r => `
+                <tr>
+                    <td>${r.mes}</td><td>${r.especialidad}</td>
+                    <td class="text-r">${fmtNum(r.t)}</td>
+                    <td class="text-r">${fmtPct(r.t > 0 ? r.inc / r.t : 0)}</td>
+                    <td class="text-r">${fmtPct(r.t > 0 ? r.canc / r.t : 0)}</td>
+                    <td class="text-r">${fmtPct(r.t > 0 ? r.cx / r.t : 0)}</td>
+                    <td class="text-r">${fmtPct(r.t > 0 ? r.img / r.t : 0)}</td>
+                    <td class="text-r">${r.pop}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="8" style="text-align:center;">Sin datos para los filtros aplicados.</td></tr>';
+
+            renderGraphics(rows, sum);
+        }
+
+        function renderGraphics(rows, sum) {
+            const byM = {};
+            rows.forEach(r => { if (!byM[r.mes]) byM[r.mes] = { t: 0, cx: 0, inc: 0, canc: 0 }; byM[r.mes].t += r.t; byM[r.mes].cx += r.cx; byM[r.mes].inc += r.inc; byM[r.mes].canc += r.canc; });
+            const months = Object.keys(byM).sort();
+
+            const ctx = el('chartMain').getContext('2d');
+            if (CHARTS.main) CHARTS.main.destroy();
+            CHARTS.main = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        { label: 'Citas', data: months.map(m => byM[m].t), borderColor: '#0f172a', backgroundColor: 'rgba(15, 23, 42, 0.05)', fill: true, tension: 0.4 },
+                        { label: 'Cirugías', data: months.map(m => byM[m].cx), borderColor: '#38bdf8', borderWidth: 3, tension: 0.4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            if (CHARTS.mix) CHARTS.mix.destroy();
+            CHARTS.mix = new Chart(el('chartMix'), {
+                type: 'doughnut',
+                data: { labels: ['1ra Vez', 'Control'], datasets: [{ data: [sum.pv, sum.ctrl], backgroundColor: ['#0f172a', '#e2e8f0'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '80%' }
+            });
+
+            const byE = {}; rows.forEach(r => { if (!byE[r.especialidad]) byE[r.especialidad] = 0; byE[r.especialidad] += r.t; });
+            const topE = Object.entries(byE).sort((a,b)=>b[1]-a[1]).slice(0, 6);
+            if (CHARTS.concentration) CHARTS.concentration.destroy();
+            CHARTS.concentration = new Chart(el('chartConcentration'), {
+                type: 'bar',
+                data: { labels: topE.map(e => e[0].split(' ')[0]), datasets: [{ data: topE.map(e => e[1]), backgroundColor: '#38bdf8', borderRadius: 8 }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display:false } } }
+            });
+
+            if (CHARTS.fails) CHARTS.fails.destroy();
+            CHARTS.fails = new Chart(el('chartFails'), {
+                type: 'bar',
+                data: {
+                    labels: months.slice(-4), datasets: [
+                        { label: 'Inasist.', data: months.slice(-4).map(m => (byM[m].t > 0 ? (byM[m].inc/byM[m].t)*100 : 0)), backgroundColor: '#ef4444' },
+                        { label: 'Cancel.', data: months.slice(-4).map(m => (byM[m].t > 0 ? (byM[m].canc/byM[m].t)*100 : 0)), backgroundColor: '#f1f5f9' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero:true, ticks: { callback: v => v+'%' } } } }
+            });
+
+            // Insights
+            const news = [];
+            const conv = sum.t > 0 ? (sum.cx / sum.t) * 100 : 0;
+            news.push({ title: 'Rendimiento Global', text: `Análisis de ${fmtNum(sum.t)} citas con efectividad quirúrgica del ${conv.toFixed(1)}%.`, cls: '' });
+            if (conv < 10) news.push({ title: 'Baja Conversión', text: 'La tracción hacia cirugía está por debajo del umbral táctico esperado.', cls: 'crit' });
+            el('insight_list').innerHTML = news.map(i => `<div style="background: white; padding: 12px; border-radius: 12px; border-left: 4px solid ${i.cls === 'crit'?'#ef4444':'#38bdf8'}; box-shadow: 0 4px 6px rgba(0,0,0,0.02)">
+                <h4 style="font-size:0.8rem; font-weight:900; margin:0">${i.title}</h4>
+                <p style="font-size:0.75rem; color:var(--db-muted); margin:4px 0 0 0">${i.text}</p>
+            </div>`).join('');
+        }
+        init();
+    </script>
+</body>
+</html>

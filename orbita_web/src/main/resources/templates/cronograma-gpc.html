@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Cronograma GPC & Protocolos')}"></head>
+
+<body class="dashboard-layout fade-in">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('Gestión Estratégica CTC')}"></nav>
+
+        <main class="main-content">
+            <style>
+                /* ====== ADVANCED DATA CARDS SYSTEM (WOW FACTOR) ====== */
+                :root {
+                    --wow-pri: #0f172a; --wow-sec: #1e293b; --wow-accent: #0ea5e9;
+                    --wow-glass: rgba(255, 255, 255, 0.85);
+                    --wow-border: rgba(255, 255, 255, 0.3);
+                    --wow-radius: 32px;
+                    --wow-shadow: 0 30px 60px rgba(0,0,0,0.08);
+                }
+
+                .wow-page-wrap { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+                .wow-header {
+                    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+                    padding: 3.5rem 4rem; border-radius: var(--wow-radius);
+                    box-shadow: 0 40px 100px -20px rgba(15, 23, 42, 0.4);
+                    margin-bottom: 2.5rem; color: white; position: relative; overflow: hidden;
+                    display: flex; justify-content: space-between; align-items: center;
+                }
+                .wow-header h1 { font-size: 3rem; font-weight: 900; letter-spacing: -0.06em; margin: 0; }
+                .wow-header p { color: #94a3b8; font-weight: 600; font-size: 1.25rem; margin-top: 8px; }
+
+                .wow-card-hub {
+                    background: var(--wow-glass); backdrop-filter: blur(25px);
+                    border-radius: var(--wow-radius); border: 1px solid var(--wow-border);
+                    box-shadow: var(--wow-shadow); overflow: hidden; animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+                }
+
+                .wow-tabs-container {
+                    background: rgba(248, 250, 252, 0.5); padding: 1.5rem 2.5rem;
+                    border-bottom: 1px solid rgba(0,0,0,0.05);
+                    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+                }
+                .wow-tabs { display: flex; gap: 12px; }
+                .wow-tab {
+                    padding: 1rem 2rem; border-radius: 20px; font-weight: 900; font-size: 0.95rem;
+                    color: #64748b; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    background: white; border: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.08em;
+                }
+                .wow-tab.active {
+                    background: #0f172a; color: white; border-color: #0f172a;
+                    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.2); transform: translateY(-3px);
+                }
+
+                /* Executive List Components */
+                .wow-content { padding: 2.5rem; }
+                .wow-list { display: flex; flex-direction: column; gap: 20px; }
+
+                .wow-item-card {
+                    background: white; border-radius: 24px; padding: 2rem;
+                    display: flex; flex-direction: column; gap: 15px;
+                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                    border: 1px solid #f1f5f9; position: relative; overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+                }
+                .wow-item-card:hover {
+                    box-shadow: 0 25px 60px rgba(0,0,0,0.07); transform: scale(1.01) translateY(-5px);
+                    border-color: #e2e8f0;
+                }
+                .wow-item-card::before {
+                    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: #e2e8f0; transition: background 0.3s;
+                }
+                .wow-item-card.prior-Alta::before { background: #ef4444; }
+                .wow-item-card.prior-Media::before { background: #f97316; }
+                .wow-item-card.prior-Baja::before { background: #22c55e; }
+
+                .wow-card-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
+                .wow-card-title { font-size: 1.35rem; font-weight: 900; color: #0f172a; flex: 1; letter-spacing: -0.02em; line-height: 1.3; }
+                
+                .wow-card-meta { display: flex; flex-wrap: wrap; gap: 25px; align-items: center; margin-top: 5px; }
+                .wow-meta-pill { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 800; color: #64748b; }
+                .wow-meta-pill i { color: #cbd5e1; }
+
+                .wow-card-controls { display: flex; align-items: center; gap: 30px; }
+                .wow-toggle-group { display: flex; gap: 20px; border-left: 1px solid #f1f5f9; padding-left: 30px; }
+
+                /* Custom Minimal Inputs */
+                .wow-input-ghost {
+                    background: transparent; border: none; border-bottom: 2px solid transparent;
+                    font-weight: 900; font-size: 1.35rem; color: #0f172a; width: 100%; transition: all 0.3s;
+                }
+                .wow-input-ghost:focus { outline: none; border-bottom-color: #0ea5e9; background: rgba(14, 165, 233, 0.03); }
+
+                /* Premium Checkbox Replacement */
+                .wow-toggle {
+                    display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 18px;
+                    border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.3s;
+                }
+                .wow-toggle span { font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+                .wow-toggle input { display: none; }
+                .wow-toggle:has(input:checked) { background: #0ea5e9; border-color: #0ea5e9; }
+                .wow-toggle:has(input:checked) span { color: white; }
+
+                .wow-btn {
+                    padding: 1rem 2rem; border-radius: 18px; font-weight: 900; font-size: 0.95rem;
+                    display: inline-flex; align-items: center; gap: 12px; border: none; cursor: pointer; transition: all 0.3s;
+                }
+                .wow-btn-pri { background: #0ea5e9; color: white; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
+                .wow-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
+
+                @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+                .month-header {
+                    margin: 40px 0 20px 0; font-size: 1.1rem; font-weight: 900; color: #0f172a;
+                    text-transform: uppercase; letter-spacing: 0.25em; display: flex; align-items: center; gap: 20px;
+                }
+                .month-header::after { content: ''; flex: 1; height: 2px; background: linear-gradient(to right, #e2e8f0, transparent); }
+            </style>
+
+            <div class="wow-page-wrap">
+                <header class="wow-header">
+                    <div>
+                        <h1>Gestión CTC</h1>
+                        <p>Cronograma dinámico de auditoría y protocolos institucionales.</p>
+                    </div>
+                </header>
+
+                <div class="wow-card-hub">
+                    <div class="wow-tabs-container">
+                        <div class="wow-tabs">
+                            <div class="wow-tab active" data-tab="inventario">01. Inventario GPC</div>
+                            <div class="wow-tab" data-tab="plan">02. Plan Anual</div>
+                            <div class="wow-tab" data-tab="seg">03. Seguimiento</div>
+                        </div>
+                        <div id="panelActions"></div>
+                    </div>
+
+                    <div class="wow-content">
+                        <div id="panel-inventario" class="wow-panel active">
+                            <div id="listInvent" class="wow-list"></div>
+                        </div>
+                        <div id="panel-plan" class="wow-panel" style="display:none">
+                            <div id="listPlan" class="wow-list"></div>
+                        </div>
+                        <div id="panel-seg" class="wow-panel" style="display:none">
+                            <div id="listSeg" class="wow-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <script type="module" th:inline="javascript">
+        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const qs = s => document.querySelector(s);
+        const qsa = s => Array.from(document.querySelectorAll(s));
+        const slug = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+
+        const state = { anio: new Date().getFullYear(), inventario: [], plan: [] };
+
+        /* ================== NAVIGATION ================== */
+        function initTabs() {
+            qsa('.wow-tab').forEach(btn => {
+                btn.onclick = () => {
+                    qsa('.wow-tab').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    qsa('.wow-panel').forEach(p => p.style.display = 'none');
+                    qs(`#panel-${btn.dataset.tab}`).style.display = 'block';
+                    renderActions(btn.dataset.tab);
+                };
+            });
+        }
+
+        function renderActions(tab) {
+            const box = qs('#panelActions'); if(!box) return; box.innerHTML = '';
+            const addBtn = (icon, text, cls, fn) => {
+                const b = document.createElement('button'); b.className = `wow-btn ${cls}`;
+                b.innerHTML = `<i class="${icon}"></i> ${text}`; b.onclick = fn;
+                box.appendChild(b);
+            };
+            if(tab === 'inventario') {
+                addBtn('fas fa-plus', 'Añadir al Inventario', 'wow-btn-pri', () => { state.inventario.unshift({codigo:`GPC-${Date.now().toString().slice(-4)}`, nombre:'', prior:'Media'}); renderInvent(); });
+            }
+        }
+
+        /* ================== FIREBASE ================== */
+        async function initModule() {
+            const { db, auth } = window.firebaseInstance || {};
+            const { onAuthStateChanged } = window.firebaseAuth || {};
+            if (!db || !auth || !onAuthStateChanged) { setTimeout(initModule, 300); return; }
+            onAuthStateChanged(auth, async (u) => {
+                if (!u) { location.href = "/login"; return; }
+                initTabs(); await loadFromDB(); renderAll();
+            });
+        }
+
+        async function loadFromDB() {
+            const { db } = window.firebaseInstance || {};
+            const { collection, getDocs, query, where } = window.firebaseFirestore || {};
+            if(!db || !getDocs) return;
+            try {
+                state.inventario = (await getDocs(collection(db, 'gpc_identificacion'))).docs.map(d => d.data());
+                state.plan = (await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)))).docs.map(d=>d.data());
+            } catch(e) { console.error("Cloud Error:", e); }
+        }
+
+        function renderAll() {
+            renderInvent(); renderPlan();
+            renderActions(qsa('.wow-tab.active')[0]?.dataset.tab || 'inventario');
+        }
+
+        /* ================== CARD RENDERERS ================== */
+        function renderInvent() {
+            const box = qs('#listInvent'); if(!box) return; box.innerHTML = '';
+            state.inventario.forEach((r, i) => {
+                const card = document.createElement('div');
+                card.className = `wow-item-card prior-${r.prior || 'Media'}`;
+                card.innerHTML = `
+                    <div class="wow-card-main">
+                        <div style="flex: 1">
+                            <input class="wow-input-ghost" placeholder="Nombre de la Guía o Protocolo..." value="${r.nombre||''}" data-key="nombre">
+                            <div class="wow-card-meta">
+                                <span class="wow-meta-pill"><i class="fas fa-fingerprint"></i> ${r.codigo||'AUTOGEN'}</span>
+                                <span class="wow-meta-pill"><i class="fas fa-user-shield"></i> Lider: ${r.resp||'CTC'}</span>
+                                <span class="wow-meta-pill"><i class="fas fa-calendar-alt"></i> Últ. Versión: <input type="date" value="${r.fchUlt||''}" data-key="fchUlt" style="border:none; font-weight:700; color:#64748b"></span>
+                            </div>
+                        </div>
+                        <div class="wow-card-controls">
+                            <div class="wow-toggle-group">
+                                <label class="wow-toggle">
+                                    <input type="checkbox" ${r.ajuste?'checked':''} data-key="ajuste">
+                                    <span>AJUSTE</span>
+                                </label>
+                                <label class="wow-toggle">
+                                    <input type="checkbox" ${r.descarte?'checked':''} data-key="descarte">
+                                    <span>DESCARTE</span>
+                                </label>
+                            </div>
+                            <div style="width: 130px">
+                                <select data-key="prior" class="wow-tab" style="width:100%; height:44px; padding:0 15px; font-size:0.75rem">
+                                    ${['Alta','Media','Baja'].map(p=>`<option value="${p}" ${r.prior===p?'selected':''}>${p}</option>`).join('')}
+                                </select>
+                            </div>
+                            <button class="wow-btn" style="background:#fef2f2; color:#ef4444; width:44px; height:44px; padding:0; justify-content:center" data-act="del"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                card.querySelectorAll('input, select').forEach(inp => {
+                    inp.onchange = () => { 
+                        state.inventario[i][inp.dataset.key] = (inp.type==='checkbox'?inp.checked:inp.value);
+                        if(inp.dataset.key==='prior') renderInvent(); 
+                    };
+                });
+                card.querySelector('[data-act="del"]').onclick = () => { state.inventario.splice(i,1); renderInvent(); };
+                box.appendChild(card);
+            });
+        }
+
+        function renderPlan() {
+            const box = qs('#listPlan'); if(!box) return; box.innerHTML = '';
+            let curMonth = -1;
+            state.plan.sort((a,b)=>(a.mes||0)-(b.mes||0)).forEach((r, i) => {
+                if(r.mes !== curMonth) {
+                    curMonth = r.mes;
+                    const h = document.createElement('div'); h.className = 'month-header';
+                    h.textContent = MONTHS[curMonth] || 'Sin Programar';
+                    box.appendChild(h);
+                }
+                const card = document.createElement('div');
+                card.className = `wow-item-card prior-${r.prioridad || 'Alta'}`;
+                card.innerHTML = `
+                    <div class="wow-card-main" style="align-items: center">
+                        <div style="flex: 1">
+                            <div class="wow-card-title">${r.tema||'Sin Título'}</div>
+                            <div class="wow-card-meta">
+                                <span class="wow-meta-pill"><i class="fas fa-tag"></i> ${r.codigo||'—'}</span>
+                                <span class="wow-meta-pill"><i class="fas fa-tasks"></i> Acción: ${r.accion||'Actualizar'}</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:15px; align-items:center">
+                             <select data-key="mes" class="wow-tab" style="height:44px; padding:0 15px; font-size:0.75rem">
+                                ${MONTHS.map((m,idx)=>`<option value="${idx}" ${r.mes==idx?'selected':''}>${m}</option>`).join('')}
+                             </select>
+                             <button class="wow-btn wow-btn-pri" style="height:44px; padding:0 25px; font-size:0.75rem">GESTIONAR</button>
+                        </div>
+                    </div>
+                `;
+                box.appendChild(card);
+            });
+        }
+
+        initModule();
+    </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="layout :: header('Estadística Diaria')">
+  <link rel="stylesheet" th:href="@{/css/estadistica-diaria-tailwind.css(v='1.0')}" />
   <link rel="stylesheet" href="/styles.css">
   <script src="/js/orbita-layout-bridge.js"></script>
 </head>
@@ -1616,9 +1617,19 @@
         /* Contenedor unificado para las 25 tarjetas */
         #metasMensuales {
           display: grid !important;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
-          gap: 12px !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 16px !important;
           width: 100% !important;
+        }
+
+        @media (max-width: 1300px) {
+          #metasMensuales { grid-template-columns: repeat(3, 1fr) !important; }
+        }
+        @media (max-width: 900px) {
+          #metasMensuales { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 600px) {
+          #metasMensuales { grid-template-columns: 1fr !important; }
         }
 
         /* Eliminamos los contenedores de grupo que causaban los saltos de línea */
@@ -2338,6 +2349,7 @@
         padding: 12px 40px;
         font-size: 12px; color: #1e3a5f;
         font-family: inherit;
+        max-width: 1536px; margin: 0 auto; width: 100%;
       ">
         <div style="flex-shrink:0; width:32px; height:32px; background:#dbeafe; border-radius:50%;
           display:flex; align-items:center; justify-content:center;">
@@ -2357,11 +2369,12 @@
       </div>
 
       <!-- ===== ALERTA DE DATOS PENDIENTES ===== -->
-      <div id="alertaDatosPendientes" style="display:none;"></div>
+      <div id="alertaDatosPendientes" style="display:none; max-width: 1536px; margin: 0 auto; width: 100%;"></div>
 
 
       <!-- ===== CENTRO DE CONTROL UNIFICADO (Sticky) ===== -->
-      <div class="control-center">
+      <div style="width: 100%; display: flex; justify-content: center; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 2px solid #e2e8f0; margin-bottom: 30px;">
+        <div class="control-center" style="max-width: 1536px; border-bottom: none; margin-bottom: 0px; background: transparent; backdrop-filter: none; box-shadow: none;">
 
 
 
@@ -2436,11 +2449,12 @@
             <span>Análisis IA</span>
           </button>
         </div>
+        </div>
       </div>
 
 
       <!-- NAVEGACIÓN POR PESTAÑAS (Estilo Acumulado Mensual) -->
-      <div class="mb-5 fade-in" style="padding: 0 40px; margin-bottom: 25px;">
+      <div class="mb-5 fade-in" style="padding: 0 40px; margin-bottom: 25px; max-width: 1536px; margin-left: auto; margin-right: auto;">
         <div class="nav-pills-modern" id="mainTabs">
           <button class="nav-btn active" data-target="tab-intel">
             <i data-lucide="zap"></i> Inteligencia del Periodo
@@ -2457,7 +2471,7 @@
         </div>
       </div>
 
-      <div id="tab-views" style="padding: 0 20px;">
+      <div id="tab-views" style="padding: 0 20px; max-width: 1536px; margin: 0 auto;">
         <!-- TAB 1: Inteligencia del Periodo -->
         <div class="tab-pane active" id="tab-intel">
           <section id="section-intel" class="fade-in">
@@ -2479,7 +2493,7 @@
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 30px;" class="intel-main-grid">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px;" class="intel-main-grid">
               <!-- Monitor de Desempeño Predictivo -->
               <div class="modern-card" style="margin-top:0;">
                 <h3
@@ -2520,7 +2534,7 @@
             </div>
 
             <!-- Matriz de Score Gerencial y Tendencia -->
-            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; margin-top: 30px;"
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; margin-top: 30px;"
               class="intel-secondary-grid">
               <div class="modern-card" style="margin-top:0;">
                 <h3
@@ -3194,6 +3208,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <div th:replace="~{layout :: scripts}"></div>
 </body>
 
 </html>

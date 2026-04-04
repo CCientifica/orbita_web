@@ -1,74 +1,7 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+﻿<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{layout :: header('Predictor Estancia LOS · IA')}"></head>
 
-<!-- Estilos y Configuración -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
-
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    orbita: { navy: '#1e293b', blue: '#3b82f6', gray: '#94a3b8', alert: '#f43f5e', warning: '#f59e0b', success: '#10b981' }
-                },
-                animation: {
-                    'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                }
-            }
-        }
-    }
-</script>
-
-<style type="text/tailwindcss">
-    @layer components {
-        .glass-card { @apply bg-white/80 backdrop-blur-xl border border-slate-200 shadow-xl rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl; }
-        .stat-card { @apply relative bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm transition-all hover:shadow-md; }
-        .btn-predictive { @apply flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50; }
-        .btn-primary { @apply bg-slate-900 text-white hover:bg-blue-600 shadow-xl; }
-        .btn-secondary { @apply bg-white border border-slate-200 text-slate-600 hover:border-blue-300 hover:text-blue-600; }
-        
-        .tab-los { @apply w-full border-separate border-spacing-y-2; }
-        .tab-los th { @apply px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-left; }
-        .tab-los td { @apply px-4 py-3 bg-white border-y border-slate-100 first:border-l first:rounded-l-2xl last:border-r last:rounded-r-2xl text-[12px] font-bold text-slate-600; }
-        
-        .upload-zone { @apply border-2 border-dashed border-slate-200 rounded-[2.5rem] p-12 text-center transition-all cursor-pointer hover:border-blue-400 hover:bg-blue-50/30; }
-        .upload-zone.active { @apply border-blue-500 bg-blue-50; }
-    }
-</style>
-
-<style>
-    .main-content { background: radial-gradient(circle at top right, #f8fafc, #f1f5f9); padding: 2rem 3rem !important; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-    .dot-alert { background: #f43f5e; box-shadow: 0 0 10px #f43f5e; }
-    .dot-success { background: #10b981; box-shadow: 0 0 10px #10b981; }
-    .dot-warning { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
-    
-    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
-    #loadingOverlay {
-        backdrop-filter: blur(8px);
-        background: rgba(255,255,255,0.7);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-    }
-</style>
-
-<!-- 
-    MATRIZ OFICIAL DE ROLES DE ÓRBITA - PREDICCIÓN
-    - master admin: Acceso total.
-    - super admin: Acceso total (sin gestión usuarios/CTC).
-    - admin: Acceso total (visualización/descarga).
-    - auditor: Acceso limitado a Predicción y Estadística (Visor LOS).
-    - analista: BLOQUEADO (Limitado a Alto Costo).
--->
 <body class="dashboard-layout fade-in">
     <aside th:replace="~{layout :: sidebar}"></aside>
 
@@ -446,5 +379,17 @@
         setInterval(checkEngineStatus, 15000); 
 
     </script>
+
+    <!-- CDN Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (typeof tailwind !== 'undefined') tailwind.config = {
+            theme: { extend: { colors: { rcf: { alert: '#f43f5e', warn: '#f59e0b', success: '#10b981' } } } }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

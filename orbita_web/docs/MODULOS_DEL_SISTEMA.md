@@ -13,9 +13,10 @@ A continuación se describen los módulos operativos en la plataforma, clasifica
     *   **Tipo**: Administrativo.
     *   **Propósito**: Administración de credenciales, roles y acceso de todo el personal institucional.
     *   **Acceso**: **Exclusivo para `master admin`**.
-*   **Gestión CTC (GPC)**:
-    *   **Tipo**: Administrativo/Científico.
-    *   **Propósito**: Planeación estratégica, cronogramas y Plan Anual de Guías de Práctica Clínica (GPC).
+*   **Gestión CTC (GPC & Auditoría)**:
+    *   **Tipo**: Estratégico/Científico.
+    *   **Propósito**: Centro de mando para la planeación estratégica y monitoreo de adherencia. Incluye un **Cronograma Premium** basado en el perfil epidemiológico y un **Plan Anual de Auditoría** con visualización de tarjetas de alto impacto y semaforización ejecutiva (Óptima, Proceso, Crítica).
+    *   **Interfaz**: Diseño de alta fidelidad basado en **Advanced Glassmorphism**.
     *   **Acceso**: **Exclusivo para `master admin`**.
 
 ---

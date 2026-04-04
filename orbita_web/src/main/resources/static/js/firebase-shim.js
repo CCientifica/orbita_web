@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, 
-    query, where, orderBy, onSnapshot, serverTimestamp 
+    query, where, orderBy, onSnapshot, serverTimestamp, limit 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // CONFIGURACIÓN OFICIAL - INSTITUCIONAL
@@ -40,7 +40,7 @@ window.firebaseFirestore = {
     collection: _smartColl,
     doc: _smartDoc,
     getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-    query, where, orderBy, onSnapshot, serverTimestamp
+    query, where, orderBy, onSnapshot, serverTimestamp, limit
 };
 
 

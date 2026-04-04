@@ -52,26 +52,145 @@
                     margin: 0;
                 }
 
+                /* ====== ULTRA PREMIUM HEADER ====== */
                 .modern-header {
-                    background: linear-gradient(135deg, var(--pri-dark) 0%, var(--pri) 100%);
-                    color: white;
-                    padding: 2.5rem 2rem;
-                    border-radius: 20px;
-                    margin-bottom: 2rem;
-                    box-shadow: var(--shadow);
+                    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                    padding: 2.5rem 3rem;
+                    border-radius: 24px;
+                    margin-bottom: 2.5rem;
+                    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4);
                     position: relative;
                     overflow: hidden;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 2rem;
+                    border: 1px solid rgba(255, 255, 255, 0.05);
                 }
 
                 .modern-header::before {
                     content: '';
                     position: absolute;
-                    top: 0;
-                    right: 0;
-                    width: 300px;
-                    height: 100%;
-                    background: url('data:image/svg+xml,<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2" fill="rgba(255,255,255,0.05)"/></svg>') repeat;
-                    opacity: 0.5;
+                    top: -50%;
+                    right: -10%;
+                    width: 60%;
+                    height: 200%;
+                    background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+                    transform: rotate(-15deg);
+                    pointer-events: none;
+                }
+
+                .header-content {
+                    position: relative;
+                    z-index: 2;
+                    max-width: 650px;
+                }
+
+                .header-tag {
+                    display: inline-block;
+                    background: rgba(56, 189, 248, 0.1);
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.2);
+                    padding: 0.35rem 1rem;
+                    border-radius: 10px;
+                    font-size: 0.7rem;
+                    font-weight: 900;
+                    letter-spacing: 0.15em;
+                    text-transform: uppercase;
+                    margin-bottom: 1.2rem;
+                }
+
+                .header-title {
+                    font-size: 2.8rem;
+                    font-weight: 900;
+                    color: white;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 1.2rem;
+                    letter-spacing: -0.04em;
+                    line-height: 1.1;
+                }
+
+                .header-title .material-icons {
+                    font-size: 3.2rem;
+                    color: #38bdf8;
+                    text-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+                }
+
+                .header-desc {
+                    color: #94a3b8;
+                    font-weight: 600;
+                    font-size: 1.05rem;
+                    margin-top: 1.2rem;
+                    line-height: 1.6;
+                }
+
+                /* ====== COMPLIANCE BANNER PREMIUM ====== */
+                .compliance-banner {
+                    position: relative;
+                    z-index: 2;
+                    background: rgba(255, 255, 255, 0.03);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 20px;
+                    padding: 1.5rem 2rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1.5rem;
+                    min-width: 340px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    transition: transform 0.3s ease;
+                }
+                
+                .compliance-banner:hover {
+                    transform: translateY(-2px);
+                }
+
+                .compliance-icon {
+                    width: 55px;
+                    height: 55px;
+                    border-radius: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    flex-shrink: 0;
+                }
+
+                .compliance-icon .material-icons {
+                    font-size: 30px;
+                }
+
+                .compliance-text-container {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .compliance-label {
+                    font-size: 0.65rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 0.15em;
+                    color: #64748b;
+                    margin-bottom: 0.3rem;
+                }
+
+                .compliance-status {
+                    font-size: 1.4rem;
+                    font-weight: 900;
+                    color: white;
+                    margin: 0;
+                    letter-spacing: -0.02em;
+                }
+
+                .compliance-msg {
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: #94a3b8;
+                    margin: 0.4rem 0 0 0;
                 }
 
                 .toolbar {
@@ -621,12 +740,93 @@
             <img id="logo-clinica" src="assets/Logo_Clinica.png" alt="Logo" style="display:none;" />
 
             <header class="modern-header fade-in">
-                <h1 style="font-size: 2.2rem; font-weight: 800; margin: 0; display:flex; align-items:center; gap:12px;">
-                    <i data-lucide="trending-up" style="width: 36px; height: 36px;"></i> Acumulado Mensual
-                </h1>
-                <p style="opacity: 0.9; margin: 0.5rem 0 0; font-size: 1.1rem; max-width: 600px;">Consolidado de
-                    indicadores críticos, seguimiento de metas institucionales y tendencias interanuales.</p>
+                <div class="header-content">
+                    <span class="header-tag">Módulo Estratégico</span>
+                    <h1 class="header-title">
+                        <span class="material-icons">trending_up</span> Acumulado Mensual
+                    </h1>
+                    <p class="header-desc">Consolidado de indicadores críticos, seguimiento de metas institucionales y tendencias interanuales proyectadas.</p>
+                </div>
+
+                <!-- Banner de Cumplimiento -->
+                <div id="complianceBanner" class="compliance-banner" style="display: none;">
+                   <div class="compliance-icon bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]" id="complianceIcon" style="box-shadow: 0 0 25px rgba(16,185,129,0.4); background: #10b981;">
+                       <span class="material-icons" id="complianceIconText">done_all</span>
+                   </div>
+                   <div class="compliance-text-container">
+                       <span class="compliance-label">Estado de Cierre</span>
+                       <h4 class="compliance-status" id="complianceStatus">SINCRONIZADO</h4>
+                       <p class="compliance-msg" id="complianceMsg">La información para este mes ya fue cargada.</p>
+                   </div>
+                </div>
             </header>
+
+            <script th:inline="none">
+                const HOLIDAYS_2026 = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+
+                function getWorkDay(date) {
+                    let count = 0;
+                    let current = new Date(date.getFullYear(), date.getMonth(), 1);
+                    while (current <= date) {
+                        const day = current.getDay();
+                        const iso = current.toISOString().split('T')[0];
+                        if (day !== 0 && day !== 6 && !HOLIDAYS_2026.includes(iso)) count++;
+                        current.setDate(current.getDate() + 1);
+                    }
+                    return count;
+                }
+
+                async function checkCompliance(targetMonth, alreadyExists = false) {
+                    const banner = document.getElementById('complianceBanner');
+                    const status = document.getElementById('complianceStatus');
+                    const msg = document.getElementById('complianceMsg');
+                    const icon = document.getElementById('complianceIcon');
+                    const iconText = document.getElementById('complianceIconText');
+
+                    if (!banner) return;
+                    banner.style.display = 'flex';
+                    
+                    const now = new Date();
+                    const currentMonthStr = now.toISOString().slice(0, 7);
+                    const workDay = getWorkDay(now);
+
+                    if (alreadyExists) {
+                        status.textContent = "SINCRONIZADO";
+                        msg.textContent = "La información del periodo ya está procesada.";
+                        icon.style.background = "#10b981";
+                        icon.style.boxShadow = "0 0 25px rgba(16,185,129,0.4)";
+                        iconText.textContent = "done_all";
+                    } else {
+                        if (targetMonth === currentMonthStr) {
+                            status.textContent = "EN CURSO";
+                            msg.textContent = "Periodo actual. Cierre a fin de mes.";
+                            icon.style.background = "#3b82f6";
+                            icon.style.boxShadow = "0 0 25px rgba(59,130,246,0.4)";
+                            iconText.textContent = "update";
+                        } else if (targetMonth < currentMonthStr) {
+                            if (workDay <= 5) {
+                                status.textContent = "EN PLAZO";
+                                msg.textContent = `Tienes hasta el día hábil 5. Hoy: Día ${workDay}.`;
+                                icon.style.background = "#f59e0b";
+                                icon.style.boxShadow = "0 0 25px rgba(245,158,11,0.4)";
+                                iconText.textContent = "warning";
+                            } else {
+                                status.textContent = "VENCIDO";
+                                msg.textContent = `El plazo expiró. Por favor regularizar datos.`;
+                                icon.style.background = "#ef4444";
+                                icon.style.boxShadow = "0 0 25px rgba(239,68,68,0.4)";
+                                iconText.textContent = "error";
+                            }
+                        } else {
+                            status.textContent = "FUTURO";
+                            msg.textContent = "El periodo aún no ha iniciado.";
+                            icon.style.background = "#475569";
+                            icon.style.boxShadow = "0 0 25px rgba(71,85,105,0.4)";
+                            iconText.textContent = "event";
+                        }
+                    }
+                }
+            </script>
 
             <!-- Mensaje Institucional -->
             <div class="fade-in mb-4"

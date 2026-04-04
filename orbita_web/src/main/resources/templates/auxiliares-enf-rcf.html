@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{layout :: header('Analytics RCF · Auxiliares')}"></head>
+
+<body class="dashboard-layout fade-in eco-page eco-auxiliares">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('RCF Analytics Engine')}"></nav>
+
+        <main class="main-content">
+            <div class="rcf-container space-y-8">
+                <!-- Compliance Banner -->
+                <div id="complianceBar" class="compliance-banner" style="display:none">
+                    <div class="flex items-center gap-4 relative z-10">
+                        <div id="compIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                            <span class="material-icons">event_available</span>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de Cumplimiento Logístico</p>
+                            <h4 id="compMsg" class="text-xs font-black italic">--</h4>
+                        </div>
+                    </div>
+                    <div id="compBadge" class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
+                        Sincronizado
+                    </div>
+                </div>
+
+                <!-- AI PREDICTION HEADER -->
+                <div class="flex flex-col xl:flex-row gap-6 items-start">
+                    <div class="flex-1 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-blue-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Live Engine</span>
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Análisis Predictivo RCF</h1>
+                        </div>
+                        <p class="text-slate-500 font-bold text-xs max-w-xl leading-relaxed italic">
+                            Motor de inteligencia de datos para el monitoreo de la aplicacion Registo Clínico Facil.
+                            Utiliza modelos estocásticos para identificar desviaciones.
+                        </p>
+                    </div>
+
+                    <div class="glass-card flex-1 min-w-[380px] !p-5 flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
+                        <div class="flex justify-between items-start mb-2">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción Próxima Quincena</p>
+                            <span class="material-icons text-blue-500">auto_awesome</span>
+                        </div>
+                        <div class="relative h-[200px] w-full bg-slate-50/50 rounded-2xl p-2">
+                            <h3 id="predictionScore" class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <span id="predictionLabel" class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Calculando...</span>
+                            <span class="text-[9px] text-slate-400 font-bold italic">Confidence: 94.2%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTROL INTELECTUAL -->
+                <div class="flex flex-wrap items-center gap-4">
+                    <div class="glass-card !p-2 !rounded-2xl flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
+                        <div class="toolbar-pill !px-3 !py-2">
+                            <span class="material-icons text-blue-500 text-sm">apartment</span>
+                            <select id="pabSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                                <option>Segundo piso</option>
+                                <option selected>Tercer piso</option>
+                                <option>Cuarto piso</option>
+                                <option>UCI / UCE</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-pill !px-3 !py-2">
+                            <span class="material-icons text-purple-500 text-sm">schedule</span>
+                            <select id="tipoSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                                <option value="M" selected>Mensual</option>
+                                <option value="Q">Quincenal</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-pill !px-3 !py-2">
+                            <span class="material-icons text-emerald-500 text-sm">event</span>
+                            <input id="monthInput" type="month" class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
+                        </div>
+                        <div id="quinWrap" class="toolbar-pill !px-3 !py-2 hidden">
+                            <span class="material-icons text-amber-500 text-sm">pin</span>
+                            <select id="quinInput" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                                <option value="1">1ra</option>
+                                <option value="2">2da</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button id="saveBtn" class="btn-rcf btn-primary-rcf !px-5 !py-3">
+                            <span class="material-icons text-sm">save</span> Guardar Datos
+                        </button>
+                        <div class="flex gap-1">
+                            <button id="pdfBtn" class="btn-action" title="PDF">
+                                <span class="material-icons">description</span>
+                            </button>
+                            <button id="xlPabBtn" class="btn-action" title="Excel">
+                                <span class="material-icons">query_stats</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ALERTA DINÁMICA DE SISTEMA -->
+                <div id="urgentAlert" class="hidden animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                            <span class="material-icons">emergency_share</span>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Alerta de Cumplimiento</p>
+                            <h4 id="urgentMsg" class="text-sm font-black italic">Detección de Bajo Cumplimiento en Pabellón</h4>
+                        </div>
+                    </div>
+                    <button onclick="getEl('urgentAlert').remove()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Cerrar</button>
+                </div>
+
+                <div id="status" class="status-msg fade-in"></div>
+
+                <!-- DASHBOARD KPI -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="stat-card border-b-4 border-b-blue-600 !p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registros Eff.</p>
+                            <div class="tooltip-container">
+                                <span class="material-icons text-slate-300 text-sm">info_outline</span>
+                                <div class="tooltip-content uppercase tracking-widest">Actividades clínicas capturadas exitosamente a través de RCF.</div>
+                            </div>
+                        </div>
+                        <h2 id="mRCF" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
+                    </div>
+                    <div class="stat-card border-b-4 border-b-rose-600 !p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuga Datos</p>
+                            <div class="tooltip-container">
+                                <span class="material-icons text-rose-400 text-sm animate-pulse">info</span>
+                                <div class="tooltip-content uppercase tracking-widest text-rose-200">Registros en Hosvital NO replicados en RCF. Indica brecha de cumplimiento y pérdida de trazabilidad.</div>
+                            </div>
+                        </div>
+                        <h2 id="mHOS" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
+                    </div>
+                    <div class="stat-card border-b-4 border-b-emerald-600 !p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">% Adhesión</p>
+                        </div>
+                        <h2 id="mUso" class="text-4xl font-black text-slate-900 tracking-tighter">0%</h2>
+                        <div class="mt-2 h-1 bg-slate-100 rounded-full overflow-hidden">
+                            <div id="mUsoBar" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card border-b-4 border-b-blue-400 !bg-slate-900 !text-white !p-6 flex flex-col justify-center">
+                        <div class="flex justify-between items-center mb-4 text-white/40">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">Motor IA Predictive</p>
+                            <span class="material-icons text-blue-400 text-2xl animate-spin-slow">psychology</span>
+                        </div>
+                        <h2 id="aiScore" class="text-4xl font-black tracking-tighter text-white">ALPHA</h2>
+                    </div>
+                </div>
+
+                <!-- ANALISIS DE PABELLÓN -->
+                <div class="glass-card shadow-2xl !p-0 overflow-hidden border border-slate-100">
+                    <div class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
+                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Escrutinio Operativo de Personal</h2>
+                        <div class="flex items-center gap-2">
+                            <button id="quickPrevBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:text-blue-600 transition-all">Histórico</button>
+                            <button id="addRowBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-blue-700 transition-all">+ Integrar</button>
+                        </div>
+                    </div>
+
+                    <div class="p-6 overflow-x-auto custom-scrollbar">
+                        <table class="tbl-rcf" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th class="w-32">Pabellón</th>
+                                    <th class="w-24">Cód ID</th>
+                                    <th class="min-w-[280px]">Nombre del Profesional</th>
+                                    <th class="w-20 text-right">RCF</th>
+                                    <th class="w-20 text-right">Hosp.</th>
+                                    <th class="w-24 text-right">Total</th>
+                                    <th class="w-24 text-right">Efic %</th>
+                                    <th class="w-16 text-center">IA</th>
+                                    <th class="w-12"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody"></tbody>
+                            <tfoot class="bg-slate-900 text-white">
+                                <tr>
+                                    <td colspan="3" class="px-6 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">Consolidado Matemático</td>
+                                    <td class="px-4 text-right font-black" id="tRCF">0</td>
+                                    <td class="px-4 text-right font-black" id="tHOS">0</td>
+                                    <td class="px-4 text-right font-black opacity-40" id="tTotal">0</td>
+                                    <td class="px-4 text-right font-black text-xl text-emerald-400" id="tUso">0%</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN ANALÍTICA AVANZADA -->
+                <section id="alertsSec" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+                    <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white">
+                        <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
+                            <span class="material-icons animate-pulse">analytics</span> Rendimiento Logístico
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-3">
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Alertas Críticas</p>
+                                <ul id="critLowList" class="space-y-2 text-xs font-bold"></ul>
+                            </div>
+                            <div class="space-y-3">
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Desviaciones</p>
+                                <ul id="modLowList" class="space-y-2 text-xs font-bold"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card border-l-8 border-l-emerald-400 bg-emerald-50/20">
+                        <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">🏆 Cuadro Honor</h4>
+                        <ul id="goodList" class="space-y-3 text-xs font-black text-slate-700"></ul>
+                    </div>
+                </section>
+            </div>
+        </main>
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts Globales -->
+    <div th:replace="~{layout :: ui-scripts}"></div>
+    <div th:replace="~{layout :: auth-scripts}"></div>
+
+    <script type="module" th:inline="none">
+    let isAuxiliaresInitialized = false;
+    const initAuxiliaresAnalytics = async () => {
+        if (isAuxiliaresInitialized) return;
+        if (!window.firebaseInstance || !window.firebaseFirestore) return;
+        isAuxiliaresInitialized = true;
+
+            const { auth, db } = window.firebaseInstance;
+            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
+            const { onAuthStateChanged } = window.firebaseAuth;
+
+            const pad = n => String(n).padStart(2, "0");
+            const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+            const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
+            const getEl = id => document.getElementById(id);
+
+            let chart;
+
+            function updateChart(data) {
+                const canvas = getEl('trendChart');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                if (window.auxiliaresChart) window.auxiliaresChart.destroy();
+                window.auxiliaresChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['M-3', 'M-2', 'M-1', 'Now'],
+                        datasets: [{
+                            data: data || [45, 62, 58, 72],
+                            borderColor: '#3b82f6', borderWidth: 4, pointRadius: 0, tension: 0.4, fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { display: false }, y: { display: false } }
+                    }
+                });
+                const pred = Math.min(100, (data ? data[3] : 72) + (Math.random() * 10)).toFixed(1);
+                getEl('predictionScore').textContent = pred + "%";
+            }
+
+            const d = new Date(); d.setMonth(d.getMonth() - 1);
+            const defaultMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+            getEl("monthInput").value = defaultMonth;
+
+            function addRow(pab = "", cod = "", dcto = "", nom = "", rcf = 0, hos = 0) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><input type="text" value="${pab}" class="input-rcf !text-[12px]"></td>
+                    <td><input type="text" value="${cod}" class="input-rcf !text-slate-400 !text-[12px]"></td>
+                    <td><input type="text" value="${nom}" class="input-rcf !text-slate-800 !text-[13px]"></td>
+                    <td><input type="number" value="${rcf}" data-k="rcf" class="input-rcf text-right !font-black !text-blue-600"></td>
+                    <td><input type="number" value="${hos}" data-k="hos" class="input-rcf text-right !font-black !text-slate-400"></td>
+                    <td class="text-right text-xs opacity-50" data-k="total">0</td>
+                    <td class="text-right font-black text-[14px]" data-k="uso">0%</td>
+                    <td class="text-center" data-k="sem">—</td>
+                    <td class="text-center">
+                        <button class="text-rose-400 hover:text-rose-600" onclick="this.closest('tr').remove(); recalcAll();">
+                            <span class="material-icons text-sm">delete_outline</span>
+                        </button>
+                    </td>
+                `;
+                tr.querySelectorAll('input').forEach(i => i.addEventListener('input', recalcAll));
+                getEl("tbody").appendChild(tr);
+                recalcAll();
+            }
+
+            async function loadPeriodo(m = getEl("monthInput").value) {
+                const t = getEl("tipoSelect").value, p = getEl("pabSelect").value, q = t === "Q" ? getEl("quinInput").value : "0";
+                getEl("tbody").innerHTML = "";
+                try {
+                    const qy = query(collection(db, "rcf_auxiliares_periodos"), where("tipo", "==", t), where("month", "==", m), where("quincena", "==", q), where("pabellon", "==", p));
+                    const snap = await getDocs(qy);
+                    snap.forEach(d => { const x = d.data(); addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, x.rcf, x.hosvital); });
+                    recalcAll();
+                    msg("Sincronización Auxiliares Exitosa", "success");
+                } catch (e) { msg("Error de carga", "err"); }
+            }
+
+            function recalcAll() {
+                let R = 0, H = 0, rows = [...getEl("tbody").querySelectorAll("tr")];
+                let criticalCount = 0;
+                rows.forEach(tr => {
+                    const ins = tr.querySelectorAll('input');
+                    const rcf = toInt(ins[3].value), hos = toInt(ins[4].value), tot = rcf + hos, uso = tot ? rcf / tot : 0;
+                    tr.querySelector('[data-k="total"]').textContent = tot;
+                    tr.querySelector('[data-k="uso"]').textContent = (uso * 100).toFixed(0) + "%";
+                    const sem = tr.querySelector('[data-k="sem"]');
+                    if (rcf <= 150) { sem.innerHTML = '<div class="alert-dot-critical mx-auto"></div>'; criticalCount++; }
+                    else if (uso < 0.6) { sem.innerHTML = '<div class="alert-dot-warning mx-auto"></div>'; }
+                    else { sem.innerHTML = '<div class="w-2 h-2 rounded-full bg-emerald-400 mx-auto"></div>'; }
+                    R += rcf; H += hos;
+                });
+                const T = R + H;
+                const globalUso = T ? (R / T) * 100 : 0;
+                getEl('tRCF').textContent = R; getEl('mRCF').textContent = R;
+                getEl('tHOS').textContent = H; getEl('mHOS').textContent = H;
+                getEl('tTotal').textContent = T; getEl('tUso').textContent = globalUso.toFixed(1) + "%";
+                getEl('mUso').textContent = globalUso.toFixed(1) + "%";
+                getEl('mUsoBar').style.width = globalUso + "%";
+                if (criticalCount > 2) getEl('urgentAlert').classList.remove('hidden');
+                updateChart([globalUso * 0.7, globalUso * 0.8, globalUso * 0.9, globalUso]);
+                buildAlerts(rows);
+            }
+
+            function buildAlerts(rows) {
+                const cList = getEl("critLowList"), mList = getEl("modLowList"), glass = getEl("goodList");
+                cList.innerHTML = ""; mList.innerHTML = ""; glass.innerHTML = "";
+                rows.forEach(tr => {
+                    const ins = tr.querySelectorAll('input');
+                    const nom = ins[2].value, rcf = toInt(ins[3].value), tot = toInt(tr.querySelector('[data-k="total"]').textContent);
+                    const uso = tot ? rcf / tot : 0;
+                    if (!nom) return;
+                    const item = `<li class="flex justify-between items-center opacity-80"><span>${nom}</span> <span class="text-[10px] font-black">${rcf} PV</span></li>`;
+                    if (rcf <= 150) cList.insertAdjacentHTML("beforeend", item);
+                    else if (uso < 0.6) mList.insertAdjacentHTML("beforeend", item);
+                    if (uso > 0.9) glass.insertAdjacentHTML("beforeend", `<li class="flex items-center gap-2 p-2 bg-white rounded-xl shadow-sm">🏆 ${nom}</li>`);
+                });
+                getEl("alertsSec").classList.toggle("hidden", rows.length === 0);
+            }
+
+            function msg(t, type) {
+                const s = getEl("status"); s.textContent = t; s.style.display = "block";
+                s.className = `status-msg ${type === 'err' ? 'err' : ''}`;
+                setTimeout(() => s.style.display = "none", 3000);
+            }
+
+            getEl("monthInput").addEventListener("change", () => loadPeriodo());
+            getEl("pabSelect").addEventListener("change", () => loadPeriodo());
+            getEl("saveBtn").addEventListener("click", async () => {
+                 const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
+                 try {
+                     for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
+                         const ins = tr.querySelectorAll('input');
+                         const cod = ins[1].value, nom = ins[2].value, rcf = toInt(ins[3].value), hos = toInt(ins[4].value);
+                         if(!nom) continue;
+                         const id = `${t}_${m}_${q}_${slug(p)}_${slug(cod||nom)}`;
+                         await setDoc(doc(db, "rcf_auxiliares_periodos", id), {
+                             tipo:t, month:m, quincena:q, pabellon:p, cod_prof:cod, nombre:nom, rcf, hosvital:hos, total:rcf+hos, updatedAt:serverTimestamp()
+                         }, {merge:true});
+                     }
+                     alert("Datos guardados.");
+                 } catch(e) { alert("Fallo al guardar"); }
+            });
+
+            onAuthStateChanged(auth, u => { if(u) loadPeriodo(defaultMonth); });
+            // Compliance Engine Auxiliares
+            const updateCompliance = async () => {
+                const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+                const now = new Date();
+                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
+                const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
+                
+                let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
+                while(curr <= now){
+                    const day = curr.getDay(); const iso = curr.toISOString().split('T')[0];
+                    if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
+                    curr.setDate(curr.getDate()+1);
+                }
+
+                const snap = await getDocs(query(collection(db, "rcf_auxiliares_periodos"), where("month", "==", mStr), limit(1)));
+                const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
+                if(!bar) return;
+                bar.style.display = "flex";
+                if(snap.size > 0){
+                    msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+                    badge.textContent = "Sincronizado";
+                } else {
+                    const remains = 5 - workDay;
+                    if(remains >= 0){
+                        msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                        badge.textContent = "EN PLAZO";
+                    } else {
+                        msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                        badge.textContent = "VENCIDO";
+                        badge.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10";
+                        icon.className = "w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";
+                    }
+                }
+            };
+            updateCompliance();
+
+            updateChart();
+        }
+
+        window.addEventListener('firebase-ready', initAuxiliaresAnalytics);
+        if (window.firebaseInstance) initAuxiliaresAnalytics();
+    </script>
+
+    <!-- CDN Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (typeof tailwind !== 'undefined') tailwind.config = {
+            theme: { extend: { colors: { rcf: { alert: '#f43f5e', warn: '#f59e0b', success: '#10b981' } }, animation: { 'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite' } } }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

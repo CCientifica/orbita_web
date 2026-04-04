@@ -1,5 +1,8 @@
 package com.clinica.ctc.controller;
 
+import com.clinica.ctc.security.RoleNormalizationUtils;
+
+import com.clinica.ctc.config.GlobalConfig;
 import com.clinica.ctc.model.Usuario;
 import com.clinica.ctc.repository.UsuarioRepository;
 import com.clinica.ctc.repository.UsuarioPermitidoRepository;
@@ -21,6 +24,18 @@ public class UserController {
     @Autowired
     private UsuarioPermitidoRepository usuarioPermitidoRepository;
 
+    @Autowired
+    private GlobalConfig config;
+
+    @GetMapping("/config")
+    public Map<String, Object> getPublicConfig() {
+        Map<String, Object> publicConfig = new HashMap<>();
+        publicConfig.put("authorizedDomain", config.getAuthorizedDomain());
+        publicConfig.put("masterEmail", config.getMasterEmail());
+        publicConfig.put("authorizedRoles", config.getAuthorizedRoles());
+        return publicConfig;
+    }
+
     @GetMapping
     @PreAuthorize("hasAnyAuthority('master admin', 'super admin', 'admin')")
     public List<Map<String, Object>> getAllUsers() {
@@ -40,7 +55,15 @@ public class UserController {
     public ResponseEntity<?> saveUser(@RequestBody Map<String, Object> userData) {
         String email = Objects.requireNonNull((String) userData.get("email"), "email cannot be null");
         String nombre = (String) userData.get("nombre");
-        String rolName = (String) userData.get("rol");
+        String rawRole = (String) userData.get("rol");
+
+        // 0. Validación de Seguridad Institucional
+        if (!config.isAuthorized(email)) {
+            return ResponseEntity.status(403).body("Dominio de correo no autorizado por la institución.");
+        }
+
+        String normalizedRole = RoleNormalizationUtils.normalize(rawRole);
+        System.out.println("Sincronizando usuario: " + email + " con rol: " + normalizedRole);
 
         // 1. Sincronización en Tabla Principal (usuarios)
         Optional<Usuario> existingUser = usuarioRepository.findByEmail(email);
@@ -54,7 +77,7 @@ public class UserController {
         });
 
         usuario.setNombre(nombre);
-        usuario.setRol(rolName);
+        usuario.setRol(normalizedRole);
         usuarioRepository.save(usuario);
 
         // 2. Nota: La sincronización con Firestore Real se realiza a través de la consola de Firebase 
@@ -66,8 +89,8 @@ public class UserController {
     @DeleteMapping("/{email}")
     @PreAuthorize("hasAuthority('master admin')")
     public ResponseEntity<?> deleteUser(@PathVariable @org.springframework.lang.NonNull String email) {
-        if ("coordcientifico@clinicasagradocorazon.com.co".equals(email)) {
-            return ResponseEntity.badRequest().body("No se puede eliminar la cuenta maestra institucional.");
+        if (config.getMasterEmail().equalsIgnoreCase(email)) {
+            return ResponseEntity.badRequest().body("No se puede eliminar la cuenta maestra institucional configurada.");
         }
 
         usuarioRepository.findByEmail(email).ifPresent(usuarioRepository::delete);

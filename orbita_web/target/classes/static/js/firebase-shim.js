@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, 
-    query, where, orderBy, onSnapshot, serverTimestamp 
+    query, where, orderBy, onSnapshot, serverTimestamp, limit 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // CONFIGURACIÓN OFICIAL - INSTITUCIONAL
@@ -40,7 +40,7 @@ window.firebaseFirestore = {
     collection: _smartColl,
     doc: _smartDoc,
     getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-    query, where, orderBy, onSnapshot, serverTimestamp
+    query, where, orderBy, onSnapshot, serverTimestamp, limit
 };
 
 
@@ -61,14 +61,16 @@ window.firebaseAuth = {
     }
 };
 
-// SINCRONIZACIÓN DE USUARIO (Spring -> Firebase Shim)
+// SINCRONIZACIÓN DE USUARIO (Firebase -> Universal ready)
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        window.firebaseInstance.auth.currentUser = user;
         window.firebaseCloudDb.isReady = true;
         window.dispatchEvent(new CustomEvent('firebase-ready', { detail: user }));
-    } else if (window.orbitaUser) {
-        window.firebaseInstance.auth.currentUser = window.orbitaUser;
+    } else {
+        window.firebaseCloudDb.isReady = false;
+        // Si el usuario está logueado en Spring (orbitaUser) pero no en Firebase, 
+        // no intentaremos asignar a currentUser (es de solo lectura).
+        // El login.html se encarga de establecer ambas sesiones.
     }
 });
 

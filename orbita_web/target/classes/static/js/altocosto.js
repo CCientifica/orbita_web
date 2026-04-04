@@ -6296,10 +6296,13 @@
         // Iniciar el listener de contexto
         initContextListener();
 
-        // Redirección si no hay usuario (usando el auth local para mayor seguridad)
+        // Notificar cambio de estado (sin redirección agresiva que cause loops)
         onAuthStateChanged(auth, u => {
-                if (!u) {
-                        location.href = "/";
+                if (u) {
+                        console.log("✅ [ALTOCOSTO] Firebase Session active:", u.email);
+                } else {
+                        console.warn("⚠️ [ALTOCOSTO] Firebase Session not found on this page load.");
+                        // No redireccionamos aquí, ya que Spring Security protege la página a nivel de servidor.
                 }
         });
 

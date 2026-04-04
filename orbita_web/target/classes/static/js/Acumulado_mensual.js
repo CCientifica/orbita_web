@@ -2319,6 +2319,11 @@ async function runLoad() {
 
     LAST_META = await loadForecastMeta(mval) || {};
 
+    // ✅ ACTUALIZAR BANNER DE CUMPLIMIENTO
+    if (typeof checkCompliance === 'function') {
+      checkCompliance(mval, snap.exists());
+    }
+
     // 🔴 FUENTE AUTOMÁTICA DESDE ESTADÍSTICA DIARIA (Refresco si existe detalle)
     const [year, month0] = mval.split('-');
     const dias = await fetchDailyDocs(year, month0);
@@ -2553,6 +2558,11 @@ async function runSave() {
 
     if (typeof loadYearlyCharts === 'function') {
       await loadYearlyCharts(CURRENT_MONTH_ID.split('-')[0]);
+    }
+
+    // ✅ ACTUALIZAR BANNER DE CUMPLIMIENTO TRAS GUARDAR
+    if (typeof checkCompliance === 'function') {
+      checkCompliance(CURRENT_MONTH_ID, true);
     }
 
     alert("¡Guardado exitoso!.");

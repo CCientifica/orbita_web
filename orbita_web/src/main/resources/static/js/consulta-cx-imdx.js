@@ -118,6 +118,7 @@ async function loadOne() {
         const s = await getDoc(ref);
         if (!s.exists()) {
             limpiarCampos();
+            if (typeof checkCompliance === 'function') checkCompliance(mes, false);
             alert('No hay registro previo. Puedes crearlo.');
             return;
         }
@@ -133,6 +134,11 @@ async function loadOne() {
         refs.ordenesImgExternas.value = r.ordenesImgExternas ?? '';
         refs.procedimientosExternos.value = r.procedimientosExternos ?? '';
         recompute();
+        
+        // ACTUALIZAR BANNER DE CUMPLIMIENTO
+        if (typeof checkCompliance === 'function') {
+            checkCompliance(mes, s.exists());
+        }
     } catch (e) {
         console.error(e);
         alert('Error cargando registro: ' + (e?.message || e));
@@ -204,6 +210,12 @@ async function runSave() {
         refs.guardarBtn.disabled = true;
         refs.guardarBtn.textContent = "Guardando...";
         await setDoc(doc(db, 'estadistica_ce', idFor(mes, esp)), payload, { merge: true });
+        
+        // ACTUALIZAR BANNER DE CUMPLIMIENTO TRAS GUARDAR
+        if (typeof checkCompliance === 'function') {
+            checkCompliance(mes, true);
+        }
+
         alert('Registro guardado exitosamente.');
     } catch (e) {
         console.error('Error guardando:', e);
@@ -247,12 +259,18 @@ function init() {
     if (refs.limpiarBtn) refs.limpiarBtn.addEventListener('click', limpiarCampos);
     if (refs.guardarBtn) refs.guardarBtn.addEventListener('click', runSave);
 
-    // Periodo inicial
+    // Periodo inicial (Mes vencido por defecto)
     if (refs.mesSel) {
         const now = new Date();
-        refs.mesSel.value = yyyymm(now);
+        const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        refs.mesSel.value = yyyymm(prev);
     }
     if (refs.espSel) refs.espSel.value = ESPECIALIDADES[0];
+
+    // Banner de cumplimiento inicial
+    if (refs.mesSel && typeof checkCompliance === 'function') {
+        checkCompliance(refs.mesSel.value, false); // El segundo parámetro se actualizará al consultar
+    }
 
     // Auth Listener
     if (onAuthStateChanged && auth) {

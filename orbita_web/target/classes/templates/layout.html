@@ -28,22 +28,25 @@
     <title th:text="${title} + ' — Orbita Clínica'">Orbita Clínica</title>
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico" th:href="@{/assets/favicon.ico}" />
     <link rel="stylesheet" href="/styles.css" th:href="@{/styles.css(v='2.0')}" />
+    <link rel="stylesheet" href="/css/ecosistema-digital.css" th:href="@{/css/ecosistema-digital.css(v='1.2')}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* ═══════════════════════════════════════
            LAYOUT BASE
         ═══════════════════════════════════════ */
         :root {
-            --sidebar-width: 280px;
+            --sidebar-width: 300px;
             --navbar-height: 64px;
         }
 
         .dashboard-layout {
             display: flex;
             min-height: 100vh;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
         }
 
         .sidebar {
@@ -59,12 +62,14 @@
             overflow-y: auto;
             overflow-x: hidden;
             transition: transform 0.3s ease;
+            box-shadow: 12px 0 40px rgba(0, 0, 0, 0.12);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .content-wrapper {
             width: 100%;
             margin-left: 0;
-            padding-left: var(--sidebar-width);
+            padding: 1.5rem 2rem 1.5rem calc(var(--sidebar-width) + 1.5rem);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -76,18 +81,20 @@
         ═══════════════════════════════════════ */
         .navbar {
             height: 64px;
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #f1f5f9;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 24px;
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.04), 0 2px 8px -1px rgba(0, 0, 0, 0.02);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 1.5rem 0 1.5rem;
+            padding: 0 2.5rem;
             position: sticky;
-            top: 0;
+            top: 1.5rem;
             z-index: 999;
             gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .navbar-left {
@@ -96,6 +103,16 @@
             gap: 0.75rem;
             min-width: 0;
             flex: 1;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 3rem;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 1.5rem;
         }
 
         .hamburger {
@@ -854,18 +871,17 @@
 <body class="dashboard-layout fade-in">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar" th:fragment="sidebar">
-        <div class="sidebar-brand" style="padding: 2.5rem 1.5rem;">
-            <div class="sidebar-logo-container" style="margin-bottom: 1rem;">
+        <div class="sidebar-brand" style="padding: 2rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 1.5rem;">
+            <div class="sidebar-logo-container" style="flex-shrink: 0;">
                 <img th:src="@{/assets/Logo_Clinica.png}" alt="Orbita Clínica" class="sidebar-logo"
-                    style="height: 75px; filter: brightness(0) invert(1);" />
+                    style="height: 56px; width: auto; filter: brightness(0) invert(1);" />
             </div>
-            <div class="brand-text">
+            <div class="brand-text" style="display: flex; flex-direction: column; justify-content: center;">
                 <div class="brand-name"
-                    style="font-size: 1.3rem; font-weight: 800; color: white; letter-spacing: -0.02em;">Orbita Clínica
+                    style="font-size: 1.5rem; font-weight: 800; color: white; letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px;">Orbita<br/>Clínica
                 </div>
                 <div class="brand-tagline"
-                    style="font-size: 10px; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px;">Ecosistema
-                    Científico</div>
+                    style="font-size: 9px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">ecosistema<br/>científico</div>
             </div>
         </div>
 
@@ -904,9 +920,9 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
-                    <a th:href="@{/cronogramagpc}" class="nav-link"><i data-lucide="calendar"></i><span>Cronograma
+                    <a th:href="@{/cronograma-gpc}" class="nav-link"><i data-lucide="calendar"></i><span>Cronograma
                             GPC</span></a>
-                    <a th:href="@{/plananual-gpc}" class="nav-link"><i data-lucide="file-text"></i><span>Plan Anual
+                    <a th:href="@{/plan-anual-gpc}" class="nav-link"><i data-lucide="file-text"></i><span>Plan Anual
                             GPC</span></a>
                 </div>
             </div>
@@ -921,7 +937,7 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
-                    <a th:href="@{/altocosto}" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto
+                    <a th:href="@{/alto-costo}" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto
                             Costo</span></a>
                     <a th:href="@{/porfiria}" class="nav-link" sec:authorize="!hasAuthority('analista')"><i
                             data-lucide="microscope"></i><span>PorfirIA</span></a>
@@ -950,8 +966,8 @@
 
                     <a th:href="@{/ams}" class="nav-link"><i data-lucide="stethoscope"></i><span>AMS</span></a>
                     <a th:href="@{/isa}" class="nav-link"><i data-lucide="database"></i><span>ISA</span></a>
-                    <a th:href="@{/dasheco}" class="nav-link"><i data-lucide="pie-chart"></i><span>DashEco</span></a>
-                    <a th:href="@{/otroseco}" class="nav-link"><i
+                    <a th:href="@{/dash-eco}" class="nav-link"><i data-lucide="pie-chart"></i><span>DashEco</span></a>
+                    <a th:href="@{/otros-eco}" class="nav-link"><i
                             data-lucide="plus-circle"></i><span>OtrosEco</span></a>
                 </div>
             </div>
@@ -966,6 +982,8 @@
                     <i data-lucide="chevron-down" class="chevron" style="width: 14px;"></i>
                 </div>
                 <div class="nav-group-items">
+                    <a th:href="@{/dash-stats}" class="nav-link"><i
+                            data-lucide="pie-chart"></i><span>DashStats</span></a>
                     <a th:href="@{/consulta-cx-imdx}" class="nav-link" sec:authorize="!hasAuthority('auditor')"><i
                             data-lucide="search"></i><span>Consulta Cx
                             IMDX</span></a>
@@ -1151,7 +1169,7 @@
         <script type="module" th:src="@{/js/firebase-shim.js}"></script>
 
         <!-- 👤 Componentes de Perfil -->
-        <div th:replace="~{this :: profile-modal}"></div>
+        <div th:replace="~{ :: profile-modal}"></div>
         <script th:src="@{/js/profile-v2.js}"></script>
 
         <script>
@@ -1184,12 +1202,12 @@
 
     <!-- Retrocompatibilidad: Fragmento 'scripts' unificado -->
     <div th:fragment="scripts">
-        <div th:replace="~{this :: ui-scripts}"></div>
+        <div th:replace="~{ :: ui-scripts}"></div>
     </div>
 
     <!-- Scripts de Autenticación y Navegación (Procesados por Spring Security) -->
     <div th:fragment="auth-scripts">
-        <div th:replace="~{this :: ui-scripts}"></div>
+        <div th:replace="~{ :: ui-scripts}"></div>
     </div>
 </body>
 

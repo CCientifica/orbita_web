@@ -1,0 +1,357 @@
+﻿<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Dashboard Inteligencia y Estadísticas')}"></head>
+
+<body class="dashboard-layout fade-in">
+    <aside th:replace="~{layout :: sidebar}"></aside>
+
+    <div class="content-wrapper">
+        <nav th:replace="~{layout :: navbar('Dashboard Inteligencia y Estadísticas')}"></nav>
+
+        <main class="main-content !p-8">
+            <!-- Header Section -->
+            <header class="glass-header rounded-[32px] p-8 mb-8 text-white relative overflow-hidden">
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="px-3 py-1 bg-blue-500/20 rounded-full text-[10px] font-black tracking-widest text-blue-300 uppercase border border-blue-500/30">Intelligence Center</span>
+                            <span id="currentTime" class="text-[10px] font-bold text-white/40">--:--:--</span>
+                        </div>
+                        <h1 class="text-4xl font-black tracking-tight mb-2">Auditoría Institucional <span class="text-blue-400">Analítica</span></h1>
+                        <p class="text-white/60 font-medium max-w-xl">Supervisión de cierres mensuales y adherencia a la carga de estadística diaria.</p>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="stat-timer">
+                            <p class="text-[9px] font-black text-blue-300 uppercase mb-1">Periodo de Auditoría</p>
+                            <input type="month" id="monthFilter" class="bg-transparent border-none text-white font-black text-lg focus:ring-0 cursor-pointer">
+                        </div>
+                        <div class="stat-timer bg-emerald-500/10 border-emerald-500/20">
+                            <p class="text-[9px] font-black text-emerald-400 uppercase mb-1">Día Hábil Actual</p>
+                            <p class="text-xl font-black text-white" id="currentWorkDay">--</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- KRI Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Health Score -->
+                <div class="module-card flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Indice de Salud</p>
+                        <h2 class="text-4xl font-black text-slate-800" id="globalScore">0.0%</h2>
+                    </div>
+                    <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div id="loadBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Active Modules -->
+                <div class="module-card flex flex-col justify-between border-l-4 border-l-emerald-500">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Módulos Sincronizados</p>
+                        <h2 class="text-4xl font-black text-slate-800" id="activeModules">0 / 3</h2>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-400" id="reportPeriodText">Cargando...</p>
+                </div>
+
+                <!-- Compliance Status -->
+                <div class="module-card flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estado de Plazo</p>
+                        <h2 class="text-2xl font-black" id="deadlineTitle">Calculando...</h2>
+                    </div>
+                    <p id="deadlineStatus" class="text-[10px] font-black">---</p>
+                </div>
+
+                <!-- Alert Summary -->
+                <div class="module-card bg-slate-50 border-none">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Alertas Críticas</p>
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-4xl font-black text-rose-500" id="critAlerts">0</h2>
+                        <div class="p-2 bg-rose-100 rounded-lg text-rose-600">
+                             <span class="material-icons">report_problem</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modules Monitoring Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- ACUMULADO MENSUAL -->
+                <div class="module-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
+                            <span class="material-icons">analytics</span>
+                        </div>
+                        <span id="st-acu" class="status-badge badge-crit">Sin Datos</span>
+                    </div>
+                    <h4 class="text-lg font-black text-slate-800">Acumulado Mensual</h4>
+                    <p class="text-[10px] font-bold text-slate-400 mt-1">Cierre Institucional (Mes Vencido)</p>
+                    <div class="mt-8 flex justify-between items-end">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Cierre Plazo</p>
+                            <p class="text-2xl font-black text-slate-900" id="val-acu">Día 5H</p>
+                        </div>
+                        <a href="/acumulado-mensual" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><span class="material-icons text-slate-400">arrow_forward</span></a>
+                    </div>
+                </div>
+
+                <!-- CONSULTA-CX-IMDX -->
+                <div class="module-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="p-3 bg-cyan-50 rounded-2xl text-cyan-600">
+                            <span class="material-icons">assignment_turned_in</span>
+                        </div>
+                        <span id="st-imdx" class="status-badge badge-crit">Sin Datos</span>
+                    </div>
+                    <h4 class="text-lg font-black text-slate-800">Consulta-CX-IMDX</h4>
+                    <p class="text-[10px] font-bold text-slate-400 mt-1">Efectividad y Conversión Médica</p>
+                    <div class="mt-8 flex justify-between items-end">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Conversión</p>
+                            <p class="text-2xl font-black text-slate-900" id="val-imdx">--</p>
+                        </div>
+                        <a href="/consulta-cx-imdx" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><span class="material-icons text-slate-400">arrow_forward</span></a>
+                    </div>
+                </div>
+
+                <!-- ESTADISTICA DIARIA -->
+                <div class="module-card">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="p-3 bg-rose-50 rounded-2xl text-rose-600">
+                            <span class="material-icons">update</span>
+                        </div>
+                        <span id="st-diaria" class="status-badge badge-crit">Vencido</span>
+                    </div>
+                    <h4 class="text-lg font-black text-slate-800">Estadística Diaria</h4>
+                    <p class="text-[10px] font-bold text-slate-400 mt-1">Monitoreo día vencido (Real-time)</p>
+                    <div class="mt-8 flex justify-between items-end">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase">Último Registro</p>
+                            <p class="text-2xl font-black text-slate-900" id="val-diaria">--</p>
+                        </div>
+                        <a href="/estadistica-diaria" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><span class="material-icons text-slate-400">arrow_forward</span></a>
+                    </div>
+                </div>
+
+                <!-- AUDIT LOG -->
+                <div class="module-card bg-slate-900 !text-white border-none shadow-2xl lg:col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-sm font-black uppercase tracking-widest text-emerald-400">Bitácora de Sincronización</h4>
+                        <span class="px-2 py-1 bg-white/10 rounded text-[9px] font-bold text-white/60">Live Intelligence</span>
+                    </div>
+                    <div id="auditLog" class="space-y-3 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar text-[10px] font-bold text-slate-300">
+                        <div class="border-l-2 border-emerald-500 pl-3 py-1">Iniciando análisis de infraestructura analítica...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Trend Section (Place for Charts later) -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div class="module-card md:col-span-3">
+                     <h3 class="text-lg font-black text-slate-800 mb-6">Tendencia de Cumplimiento Analítico</h3>
+                     <div class="h-64 flex items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl">
+                         <p class="text-slate-400 font-bold uppercase tracking-wider text-xs">Visualización de Históricos (Próxima Fase)</p>
+                     </div>
+                 </div>
+            </div>
+        </main>
+
+        <footer th:replace="~{layout :: footer}"></footer>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{layout :: scripts}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script th:inline="javascript">
+        /* <![CDATA[ */
+        const HOLIDAYS_2026 = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+
+        // UI Helpers
+        const getEl = id => document.getElementById(id);
+        const log = msg => {
+            const entry = document.createElement("div");
+            entry.className = "border-l-2 border-emerald-500 pl-3 py-1 animate-in fade-in slide-in-from-left-2 duration-300";
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            const container = getEl("auditLog");
+            container.prepend(entry);
+        };
+
+        function getWorkDay(date) {
+            let count = 0;
+            let current = new Date(date.getFullYear(), date.getMonth(), 1);
+            while (current <= date) {
+                const day = current.getDay();
+                const iso = current.toISOString().split('T')[0];
+                if (day !== 0 && day !== 6 && !HOLIDAYS_2026.includes(iso)) count++;
+                current.setDate(current.getDate() + 1);
+            }
+            return count;
+        }
+
+        const db = window.firebaseInstance?.db;
+        const { collection, query, where, getDocs, limit, orderBy, doc, getDoc } = window.firebaseFirestore;
+
+        const updateStatsDashboard = async (targetMonth) => {
+            log(`Auditoría de estadísticas iniciada para: ${targetMonth}`);
+            const [targetYear, targetMonthOnly] = targetMonth.split("-");
+            getEl("reportPeriodText").textContent = `Analizando cierre de ${targetYear}-${targetMonthOnly}`;
+            
+            let loadedCount = 0;
+            let sumQuality = 0;
+            let critAlerts = 0;
+
+            const now = new Date();
+            const workDay = getWorkDay(now);
+            const currentMonthStr = now.toISOString().slice(0, 7);
+
+            // 1. ACUMULADO MENSUAL (Closing Día 5H)
+            try {
+                const resRef = doc(db, "realizados", String(targetYear), String(targetMonthOnly), "_mensual");
+                const resSnap = await getDoc(resRef);
+                const st = getEl("st-acu");
+                const val = getEl("val-acu");
+                
+                if (resSnap.exists()) {
+                    st.textContent = "Sincronizado";
+                    st.className = "status-badge badge-ok pulse-glow";
+                    val.textContent = "OK";
+                    loadedCount++;
+                    sumQuality += 100;
+                    log("✓ Acumulado Mensual: Registro administrativo validado.");
+                } else {
+                    if (targetMonth < currentMonthStr) {
+                         if (workDay > 5) {
+                             st.textContent = "Vencido";
+                             st.className = "status-badge badge-crit";
+                             critAlerts++;
+                             log("⚠ Acumulado Mensual: Plazo legal excedido.");
+                         } else {
+                             st.textContent = "En Plazo";
+                             st.className = "status-badge badge-warn";
+                             log("ℹ Acumulado Mensual: Carga pendiente dentro de plazo.");
+                         }
+                    } else {
+                        st.textContent = "En Curso";
+                        st.className = "status-badge badge-warn";
+                    }
+                }
+            } catch (e) { console.error("Error Acu:", e); }
+
+            // 2. CONSULTA-CX-IMDX
+            try {
+                const q = query(collection(db, "estadistica_ce"), where("mes", "==", targetMonth), limit(5));
+                const snap = await getDocs(q);
+                const st = getEl("st-imdx");
+                const val = getEl("val-imdx");
+                
+                if (snap.size > 0) {
+                    st.textContent = "Sincronizado";
+                    st.className = "status-badge badge-ok";
+                    let eff = 0; snap.forEach(d => eff += (d.data().pctEfectividad || 0)*100);
+                    const avgEff = (eff / snap.size).toFixed(1);
+                    val.textContent = avgEff + "%";
+                    loadedCount++;
+                    sumQuality += Number(avgEff);
+                    log(`✓ IMDX: ${snap.size} especialidades auditadas.`);
+                } else {
+                     if (targetMonth < currentMonthStr) {
+                         if (workDay > 5) {
+                             st.textContent = "Vencido";
+                             st.className = "status-badge badge-crit";
+                             critAlerts++;
+                             log("⚠ IMDX: Sin reportes de efectividad médica.");
+                         } else {
+                             st.textContent = "Pendiente";
+                             st.className = "status-badge badge-warn";
+                         }
+                    } else {
+                        st.textContent = "En Curso";
+                        st.className = "status-badge badge-warn";
+                    }
+                }
+            } catch (e) { console.error("Error IMDX:", e); }
+
+            // 3. ESTADISTICA DIARIA (Real-time monitoring)
+            try {
+                // Logic for Daily: check "Yesterday" (LBD)
+                // If today is Monday(1), Fri is LBD.
+                let lbd = new Date();
+                let daysToSub = 1;
+                if (now.getDay() === 1) daysToSub = 3; // Lunes -> Viernes
+                else if (now.getDay() === 0) daysToSub = 2; // Domingo -> Viernes
+                else if (now.getDay() === 6) daysToSub = 1; // Sábado -> Viernes
+                
+                lbd.setDate(now.getDate() - daysToSub);
+                const lbdISO = lbd.toISOString().split('T')[0];
+                const [l_y, l_m, l_d] = lbdISO.split('-');
+                
+                const dayRef = doc(db, "estadistica_diaria", l_y, l_m, String(parseInt(l_d)));
+                const daySnap = await getDoc(dayRef);
+                const st = getEl("st-diaria");
+                const val = getEl("val-diaria");
+
+                if (daySnap.exists()) {
+                    st.textContent = "Sincronizado";
+                    st.className = "status-badge badge-ok pulse-glow";
+                    val.textContent = lbdISO;
+                    loadedCount++;
+                    sumQuality += 100;
+                    log(`✓ Estadística Diaria: Día ${lbdISO} cargado correctamente.`);
+                } else {
+                    st.textContent = "Vencido";
+                    st.className = "status-badge badge-crit";
+                    val.textContent = "Pendiente";
+                    critAlerts++;
+                    log(`⚠ Estadística Diaria: No se encontró registro para el cierre de ayer (${lbdISO}).`);
+                }
+            } catch (e) { console.error("Error Diaria:", e); }
+
+            // Global UI Update
+            const loadPct = Math.round((loadedCount/3)*100);
+            getEl("loadBar").style.width = loadPct + "%";
+            getEl("activeModules").textContent = `${loadedCount} / 3`;
+            const gScore = loadedCount ? (sumQuality/3) : 0;
+            getEl("globalScore").textContent = gScore.toFixed(1) + "%";
+            getEl("critAlerts").textContent = critAlerts;
+
+            // Health Status Info
+            const dTitle = getEl("deadlineTitle");
+            const dStatus = getEl("deadlineStatus");
+            if (workDay <= 5) {
+                dTitle.textContent = "En Plazo Cierre";
+                dTitle.className = "text-2xl font-black text-amber-500";
+                dStatus.textContent = `Día Hábil ${workDay} de 5. Queda tiempo para el cierre mensual.`;
+            } else {
+                dTitle.textContent = "Periodo Vencido";
+                dTitle.className = "text-2xl font-black text-rose-500";
+                dStatus.textContent = `Día Hábil ${workDay}. El cierre debió ser garantizado al día 5.`;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Clock
+            setInterval(() => {
+                getEl("currentTime").textContent = new Date().toLocaleTimeString('es-CO');
+            }, 1000);
+
+            // Month Filter Logic
+            const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth() - 1);
+            const defaultMonth = `${dPrev.getFullYear()}-${String(dPrev.getMonth() + 1).padStart(2, "0")}`;
+            getEl("monthFilter").value = defaultMonth;
+            getEl("currentWorkDay").textContent = getWorkDay(new Date());
+
+            updateStatsDashboard(defaultMonth);
+
+            getEl("monthFilter").addEventListener("change", (e) => {
+                updateStatsDashboard(e.target.value);
+            });
+        });
+        /* ]]> */
+    </script>
+</body>
+</html>

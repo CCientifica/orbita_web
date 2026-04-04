@@ -21,19 +21,19 @@ public class PageController {
         return "home";
     }
 
-    @GetMapping("/cronogramagpc")
-    public String cronogramagpc() {
-        return "cronogramagpc";
+    @GetMapping("/cronograma-gpc")
+    public String cronogramaGpc() {
+        return "cronograma-gpc";
     }
 
-    @GetMapping("/plananual-gpc")
-    public String plananualGpc() {
-        return "plananual-gpc";
+    @GetMapping("/plan-anual-gpc")
+    public String planAnualGpc() {
+        return "plan-anual-gpc";
     }
 
-    @GetMapping("/altocosto")
-    public String altocosto() {
-        return "altocosto";
+    @GetMapping("/alto-costo")
+    public String altoCosto() {
+        return "alto-costo";
     }
 
     @GetMapping("/porfiria")
@@ -46,14 +46,14 @@ public class PageController {
         return "rcf";
     }
 
-    @GetMapping({"/auxiliares-enf-rcf", "/auxiliares_enf_rcf.html"})
+    @GetMapping("/auxiliares-enf-rcf")
     public String auxiliaresEnfRcf() {
-        return "auxiliares_enf_rcf";
+        return "auxiliares-enf-rcf";
     }
 
-    @GetMapping({"/medicos-gen-rcf", "/medicos_gen_rcf.html"})
+    @GetMapping("/medicos-gen-rcf")
     public String medicosGenRcf() {
-        return "medicos_gen_rcf";
+        return "medicos-gen-rcf";
     }
 
     @GetMapping({"/ams", "/ams.html"})
@@ -66,14 +66,19 @@ public class PageController {
         return "isa";
     }
 
-    @GetMapping({"/dasheco", "/dasheco.html"})
-    public String dasheco() {
-        return "dasheco";
+    @GetMapping("/dash-eco")
+    public String dashEco() {
+        return "dash-eco";
     }
 
-    @GetMapping({"/otroseco", "/otroseco.html"})
-    public String otroseco() {
-        return "otroseco";
+    @GetMapping("/dash-stats")
+    public String dashStats() {
+        return "dash-stats";
+    }
+
+    @GetMapping("/otros-eco")
+    public String otrosEco() {
+        return "otros-eco";
     }
 
     @GetMapping("/consulta-cx-imdx")
@@ -81,14 +86,14 @@ public class PageController {
         return "consulta-cx-imdx";
     }
 
-    @GetMapping({"/estadistica-diaria", "/estadistica_diaria", "/estadistica-diaria.html", "/estadistica_diaria.html"})
+    @GetMapping("/estadistica-diaria")
     public String estadisticaDiaria() {
-        return "estadistica_diaria";
+        return "estadistica-diaria";
     }
 
     @GetMapping("/acumulado-mensual")
     public String acumuladoMensual() {
-        return "Acumulado_mensual";
+        return "acumulado-mensual";
     }
 
     @GetMapping("/predictor-los")
@@ -108,16 +113,7 @@ public class PageController {
 
     @GetMapping("/dashboard-citas-cx-imx")
     public String dashboardCitasCxImx() {
-        return "dashboard-citas_cx_imx";
+        return "dashboard-citas-cx-imx";
     }
 
-    @GetMapping("/eco-digital")
-    public String ecoDigital() {
-        return "eco-digital";
-    }
-
-    @GetMapping("/ecosistema")
-    public String ecosistema() {
-        return "ecosistema";
-    }
 }

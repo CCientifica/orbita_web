@@ -1,0 +1,8 @@
+@import "tailwindcss/theme";
+@import "tailwindcss/utilities";
+
+@theme {
+  --color-institutional-navy: #1e293b;
+  --color-institutional-blue: #3b82f6;
+  --color-institutional-gray: #94a3b8;
+}

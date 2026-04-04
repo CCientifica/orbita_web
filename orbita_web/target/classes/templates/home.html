@@ -1,312 +1,16 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
-<head th:replace="layout :: header('Panel Principal')">
-    <link rel="stylesheet" href="/styles.css">
-    <!-- Orbita Layout Bridge (Universal Loader) -->
-    <script src="/js/orbita-layout-bridge.js"></script>
-</head>
-
-<!-- Estilos Específicos para el Centro de Control de Home -->
-<style>
-    :root {
-        --home-accent: #3b82f6;
-        --home-dark: #1e293b;
-        --home-glass: rgba(255, 255, 255, 0.95);
-        --home-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-    }
-
-    .home-hero {
-        position: relative;
-        padding: 4rem 3rem;
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95)),
-            url('/assets/home-hero-bg.png') no-repeat center center;
-        background-size: cover;
-        -webkit-background-clip: border-box;
-        background-clip: border-box;
-        border-radius: 24px;
-        margin-bottom: 3rem;
-        overflow: hidden;
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        max-width: 800px;
-    }
-
-    .hero-tag {
-        background: var(--home-accent);
-        color: white;
-        padding: 0.4rem 1rem;
-        border-radius: 100px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-bottom: 1.5rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .hero-title {
-        font-size: 3rem;
-        font-weight: 800;
-        line-height: 1.1;
-        margin-bottom: 1rem;
-        letter-spacing: -0.03em;
-        background: linear-gradient(to right, #ffffff, #94a3b8);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .hero-desc {
-        font-size: 1.15rem;
-        opacity: 0.8;
-        max-width: 600px;
-        margin-bottom: 2.5rem;
-        line-height: 1.5;
-    }
-
-    /* Status Bar (Monitoring feeling) */
-    .hero-stats {
-        display: flex;
-        gap: 2rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding-top: 2rem;
-    }
-
-    .stat-item {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .stat-val {
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: white;
-    }
-
-    .stat-label {
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.5);
-        letter-spacing: 1px;
-    }
-
-    /* Grid Layout */
-    .section-title {
-        margin-bottom: 1.5rem;
-        font-size: 1.25rem;
-        font-weight: 800;
-        color: var(--home-dark);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .section-title::after {
-        content: '';
-        flex: 1;
-        height: 2px;
-        background: #f1f5f9;
-    }
-
-    .home-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 2rem;
-        margin-bottom: 4rem;
-    }
-
-    .home-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2.5rem;
-        border: 1px solid #f1f5f9;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .home-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-        border-color: var(--home-accent);
-    }
-
-    .home-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background: var(--home-accent);
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .home-card:hover::before {
-        opacity: 1;
-    }
-
-    .card-icon-box {
-        width: 50px;
-        height: 50px;
-        background: #eff6ff;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--home-accent);
-        margin-bottom: 1.5rem;
-        transition: all 0.3s;
-    }
-
-    .home-card:hover .card-icon-box {
-        background: var(--home-accent);
-        color: white;
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .card-title {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--home-dark);
-        margin-bottom: 0.75rem;
-        letter-spacing: -0.01em;
-    }
-
-    .card-meta {
-        font-size: 10px;
-        font-weight: 800;
-        text-transform: uppercase;
-        color: var(--home-accent);
-        letter-spacing: 1px;
-        margin-bottom: 1rem;
-        display: block;
-    }
-
-    .card-desc {
-        color: #64748b;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        margin-bottom: 2rem;
-    }
-
-    .card-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-top: auto;
-    }
-
-    .link-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 0.6rem 1rem;
-        background: #f8fafc;
-        border: 1.5px solid #f1f5f9;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #475569;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-
-    .link-pill:hover {
-        background: #eff6ff;
-        border-color: var(--home-accent);
-        color: var(--home-accent);
-        transform: translateY(-2px);
-    }
-
-    .link-pill i,
-    .link-pill [data-lucide] {
-        width: 14px;
-        height: 14px;
-    }
-
-    /* Innovation Banner */
-    .innovation-banner {
-        background: linear-gradient(to right, #f8fafc, #ffffff);
-        border: 1px dashed #cbd5e1;
-        border-radius: 20px;
-        padding: 2.5rem;
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-
-    .innovation-icon {
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        color: #f59e0b;
-        flex-shrink: 0;
-    }
-
-    .innovation-content h3 {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--home-dark);
-        margin-bottom: 0.5rem;
-    }
-
-    .innovation-content p {
-        font-size: 0.9rem;
-        color: #64748b;
-        margin: 0;
-    }
-
-    @media (max-width: 768px) {
-        .home-hero {
-            padding: 3rem 1.5rem;
-        }
-
-        .hero-title {
-            font-size: 2.25rem;
-        }
-
-        .hero-stats {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .home-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+<head th:replace="~{layout :: header('Panel Principal')}"></head>
 
 <body class="dashboard-layout fade-in">
     <!-- Sidebar from Layout -->
     <!-- Sidebar from Layout -->
-    <aside th:replace="layout :: sidebar"></aside>
+    <aside th:replace="~{layout :: sidebar}"></aside>
 
     <div class="content-wrapper">
         <!-- Navbar from Layout -->
-        <nav th:replace="layout :: navbar('Inicio')"></nav>
+        <nav th:replace="~{layout :: navbar('Inicio')}"></nav>
 
         <main class="main-content">
             <!-- Hero High-Impact Section -->
@@ -352,8 +56,8 @@
                     <p class="card-desc">Administración y auditoría de Guías de Práctica Clínica y cronogramas anuales
                         de excelencia científica.</p>
                     <div class="card-links">
-                        <a href="/cronogramagpc" class="link-pill"><i data-lucide="calendar"></i>Cronograma</a>
-                        <a href="/plananual-gpc" class="link-pill"><i data-lucide="file-check"></i>Plan Anual</a>
+                        <a href="/cronograma-gpc" class="link-pill"><i data-lucide="calendar"></i>Cronograma</a>
+                        <a href="/plan-anual-gpc" class="link-pill"><i data-lucide="file-check"></i>Plan Anual</a>
                     </div>
                 </article>
 
@@ -366,7 +70,7 @@
                     <p class="card-desc">Seguimiento detallado de patologías de alto impacto y soporte diagnóstico
                         asistido por IA.</p>
                     <div class="card-links">
-                        <a href="/altocosto" class="link-pill"><i data-lucide="heart-pulse"></i>Alto Costo</a>
+                        <a href="/alto-costo" class="link-pill"><i data-lucide="heart-pulse"></i>Alto Costo</a>
                         <a href="/porfiria" class="link-pill" sec:authorize="!hasAuthority('analista')"><i
                                 data-lucide="microscope"></i>PorfirIA</a>
                     </div>
@@ -386,7 +90,7 @@
                         
                         <div style="width: 100%; height: 1px; background: #f1f5f9; margin: 0.5rem 0;"></div>
                         
-                        <a href="/dasheco" class="link-pill"><i data-lucide="pie-chart"></i>DashEco</a>
+                        <a href="/dash-eco" class="link-pill"><i data-lucide="pie-chart"></i>DashEco</a>
                         <a href="/ams" class="link-pill"><i data-lucide="stethoscope"></i>AMS</a>
                         <a href="/isa" class="link-pill"><i data-lucide="database"></i>ISA</a>
                     </div>
@@ -441,9 +145,9 @@
         <footer th:replace="~{layout :: footer}"></footer>
     </div>
 
-    <!-- Scripts from Layout -->
-    <!-- Scripts from Layout -->
-    <div th:replace="layout :: scripts"></div>
+    <!-- Scripts + CSS de página -->
+    <link rel="stylesheet" th:href="@{/css/home.css}" />
+    <div th:replace="~{layout :: scripts}"></div>
 
     <script>
         // Actualizar iconos Lucide específicos si es necesario

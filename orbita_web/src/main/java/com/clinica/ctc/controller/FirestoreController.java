@@ -13,6 +13,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * CONTROLADOR DE CACHÉ LOCAL (H2) - ÓRBITA CLINICA
+ * NOTA: Aunque el endpoint es /api/firestore por compatibilidad, 
+ * este controlador gestiona los datos persistidos en la base de datos local (H2).
+ * Sincroniza datos de Pacientes (Alto Costo) y Usuarios Permitidos.
+ */
 @RestController
 @RequestMapping("/api/firestore")
 public class FirestoreController {

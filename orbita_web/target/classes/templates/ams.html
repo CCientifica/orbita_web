@@ -3,135 +3,7 @@
 
 <head th:replace="~{layout :: header('Analytics AMS · Medicamentos')}"></head>
 
-<!-- Estilos y Configuración -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
-
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          institutional: { navy: '#1e293b', blue: '#3b82f6', gray: '#94a3b8' },
-          rcf: { alert: '#f43f5e', warn: '#f59e0b', success: '#10b981' }
-        },
-        animation: {
-          'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-          'spin-slow': 'spin 8s linear infinite',
-        }
-      }
-    }
-  }
-</script>
-
-<style type="text/tailwindcss">
-  @layer components {
-        .glass-card { @apply bg-white/80 backdrop-blur-xl border border-slate-200 shadow-xl rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1; }
-        .stat-card { @apply relative glass-card border-none bg-gradient-to-br from-white to-slate-50; }
-        .toolbar-pill { @apply inline-flex items-center gap-3 px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-black text-slate-700 shadow-inner transition-all hover:bg-white hover:border-blue-400; }
-        .input-rcf { @apply bg-transparent border-none outline-none text-sm font-black text-slate-800 placeholder:text-slate-300 w-full focus:ring-0; }
-        .btn-rcf { @apply flex items-center justify-center gap-3 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all active:scale-95 disabled:opacity-50; }
-        .btn-primary-rcf { @apply bg-slate-900 text-white shadow-2xl shadow-slate-300 hover:bg-emerald-600 hover:shadow-emerald-200; }
-        .btn-action { @apply p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all; }
-        
-        .tbl-rcf { @apply w-full border-separate border-spacing-y-2; }
-        .tbl-rcf th { @apply px-3 py-3 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 text-left; }
-        .tbl-rcf td { @apply px-3 py-1 bg-white border-y border-slate-100 first:border-l first:rounded-l-2xl last:border-r last:rounded-r-2xl text-[11px] font-bold text-slate-600 transition-all; }
-        .tbl-rcf tr:hover td { @apply border-emerald-100 bg-emerald-50/20; }
-        
-        .alert-dot { @apply w-2 h-2 rounded-full; }
-        .alert-dot-critical { @apply alert-dot bg-rcf-alert animate-pulse-fast shadow-[0_0_15px_rgba(244,63,94,0.6)]; }
-        .alert-dot-warning { @apply alert-dot bg-rcf-warn animate-pulse shadow-[0_0_12px_rgba(245,158,11,0.5)]; }
-    }
-</style>
-
-<style>
-  .main-content {
-    padding: 0 !important;
-    background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
-  }
-
-  .rcf-container {
-    padding: 2rem 3rem;
-    max-width: 1700px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 99px;
-  }
-
-  .material-icons {
-    font-size: 18px;
-    vertical-align: middle;
-  }
-
-  #trendChart {
-    min-height: 220px;
-    width: 100% !important;
-    margin-top: 10px;
-  }
-
-  /* TOOLTIP SYSTEM */
-  .tooltip-container {
-    position: relative;
-    display: inline-block;
-    cursor: help;
-  }
-
-  .tooltip-content {
-    visibility: hidden;
-    width: 220px;
-    background-color: #1e293b;
-    color: #fff;
-    text-align: center;
-    border-radius: 12px;
-    padding: 12px;
-    position: absolute;
-    z-index: 50;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -110px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 10px;
-    font-weight: 600;
-    line-height: 1.4;
-    pointer-events: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  }
-
-  .tooltip-content::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #1e293b transparent transparent transparent;
-  }
-
-  .tooltip-container:hover .tooltip-content {
-    visibility: visible;
-    opacity: 1;
-  }
-</style>
-
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-<body class="dashboard-layout fade-in">
+<body class="dashboard-layout fade-in eco-page eco-ams">
   <aside th:replace="~{layout :: sidebar}"></aside>
 
   <div class="content-wrapper">
@@ -139,6 +11,21 @@
 
     <main class="main-content">
       <div class="rcf-container space-y-8">
+        <!-- Compliance Banner -->
+        <div id="complianceBar" class="compliance-banner" style="display:none">
+            <div class="flex items-center gap-4 relative z-10">
+                <div id="compIcon" class="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <span class="material-icons">event_available</span>
+                </div>
+                <div>
+                    <p class="text-[8px] font-black uppercase tracking-widest text-white/50">Estatus de Cumplimiento Logístico</p>
+                    <h4 id="compMsg" class="text-[11px] font-black italic">--</h4>
+                </div>
+            </div>
+            <div id="compBadge" class="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10">
+                Sincronizado
+            </div>
+        </div>
 
         <!-- AMS PREDICTION HEADER -->
         <div class="flex flex-col xl:flex-row gap-6 items-start">
@@ -494,10 +381,62 @@
     getEl("monthInput").addEventListener("change", loadPeriodo);
     getEl("pabSelect").addEventListener("change", loadPeriodo);
     getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
-    window.addEventListener('OrbitaContextReady', loadPeriodo);
-    if (window.OrbitaContext) loadPeriodo();
+    
+    // Compliance Engine AMS
+    const updateCompliance = async () => {
+        if(!window.firebaseInstance) return;
+        const { db } = window.firebaseInstance; 
+        const { collection, query, where, getDocs, limit } = window.firebaseFirestore;
+        
+        const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+        const now = new Date();
+        const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
+        const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
+        
+        let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
+        while(curr <= now){
+            const day = curr.getDay(); const iso = curr.toISOString().split('T')[0];
+            if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
+            curr.setDate(curr.getDate()+1);
+        }
+
+        const snap = await getDocs(query(collection(db, "ams_registro_periodos"), where("month", "==", mStr), limit(1)));
+        const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
+        
+        bar.style.display = "flex";
+        if(snap.size > 0){
+            msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+            badge.textContent = "Sincronizado";
+        } else {
+            const remains = 5 - workDay;
+            if(remains >= 0){
+                msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                badge.textContent = "EN PLAZO";
+            } else {
+                msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                badge.textContent = "VENCIDO";
+                badge.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10";
+                icon.className = "w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";
+            }
+        }
+    };
+
+    window.addEventListener('OrbitaContextReady', () => { loadPeriodo(); updateCompliance(); });
+    if (window.OrbitaContext) { loadPeriodo(); updateCompliance(); }
     updateChart();
   </script>
+  <!-- CDN Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (typeof tailwind !== 'undefined') tailwind.config = {
+      theme: { extend: { colors: { institutional: { navy: '#1e293b', blue: '#3b82f6', gray: '#94a3b8' }, rcf: { alert: '#f43f5e', warn: '#f59e0b', success: '#10b981' } }, animation: { 'pulse-fast': 'pulse 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite', 'spin-slow': 'spin 8s linear infinite' } } }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </body>
 
 </html>
