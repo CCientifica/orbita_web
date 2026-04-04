@@ -7,145 +7,139 @@
     <aside th:replace="~{layout :: sidebar}"></aside>
 
     <div class="content-wrapper">
-        <nav th:replace="~{layout :: navbar('Gestión Estratégica CTC')}"></nav>
+        <nav th:replace="~{layout :: navbar('Cronograma Institucional')}"></nav>
 
         <main class="main-content">
             <style>
-                /* ====== ADVANCED DATA CARDS SYSTEM (WOW FACTOR) ====== */
+                /* ====== PREMIUM EXECUTIVE TABLE (WOW & DENSE) ====== */
                 :root {
-                    --wow-pri: #0f172a; --wow-sec: #1e293b; --wow-accent: #0ea5e9;
-                    --wow-glass: rgba(255, 255, 255, 0.85);
-                    --wow-border: rgba(255, 255, 255, 0.3);
-                    --wow-radius: 32px;
-                    --wow-shadow: 0 30px 60px rgba(0,0,0,0.08);
+                    --crono-pri: #0f172a; --crono-accent: #0ea5e9;
+                    --crono-glass: rgba(255, 255, 255, 0.9);
+                    --crono-border: rgba(0, 0, 0, 0.05);
                 }
 
-                .wow-page-wrap { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+                .crono-page-wrap { padding: 1rem; max-width: 1600px; margin: 0 auto; }
 
-                .wow-header {
+                .crono-header {
                     background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-                    padding: 3.5rem 4rem; border-radius: var(--wow-radius);
-                    box-shadow: 0 40px 100px -20px rgba(15, 23, 42, 0.4);
-                    margin-bottom: 2.5rem; color: white; position: relative; overflow: hidden;
+                    padding: 3rem 4rem; border-radius: 24px;
+                    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3);
+                    margin-bottom: 2rem; color: white;
+                }
+                .crono-header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.05em; margin: 0; text-transform: uppercase; }
+                .crono-header p { color: #94a3b8; font-weight: 600; font-size: 1.1rem; margin-top: 5px; }
+
+                .crono-main-box {
+                    background: var(--crono-glass); backdrop-filter: blur(20px);
+                    border-radius: 24px; border: 1px solid var(--crono-border);
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.03); overflow: hidden;
+                }
+
+                .crono-tabs-strip {
+                    background: #f8fafc; padding: 1.25rem 2.5rem;
+                    border-bottom: 1px solid var(--crono-border);
                     display: flex; justify-content: space-between; align-items: center;
                 }
-                .wow-header h1 { font-size: 3rem; font-weight: 900; letter-spacing: -0.06em; margin: 0; }
-                .wow-header p { color: #94a3b8; font-weight: 600; font-size: 1.25rem; margin-top: 8px; }
-
-                .wow-card-hub {
-                    background: var(--wow-glass); backdrop-filter: blur(25px);
-                    border-radius: var(--wow-radius); border: 1px solid var(--wow-border);
-                    box-shadow: var(--wow-shadow); overflow: hidden; animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+                .crono-tabs { display: flex; gap: 8px; }
+                .crono-tab {
+                    padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem;
+                    color: #64748b; cursor: pointer; transition: all 0.3s; background: white;
+                    border: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em;
                 }
+                .crono-tab.active { background: #0f172a; color: white; border-color: #0f172a; }
 
-                .wow-tabs-container {
-                    background: rgba(248, 250, 252, 0.5); padding: 1.5rem 2.5rem;
-                    border-bottom: 1px solid rgba(0,0,0,0.05);
-                    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+                /* Premium Table Layout */
+                .crono-table-container { padding: 1.5rem; overflow-x: auto; }
+                .crono-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1200px; }
+                .crono-table th {
+                    padding: 1rem 1.5rem; font-size: 0.7rem; font-weight: 900; color: #94a3b8;
+                    text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 2px solid #f1f5f9;
                 }
-                .wow-tabs { display: flex; gap: 12px; }
-                .wow-tab {
-                    padding: 1rem 2rem; border-radius: 20px; font-weight: 900; font-size: 0.95rem;
-                    color: #64748b; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                    background: white; border: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.08em;
+                .crono-table td {
+                    background: white; padding: 1.2rem 1.5rem; vertical-align: middle;
+                    border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;
+                    transition: all 0.2s ease;
                 }
-                .wow-tab.active {
-                    background: #0f172a; color: white; border-color: #0f172a;
-                    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.2); transform: translateY(-3px);
-                }
+                .crono-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 16px 0 0 16px; }
+                .crono-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 16px 16px 0; }
+                .crono-table tr:hover td { background: #fdfdfd; border-color: #e2e8f0; transform: translateY(-1px); }
 
-                /* Executive List Components */
-                .wow-content { padding: 2.5rem; }
-                .wow-list { display: flex; flex-direction: column; gap: 20px; }
+                /* Inputs with no Truncation */
+                .crono-cell-title { font-weight: 900; color: #0f172a; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
+                .crono-cell-code { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #64748b; font-weight: 700; word-break: break-all; }
 
-                .wow-item-card {
-                    background: white; border-radius: 24px; padding: 2rem;
-                    display: flex; flex-direction: column; gap: 15px;
-                    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                    border: 1px solid #f1f5f9; position: relative; overflow: hidden;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+                .crono-input {
+                    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
+                    padding: 0.6rem 1rem; font-weight: 700; font-size: 0.85rem; color: #1e293b;
+                    width: 100%; transition: all 0.2s;
                 }
-                .wow-item-card:hover {
-                    box-shadow: 0 25px 60px rgba(0,0,0,0.07); transform: scale(1.01) translateY(-5px);
-                    border-color: #e2e8f0;
+                .crono-input:focus { outline: none; border-color: var(--crono-accent); background: white; }
+
+                /* Status Badges */
+                .prior-point { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+                .prior-Alta { background: #ef4444; }
+                .prior-Media { background: #f97316; }
+                .prior-Baja { background: #22c55e; }
+
+                /* Action Btns */
+                .crono-btn {
+                    padding: 0.8rem 1.8rem; border-radius: 14px; font-weight: 800; font-size: 0.85rem;
+                    display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer; transition: all 0.3s;
                 }
-                .wow-item-card::before {
-                    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: #e2e8f0; transition: background 0.3s;
-                }
-                .wow-item-card.prior-Alta::before { background: #ef4444; }
-                .wow-item-card.prior-Media::before { background: #f97316; }
-                .wow-item-card.prior-Baja::before { background: #22c55e; }
-
-                .wow-card-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; }
-                .wow-card-title { font-size: 1.35rem; font-weight: 900; color: #0f172a; flex: 1; letter-spacing: -0.02em; line-height: 1.3; }
-                
-                .wow-card-meta { display: flex; flex-wrap: wrap; gap: 25px; align-items: center; margin-top: 5px; }
-                .wow-meta-pill { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 800; color: #64748b; }
-                .wow-meta-pill i { color: #cbd5e1; }
-
-                .wow-card-controls { display: flex; align-items: center; gap: 30px; }
-                .wow-toggle-group { display: flex; gap: 20px; border-left: 1px solid #f1f5f9; padding-left: 30px; }
-
-                /* Custom Minimal Inputs */
-                .wow-input-ghost {
-                    background: transparent; border: none; border-bottom: 2px solid transparent;
-                    font-weight: 900; font-size: 1.35rem; color: #0f172a; width: 100%; transition: all 0.3s;
-                }
-                .wow-input-ghost:focus { outline: none; border-bottom-color: #0ea5e9; background: rgba(14, 165, 233, 0.03); }
-
-                /* Premium Checkbox Replacement */
-                .wow-toggle {
-                    display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 18px;
-                    border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.3s;
-                }
-                .wow-toggle span { font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
-                .wow-toggle input { display: none; }
-                .wow-toggle:has(input:checked) { background: #0ea5e9; border-color: #0ea5e9; }
-                .wow-toggle:has(input:checked) span { color: white; }
-
-                .wow-btn {
-                    padding: 1rem 2rem; border-radius: 18px; font-weight: 900; font-size: 0.95rem;
-                    display: inline-flex; align-items: center; gap: 12px; border: none; cursor: pointer; transition: all 0.3s;
-                }
-                .wow-btn-pri { background: #0ea5e9; color: white; box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3); }
-                .wow-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
-
-                @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-
-                .month-header {
-                    margin: 40px 0 20px 0; font-size: 1.1rem; font-weight: 900; color: #0f172a;
-                    text-transform: uppercase; letter-spacing: 0.25em; display: flex; align-items: center; gap: 20px;
-                }
-                .month-header::after { content: ''; flex: 1; height: 2px; background: linear-gradient(to right, #e2e8f0, transparent); }
+                .crono-btn-pri { background: var(--crono-accent); color: white; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); }
+                .crono-btn-out { background: white; color: #0f172a; border: 1.5px solid #e2e8f0; }
             </style>
 
-            <div class="wow-page-wrap">
-                <header class="wow-header">
-                    <div>
-                        <h1>Gestión CTC</h1>
-                        <p>Cronograma dinámico de auditoría y protocolos institucionales.</p>
-                    </div>
+            <div class="crono-page-wrap">
+                <header class="crono-header">
+                    <h1>Cronograma GPC & Protocolos</h1>
+                    <p>Planificación y seguimiento sistemático de la actualización científica.</p>
                 </header>
 
-                <div class="wow-card-hub">
-                    <div class="wow-tabs-container">
-                        <div class="wow-tabs">
-                            <div class="wow-tab active" data-tab="inventario">01. Inventario GPC</div>
-                            <div class="wow-tab" data-tab="plan">02. Plan Anual</div>
-                            <div class="wow-tab" data-tab="seg">03. Seguimiento</div>
+                <div class="crono-main-box">
+                    <div class="crono-tabs-strip">
+                        <div class="crono-tabs">
+                            <div class="crono-tab active" data-tab="inventario">01. Inventario</div>
+                            <div class="crono-tab" data-tab="plan">02. Plan Anual</div>
+                            <div class="crono-tab" data-tab="seg">03. Seguimiento</div>
                         </div>
                         <div id="panelActions"></div>
                     </div>
 
-                    <div class="wow-content">
-                        <div id="panel-inventario" class="wow-panel active">
-                            <div id="listInvent" class="wow-list"></div>
+                    <div class="crono-table-container">
+                        <!-- Panel Inventario -->
+                        <div id="panel-inventario" class="crono-panel active">
+                            <table class="crono-table" id="tblInvent">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 140px">Código / ID</th>
+                                        <th style="white-space:nowrap">Nombre de la Guía o Protocolo</th>
+                                        <th style="width: 160px">Últ. Versión</th>
+                                        <th style="width: 80px" class="text-center">Ajuste</th>
+                                        <th style="width: 80px" class="text-center">Desc</th>
+                                        <th style="width: 120px">Líder</th>
+                                        <th style="width: 140px">Prioridad</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
-                        <div id="panel-plan" class="wow-panel" style="display:none">
-                            <div id="listPlan" class="wow-list"></div>
-                        </div>
-                        <div id="panel-seg" class="wow-panel" style="display:none">
-                            <div id="listSeg" class="wow-list"></div>
+
+                        <!-- Panel Seguimiento -->
+                        <div id="panel-seg" class="crono-panel" style="display:none">
+                            <table class="crono-table" id="tblSeg">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 140px">Código</th>
+                                        <th style="white-space:nowrap">Tema / Guía</th>
+                                        <th style="width: 160px">Socialización</th>
+                                        <th style="width: 160px">Estado Ejecución</th>
+                                        <th style="width: 120px">Cumplimiento</th>
+                                        <th style="width: 150px">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -157,20 +151,17 @@
     <div th:replace="~{layout :: scripts}"></div>
 
     <script type="module" th:inline="javascript">
-        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
         const qs = s => document.querySelector(s);
         const qsa = s => Array.from(document.querySelectorAll(s));
-        const slug = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-
-        const state = { anio: new Date().getFullYear(), inventario: [], plan: [] };
+        const state = { anio: new Date().getFullYear(), inventario: [], plan: [], seg: [] };
 
         /* ================== NAVIGATION ================== */
         function initTabs() {
-            qsa('.wow-tab').forEach(btn => {
+            qsa('.crono-tab').forEach(btn => {
                 btn.onclick = () => {
-                    qsa('.wow-tab').forEach(b => b.classList.remove('active'));
+                    qsa('.crono-tab').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    qsa('.wow-panel').forEach(p => p.style.display = 'none');
+                    qsa('.crono-panel').forEach(p => p.style.display = 'none');
                     qs(`#panel-${btn.dataset.tab}`).style.display = 'block';
                     renderActions(btn.dataset.tab);
                 };
@@ -180,120 +171,158 @@
         function renderActions(tab) {
             const box = qs('#panelActions'); if(!box) return; box.innerHTML = '';
             const addBtn = (icon, text, cls, fn) => {
-                const b = document.createElement('button'); b.className = `wow-btn ${cls}`;
-                b.innerHTML = `<i class="${icon}"></i> ${text}`; b.onclick = fn;
+                const b = document.createElement('button'); b.className = `crono-btn ${cls}`;
+                b.innerHTML = `<i class="${icon}"></i> <span>${text}</span>`; b.onclick = fn;
                 box.appendChild(b);
             };
             if(tab === 'inventario') {
-                addBtn('fas fa-plus', 'Añadir al Inventario', 'wow-btn-pri', () => { state.inventario.unshift({codigo:`GPC-${Date.now().toString().slice(-4)}`, nombre:'', prior:'Media'}); renderInvent(); });
+                addBtn('fas fa-plus', 'Nuevo Registro', 'crono-btn-out', () => { state.inventario.unshift({codigo:'', nombre:'', prior:'Media'}); renderInvent(); });
+                addBtn('fas fa-sync', 'Sincronizar Todo', 'crono-btn-pri', async () => saveAll('identificacion', state.inventario));
+            } else if(tab === 'plan') {
+                addBtn('fas fa-save', 'Guardar Plan', 'crono-btn-pri', async () => saveAll('cronograma_anual', state.plan));
+            } else if(tab === 'seg') {
+                addBtn('fas fa-chart-line', 'Generar Reporte', 'crono-btn-out', () => window.print());
+                addBtn('fas fa-save', 'Guardar Avances', 'crono-btn-pri', async () => saveAll('seguimiento', state.seg));
             }
+        }
+
+        async function saveAll(collectionName, dataArray) {
+            const { db } = window.firebaseInstance || {};
+            const { doc, writeBatch, serverTimestamp } = window.firebaseFirestore || {};
+            if(!db) return;
+            const batch = writeBatch(db);
+            const fullCollName = `gpc_${collectionName}`;
+            
+            dataArray.forEach(r => {
+                const id = r.codigo || r.id || `AUTOGEN-${Date.now()}-${Math.random()}`;
+                const ref = doc(db, fullCollName, id);
+                batch.set(ref, { ...r, updatedAt: serverTimestamp() }, { merge: true });
+            });
+            
+            try {
+                await batch.commit(); 
+                alert('¡Datos sincronizados correctamente!');
+            } catch(e) { console.error(e); alert('Error al guardar.'); }
         }
 
         /* ================== FIREBASE ================== */
         async function initModule() {
             const { db, auth } = window.firebaseInstance || {};
-            const { onAuthStateChanged } = window.firebaseAuth || {};
-            if (!db || !auth || !onAuthStateChanged) { setTimeout(initModule, 300); return; }
-            onAuthStateChanged(auth, async (u) => {
-                if (!u) { location.href = "/login"; return; }
-                initTabs(); await loadFromDB(); renderAll();
-            });
+            if (!db || !auth) { setTimeout(initModule, 300); return; }
+            initTabs(); await loadFromDB(); renderAll();
         }
 
         async function loadFromDB() {
             const { db } = window.firebaseInstance || {};
             const { collection, getDocs, query, where } = window.firebaseFirestore || {};
-            if(!db || !getDocs) return;
+            if(!db) return;
             try {
+                // Carga de Inventario
                 state.inventario = (await getDocs(collection(db, 'gpc_identificacion'))).docs.map(d => d.data());
+                
+                // Carga de Plan Anual
                 state.plan = (await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)))).docs.map(d=>d.data());
-            } catch(e) { console.error("Cloud Error:", e); }
+                
+                // Carga de Seguimiento (si existe colección aparte o se deriva del plan)
+                state.seg = (await getDocs(collection(db, 'gpc_seguimiento'))).docs.map(d => d.data());
+                if(state.seg.length === 0 \u0026\u0026 state.plan.length \u003e 0) {
+                    state.seg = state.plan.map(p =\u003e ({ ...p, status: 'Pendiente', socialized: false }));
+                }
+
+                renderAll();
+            } catch(e) { console.error("Error cargando DB:", e); }
         }
 
         function renderAll() {
-            renderInvent(); renderPlan();
-            renderActions(qsa('.wow-tab.active')[0]?.dataset.tab || 'inventario');
+            renderInvent();
+            renderPlan();
+            renderSeg();
+            renderActions(qsa('.crono-tab.active')[0]?.dataset.tab || 'inventario');
         }
 
-        /* ================== CARD RENDERERS ================== */
         function renderInvent() {
-            const box = qs('#listInvent'); if(!box) return; box.innerHTML = '';
+            const tbody = qs('#tblInvent tbody'); if(!tbody) return; tbody.innerHTML = '';
             state.inventario.forEach((r, i) => {
-                const card = document.createElement('div');
-                card.className = `wow-item-card prior-${r.prior || 'Media'}`;
-                card.innerHTML = `
-                    <div class="wow-card-main">
-                        <div style="flex: 1">
-                            <input class="wow-input-ghost" placeholder="Nombre de la Guía o Protocolo..." value="${r.nombre||''}" data-key="nombre">
-                            <div class="wow-card-meta">
-                                <span class="wow-meta-pill"><i class="fas fa-fingerprint"></i> ${r.codigo||'AUTOGEN'}</span>
-                                <span class="wow-meta-pill"><i class="fas fa-user-shield"></i> Lider: ${r.resp||'CTC'}</span>
-                                <span class="wow-meta-pill"><i class="fas fa-calendar-alt"></i> Últ. Versión: <input type="date" value="${r.fchUlt||''}" data-key="fchUlt" style="border:none; font-weight:700; color:#64748b"></span>
-                            </div>
-                        </div>
-                        <div class="wow-card-controls">
-                            <div class="wow-toggle-group">
-                                <label class="wow-toggle">
-                                    <input type="checkbox" ${r.ajuste?'checked':''} data-key="ajuste">
-                                    <span>AJUSTE</span>
-                                </label>
-                                <label class="wow-toggle">
-                                    <input type="checkbox" ${r.descarte?'checked':''} data-key="descarte">
-                                    <span>DESCARTE</span>
-                                </label>
-                            </div>
-                            <div style="width: 130px">
-                                <select data-key="prior" class="wow-tab" style="width:100%; height:44px; padding:0 15px; font-size:0.75rem">
-                                    ${['Alta','Media','Baja'].map(p=>`<option value="${p}" ${r.prior===p?'selected':''}>${p}</option>`).join('')}
-                                </select>
-                            </div>
-                            <button class="wow-btn" style="background:#fef2f2; color:#ef4444; width:44px; height:44px; padding:0; justify-content:center" data-act="del"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="crono-cell-code">${r.codigo || '—'}</td>
+                    <td class="crono-cell-title">${r.nombre || '<input class="crono-input" placeholder="Nombre..." data-key="nombre">'}</td>
+                    <td><input type="date" value="${r.fchUlt||''}" data-key="fchUlt" class="crono-input"></td>
+                    <td class="text-center"><label class="status-badge" style="background:${r.ajuste?'#eff6ff':'#f8fafc'}; border:1px solid #e2e8f0; padding:4px 8px; border-radius:6px; cursor:pointer"><input type="checkbox" ${r.ajuste?'checked':''} data-key="ajuste" style="display:none"> <span>${r.ajuste?'SÍ':'NO'}</span></label></td>
+                    <td class="text-center"><label class="status-badge" style="background:${r.descarte?'#fef2f2':'#f8fafc'}; border:1px solid #e2e8f0; padding:4px 8px; border-radius:6px; cursor:pointer"><input type="checkbox" ${r.descarte?'checked':''} data-key="descarte" style="display:none"> <span>${r.descarte?'SÍ':'NO'}</span></label></td>
+                    <td><input value="${r.resp||'CTC'}" data-key="resp" class="crono-input"></td>
+                    <td><select data-key="prior" class="crono-input">
+                        ${['Alta','Media','Baja'].map(p=>`<option value="${p}" ${r.prior===p?'selected':''}>${p}</option>`).join('')}
+                    </select></td>
                 `;
-                card.querySelectorAll('input, select').forEach(inp => {
-                    inp.onchange = () => { 
-                        state.inventario[i][inp.dataset.key] = (inp.type==='checkbox'?inp.checked:inp.value);
-                        if(inp.dataset.key==='prior') renderInvent(); 
-                    };
+                tr.querySelectorAll('input').forEach(inp =\u003e {
+                    if(inp.type === 'checkbox') {
+                        inp.onchange = () =\u003e {
+                             state.inventario[i][inp.dataset.key] = inp.checked;
+                             renderInvent();
+                        };
+                    } else {
+                        inp.onchange = () =\u003e { state.inventario[i][inp.dataset.key] = inp.value; };
+                    }
                 });
-                card.querySelector('[data-act="del"]').onclick = () => { state.inventario.splice(i,1); renderInvent(); };
-                box.appendChild(card);
+                tbody.appendChild(tr);
             });
         }
 
         function renderPlan() {
-            const box = qs('#listPlan'); if(!box) return; box.innerHTML = '';
-            let curMonth = -1;
+            const tbody = qs('#tblPlan tbody'); if(!tbody) return; tbody.innerHTML = '';
+            const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            
             state.plan.sort((a,b)=>(a.mes||0)-(b.mes||0)).forEach((r, i) => {
-                if(r.mes !== curMonth) {
-                    curMonth = r.mes;
-                    const h = document.createElement('div'); h.className = 'month-header';
-                    h.textContent = MONTHS[curMonth] || 'Sin Programar';
-                    box.appendChild(h);
-                }
-                const card = document.createElement('div');
-                card.className = `wow-item-card prior-${r.prioridad || 'Alta'}`;
-                card.innerHTML = `
-                    <div class="wow-card-main" style="align-items: center">
-                        <div style="flex: 1">
-                            <div class="wow-card-title">${r.tema||'Sin Título'}</div>
-                            <div class="wow-card-meta">
-                                <span class="wow-meta-pill"><i class="fas fa-tag"></i> ${r.codigo||'—'}</span>
-                                <span class="wow-meta-pill"><i class="fas fa-tasks"></i> Acción: ${r.accion||'Actualizar'}</span>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:15px; align-items:center">
-                             <select data-key="mes" class="wow-tab" style="height:44px; padding:0 15px; font-size:0.75rem">
-                                ${MONTHS.map((m,idx)=>`<option value="${idx}" ${r.mes==idx?'selected':''}>${m}</option>`).join('')}
-                             </select>
-                             <button class="wow-btn wow-btn-pri" style="height:44px; padding:0 25px; font-size:0.75rem">GESTIONAR</button>
-                        </div>
-                    </div>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="crono-cell-code">${r.codigo || '—'}</td>
+                    <td class="crono-cell-title">${r.tema || '—'}</td>
+                    <td><span style="font-weight:700; color:#0ea5e9">${r.accion || 'Actualizar'}</span></td>
+                    <td><span style="font-weight:700">${MONTHS[r.mes] || 'S/P'}</span></td>
+                    <td><div style="display:flex; align-items:center"><span class="prior-point prior-${r.prioridad||'Media'}"></span> ${r.prioridad||'Media'}</div></td>
                 `;
-                box.appendChild(card);
+                tbody.appendChild(tr);
             });
         }
+
+        function renderSeg() {
+            const tbody = qs('#tblSeg tbody'); if(!tbody) return; tbody.innerHTML = '';
+            state.seg.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="crono-cell-code">${r.codigo || '—'}</td>
+                    <td class="crono-cell-title">${r.tema || r.nombre || '—'}</td>
+                    <td><select data-key="socialized" class="crono-input">
+                        <option value="false" ${!r.socialized?'selected':''}>No Socializado</option>
+                        <option value="true" ${r.socialized?'selected':''}>Socializado</option>
+                    </select></td>
+                    <td><select data-key="status" class="crono-input">
+                        ${['Pendiente','En Proceso','Finalizado','Ajustado'].map(s=>`<option value="${s}" ${r.status===s?'selected':''}>${s}</option>`).join('')}
+                    </select></td>
+                    <td class="text-center"><span style="font-weight:900; color:${r.status==='Finalizado'?'#22c55e':'#ef4444'}">${r.status==='Finalizado'?'100%':'0%'}</span></td>
+                    <td class="text-center">
+                        <button class="crono-btn crono-btn-pri" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;" onclick="window.saveSingleSeg(${i})">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </td>
+                `;
+                tr.querySelectorAll('select').forEach(sel => {
+                    sel.onchange = () => { state.seg[i][sel.dataset.key] = sel.value === 'true' ? true : (sel.value === 'false' ? false : sel.value); renderSeg(); };
+                });
+                tbody.appendChild(tr);
+            });
+        }
+        
+        window.saveSingleSeg = async (index) => {
+            const { db } = window.firebaseInstance || {};
+            const { doc, setDoc, serverTimestamp } = window.firebaseFirestore || {};
+            if(!db) return;
+            const r = state.seg[index];
+            const id = r.codigo || r.id || `AUTOGEN-${Date.now()}`;
+            await setDoc(doc(db, 'gpc_seguimiento', id), { ...r, updatedAt: serverTimestamp() }, { merge: true });
+            alert('¡Registro individual guardado!');
+        };
 
         initModule();
     </script>

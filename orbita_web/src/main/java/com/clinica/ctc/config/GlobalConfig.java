@@ -36,6 +36,10 @@ public class GlobalConfig {
         String emailLower = email.toLowerCase().trim();
         String mEmail = orbitaProperties.getMasterEmail().toLowerCase().trim();
         String domain = orbitaProperties.getAuthorizedDomain().toLowerCase().trim();
-        return emailLower.equals(mEmail) || emailLower.endsWith(domain);
+        
+        // Soporte para desarrollo local y dominio institucional
+        return emailLower.equals(mEmail) || 
+               emailLower.endsWith(domain) || 
+               emailLower.endsWith("@localhost");
     }
 }
