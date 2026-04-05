@@ -9,7 +9,9 @@
     const isStatic = window.location.protocol === 'file:' || 
                      window.location.hostname.includes('firebaseapp.com') || 
                      window.location.hostname.includes('web.app') ||
-                     window.location.hostname === 'localhost' && window.location.port !== '8081'; // Asumiendo Spring en 8081
+                     (window.location.hostname === 'localhost' && 
+                      window.location.port !== '8080' && 
+                      window.location.port !== '8081');
 
     // 1. Traductor Universal de Atributos
     function translateAttributes(container = document) {

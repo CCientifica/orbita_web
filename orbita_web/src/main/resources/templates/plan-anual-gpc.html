@@ -3,6 +3,9 @@
 
 <head th:replace="~{layout :: header('Plan Anual Auditoría GPC')}"></head>
 
+<!-- XLSX Library for Audit Matrix -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <body class="dashboard-layout fade-in">
     <aside th:replace="~{layout :: sidebar}"></aside>
 
@@ -13,108 +16,470 @@
             <style>
                 /* ====== PREMIUM GLASS & ADVANCED AESTHETICS: PLAN ANUAL ====== */
                 :root {
-                    --pa-pri: #0f172a; --pa-sec: #1e293b; --pa-accent: #0ea5e9;
+                    --pa-pri: #0f172a;
+                    --pa-sec: #1e293b;
+                    --pa-accent: #0ea5e9;
                     --pa-glass: rgba(255, 255, 255, 0.7);
                     --pa-border: rgba(255, 255, 255, 0.3);
-                    --pa-shadow: 0 25px 60px rgba(0,0,0,0.08);
+                    --pa-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
                     --pa-radius: 28px;
                 }
 
-                .pa-page-wrap { padding: 1.5rem; max-width: 1500px; margin: 0 auto; }
+                .pa-page-wrap {
+                    padding: 1.5rem;
+                    max-width: 1500px;
+                    margin: 0 auto;
+                }
 
                 .pa-header {
                     background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-                    padding: 3.5rem 4rem; border-radius: var(--pa-radius);
+                    padding: 3.5rem 4rem;
+                    border-radius: var(--pa-radius);
                     box-shadow: 0 30px 70px -15px rgba(15, 23, 42, 0.4);
-                    margin-bottom: 2.5rem; color: white; position: relative; overflow: hidden;
-                    display: flex; justify-content: space-between; align-items: center;
+                    margin-bottom: 2.5rem;
+                    color: white;
+                    position: relative;
+                    overflow: hidden;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                 }
+
                 .pa-header::before {
-                    content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px;
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    right: -20%;
+                    width: 600px;
+                    height: 600px;
                     background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
                     pointer-events: none;
                 }
-                .pa-header h1 { font-size: 2.75rem; font-weight: 900; letter-spacing: -0.05em; margin: 0; }
-                .pa-header p { color: #94a3b8; font-weight: 600; font-size: 1.2rem; }
+
+                .pa-header h1 {
+                    font-size: 2.75rem;
+                    font-weight: 900;
+                    letter-spacing: -0.05em;
+                    margin: 0;
+                }
+
+                .pa-header p {
+                    color: #94a3b8;
+                    font-weight: 600;
+                    font-size: 1.2rem;
+                }
 
                 .pa-main-card {
-                    background: var(--pa-glass); backdrop-filter: blur(25px);
-                    border-radius: var(--pa-radius); border: 1px solid var(--pa-border);
-                    box-shadow: var(--pa-shadow); overflow: hidden; animation: slideUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+                    background: var(--pa-glass);
+                    backdrop-filter: blur(25px);
+                    border-radius: var(--pa-radius);
+                    border: 1px solid var(--pa-border);
+                    box-shadow: var(--pa-shadow);
+                    overflow: hidden;
+                    animation: slideUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
                 }
 
                 .pa-toolbar {
-                    background: rgba(248, 250, 252, 0.6); padding: 1.5rem 2.5rem;
-                    border-bottom: 1px solid rgba(0,0,0,0.05);
-                    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+                    background: rgba(248, 250, 252, 0.6);
+                    padding: 1.5rem 2.5rem;
+                    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 20px;
                 }
 
                 /* Premium Table Styles */
-                .pa-table-wrap { width: 100%; padding: 0 2rem 2rem 2rem; }
-                .pa-table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
+                .pa-table-wrap {
+                    width: 100%;
+                    padding: 0 2rem 2rem 2rem;
+                    overflow-x: auto;
+                }
+
+                .pa-table {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 0 12px;
+                    min-width: 1200px;
+                }
+
                 .pa-table th {
-                    padding: 0 1.5rem 0.5rem 1.5rem; font-size: 0.75rem; font-weight: 900;
-                    color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; text-align: left;
+                    padding: 0 1.5rem 0.5rem 1.5rem;
+                    font-size: 0.75rem;
+                    font-weight: 900;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    text-align: left;
                 }
+
                 .pa-table td {
-                    background: white; padding: 1.5rem; vertical-align: middle;
-                    transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+                    background: white;
+                    padding: 1.5rem;
+                    vertical-align: middle;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
                 }
-                .pa-table tr td:first-child { border-radius: 20px 0 0 20px; border-left: 1px solid #f1f5f9; }
-                .pa-table tr td:last-child { border-radius: 0 20px 20px 0; border-right: 1px solid #f1f5f9; }
-                .pa-table tr:hover td { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.06); background: #fdfdfd; z-index: 10; cursor: default; }
+
+                .pa-table tr td:first-child {
+                    border-radius: 20px 0 0 20px;
+                    border-left: 1px solid #f1f5f9;
+                }
+
+                .pa-table tr td:last-child {
+                    border-radius: 0 20px 20px 0;
+                    border-right: 1px solid #f1f5f9;
+                }
+
+                .pa-table tr:hover td {
+                    transform: scale(1.005);
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+                    background: #fdfdfd;
+                }
 
                 /* Inputs & Components */
                 .pa-input {
-                    background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px;
-                    padding: 0.75rem 1.25rem; font-weight: 700; font-size: 0.95rem; color: #1e293b;
-                    transition: all 0.2s; width: 100%;
+                    background: #f8fafc;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 14px;
+                    padding: 0.75rem 1.25rem;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                    color: #1e293b;
+                    transition: all 0.2s;
+                    width: 100%;
+                    box-sizing: border-box;
                 }
-                .pa-input:focus { border-color: var(--pa-accent); background: white; box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.1); outline: none; }
+
+                .pa-input:focus {
+                    border-color: var(--pa-accent);
+                    background: white;
+                    box-shadow: 0 0 0 5px rgba(14, 165, 233, 0.1);
+                    outline: none;
+                }
 
                 .pa-badge {
-                    padding: 0.5rem 1.25rem; border-radius: 99px; font-size: 0.75rem; font-weight: 900;
-                    text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px;
+                    padding: 0.5rem 1.25rem;
+                    border-radius: 99px;
+                    font-size: 0.75rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
                 }
-                .pa-badge-optima { background: #ecfdf5; color: #10b981; }
-                .pa-badge-proceso { background: #fff7ed; color: #f97316; }
-                .pa-badge-critica { background: #fef2f2; color: #ef4444; }
+
+                .pa-badge-optima {
+                    background: #ecfdf5;
+                    color: #10b981;
+                }
+
+                .pa-badge-proceso {
+                    background: #fff7ed;
+                    color: #f97316;
+                }
+
+                .pa-badge-critica {
+                    background: #fef2f2;
+                    color: #ef4444;
+                }
 
                 .pa-btn {
-                    padding: 0.85rem 1.75rem; border-radius: 16px; font-weight: 800; font-size: 0.95rem;
-                    display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
-                    border: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    padding: 0.85rem 1.75rem;
+                    border-radius: 16px;
+                    font-weight: 800;
+                    font-size: 0.95rem;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 12px;
+                    cursor: pointer;
+                    border: none;
+                    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 }
-                .pa-btn-pri { background: #0f172a; color: white; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2); }
-                .pa-btn-accent { background: #0ea5e9; color: white; box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2); }
-                .pa-btn:hover { transform: translateY(-3px) scale(1.05); }
 
-                @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+                .pa-btn-pri {
+                    background: #0f172a;
+                    color: white;
+                    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+                }
 
-                /* Custom Checks */
-                .pa-check { width: 26px; height: 26px; appearance: none; background: #f1f5f9; border: 2px solid #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
-                .pa-check:checked { background: #0ea5e9; border-color: #0ea5e9; }
+                .pa-btn-accent {
+                    background: #0ea5e9;
+                    color: white;
+                    box-shadow: 0 10px 20px rgba(14, 165, 233, 0.2);
+                }
+
+                .pa-btn:hover {
+                    transform: translateY(-3px) scale(1.05);
+                }
+
+                @keyframes slideUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(50px);
+                    }
+
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                .pa-check {
+                    width: 26px;
+                    height: 26px;
+                    appearance: none;
+                    background: #f1f5f9;
+                    border: 2px solid #cbd5e1;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .pa-check:checked {
+                    background: #0ea5e9;
+                    border-color: #0ea5e9;
+                }
+
+                /* MODAL SYSTEM: Institutional Glass Overlay */
+                .pa-modal {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(15, 23, 42, 0.7);
+                    backdrop-filter: blur(12px);
+                    display: none !important;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                    padding: 2rem;
+                    animation: paFadeIn 0.3s ease forwards;
+                }
+
+                .pa-modal.open {
+                    display: flex !important;
+                }
+
+                .pa-modal-content {
+                    background: white;
+                    width: 100%;
+                    max-width: 1400px;
+                    height: 90vh;
+                    border-radius: 32px;
+                    overflow: hidden;
+                    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    flex-direction: column;
+                    transform-origin: center;
+                    animation: paModalScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+
+                @keyframes paFadeIn {
+                    from {
+                        opacity: 0;
+                    }
+
+                    to {
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes paModalScale {
+                    from {
+                        opacity: 0;
+                        transform: scale(0.9) translateY(40px);
+                    }
+
+                    to {
+                        opacity: 1;
+                        transform: scale(1) translateY(0);
+                    }
+                }
+
+                /* AUDIT MODAL COMPONENTS */
+                .audit-section {
+                    background: #f8fafc;
+                    padding: 2rem;
+                    border-radius: 20px;
+                    border: 1px solid #e2e8f0;
+                    margin-bottom: 2rem;
+                }
+
+                .audit-section h3 {
+                    margin: 0 0 1.5rem 0;
+                    font-size: 1.1rem;
+                    font-weight: 800;
+                    color: #334155;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .q-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                    gap: 1.5rem;
+                }
+
+                .q-card {
+                    background: white;
+                    border: 1.5px solid #e2e8f0;
+                    padding: 1.5rem;
+                    border-radius: 18px;
+                    position: relative;
+                    transition: all 0.2s;
+                }
+
+                .q-card:hover {
+                    border-color: var(--pa-accent);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+                }
+
+                .eval-toggles {
+                    display: inline-flex;
+                    background: #f1f5f9;
+                    padding: 4px;
+                    border-radius: 99px;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .toggle-btn {
+                    padding: 8px 18px;
+                    border: none;
+                    background: transparent;
+                    border-radius: 99px;
+                    font-size: 12px;
+                    font-weight: 800;
+                    color: #64748b;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .toggle-btn.active-C {
+                    background: #10b981;
+                    color: white;
+                    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+                }
+
+                .toggle-btn.active-NC {
+                    background: #ef4444;
+                    color: white;
+                    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+                }
+
+                .toggle-btn.active-NA {
+                    background: #64748b;
+                    color: white;
+                    box-shadow: 0 4px 10px rgba(100, 116, 139, 0.3);
+                }
+
+                .audit-table-wrap {
+                    width: 100%;
+                    max-height: 400px;
+                    overflow: auto;
+                    border-radius: 16px;
+                    border: 1px solid #e2e8f0;
+                    background: white;
+                }
+
+                .audit-table-wrap th {
+                    background: #f1f5f9;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    font-size: 11px;
+                    font-weight: 900;
+                }
+                /* COMPLIANCE DASHBOARD */
+                .pa-dashboard {
+                    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 2rem; margin-bottom: 2.5rem; animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+                }
+                .pa-stat-card {
+                    background: var(--pa-glass); backdrop-filter: blur(20px);
+                    border-radius: var(--pa-radius); border: 1px solid var(--pa-border);
+                    padding: 2rem; display: flex; align-items: center; gap: 1.5rem;
+                    box-shadow: var(--pa-shadow); transition: transform 0.3s;
+                }
+                .pa-stat-card:hover { transform: translateY(-5px); }
+                .pa-stat-icon {
+                    width: 64px; height: 64px; border-radius: 20px;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 1.5rem; color: white;
+                }
+                .pa-stat-info h4 { margin: 0; font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; }
+                .pa-stat-info div { font-size: 1.75rem; font-weight: 900; color: #0f172a; margin-top: 4px; }
+
+                /* Custom Progress Ring */
+                .pa-progress { position: relative; width: 64px; height: 64px; }
+                .pa-progress svg { transform: rotate(-90deg); width: 64px; height: 64px; }
+                .pa-progress circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+                .pa-progress .bg { stroke: #e2e8f0; }
+                .pa-progress .val { stroke: var(--pa-accent); stroke-dasharray: 182; stroke-dashoffset: 182; transition: stroke-dashoffset 1s ease; }
             </style>
 
             <div class="pa-page-wrap">
                 <header class="pa-header">
                     <div>
-                        <h1>Plan Nacional GPC</h1>
+                        <h1>Plan anual auditoría de GPC</h1>
                         <p>Monitoreo dinámico de auditoría y adherencia clínica institucional.</p>
                     </div>
                     <div style="display: flex; gap: 20px; align-items: center;">
-                        <span style="font-weight: 900; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8">Ciclo</span>
-                        <select id="anioSel" class="pa-input" style="width: 140px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); color: white;"></select>
+                        <span
+                            style="font-weight: 900; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8">Ciclo</span>
+                        <select id="anioSel" class="pa-input"
+                            style="width: 140px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); color: white;"></select>
                     </div>
                 </header>
+
+                <!-- 📊 TABLERO DE CUMPLIMIENTO INSTITUCIONAL -->
+                <div class="pa-dashboard">
+                    <div class="pa-stat-card">
+                        <div class="pa-stat-icon" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="pa-stat-info">
+                            <h4>Ejecución del Plan</h4>
+                            <div id="statEjecucion">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="pa-stat-card">
+                        <div class="pa-stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-check-double"></i>
+                        </div>
+                        <div class="pa-stat-info">
+                            <h4>Adherencia Global</h4>
+                            <div id="statAdherencia">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="pa-stat-card">
+                        <div class="pa-stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="pa-stat-info">
+                            <h4>Auditorías Vencidas</h4>
+                            <div id="statVencidas" style="color: #ef4444;">0</div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="pa-main-card">
                     <div class="pa-toolbar">
                         <div style="display: flex; gap: 15px;">
-                            <button id="btnSincronizar" class="pa-btn pa-btn-pri" style="background:#f1f5f9; color:#0f172a;"><i class="fas fa-sync"></i> Sincronizar Insumos</button>
-                            <button id="btnAddRow" class="pa-btn pa-btn-pri" style="background:white; color:#0f172a; border: 2px solid #e2e8f0;"><i class="fas fa-plus"></i> Nueva Auditoría</button>
+                            <button id="btnGenerateAuto" class="pa-btn pa-btn-pri"
+                                style="background:#f1f5f9; color:#0f172a;"><i class="fas fa-sync"></i> Sincronizar
+                                Insumos</button>
+                            <button id="btnRedistribute" class="pa-btn pa-btn-pri"
+                                style="background:white; color:#0f172a; border: 2px solid #e2e8f0;"><i
+                                    class="fas fa-random"></i> Redistribuir</button>
+                            <button id="btnAddRow" class="pa-btn pa-btn-pri"
+                                style="background:white; color:#0f172a; border: 2px solid #e2e8f0;"><i
+                                    class="fas fa-plus"></i> Nueva Auditoría</button>
                         </div>
-                        <button id="btnSaveMaster" class="pa-btn pa-btn-accent" style="padding-left:3rem; padding-right:3rem;"><i class="fas fa-cloud-upload-alt"></i> Publicar Plan</button>
+                        <button id="btnSaveMaster" class="pa-btn pa-btn-accent"
+                            style="padding-left:3rem; padding-right:3rem;"><i class="fas fa-cloud-upload-alt"></i>
+                            Publicar Plan</button>
                     </div>
 
                     <div class="pa-table-wrap">
@@ -122,12 +487,12 @@
                             <thead>
                                 <tr>
                                     <th style="width:160px">Periodo</th>
-                                    <th style="width:400px">Estrategia de Auditoría</th>
-                                    <th style="width:200px">Líder Auditor</th>
-                                    <th style="width:140px" class="text-center">% Observado</th>
-                                    <th style="width:130px" class="text-center">Estado</th>
-                                    <th style="width:100px" class="text-center">PAMEC</th>
-                                    <th style="width:160px" class="text-center">Operaciones</th>
+                                    <th style="width:400px">Guía / Protocolo a Evaluar</th>
+                                    <th style="width:200px">Servicio / Responsable</th>
+                                    <th style="width:160px">Fecha Medición</th>
+                                    <th class="text-center">% Adherencia</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -139,32 +504,99 @@
         <footer th:replace="~{layout :: footer}"></footer>
     </div>
 
-    <!-- Modal Auditoria: Premium Depth -->
+    <!-- 📋 MODAL DE AUDITORÍA INTEGRAL (RESTAURADO) -->
     <div id="modalAudit" class="pa-modal">
-        <div class="pa-modal-content" style="border-radius: 32px;">
-            <div style="padding: 2.5rem 3rem; background: #0f172a; color: white;">
-                <h2 style="font-weight: 900; margin: 0; font-size: 1.75rem; letter-spacing: -0.04em;">Ejecución de Auditoría de Campo</h2>
-                <p id="auditTema" style="color: #94a3b8; margin: 8px 0 0 0; font-weight: 600; font-size: 1.1rem;"></p>
+        <div class="pa-modal-content">
+            <!-- Modal Header -->
+            <div
+                style="padding: 2.5rem 3rem; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="font-weight: 900; margin: 0; font-size: 1.75rem; letter-spacing: -0.04em;">Ejecución de
+                        Auditoría de Campo</h2>
+                    <p id="auditTema" style="color: #94a3b8; margin: 8px 0 0 0; font-weight: 600; font-size: 1.1rem;">
+                    </p>
+                </div>
+                <button id="btnCloseModal"
+                    style="background: rgba(255,255,255,0.1); border:none; width:48px; height:48px; border-radius:50%; color:white; cursor:pointer; font-size:24px;">&times;</button>
             </div>
-            <div style="padding: 3rem; overflow-y: auto;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
-                    <div style="background: #f8fafc; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center;">
-                        <span style="display: block; font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Muestra auditada (N)</span>
-                        <input type="number" id="inpPoblacion" class="pa-input" style="font-size: 2.5rem; text-align: center; border: none; background: transparent; font-weight: 900; margin-top: 15px;" placeholder="0">
+
+            <!-- Modal Body -->
+            <div style="padding: 3rem; overflow-y: auto; flex: 1;">
+                <!-- Stats Row -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3rem;">
+                    <div
+                        style="background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center;">
+                        <span
+                            style="font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Población
+                            Total</span>
+                        <input type="number" id="inpPoblacion" class="pa-input"
+                            style="font-size: 2.5rem; text-align: center; border: none; background: transparent; font-weight: 900;"
+                            placeholder="0">
                     </div>
-                    <div style="background: #f8fafc; padding: 2.5rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                        <span style="display: block; font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Indicador de Adherencia</span>
-                        <div id="auditScore" style="font-size: 3rem; font-weight: 900; color: #0ea5e9; margin-top: 10px;">0%</div>
+                    <div
+                        style="background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center;">
+                        <span
+                            style="font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Muestra
+                            Evaluada</span>
+                        <input type="number" id="inpMuestra" class="pa-input"
+                            style="font-size: 2.5rem; text-align: center; border: none; background: transparent; font-weight: 900;"
+                            readonly placeholder="0">
+                    </div>
+                    <div
+                        style="background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; text-align: center;">
+                        <span
+                            style="font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase;">Indicador
+                            Final</span>
+                        <div id="auditScore" style="font-size: 3rem; font-weight: 900; color: #0ea5e9;">0%</div>
                     </div>
                 </div>
-                <div style="background: #f1f5f9; border-radius: 24px; padding: 3rem; text-align: center; border: 2px dashed #cbd5e1;">
-                    <i class="fas fa-vial" style="font-size: 2rem; color: #94a3b8; margin-bottom: 15px; display: block;"></i>
-                    <p style="font-weight: 700; color: #64748b; margin: 0;">El motor de cálculo dinámico y la matriz de trazabilidad de pacientes se activarán tras definir la muestra inicial.</p>
+
+                <!-- Section 1: Questions -->
+                <div class="audit-section">
+                    <h3><i class="fas fa-list-check"></i> 1. Define las Recomendaciones Trazadoras</h3>
+                    <div id="questionsContainer" class="q-grid"></div>
+                    <button id="btnAddQuestion" class="pa-btn"
+                        style="margin-top: 2rem; background: #e2e8f0; color: #0f172a;"><i class="fas fa-plus"></i>
+                        Añadir Recomendación</button>
+                </div>
+
+                <!-- Section 2: Matrix -->
+                <div class="audit-section">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h3><i class="fas fa-table"></i> 2. Evaluación de Pacientes (Matriz)</h3>
+                        <label class="pa-btn pa-btn-accent" style="padding: 10px 25px; cursor: pointer;">
+                            <i class="fas fa-file-excel"></i> Subir Excel de Pacientes
+                            <input type="file" id="filePacientes" accept=".xlsx, .xls, .csv" style="display:none;">
+                        </label>
+                    </div>
+
+                    <div id="auditArea" style="display:none;">
+                        <div class="audit-table-wrap">
+                            <table class="pa-table" style="min-width: 100%; border-spacing: 0;" id="tblPacientes">
+                                <thead>
+                                    <tr id="pacientesHead"></tr>
+                                </thead>
+                                <tbody id="pacientesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div style="padding: 2.5rem 3rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 20px;">
-                <button id="btnCloseModal" class="pa-btn pa-btn-pri" style="background:white; color:#0f172a; border: 2px solid #e2e8f0;">Posponer</button>
-                <button id="btnSaveAudit" class="pa-btn pa-btn-accent" style="padding-left: 4rem; padding-right: 4rem;">Validar Hallazgos</button>
+
+            <!-- Modal Footer -->
+            <div
+                style="padding: 2rem 3rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                <button id="btnExportAuditExcel" class="pa-btn"
+                    style="background: #ecfdf5; color: #10b981; display: none;"><i class="fas fa-download"></i>
+                    Descargar Matriz (Excel)</button>
+                <div></div>
+                <div style="display: flex; gap: 1.5rem;">
+                    <button id="btnCancelAudit" class="pa-btn"
+                        style="background: white; border: 2px solid #e2e8f0;">Cancelar</button>
+                    <button id="btnSaveAudit" class="pa-btn pa-btn-accent" style="padding: 1rem 3rem;">✅ Finalizar
+                        Auditoría</button>
+                </div>
             </div>
         </div>
     </div>
@@ -172,20 +604,41 @@
     <div th:replace="~{layout :: scripts}"></div>
 
     <script type="module" th:inline="javascript">
-        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        /*<![CDATA[*/
+        const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const qs = s => document.querySelector(s);
         const state = { anio: new Date().getFullYear(), adherencia: [] };
+
+        // ══════════════════════════════════════════════════════════
+        // CONFIGURACIÓN PROA REESTABLECIDA
+        // ══════════════════════════════════════════════════════════
+        const basePROA = [
+            { codigoRef: "PROA-1", tema: "Infección de vías urinarias en pediatría", resp: "PROA - CTC", mesProg: 0 },
+            { codigoRef: "PROA-2", tema: "Infección urinaria en adulto", resp: "PROA - CTC", mesProg: 0 },
+            { codigoRef: "PROA-3", tema: "Neumonía en población pediátrica", resp: "PROA - CTC", mesProg: 0 },
+            { codigoRef: "PROA-4", tema: "Neumonía en Adultos", resp: "PROA - CTC", mesProg: 0 },
+            { codigoRef: "PROA-5", tema: "Enfermedad diarreica aguda en pediatría", resp: "PROA - CTC", mesProg: 0 },
+            { codigoRef: "PROA-6", tema: "Infecciones de Piel y Tejidos Blandos", resp: "PROA - CTC", mesProg: 1 },
+            { codigoRef: "PROA-7", tema: "Neutropenia Febril", resp: "PROA - CTC", mesProg: 1 },
+            { codigoRef: "PROA-8", tema: "Tratamiento de la infección por Clostridioides difficile en adultos", resp: "PROA - CTC", mesProg: 1 },
+            { codigoRef: "PROA-9", tema: "Profilaxis Quirúrgica Antimicrobiana", resp: "PROA - CTC", mesProg: 1 }
+        ];
 
         async function initModule() {
             const { db, auth } = window.firebaseInstance || {};
             const { onAuthStateChanged } = window.firebaseAuth || {};
-            if (!db || !auth || !onAuthStateChanged) { setTimeout(initModule, 300); return; }
+            if (!db || !auth) { setTimeout(initModule, 300); return; }
 
             onAuthStateChanged(auth, async (u) => {
-                if(!u) { location.href = "/login"; return; }
+                if (!u) { location.href = "/login"; return; }
                 const sel = qs('#anioSel');
                 if (sel && !sel.options.length) {
-                    [2025, 2026, 2027].forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; if(y===state.anio) o.selected = true; sel.appendChild(o); });
+                    [2024, 2025, 2026].forEach(y => {
+                        const o = document.createElement('option');
+                        o.value = y; o.textContent = y;
+                        if (y === state.anio) o.selected = true;
+                        sel.appendChild(o);
+                    });
                     sel.onchange = async () => { state.anio = +sel.value; await loadFromDB(); renderTable(); };
                 }
                 await loadFromDB(); renderTable();
@@ -195,47 +648,399 @@
         async function loadFromDB() {
             const { db } = window.firebaseInstance || {};
             const { collection, getDocs, query, where } = window.firebaseFirestore || {};
-            if(!db || !getDocs) return;
+            if (!db) return;
             try {
                 const q = query(collection(db, 'gpc_adherencia_anual'), where('anio', '==', state.anio));
                 const snap = await getDocs(q);
                 state.adherencia = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-                state.adherencia.sort((a,b) => (a.mesProg || 0) - (b.mesProg || 0));
-            } catch(e) { console.error("Cloud Error:", e); }
+                state.adherencia.sort((a, b) => (a.mesProg || 0) - (b.mesProg || 0));
+            } catch (e) { console.error("Cloud Error:", e); }
         }
 
         function renderTable() {
-            const tbody = qs('#tblAdherencia tbody'); if(!tbody) return; tbody.innerHTML = '';
+            const tbody = qs('#tblAdherencia tbody'); if (!tbody) return; tbody.innerHTML = '';
             state.adherencia.forEach((row, idx) => {
+                if (row.activo === false) return;
                 const tr = document.createElement('tr');
+                const pct = row.pctAdherencia != null ? row.pctAdherencia : '—';
                 tr.innerHTML = `
-                    <td><select data-key="mesProg" class="pa-input" style="padding: 0.5rem 1rem;">${MONTHS.map((m, i) => `<option value="${i}" ${row.mesProg===i?'selected':''}>${m}</option>`).join('')}</select></td>
-                    <td><textarea rows="1" data-key="tema" class="pa-input" style="font-weight:800; min-height:45px">${row.tema||''}</textarea></td>
-                    <td><input value="${row.resp||''}" data-key="resp" class="pa-input"></td>
-                    <td class="text-center" style="font-size: 1.25rem; font-weight: 900; color: #0f172a;">${row.pctAdherencia != null ? row.pctAdherencia + '%' : '—'}</td>
-                    <td class="text-center"><span class="pa-badge ${row.pctAdherencia >= 90 ? 'pa-badge-optima' : 'pa-badge-critica'}">${row.pctAdherencia >= 90 ? 'Óptima' : 'En Evaluación'}</span></td>
-                    <td class="text-center"><input type="checkbox" ${row.reqPamec?'checked':''} data-key="reqPamec" class="pa-check"></td>
+                    <td><select data-key="mesProg" class="pa-input" style="padding: 0.5rem 1rem;">${MONTHS.map((m, i) => `<option value="${i}" ${row.mesProg === i ? 'selected' : ''}>${m}</option>`).join('')}</select></td>
+                    <td><textarea rows="1" data-key="tema" class="pa-input" style="font-weight:800; min-height:45px">${row.tema || ''}</textarea></td>
+                    <td><input value="${row.resp || ''}" data-key="resp" class="pa-input"></td>
+                    <td><input type="date" value="${row.fechaMed || ''}" data-key="fechaMed" class="pa-input"></td>
+                    <td class="text-center" style="font-size: 1.25rem; font-weight: 900; color: #0f172a;">${pct}${pct !== '—' ? '%' : ''}</td>
+                    <td class="text-center"><span class="pa-badge ${pct >= 90 ? 'pa-badge-optima' : 'pa-badge-critica'}">${pct >= 90 ? 'Óptima' : (pct === '—' ? 'Sin Datos' : 'En Evaluación')}</span></td>
                     <td class="text-center">
-                        <button class="pa-btn pa-btn-accent" style="padding: 10px 20px; font-size: 0.7rem; letter-spacing: 0.05em;" data-act="eval">AUDITAR</button>
-                        <i class="fas fa-trash-alt text-danger ms-3" style="cursor:pointer; opacity: 0.5;" data-act="del"></i>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button class="pa-btn pa-btn-accent" style="padding: 8px 15px; font-size: 0.75rem;" data-act="eval">AUDITAR</button>
+                            <button class="pa-btn" style="padding: 8px; background: #fee2e2; color: #ef4444;" data-act="del"><i class="fas fa-trash"></i></button>
+                        </div>
                     </td>
                 `;
+
+                tr.querySelectorAll('input, select, textarea').forEach(inp => {
+                    inp.onchange = () => {
+                        const key = inp.dataset.key;
+                        state.adherencia[idx][key] = inp.type === 'checkbox' ? inp.checked : (inp.type === 'number' || key === 'mesProg' ? +inp.value : inp.value);
+                        if (key === 'mesProg') {
+                            state.adherencia[idx].fechaMed = getQuintoDiaHabilSiguienteMes(state.anio, state.adherencia[idx].mesProg);
+                            renderTable();
+                        }
+                    };
+                });
+
                 tr.querySelector('[data-act="eval"]').onclick = () => openAuditModal(idx);
+                tr.querySelector('[data-act="del"]').onclick = () => { if (confirm("¿Eliminar auditoría?")) { state.adherencia[idx].activo = false; renderTable(); } };
                 tbody.appendChild(tr);
             });
+            updateDashboard();
         }
 
+        function updateDashboard() {
+            const data = state.adherencia.filter(x => x.activo !== false);
+            if (!data.length) return;
+
+            const executed = data.filter(x => x.pctAdherencia != null);
+            const executionPct = Math.round((executed.length / data.length) * 100);
+
+            const totalScore = executed.reduce((acc, curr) => acc + (curr.pctAdherencia || 0), 0);
+            const avgScore = executed.length ? Math.round(totalScore / executed.length) : 0;
+
+            const today = new Date();
+            const vencidas = data.filter(x => {
+                if (x.pctAdherencia != null) return false;
+                if (!x.fechaMed) return false;
+                const fMed = new Date(x.fechaMed + "T23:59:59");
+                return fMed < today;
+            });
+
+            qs('#statEjecucion').textContent = executionPct + '%';
+            qs('#statAdherencia').textContent = avgScore + '%';
+            qs('#statVencidas').textContent = vencidas.length;
+            qs('#statVencidas').style.color = vencidas.length > 0 ? '#ef4444' : '#0f172a';
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // MOTOR DE AUDITORÍA REINTEGRADO
+        // ══════════════════════════════════════════════════════════
+        let currentAuditIdx = -1;
+        let tracerQuestions = [];
+        let patientsData = [];
+
         function openAuditModal(idx) {
-            const r = state.adherencia[idx]; if(!r) return;
+            currentAuditIdx = idx;
+            const r = state.adherencia[idx]; if (!r) return;
+
             qs('#auditTema').textContent = (r.tema || 'Sin estrategia definida').toUpperCase();
+
+            // Cargar memoria
+            tracerQuestions = (r.preguntasTrazadoras && r.preguntasTrazadoras.length) ? [...r.preguntasTrazadoras] : ["¿Se cumple con la recomendación principal de la GPC?"];
+
+            if (r.pacientesAuditados && r.pacientesAuditados.length) {
+                patientsData = JSON.parse(JSON.stringify(r.pacientesAuditados));
+                qs('#inpPoblacion').value = r.poblacion || patientsData.length;
+                qs('#inpMuestra').value = patientsData.length;
+                qs('#auditArea').style.display = 'block';
+                qs('#btnExportAuditExcel').style.display = 'block';
+                renderAuditTable();
+            } else {
+                patientsData = [];
+                qs('#inpPoblacion').value = '';
+                qs('#inpMuestra').value = '0';
+                qs('#auditArea').style.display = 'none';
+                qs('#btnExportAuditExcel').style.display = 'none';
+                qs('#filePacientes').value = '';
+            }
+
             qs('#auditScore').textContent = (r.pctAdherencia || 0) + '%';
+            renderQuestions();
             qs('#modalAudit').classList.add('open');
         }
 
+        function renderQuestions() {
+            const container = qs('#questionsContainer');
+            container.innerHTML = '';
+            tracerQuestions.forEach((q, i) => {
+                const card = document.createElement('div'); card.className = 'q-card';
+                card.innerHTML = `
+                    <div style="font-size: 10px; font-weight: 900; color: #94a3b8; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                        <span>RECOMENDACIÓN No. ${i + 1}</span>
+                        <i class="fas fa-times-circle" style="cursor:pointer; color:#ef4444;" onclick="removeQuestion(${i})"></i>
+                    </div>
+                    <textarea class="pa-input" style="font-size: 13px; min-height: 80px;" placeholder="Escribe la recomendación trazadora...">${q}</textarea>
+                `;
+                card.querySelector('textarea').oninput = (e) => { tracerQuestions[i] = e.target.value; };
+                container.appendChild(card);
+            });
+        }
+
+        window.removeQuestion = (i) => { tracerQuestions.splice(i, 1); renderQuestions(); };
+        qs('#btnAddQuestion').onclick = () => { tracerQuestions.push(""); renderQuestions(); };
+
+        qs('#filePacientes').onchange = (e) => {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = new Uint8Array(ev.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+                patientsData = json.map(row => ({
+                    ingreso: row['NoIngreso'] || row['IngUsuAnu'] || 'N/A',
+                    identificacion: row['Identificacion'] || 'N/A',
+                    nombre: [row['Nombre1'], row['Nombre2'], row['apellido1'], row['Apellido2']].filter(Boolean).join(' ') || 'Desconocido',
+                    evals: new Array(tracerQuestions.length).fill('C')
+                }));
+
+                if (patientsData.length) {
+                    qs('#inpMuestra').value = patientsData.length;
+                    if (!qs('#inpPoblacion').value) qs('#inpPoblacion').value = patientsData.length;
+                    qs('#auditArea').style.display = 'block';
+                    qs('#btnExportAuditExcel').style.display = 'block';
+                    renderAuditTable();
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        function renderAuditTable() {
+            const thead = qs('#pacientesHead');
+            const tbody = qs('#pacientesBody');
+
+            let ths = `<th style="padding: 1rem; border-bottom: 2px solid #e2e8f0; text-align: left;">Paciente / ID</th>`;
+            tracerQuestions.forEach((q, i) => { ths += `<th class="text-center" style="padding: 1rem; border-bottom: 2px solid #e2e8f0;">Rec ${i + 1}</th>`; });
+            thead.innerHTML = ths;
+
+            tbody.innerHTML = '';
+            patientsData.forEach((p, pIdx) => {
+                let tr = document.createElement('tr');
+                let tds = `
+                    <td style="padding: 1rem; border-bottom: 1px solid #f1f5f9;">
+                        <div style="font-weight: 800; color: #1e293b;">${p.nombre}</div>
+                        <div style="font-size: 11px; color: #94a3b8;">${p.ingreso} | ${p.identificacion}</div>
+                    </td>
+                `;
+
+                tracerQuestions.forEach((q, qIdx) => {
+                    const v = p.evals[qIdx];
+                    tds += `
+                        <td class="text-center" style="padding: 1rem; border-bottom: 1px solid #f1f5f9;">
+                            <div class="eval-toggles">
+                                <button class="toggle-btn ${v === 'C' ? 'active-C' : ''}" onclick="setEval(${pIdx}, ${qIdx}, 'C')">C</button>
+                                <button class="toggle-btn ${v === 'NC' ? 'active-NC' : ''}" onclick="setEval(${pIdx}, ${qIdx}, 'NC')">NC</button>
+                                <button class="toggle-btn ${v === 'NA' ? 'active-NA' : ''}" onclick="setEval(${pIdx}, ${qIdx}, 'NA')">NA</button>
+                            </div>
+                        </td>
+                    `;
+                });
+                tr.innerHTML = tds; tbody.appendChild(tr);
+            });
+            calculateAuditScore();
+        }
+
+        window.setEval = (p, q, v) => { patientsData[p].evals[q] = v; renderAuditTable(); };
+
+        function calculateAuditScore() {
+            let numC = 0, numNC = 0;
+            patientsData.forEach(p => p.evals.forEach(v => { if (v === 'C') numC++; if (v === 'NC') numNC++; }));
+            const total = numC + numNC;
+            const score = total > 0 ? Math.round((numC / total) * 100) : 0;
+            qs('#auditScore').textContent = score + '%';
+        }
+
+        qs('#btnSaveAudit').onclick = () => {
+            if (currentAuditIdx === -1) return;
+            const score = parseInt(qs('#auditScore').textContent);
+            state.adherencia[currentAuditIdx].pctAdherencia = score;
+            state.adherencia[currentAuditIdx].preguntasTrazadoras = [...tracerQuestions];
+            state.adherencia[currentAuditIdx].pacientesAuditados = JSON.parse(JSON.stringify(patientsData));
+            state.adherencia[currentAuditIdx].poblacion = qs('#inpPoblacion').value;
+
+            renderTable();
+            qs('#modalAudit').classList.remove('open');
+            alert("✓ Evaluación guardada en memoria. No olvides 'Publicar Plan' para subir a la nube.");
+        };
+
+        // ══════════════════════════════════════════════════════════
+        // LÓGICA DE DISTRIBUCIÓN Y CALENDARIO
+        // ══════════════════════════════════════════════════════════
+        function getColombianHolidays(year) {
+            const a = year % 19, b = Math.floor(year / 100), c = year % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const month = Math.floor((h + l - 7 * m + 114) / 31) - 1, day = ((h + l - 7 * m + 114) % 31) + 1;
+            const easter = new Date(year, month, day);
+            const add = (d, n) => new Date(d.getTime() + n * 86400000);
+            const nextMon = (d) => { const dw = d.getDay(); return add(d, dw === 1 ? 0 : (dw === 0 ? 1 : 8 - dw)); };
+            const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            return [fmt(new Date(year, 0, 1)), fmt(new Date(year, 4, 1)), fmt(new Date(year, 6, 20)), fmt(new Date(year, 7, 7)), fmt(new Date(year, 11, 8)), fmt(new Date(year, 11, 25)), fmt(nextMon(new Date(year, 0, 6))), fmt(nextMon(new Date(year, 2, 19))), fmt(nextMon(new Date(year, 5, 29))), fmt(nextMon(new Date(year, 7, 15))), fmt(nextMon(new Date(year, 9, 12))), fmt(nextMon(new Date(year, 10, 1))), fmt(nextMon(new Date(year, 10, 11))), fmt(add(easter, -3)), fmt(add(easter, -2)), fmt(nextMon(add(easter, 39))), fmt(nextMon(add(easter, 60))), fmt(nextMon(add(easter, 68)))];
+        }
+
+        function getQuintoDiaHabilSiguienteMes(y, mIdx) {
+            let anio = y, mes = mIdx + 1; if (mes > 11) { mes = 0; anio++; }
+            const holidays = getColombianHolidays(anio);
+            let d = new Date(anio, mes, 1), count = 0;
+            while (count < 5) {
+                const dw = d.getDay(), s = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                if (dw !== 0 && dw !== 6 && !holidays.includes(s)) count++;
+                if (count < 5) d.setDate(d.getDate() + 1);
+            }
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        qs('#btnGenerateAuto').onclick = async () => {
+            if (!confirm("¿Sincronizar y redistribuir temas pendientes?")) return;
+            const { db } = window.firebaseInstance || {};
+            const { collection, getDocs } = window.firebaseFirestore || {};
+
+            let gpcs = [];
+            try {
+                const snap = await getDocs(collection(db, 'gpc_actualizaciones'));
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (data.anio >= state.anio - 1) gpcs.push(data);
+                });
+            } catch (e) { console.error(e); }
+
+            let news = state.adherencia.filter(x => x.pctAdherencia != null || x.id?.startsWith('MANUAL'));
+
+            // PROA mandatory
+            basePROA.forEach(b => {
+                if (!news.find(x => x.tema === b.tema)) {
+                    news.push({ ...b, anio: state.anio, fechaMed: getQuintoDiaHabilSiguienteMes(state.anio, b.mesProg), activo: true });
+                }
+            });
+
+            // GPC Filtered
+            let filtered = [];
+            gpcs.forEach(g => {
+                const label = `${g.tema} ${g.codigo ? `(${g.codigo})` : ''}`.trim();
+                const resp = g.responsable || 'Líder Servicio';
+                if (!news.find(x => x.tema === label) && !resp.toUpperCase().includes('PROA')) {
+                    filtered.push({ tema: label, resp: resp, anio: state.anio, activo: true });
+                }
+            });
+
+            if (filtered.length) {
+                let mes = 0;
+                filtered.forEach(f => {
+                    news.push({ ...f, mesProg: mes, fechaMed: getQuintoDiaHabilSiguienteMes(state.anio, mes) });
+                    mes = mes === 11 ? 0 : mes + 1;
+                });
+            }
+
+            state.adherencia = news;
+            state.adherencia.sort((a, b) => (a.mesProg || 0) - (b.mesProg || 0));
+            renderTable();
+        };
+
+        qs('#btnRedistribute').onclick = () => {
+            if (!confirm("¿Redistribuir meses y fechas de medición?")) return;
+            let mes = 0;
+            state.adherencia.forEach(r => {
+                if (r.activo !== false) {
+                    if (!r.resp.toUpperCase().includes('PROA')) {
+                        r.mesProg = mes;
+                        r.fechaMed = getQuintoDiaHabilSiguienteMes(state.anio, mes);
+                        mes = mes === 11 ? 0 : mes + 1;
+                    } else {
+                        const b = basePROA.find(p => r.tema.includes(p.tema));
+                        r.mesProg = b ? b.mesProg : 0;
+                        r.fechaMed = getQuintoDiaHabilSiguienteMes(state.anio, r.mesProg);
+                    }
+                }
+            });
+            state.adherencia.sort((a, b) => (a.mesProg || 0) - (b.mesProg || 0));
+            renderTable();
+        };
+
+        qs('#btnSaveMaster').onclick = async () => {
+            const { db } = window.firebaseInstance || {};
+            const { writeBatch, collection, doc, serverTimestamp } = window.firebaseFirestore || {};
+            if (!db) return;
+
+            const batch = writeBatch(db);
+            const col = collection(db, 'gpc_adherencia_anual');
+
+            state.adherencia.forEach(r => {
+                const id = r.id || `${state.anio}_${(r.tema || 'unkn').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 25)}`;
+                batch.set(doc(col, id), {
+                    ...r,
+                    anio: state.anio,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            });
+
+            try {
+                await batch.commit();
+                alert("✓ Plan publicado exitosamente en la nube.");
+                await loadFromDB(); renderTable();
+            } catch (e) { alert("Error guardando plan."); }
+        };
+
+        qs('#btnAddRow').onclick = () => {
+            state.adherencia.push({ tema: '', resp: '', mesProg: 0, anio: state.anio, pctAdherencia: null, activo: true, id: 'MANUAL_' + Date.now() });
+            renderTable();
+        };
+
+        // ══════════════════════════════════════════════════════════
+        // EXPORTACIÓN A EXCEL (PLAN GENERAL)
+        // ══════════════════════════════════════════════════════════
+        function calcSemaforo(pct) {
+            if (pct === '' || pct === null || pct === undefined) return { text: 'Pendiente', cls: 'b-info' };
+            const num = Number(pct);
+            if (num >= 90) return { text: 'Óptima', cls: 'pa-badge-optima' };
+            if (num >= 80) return { text: 'Aceptable', cls: 'pa-badge-proceso' };
+            return { text: 'Deficiente', cls: 'pa-badge-critica' };
+        }
+
+        qs('#btnExportAuditExcel').onclick = () => {
+            if (patientsData.length === 0) { alert("No hay pacientes para exportar"); return; }
+            const adherencia = qs('#auditScore').textContent;
+            const tema = qs('#auditTema').textContent;
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
+            html += `<table style="border-collapse: collapse; font-family: Arial;"><tr><th colspan="4" style="background:#0f172a; color:white; padding:12px;">MATRIZ DE AUDITORÍA GPC: ${tema}</th></tr><tr><th colspan="4" style="background:#1e293b; color:white; padding:10px;">Adherencia Final: ${adherencia}</th></tr></table><br>`;
+            html += `<table style="border-collapse: collapse; font-family: Arial; border:1px solid #e2e8f0;"><thead><tr><th style="background:#f1f5f9; padding:8px;">Ingreso</th><th style="background:#f1f5f9; padding:8px;">Identificación</th><th style="background:#f1f5f9; padding:8px;">Nombre</th>`;
+            tracerQuestions.forEach((q, i) => html += `<th style="background:#f1f5f9; padding:8px;">Rec ${i + 1}: ${q}</th>`);
+            html += `</tr></thead><tbody>`;
+            patientsData.forEach(p => {
+                html += `<tr><td style="border:1px solid #e2e8f0; padding:8px;">${p.ingreso}</td><td style="border:1px solid #e2e8f0; padding:8px;">${p.identificacion}</td><td style="border:1px solid #e2e8f0; padding:8px;">${p.nombre}</td>`;
+                p.evals.forEach(v => html += `<td style="border:1px solid #e2e8f0; padding:8px; text-align:center; font-weight:bold; color:${v === 'C' ? '#10b981' : (v === 'NC' ? '#ef4444' : '#64748b')}">${v}</td>`);
+                html += `</tr>`;
+            });
+            html += `</tbody></table></body></html>`;
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `Matriz_${tema.replace(/[^a-z0-9]/gi, '_')}.xls`; a.click();
+        };
+
+        // EXPORTAR PLAN GENERAL
+        const btnExportPlan = document.createElement('button');
+        btnExportPlan.className = 'pa-btn pa-btn-pri';
+        btnExportPlan.style.background = 'white';
+        btnExportPlan.style.color = '#0f172a';
+        btnExportPlan.style.border = '2px solid #e2e8f0';
+        btnExportPlan.innerHTML = '<i class="fas fa-file-excel"></i> Exportar Plan';
+        qs('.pa-toolbar div').appendChild(btnExportPlan);
+
+        btnExportPlan.onclick = () => {
+            const data = state.adherencia.filter(x => x.activo !== false);
+            if (!data.length) return alert("Sin datos.");
+            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body><table style="border-collapse: collapse; font-family: Arial;"><thead><tr><th style="background:#0f172a; color:white; padding:10px;">Mes</th><th style="background:#0f172a; color:white; padding:10px;">Guía / Protocolo</th><th style="background:#0f172a; color:white; padding:10px;">Responsable</th><th style="background:#0f172a; color:white; padding:10px;">Fecha</th><th style="background:#0f172a; color:white; padding:10px;">% Adh</th><th style="background:#0f172a; color:white; padding:10px;">Estado</th></tr></thead><tbody>`;
+            data.forEach(x => {
+                const sem = calcSemaforo(x.pctAdherencia);
+                html += `<tr><td style="border:1px solid #e2e8f0; padding:8px;">${MONTHS[x.mesProg]}</td><td style="border:1px solid #e2e8f0; padding:8px;">${x.tema}</td><td style="border:1px solid #e2e8f0; padding:8px;">${x.resp}</td><td style="border:1px solid #e2e8f0; padding:8px; text-align:center;">${x.fechaMed || ''}</td><td style="border:1px solid #e2e8f0; padding:8px; text-align:center;">${x.pctAdherencia != null ? x.pctAdherencia + '%' : ''}</td><td style="border:1px solid #e2e8f0; padding:8px; text-align:center;">${sem.text}</td></tr>`;
+            });
+            html += `</tbody></table></body></html>`;
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a"); a.href = url; a.download = `Plan_Anual_GPC_${state.anio}.xls`; a.click();
+        };
+
+        qs('#btnCancelAudit').onclick = () => qs('#modalAudit').classList.remove('open');
         qs('#btnCloseModal').onclick = () => qs('#modalAudit').classList.remove('open');
-        qs('#btnSaveAudit').onclick = () => { alert(' Hallazgos validados con éxito.'); qs('#modalAudit').classList.remove('open'); };
 
         initModule();
+        /*]]>*/
     </script>
 </body>
+
 </html>

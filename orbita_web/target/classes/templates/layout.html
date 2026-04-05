@@ -1038,11 +1038,10 @@
                     <span class="notif-dot"></span>
                 </div>
 
-                <div class="user-profile" style="position: relative;" sec:authorize="isAuthenticated()">
+                <div class="user-profile" sec:authorize="isAuthenticated()">
                     <div class="user-info">
-                        <span class="user-name" th:text="${#authentication.principal.username}">Nombre Usuario</span>
-                        <span class="role-badge" id="userRoleBadge"
-                            th:text="${#authentication.authorities[0].authority}">ROL</span>
+                        <span class="user-name" id="userNameLabel" th:text="${#authentication.principal.username}">Nombre Usuario</span>
+                        <div id="userRoleBadge" class="role-badge" th:text="${#authentication.authorities[0].authority}">ROL</div>
                     </div>
 
                     <!-- Avatar clickeable -->
@@ -1059,7 +1058,7 @@
                                 th:text="${#strings.substring(#authentication.principal.username,0,1).toUpperCase()}">U
                             </div>
                             <div>
-                                <div class="avatar-dropdown-name" th:text="${#authentication.principal.username}">
+                                <div class="avatar-dropdown-name" id="avatarDropdownName" th:text="${#authentication.principal.username}">
                                     Usuario</div>
                                 <div class="avatar-dropdown-role" th:text="${#authentication.authorities[0].authority}">
                                     ROL</div>
@@ -1070,13 +1069,14 @@
                             <i data-lucide="user" style="width:15px;"></i>
                             Ver Perfil / Editar
                         </button>
-                        <form th:action="@{/logout}" method="post" style="display:inline;">
-                            <button type="submit" class="avatar-dropdown-item danger"
-                                style="width:100%; border:none; background:none; text-align:left; cursor:pointer;">
-                                <i data-lucide="log-out" style="width:15px;"></i>
-                                Cerrar Sesión
-                            </button>
-                        </form>
+                        
+                        <!-- 🚪 CIERRE DE SESIÓN SINCRONIZADO (Firebase + Spring) -->
+                        <form id="logoutForm" th:action="@{/logout}" method="post" style="display:none;"></form>
+                        <button type="button" class="avatar-dropdown-item danger" onclick="handleInstitutionalLogout()"
+                            style="width:100%; border:none; background:none; text-align:left; cursor:pointer;">
+                            <i data-lucide="log-out" style="width:15px;"></i>
+                            Cerrar Sesión
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1163,6 +1163,41 @@
                 }, 100);
             });
             /*]]>*/
+        </script>
+
+        <script>
+            /**
+             * 🛡️ CIERRE DE SESIÓN HÍBRIDO - ÓRBITA CLÍNICA
+             * Garantiza que tanto la sesión de Firebase como la de Spring Security se eliminen.
+             */
+            async function handleInstitutionalLogout() {
+                console.log("🚪 [ÓRBITA-AUTH] Iniciando cierre de sesión institucional...");
+                try {
+                    // Limpiar Firebase primero para evitar sesiones "fantasma"
+                    if (window.firebaseAuth && typeof window.firebaseAuth.signOut === 'function') {
+                        await window.firebaseAuth.signOut();
+                    } else if (window.auth && typeof window.auth.signOut === 'function') {
+                        // Fallback manual si el puente no está cargado
+                        await window.auth.signOut();
+                    }
+                } catch (err) {
+                    console.warn("⚠️ Firebase logout no crítico:", err);
+                } finally {
+                    console.log("🔒 [ÓRBITA-AUTH] Redirigiendo a cierre de sesión local...");
+                    // Forzar limpieza en Spring Security
+                    const form = document.getElementById('logoutForm');
+                    if (form) {
+                        form.submit();
+                    } else {
+                        // Creación dinámica si el DOM falló
+                        const dynamicForm = document.createElement('form');
+                        dynamicForm.method = 'POST';
+                        dynamicForm.action = '/logout';
+                        document.body.appendChild(dynamicForm);
+                        dynamicForm.submit();
+                    }
+                }
+            }
         </script>
 
         <!-- Firebase Shim (Official SDK Integration) -->

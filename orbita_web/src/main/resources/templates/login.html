@@ -93,10 +93,10 @@
 
         .auth-impact-title {
             color: #ffffff;
-            font-size: 6rem;
-            line-height: 1;
+            font-size: 4.5rem;
+            line-height: 0.95;
             font-weight: 800;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             letter-spacing: -0.04em;
         }
 
@@ -142,16 +142,16 @@
         }
 
         .auth-logo {
-            height: 130px;
-            margin-bottom: 3.5rem;
+            height: 100px;
+            margin-bottom: 2rem;
             object-fit: contain;
         }
 
         .auth-title {
             color: var(--text-main);
-            font-size: 2.6rem;
+            font-size: 2rem;
             font-weight: 800;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
             letter-spacing: -0.02em;
         }
 
@@ -292,9 +292,9 @@
 
         .auth-footer-text {
             position: absolute;
-            bottom: 3.5rem;
+            bottom: 1.5rem;
             color: #94a3b8;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         /* LOADER OVERLAY */
@@ -559,9 +559,20 @@
 
         /**
          * MONITOR GLOBAL DE ESTADO (Safety Net)
+         * Se encarga de detectar sesiones activas en Firebase y sincronizarlas con Spring.
          */
         onAuthStateChanged(auth, async (user) => {
-            if (user && !isAuthenticating) {
+            // 🛡️ REGLA CRÍTICA: Si el usuario acaba de cerrar sesión (?logout=true), forzamos signOut en Firebase.
+            const urlParams = new URLSearchParams(window.location.search);
+            const isLogoutCall = urlParams.has('logout');
+
+            if (isLogoutCall && user) {
+                console.log("🚪 [ÓRBITA-AUTH] Detectado fin de sesión. Limpiando Firebase...");
+                await signOut(auth);
+                return;
+            }
+
+            if (user && !isAuthenticating && !isLogoutCall) {
                 console.log("👤 [ÓRBITA-AUTH] Sesión existente detectada:", user.email);
                 const idToken = await user.getIdToken();
                 await establishSession(user.email.toLowerCase().trim(), idToken);

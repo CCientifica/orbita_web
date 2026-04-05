@@ -1,63 +1,166 @@
 /**
- * 👤 ORBITA PROFILE V3.1 - Identidad Visual Institucional
- * Gestiona el perfil del usuario, dropdown del navbar y modal de edición.
- * Implementa la selección de avatares DiceBear y persistencia en Firestore.
+ * 👤 ORBITA PROFILE V3.2 - Identidad Visual Institucional
+ * Corrige sincronización temprana, lectura segura desde Firestore y persistencia de avatar/nombre.
  */
 if (typeof window.OrbitaProfile === 'undefined') {
-    window.OrbitaProfile = (function() {
+    window.OrbitaProfile = (function () {
         const AVATAR_SEEDS = [
             'Easton', 'Eliza', 'Riley', 'Andrea', 'Liliana', 'Christian', 'Brian', 'Jameson',
-            'Alexander', 'Abigail', 'Angel', 'Bentley', 'Brooklyn', 'Caleb', 'Claire', 'Daniel', 
+            'Alexander', 'Abigail', 'Angel', 'Bentley', 'Brooklyn', 'Caleb', 'Claire', 'Daniel',
             'Daisy', 'Ethan', 'Evelin', 'Finn', 'George', 'Harry', 'Iris', 'Jack', 'Kylie'
         ];
+
         const AVATAR_COLLECTION = 'adventurer-neutral';
         const DEFAULT_BG = 'f1f5f9';
 
-        let currentContext = null;
+        let currentContext = {
+            email: null,
+            displayName: null,
+            role: null,
+            avatar: 'default',
+            telefono: ''
+        };
+
+        let firestoreReady = false;
+        let authResolved = false;
+        let firebaseUser = null;
 
         async function init() {
             console.log("👤 OrbitaProfile: Inicializando módulo de identidad...");
-            
-            let attempts = 0;
-            while (!window.firebaseFirestore && attempts < 50) {
-                await new Promise(r => setTimeout(r, 100));
-                attempts++;
-            }
 
-            if (!window.firebaseFirestore) return;
-
-            window.addEventListener('user-ready', (e) => {
-                currentContext = e.detail;
-                syncIdentity();
-            });
+            await waitForFirestoreShim();
+            setupEventListeners();
+            bindIdentityEvents();
 
             if (window.orbitaUser) {
-                currentContext = window.orbitaUser;
-                syncIdentity();
+                mergeSpringUser(window.orbitaUser);
+                renderNavbarProfile();
             }
 
-            setupEventListeners();
+            await waitForFirebaseAuthResolution();
+
+            if (firebaseUser?.email) {
+                mergeFirebaseUser(firebaseUser);
+            }
+
+            renderNavbarProfile();
+            await syncIdentity();
+        }
+
+        function bindIdentityEvents() {
+            window.addEventListener('firebase-auth-resolved', async (e) => {
+                authResolved = true;
+                firebaseUser = e.detail?.user || null;
+
+                if (firebaseUser?.email) {
+                    mergeFirebaseUser(firebaseUser);
+                }
+
+                renderNavbarProfile();
+                await syncIdentity();
+            });
+
+            window.addEventListener('user-ready', async (e) => {
+                const detail = e.detail || {};
+                if (detail.email && detail.role) {
+                    mergeSpringUser(detail);
+                    renderNavbarProfile();
+
+                    if (authResolved) {
+                        await syncIdentity();
+                    }
+                }
+            });
+
+            window.addEventListener('firebase-user-ready', async (e) => {
+                const user = e.detail || null;
+                if (user?.email) {
+                    mergeFirebaseUser(user);
+                    renderNavbarProfile();
+                    await syncIdentity();
+                }
+            });
+        }
+
+        async function waitForFirestoreShim() {
+            let count = 0;
+            while ((!window.firebaseFirestore || !window.firebaseCloudDb) && count < 100) {
+                await new Promise(r => setTimeout(r, 100));
+                count++;
+            }
+            firestoreReady = !!window.firebaseFirestore;
+        }
+
+        async function waitForFirebaseAuthResolution() {
+            let count = 0;
+            while ((!window.firebaseCloudDb || !window.firebaseCloudDb.authResolved) && count < 100) {
+                await new Promise(r => setTimeout(r, 100));
+                count++;
+            }
+
+            authResolved = !!window.firebaseCloudDb?.authResolved;
+            firebaseUser = window.firebaseCloudDb?.currentUser || null;
+        }
+
+        function mergeSpringUser(user) {
+            currentContext.email = normalizeEmail(user.email || currentContext.email);
+            currentContext.displayName = user.displayName || currentContext.displayName || user.email || currentContext.email;
+            currentContext.role = user.role || currentContext.role;
+        }
+
+        function mergeFirebaseUser(user) {
+            currentContext.email = normalizeEmail(user.email || currentContext.email);
+            currentContext.displayName = currentContext.displayName || user.displayName || user.email;
+        }
+
+        function normalizeEmail(email) {
+            return (email || '').toString().toLowerCase().trim();
         }
 
         async function syncIdentity() {
-            if (!currentContext || !currentContext.email) return;
+            if (!firestoreReady || !currentContext.email) return;
+
             renderNavbarProfile();
 
-            try {
-                const email = currentContext.email.toLowerCase().trim();
-                const docRef = window.firebaseFirestore.doc(null, 'usuarios_permitidos', email);
-                const snap = await window.firebaseFirestore.getDoc(docRef);
+            if (!authResolved) {
+                console.warn("⚠️ OrbitaProfile: Firebase Auth aún no está resuelto.");
+                return;
+            }
 
-                if (snap.exists()) {
-                    const data = snap.data();
-                    if (data.nombre) currentContext.displayName = data.nombre;
-                    if (data.avatar && data.avatar !== 'default') currentContext.avatar = data.avatar;
-                    if (data.telefono) currentContext.telefono = data.telefono;
-                    reflectNameChanges(currentContext.displayName);
-                    reflectAvatarChanges(currentContext.avatar);
+            if (!firebaseUser) {
+                console.warn("⚠️ OrbitaProfile: No hay usuario autenticado en Firebase. Se mostrará fallback local.");
+                return;
+            }
+
+            try {
+                const { doc, getDoc } = window.firebaseFirestore;
+                const docRef = doc(null, 'usuarios_permitidos', currentContext.email);
+                const snap = await getDoc(docRef);
+
+                if (!snap.exists()) {
+                    console.warn(`⚠️ OrbitaProfile: No existe documento en usuarios_permitidos/${currentContext.email}`);
+                    return;
                 }
+
+                const data = snap.data() || {};
+
+                const institutionalName = data.nombre || data.Nombre || data.displayName || data.name || '';
+                const avatar = data.avatar || data.Avatar || 'default';
+                const telefono = data.telefono || data.Telefono || '';
+
+                if (institutionalName) {
+                    currentContext.displayName = institutionalName.toUpperCase().trim();
+                }
+
+                currentContext.avatar = avatar;
+                currentContext.telefono = telefono;
+
+                reflectNameChanges(currentContext.displayName || currentContext.email);
+                reflectAvatarChanges(currentContext.avatar);
+
+                console.log("✅ OrbitaProfile: Identidad sincronizada desde Firestore.");
             } catch (e) {
-                console.warn("⚠️ OrbitaProfile: Sincronización limitada por permisos o red.");
+                console.error("❌ OrbitaProfile: Error sincronizando identidad:", e);
             }
         }
 
@@ -75,7 +178,12 @@ if (typeof window.OrbitaProfile === 'undefined') {
                     e.stopPropagation();
                     avatarDropdown.classList.toggle('open');
                 };
-                document.addEventListener('click', () => avatarDropdown.classList.remove('open'));
+
+                document.addEventListener('click', (e) => {
+                    if (!avatarWrapper.contains(e.target) && !avatarDropdown.contains(e.target)) {
+                        avatarDropdown.classList.remove('open');
+                    }
+                });
             }
 
             if (openProfileBtn && profileModalOverlay) {
@@ -88,13 +196,17 @@ if (typeof window.OrbitaProfile === 'undefined') {
             }
 
             [closeProfileBtn, cancelProfileBtn, profileModalOverlay].forEach(btn => {
-                if (btn) {
-                    btn.onclick = (e) => {
-                        if (e.target === btn || btn !== profileModalOverlay) {
+                if (!btn) return;
+
+                btn.onclick = (e) => {
+                    if (btn === profileModalOverlay) {
+                        if (e.target === profileModalOverlay) {
                             profileModalOverlay.classList.remove('open');
                         }
-                    };
-                }
+                    } else {
+                        profileModalOverlay.classList.remove('open');
+                    }
+                };
             });
 
             if (saveProfileBtn) {
@@ -103,18 +215,28 @@ if (typeof window.OrbitaProfile === 'undefined') {
         }
 
         function renderNavbarProfile() {
-            if (!currentContext) return;
-            const role = (currentContext.role || '').toLowerCase().trim();
+            const display = currentContext.displayName || currentContext.email || 'Usuario';
+            const roleRaw = currentContext.role || '';
+            const role = roleRaw.toLowerCase().trim();
+
+            reflectNameChanges(display);
+
             const badge = document.getElementById('userRoleBadge');
             if (badge) {
-                badge.textContent = currentContext.role.replace('ROLE_', '').toUpperCase();
+                badge.textContent = roleRaw.replace('ROLE_', '').toUpperCase();
                 applyRoleStyles(badge, role);
             }
-            reflectNameChanges(currentContext.displayName || currentContext.email);
+
+            if (!currentContext.avatar || currentContext.avatar === 'default') {
+                reflectInitials(display);
+            } else {
+                reflectAvatarChanges(currentContext.avatar);
+            }
         }
 
         function applyRoleStyles(element, role) {
-            element.className = 'role-badge'; 
+            element.className = 'role-badge';
+
             if (role.includes('master')) element.classList.add('role-master');
             else if (role.includes('super')) element.classList.add('role-super');
             else if (role.includes('admin')) element.classList.add('role-admin');
@@ -128,10 +250,10 @@ if (typeof window.OrbitaProfile === 'undefined') {
             const phoneInput = document.getElementById('profilePhone');
             const roleLabel = document.getElementById('profileModalRole');
 
-            if (emailInput) emailInput.value = currentContext.email;
+            if (emailInput) emailInput.value = currentContext.email || '';
             if (nameInput) nameInput.value = currentContext.displayName || '';
             if (phoneInput) phoneInput.value = currentContext.telefono || '';
-            if (roleLabel) roleLabel.textContent = currentContext.role.toUpperCase();
+            if (roleLabel) roleLabel.textContent = (currentContext.role || '').toUpperCase();
 
             updateModalAvatarPreview(currentContext.avatar);
             buildAvatarPicker(currentContext.avatar);
@@ -142,12 +264,16 @@ if (typeof window.OrbitaProfile === 'undefined') {
             if (!picker) return;
 
             picker.innerHTML = '';
+            picker.dataset.selectedSeed = selectedSeed || currentContext.avatar || 'default';
+
             AVATAR_SEEDS.forEach(seed => {
-                const url = `https://api.dicebear.com/7.x/${AVATAR_COLLECTION}/svg?seed=${seed}&backgroundColor=${DEFAULT_BG}`;
+                const url = `https://api.dicebear.com/7.x/${AVATAR_COLLECTION}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${DEFAULT_BG}`;
                 const img = document.createElement('img');
+
                 img.src = url;
                 img.className = 'picker-avatar-option' + (seed === selectedSeed ? ' selected' : '');
                 img.dataset.seed = seed;
+                img.alt = `Avatar ${seed}`;
 
                 img.onclick = () => {
                     picker.querySelectorAll('.picker-avatar-option').forEach(i => i.classList.remove('selected'));
@@ -155,6 +281,7 @@ if (typeof window.OrbitaProfile === 'undefined') {
                     picker.dataset.selectedSeed = seed;
                     updateModalAvatarPreview(seed);
                 };
+
                 picker.appendChild(img);
             });
         }
@@ -164,23 +291,31 @@ if (typeof window.OrbitaProfile === 'undefined') {
             if (!modalAvatar) return;
 
             if (seed && seed !== 'default') {
-                const url = `https://api.dicebear.com/7.x/${AVATAR_COLLECTION}/svg?seed=${seed}&backgroundColor=${DEFAULT_BG}`;
-                modalAvatar.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>`;
+                const url = `https://api.dicebear.com/7.x/${AVATAR_COLLECTION}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${DEFAULT_BG}`;
+                modalAvatar.innerHTML = `<img src="${url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`;
             } else {
-                const initials = (currentContext.displayName || currentContext.email).substring(0, 1).toUpperCase();
+                const initials = getInitial(currentContext.displayName || currentContext.email || 'U');
                 modalAvatar.innerHTML = `<span>${initials}</span>`;
             }
         }
 
         async function handleSaveProfile() {
             const saveBtn = document.getElementById('saveProfileBtn');
-            const name = document.getElementById('profileName').value;
-            const phone = document.getElementById('profilePhone').value;
+            const profileNameInput = document.getElementById('profileName');
+            const profilePhoneInput = document.getElementById('profilePhone');
             const picker = document.getElementById('avatarPicker');
-            const seed = picker.dataset.selectedSeed || currentContext.avatar || 'default';
 
-            if (!name.trim()) {
+            const newName = profileNameInput?.value?.trim() || '';
+            const newPhone = profilePhoneInput?.value?.trim() || '';
+            const newAvatar = picker?.dataset?.selectedSeed || currentContext.avatar || 'default';
+
+            if (!newName) {
                 alert("El nombre completo es requerido.");
+                return;
+            }
+
+            if (!authResolved || !firebaseUser) {
+                alert("No existe una sesión activa de Firebase. Debes autenticar al usuario también en Firebase antes de guardar perfil.");
                 return;
             }
 
@@ -188,69 +323,102 @@ if (typeof window.OrbitaProfile === 'undefined') {
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sincronizando...';
 
-                const email = currentContext.email.toLowerCase().trim();
-                const docRef = window.firebaseFirestore.doc(null, 'usuarios_permitidos', email);
-                
-                await window.firebaseFirestore.updateDoc(docRef, {
-                    nombre: name.toUpperCase(),
-                    telefono: phone,
-                    avatar: seed,
-                    lastProfileUpdate: new Date().toISOString()
-                });
+                const { doc, setDoc, serverTimestamp } = window.firebaseFirestore;
+                const docRef = doc(null, 'usuarios_permitidos', currentContext.email);
 
-                currentContext.displayName = name.toUpperCase();
-                currentContext.avatar = seed;
-                currentContext.telefono = phone;
+                await setDoc(docRef, {
+                    nombre: newName.toUpperCase(),
+                    telefono: newPhone,
+                    avatar: newAvatar,
+                    email: currentContext.email,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                currentContext.displayName = newName.toUpperCase();
+                currentContext.avatar = newAvatar;
+                currentContext.telefono = newPhone;
 
                 reflectNameChanges(currentContext.displayName);
-                reflectAvatarChanges(seed);
+                reflectAvatarChanges(newAvatar);
 
-                document.getElementById('profileModalOverlay').classList.remove('open');
-                
+                const modal = document.getElementById('profileModalOverlay');
+                if (modal) modal.classList.remove('open');
+
                 showToast("✨ Identidad actualizada correctamente");
-
             } catch (e) {
                 console.error("❌ Fallo en actualización de perfil:", e);
-                if (e.message && e.message.includes("permission")) {
-                    alert("⚠️ Error de Permisos: Debes actualizar las reglas de Firestore para permitir que cada usuario edite su propio documento.");
+
+                const msg = (e?.message || '').toLowerCase();
+
+                if (msg.includes('permission') || msg.includes('missing or insufficient permissions')) {
+                    alert("Error de permisos en Firestore. El usuario autenticado en Firebase no tiene autorización para leer o editar su documento.");
                 } else {
                     alert("Error al sincronizar con el servidor de identidad.");
                 }
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = '<i data-lucide="save" style="width:16px;"></i> Guardar Cambios';
+                saveBtn.innerHTML = '<i data-lucide="save" style="width:16px;"></i> Guardar Identidad';
                 if (window.lucide) lucide.createIcons();
             }
         }
 
-        function showToast(msg) {
-            const toast = document.createElement('div');
-            toast.style = "position:fixed; bottom:20px; right:20px; background:#22c55e; color:white; padding:12px 24px; border-radius:12px; z-index:10001; font-weight:800; box-shadow:0 10px 15px rgba(0,0,0,0.1); animation:fadeInUp 0.3s ease-out;";
-            toast.innerHTML = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
         function reflectAvatarChanges(seed) {
-            if (!seed || seed === 'default') return;
-            const url = `https://api.dicebear.com/7.x/${AVATAR_COLLECTION}/svg?seed=${seed}&backgroundColor=${DEFAULT_BG}`;
+            if (!seed || seed === 'default') {
+                reflectInitials(currentContext.displayName || currentContext.email || 'U');
+                return;
+            }
+
+            const url = `https://api.dicebear.com/7.x/${AVATAR_COLLECTION}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${DEFAULT_BG}`;
+
             ['userAvatarCircle', 'avatarDropdownAvatar', 'profileModalAvatar'].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>`;
+                if (el) {
+                    el.innerHTML = `<img src="${url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`;
+                }
+            });
+        }
+
+        function reflectInitials(value) {
+            const initial = getInitial(value);
+
+            ['userAvatarCircle', 'avatarDropdownAvatar', 'profileModalAvatar'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = `<span>${initial}</span>`;
+                }
             });
         }
 
         function reflectNameChanges(name) {
+            const cleanName = (name || '').toString().trim().toUpperCase();
+            
+            // Regla Institucional: Si el nombre contiene '@' no es un nombre real cargado, es un fallback a email
+            // Solo sobrescribimos si el nombre es 'limpio' (sin @ y no es el placeholder)
             document.querySelectorAll('.user-name, .avatar-dropdown-name').forEach(el => {
-                el.textContent = name;
+                if (cleanName && !cleanName.includes('@')) {
+                    el.textContent = cleanName;
+                } else if (el.textContent === 'Nombre Usuario' || el.textContent === '' || !el.textContent) {
+                    el.textContent = cleanName || 'USUARIO';
+                }
             });
+        }
+
+        function getInitial(value) {
+            return (value || 'U').toString().trim().charAt(0).toUpperCase();
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.style = "position:fixed;bottom:20px;right:20px;background:#22c55e;color:white;padding:12px 24px;border-radius:12px;z-index:10001;font-weight:800;box-shadow:0 10px 15px rgba(0,0,0,0.1);animation:fadeInUp 0.3s ease-out;";
+            toast.innerHTML = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         return { init };
     })();
 }
 
-// Auto-inicialización
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => window.OrbitaProfile.init());
 } else {

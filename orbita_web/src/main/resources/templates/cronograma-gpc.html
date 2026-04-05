@@ -11,169 +11,229 @@
 
         <main class="main-content">
             <style>
-                /* ====== PREMIUM EXECUTIVE TABLE (WOW & DENSE) ====== */
+                /* ====== PREMIUM GLASS & ADVANCED AESTHETICS: CRONOGRAMA ====== */
                 :root {
-                    --crono-pri: #0f172a; --crono-accent: #0ea5e9;
-                    --crono-glass: rgba(255, 255, 255, 0.9);
-                    --crono-border: rgba(0, 0, 0, 0.05);
+                    --cr-pri: #0f172a; --cr-accent: #0ea5e9;
+                    --cr-glass: rgba(255, 255, 255, 0.7);
+                    --cr-border: rgba(255, 255, 255, 0.3);
+                    --cr-shadow: 0 25px 60px rgba(0,0,0,0.08);
+                    --cr-radius: 28px;
                 }
 
-                .crono-page-wrap { padding: 1rem; max-width: 1600px; margin: 0 auto; }
+                .cr-page-wrap { padding: 1.5rem; max-width: 1700px; margin: 0 auto; }
 
-                .crono-header {
+                .cr-header {
                     background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-                    padding: 3rem 4rem; border-radius: 24px;
-                    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3);
-                    margin-bottom: 2rem; color: white;
-                }
-                .crono-header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -0.05em; margin: 0; text-transform: uppercase; }
-                .crono-header p { color: #94a3b8; font-weight: 600; font-size: 1.1rem; margin-top: 5px; }
-
-                .crono-main-box {
-                    background: var(--crono-glass); backdrop-filter: blur(20px);
-                    border-radius: 24px; border: 1px solid var(--crono-border);
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.03); overflow: hidden;
+                    padding: 3rem 4rem; border-radius: var(--cr-radius);
+                    box-shadow: 0 30px 70px -15px rgba(15, 23, 42, 0.4);
+                    margin-bottom: 2rem; color: white; position: relative; overflow: hidden;
                 }
 
-                .crono-tabs-strip {
-                    background: #f8fafc; padding: 1.25rem 2.5rem;
-                    border-bottom: 1px solid var(--crono-border);
+                .cr-dashboard {
+                    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 1.5rem; margin-bottom: 2rem; animation: slideUp 0.8s ease;
+                }
+                .cr-stat-card {
+                    background: var(--cr-glass); backdrop-filter: blur(20px);
+                    border-radius: 20px; border: 1px solid var(--cr-border);
+                    padding: 1.5rem; display: flex; align-items: center; gap: 1.2rem;
+                    box-shadow: var(--cr-shadow);
+                }
+                .cr-stat-icon {
+                    width: 50px; height: 50px; border-radius: 14px;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 1.2rem; color: white;
+                }
+
+                .cr-main-card {
+                    background: var(--cr-glass); backdrop-filter: blur(25px);
+                    border-radius: var(--cr-radius); border: 1px solid var(--cr-border);
+                    box-shadow: var(--cr-shadow); overflow: hidden;
+                }
+
+                /* Tab Navigation */
+                .cr-tabs-strip {
+                    background: rgba(248, 250, 252, 0.7); padding: 1.25rem 2.5rem;
+                    border-bottom: 1px solid rgba(0,0,0,0.05);
                     display: flex; justify-content: space-between; align-items: center;
-                    gap: 20px; flex-wrap: wrap;
                 }
-                .crono-tabs { display: flex; gap: 8px; }
-                .crono-tab {
-                    padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem;
-                    color: #64748b; cursor: pointer; transition: all 0.3s; background: white;
-                    border: 1px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em;
+                .cr-tabs { display: flex; gap: 10px; }
+                .cr-tab {
+                    padding: 0.8rem 1.8rem; border-radius: 15px; font-weight: 800; font-size: 0.75rem;
+                    color: #64748b; cursor: pointer; transition: 0.3s; background: white;
+                    border: 1px solid #e2e8f0; text-transform: uppercase;
                 }
-                .crono-tab.active { background: #0f172a; color: white; border-color: #0f172a; }
+                .cr-tab.active { background: #0f172a; color: white; border-color: #0f172a; box-shadow: 0 10px 20px rgba(15,23,42,0.1); }
 
-                /* Selector de Año */
-                .crono-year-picker {
-                    display: flex; align-items: center; gap: 12px;
-                    background: white; padding: 6px 16px; border-radius: 14px;
-                    border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+                /* Premium Table */
+                .cr-table-wrap { padding: 1.5rem; overflow-x: auto; max-height: 700px; }
+                .cr-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1300px; }
+                .cr-table th {
+                    padding: 1rem; font-size: 0.65rem; font-weight: 950; color: #94a3b8;
+                    text-transform: uppercase; letter-spacing: 0.15em; text-align: left;
                 }
-                .crono-year-picker label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin: 0; }
-                .crono-year-picker select { border: none; font-weight: 900; color: #0f172a; cursor: pointer; outline: none; background: none; }
-
-                /* Premium Table Layout */
-                .crono-table-container { padding: 1.5rem; overflow-x: auto; }
-                .crono-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1200px; }
-                .crono-table th {
-                    padding: 1rem 1.5rem; font-size: 0.7rem; font-weight: 900; color: #94a3b8;
-                    text-transform: uppercase; letter-spacing: 0.12em; border-bottom: 2px solid #f1f5f9;
-                }
-                .crono-table td {
-                    background: white; padding: 1.2rem 1.5rem; vertical-align: middle;
+                .cr-table td {
+                    background: white; padding: 1.2rem 1rem; vertical-align: middle;
                     border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;
-                    transition: all 0.2s ease;
                 }
-                .crono-table tr td:first-child { border-left: 1px solid #f1f5f9; border-radius: 16px 0 0 16px; }
-                .crono-table tr td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 16px 16px 0; }
-                .crono-table tr:hover td { background: #fdfdfd; border-color: #e2e8f0; transform: translateY(-1px); }
+                .cr-table tr td:first-child { border-radius: 18px 0 0 18px; border-left: 1px solid #f1f5f9; }
+                .cr-table tr td:last-child { border-radius: 0 18px 18px 0; border-right: 1px solid #f1f5f9; }
 
-                /* Inputs with no Truncation */
-                .crono-cell-title { font-weight: 900; color: #0f172a; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
-                .crono-cell-code { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #64748b; font-weight: 700; word-break: break-all; }
-
-                .crono-input {
-                    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
-                    padding: 0.6rem 1rem; font-weight: 700; font-size: 0.85rem; color: #1e293b;
-                    width: 100%; transition: all 0.2s;
+                .cr-input {
+                    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;
+                    padding: 0.6rem 1rem; font-weight: 700; font-size: 0.85rem; width: 100%;
                 }
-                .crono-input:focus { outline: none; border-color: var(--crono-accent); background: white; }
-
-                /* Status Badges */
-                .prior-point { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-                .prior-Alta { background: #ef4444; }
-                .prior-Media { background: #f97316; }
-                .prior-Baja { background: #22c55e; }
-
-                /* Action Btns */
-                .crono-btn {
-                    padding: 0.8rem 1.8rem; border-radius: 14px; font-weight: 800; font-size: 0.85rem;
-                    display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer; transition: all 0.3s;
+                .cr-badge { padding: 0.5rem 1rem; border-radius: 99px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
+                .cr-btn { 
+                    padding: 0.8rem 1.8rem; border-radius: 16px; font-weight: 800; cursor: pointer; 
+                    border: none; display: flex; align-items: center; gap: 8px;
                 }
-                .crono-btn-pri { background: var(--crono-accent); color: white; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); }
-                .crono-btn-out { background: white; color: #0f172a; border: 1.5px solid #e2e8f0; }
+
+                @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
             </style>
 
-            <div class="crono-page-wrap">
-                <header class="crono-header">
-                    <h1>Cronograma GPC & Protocolos</h1>
-                    <p>Planificación y seguimiento sistemático de la actualización científica.</p>
+            <div class="cr-page-wrap">
+                <header class="cr-header">
+                    <h1>Gestión del Cronograma Institucional</h1>
+                    <p>Planificación científica, identificación de brechas y cumplimiento de metas CTC.</p>
                 </header>
 
-                <div class="crono-main-box">
-                    <div class="crono-tabs-strip">
-                        <div class="crono-tabs">
-                            <div class="crono-tab active" data-tab="inventario">01. Inventario</div>
-                            <div class="crono-tab" data-tab="plan">02. Plan Anual</div>
-                            <div class="crono-tab" data-tab="seg">03. Seguimiento</div>
+                <!-- EVIDENCE MODAL (SOCIALIZACIÓN) -->
+                <div id="evidModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+                    <div style="background:white; width:min(900px, 95vw); border-radius:24px; padding:2.5rem; box-shadow:0 30px 60px rgba(0,0,0,0.2); position:relative;">
+                        <button onclick="qs('#evidModal').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+                        <h2 id="evidTitle" style="font-weight:900; color:#0f172a; margin:0;">Evidencia de Socialización</h2>
+                        <p id="evidDocRef" style="color:#64748b; font-weight:700; margin-bottom:2rem;"></p>
+                        
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:2rem;">
+                            <div>
+                                <label style="display:block; font-size:0.7rem; font-weight:900; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">Fecha Socialización</label>
+                                <input type="date" id="evidFecha" class="cr-input">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.7rem; font-weight:900; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">Facilitador / Responsable</label>
+                                <input type="text" id="evidFac" class="cr-input" placeholder="Nombre completo">
+                            </div>
                         </div>
 
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <!-- Year Selector -->
-                            <div class="crono-year-picker">
-                                <label>Vigencia Fiscal</label>
-                                <select id="yearSelect">
-                                    <option value="2024">2024</option>
-                                    <option value="2025" selected>2025</option>
-                                    <option value="2026">2026</option>
-                                </select>
+                        <div style="border:2px dashed #e2e8f0; border-radius:20px; padding:1rem; margin-bottom:2rem; text-align:center;">
+                            <label style="display:block; font-size:0.7rem; font-weight:900; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">Firma Digital del Colaborador</label>
+                            <canvas id="sigCanvas" style="width:100%; height:150px; background:#f8fafc; border-radius:12px; cursor:crosshair;"></canvas>
+                            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
+                                <button class="cr-btn cr-btn-out" style="padding:0.4rem 1rem; font-size:0.7rem;" id="sigClear">Limpiar</button>
+                                <button class="cr-btn cr-btn-pri" style="padding:0.4rem 1rem; font-size:0.7rem;" id="sigSave">Cargar Firma</button>
                             </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:15px;">
+                            <button class="cr-btn cr-btn-out" onclick="qs('#evidModal').style.display='none'">Cancelar</button>
+                            <button class="cr-btn cr-btn-pri" id="btnGenPDF">Generar Acta PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cr-dashboard">
+                    <div class="cr-stat-card">
+                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);"><i class="fas fa-tasks"></i></div>
+                        <div class="cr-stat-info">
+                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Ejecución Plan</h4>
+                            <div id="statEjecucion" style="font-size:1.5rem; font-weight:900;">0%</div>
+                        </div>
+                    </div>
+                    <div class="cr-stat-card">
+                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="cr-stat-info">
+                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Doc. Vencidos</h4>
+                            <div id="statVencidos" style="font-size:1.5rem; font-weight:900;">0</div>
+                        </div>
+                    </div>
+                    <div class="cr-stat-card">
+                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c);"><i class="fas fa-search-plus"></i></div>
+                        <div class="cr-stat-info">
+                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Brechas (Nuevos)</h4>
+                            <div id="statBrechas" style="font-size:1.5rem; font-weight:900;">0</div>
+                        </div>
+                    </div>
+                    <div class="cr-stat-card">
+                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-check-circle"></i></div>
+                        <div class="cr-stat-info">
+                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Cumplimiento Mes</h4>
+                            <div id="statMes" style="font-size:1.5rem; font-weight:900;">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cr-main-card">
+                    <div class="cr-tabs-strip">
+                        <div class="cr-tabs">
+                            <div class="cr-tab active" data-tab="inventario">01. Inventario</div>
+                            <div class="cr-tab" data-tab="perfil">02. Perfil</div>
+                            <div class="cr-tab" data-tab="plan">03. Cronograma</div>
+                            <div class="cr-tab" data-tab="seguimiento">04. Seguimiento</div>
+                        </div>
+                        <div style="display:flex; gap:15px; align-items:center;">
                             <div id="panelActions"></div>
+                            <select id="yearSelect" class="cr-input" style="width:100px; padding:0.4rem; font-weight:900;"></select>
                         </div>
                     </div>
 
-                    <div class="crono-table-container">
-                        <!-- Panel Inventario -->
-                        <div id="panel-inventario" class="crono-panel active">
-                            <table class="crono-table" id="tblInvent">
+                    <div class="cr-table-wrap">
+                        <div id="panel-inventario" class="cr-panel active">
+                            <table class="cr-table" id="tblInvent">
                                 <thead>
                                     <tr>
-                                        <th style="width: 140px">Código / ID</th>
-                                        <th style="white-space:nowrap">Nombre de la Guía o Protocolo</th>
-                                        <th style="width: 160px">Últ. Versión</th>
-                                        <th style="width: 80px" class="text-center">Ajuste</th>
-                                        <th style="width: 80px" class="text-center">Desc</th>
-                                        <th style="width: 120px">Líder</th>
-                                        <th style="width: 140px">Prioridad</th>
+                                        <th style="width:150px">Código</th>
+                                        <th>Guía / Protocolo</th>
+                                        <th style="width:180px">Últ. Versión</th>
+                                        <th style="width:100px">Vence En</th>
+                                        <th style="width:80px">Ajuste</th>
+                                        <th style="width:140px">Responsable</th>
+                                        <th style="width:150px">Prioridad</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
                         </div>
 
-                        <!-- Panel Plan Anual -->
-                        <div id="panel-plan" class="crono-panel" style="display:none">
-                            <table class="crono-table" id="tblPlan">
+                        <div id="panel-perfil" class="cr-panel" style="display:none">
+                            <table class="cr-table" id="tblPerfil">
                                 <thead>
                                     <tr>
-                                        <th style="width: 140px">Código</th>
-                                        <th style="white-space:nowrap">Tema / Título Científico</th>
-                                        <th style="width: 120px">Acción</th>
-                                        <th style="width: 120px">Mes</th>
-                                        <th style="width: 140px">Prioridad</th>
+                                        <th>Diagnóstico / Patología</th>
+                                        <th style="width:150px">Frecuencia</th>
+                                        <th style="width:250px">Documento Vinculado</th>
+                                        <th style="width:150px">Acción</th>
+                                        <th style="width:150px">Sugerencia</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
                             </table>
                         </div>
 
-                        <!-- Panel Seguimiento -->
-                        <div id="panel-seg" class="crono-panel" style="display:none">
-                            <table class="crono-table" id="tblSeg">
+                        <div id="panel-plan" class="cr-panel" style="display:none">
+                            <table class="cr-table" id="tblPlan">
                                 <thead>
                                     <tr>
-                                        <th style="width: 140px">Código</th>
-                                        <th style="white-space:nowrap">Tema / Guía</th>
-                                        <th style="width: 160px">Socialización</th>
-                                        <th style="width: 160px">Estado Ejecución</th>
-                                        <th style="width: 120px">Cumplimiento</th>
-                                        <th style="width: 150px">Acciones</th>
+                                        <th style="width:140px">Mes</th>
+                                        <th>Tema de Entrega</th>
+                                        <th style="width:180px">Fecha Plan</th>
+                                        <th style="width:140px">Acción</th>
+                                        <th style="width:150px">Prioridad</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <div id="panel-seguimiento" class="cr-panel" style="display:none">
+                            <table class="cr-table" id="tblSeg">
+                                <thead>
+                                    <tr>
+                                        <th>Guía / Documento</th>
+                                        <th style="width:180px">Socialización</th>
+                                        <th style="width:180px">Estado</th>
+                                        <th style="width:120px">Avance</th>
+                                        <th style="width:180px">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -188,19 +248,60 @@
 
     <div th:replace="~{layout :: scripts}"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
     <script type="module" th:inline="javascript">
         /*<![CDATA[*/
+        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
         const qs = s => document.querySelector(s);
         const qsa = s => Array.from(document.querySelectorAll(s));
-        const state = { anio: 2025, inventario: [], plan: [], seg: [] };
+        
+        const state = { 
+            anio: new Date().getFullYear(), 
+            inventario: [], 
+            perfil: [], 
+            plan: [], 
+            seg: [] 
+        };
 
-        /* ================== NAVIGATION ================== */
+        /* ================== DASHBOARD INTELLIGENCE ================== */
+        function updateDashboard() {
+            const totalScheduled = state.plan.length;
+            const completed = state.seg.filter(s => s.status === 'Finalizado' || s.socialized).length;
+            
+            const executionPct = totalScheduled ? Math.round((completed / totalScheduled) * 100) : 0;
+            qs('#statEjecucion').textContent = `${executionPct}%`;
+
+            const today = new Date();
+            const vencidos = state.inventario.filter(i => {
+                if(!i.fchProx) return false;
+                return new Date(i.fchProx) < today;
+            });
+            qs('#statVencidos').textContent = vencidos.length;
+
+            const brechas = state.perfil.filter(p => !p.codigoDoc || p.accion === 'Redactar').length;
+            qs('#statBrechas').textContent = brechas;
+
+            // Cumplimiento Mes Actual
+            const currentMonth = today.getMonth();
+            const mesPlan = state.plan.filter(p => p.mes === currentMonth);
+            const mesDone = state.seg.filter(s => {
+                const p = state.plan.find(pl => (pl.codigo === s.codigo || pl.tema === s.tema));
+                return p && p.mes === currentMonth && (s.status === 'Finalizado' || s.socialized);
+            });
+            const mesPct = mesPlan.length ? Math.round((mesDone.length / mesPlan.length) * 100) : 0;
+            qs('#statMes').textContent = `${mesPct}%`;
+        }
+
+        /* ================== NAVIGATION & UI ================== */
         function initTabs() {
-            qsa('.crono-tab').forEach(btn => {
+            qsa('.cr-tab').forEach(btn => {
                 btn.onclick = () => {
-                    qsa('.crono-tab').forEach(b => b.classList.remove('active'));
+                    qsa('.cr-tab').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    qsa('.crono-panel').forEach(p => p.style.display = 'none');
+                    qsa('.cr-panel').forEach(p => p.style.display = 'none');
                     qs(`#panel-${btn.dataset.tab}`).style.display = 'block';
                     renderActions(btn.dataset.tab);
                 };
@@ -208,9 +309,16 @@
             
             const yr = qs('#yearSelect');
             if(yr) {
+                const CUR = new Date().getFullYear();
+                yr.innerHTML = '';
+                [CUR-1, CUR, CUR+1, CUR+2].forEach(y => {
+                    const opt = document.createElement('option');
+                    opt.value = y; opt.textContent = y;
+                    if(y === state.anio) opt.selected = true;
+                    yr.appendChild(opt);
+                });
                 yr.onchange = () => {
                     state.anio = parseInt(yr.value);
-                    console.log("📅 Cambiando año a:", state.anio);
                     loadFromDB();
                 };
             }
@@ -219,45 +327,262 @@
         function renderActions(tab) {
             const box = qs('#panelActions'); if(!box) return; box.innerHTML = '';
             const addBtn = (icon, text, cls, fn) => {
-                const b = document.createElement('button'); b.className = `crono-btn ${cls}`;
+                const b = document.createElement('button'); b.className = `cr-btn ${cls}`;
                 b.innerHTML = `<i class="${icon}"></i> <span>${text}</span>`; b.onclick = fn;
                 box.appendChild(b);
             };
+
             if(tab === 'inventario') {
-                addBtn('fas fa-plus', 'Nuevo Registro', 'crono-btn-out', () => { state.inventario.unshift({codigo:'', nombre:'', prior:'Media'}); renderInvent(); });
-                addBtn('fas fa-sync', 'Sincronizar Todo', 'crono-btn-pri', async () => saveAll('identificacion', state.inventario));
+                addBtn('fas fa-plus', 'Nuevo', 'cr-btn-out', () => { state.inventario.unshift({codigo:'', nombre:'', prior:'Baja'}); renderInvent(); });
+                addBtn('fas fa-save', 'Sincronizar', 'cr-btn-pri', () => saveBatch('gpc_identificacion', state.inventario));
+            } else if(tab === 'perfil') {
+                addBtn('fas fa-magic', 'Cruzar Datos', 'cr-btn-out', calculateGaps);
+                addBtn('fas fa-save', 'Guardar Perfil', 'cr-btn-pri', () => saveBatch('gpc_perfil_anual', state.perfil));
             } else if(tab === 'plan') {
-                addBtn('fas fa-save', 'Guardar Plan', 'crono-btn-pri', async () => saveAll('cronograma_anual', state.plan));
-            } else if(tab === 'seg') {
-                addBtn('fas fa-chart-line', 'Generar Reporte', 'crono-btn-out', () => window.print());
-                addBtn('fas fa-save', 'Guardar Avances', 'crono-btn-pri', async () => saveAll('seguimiento', state.seg));
+                addBtn('fas fa-calendar-check', 'Generar 30/Mes', 'cr-btn-out', generateInstitutionalCrono);
+                addBtn('fas fa-save', 'Guardar Plan', 'cr-btn-pri', () => saveBatch('gpc_cronograma_anual', state.plan));
+            } else if(tab === 'seguimiento') {
+                addBtn('fas fa-sync', 'Cargar del Plan', 'cr-btn-out', syncPlanToSeg);
+                addBtn('fas fa-save', 'Guardar Avances', 'cr-btn-pri', () => saveBatch('gpc_seguimiento', state.seg));
             }
         }
 
-        async function saveAll(collectionName, dataArray) {
+        /* ================== CORE CLINICAL LOGIC ================== */
+        function calculateGaps() {
+            // Lógica de cruce: Empareja diagnósticos con documentos existentes
+            state.perfil.forEach(p => {
+                const match = state.inventario.find(i => 
+                    (i.codigo && i.codigo === p.codigoDoc) || 
+                    (i.nombre && p.diag && i.nombre.toLowerCase().includes(p.diag.toLowerCase()))
+                );
+                if(match) {
+                    p.codigoDoc = match.codigo;
+                    p.docVinculado = match.nombre;
+                    p.accion = (new Date(match.fchProx) < new Date()) ? 'Actualizar' : 'Mantener';
+                } else {
+                    p.accion = 'Redactar';
+                    p.sugerencia = 'BRECHA IDENTIFICADA';
+                }
+            });
+            renderPerfil();
+            alert('Cruce de información completado.');
+        }
+
+        function generateInstitutionalCrono() {
+            if(!state.inventario.length) return alert('Primero carga el inventario.');
+            
+            const toUpdate = state.inventario.filter(i => {
+                const urg = (new Date(i.fchProx) < new Date()) || i.ajuste;
+                return urg;
+            });
+
+            const brechas = state.perfil.filter(p => p.accion === 'Redactar');
+            const universe = [...toUpdate.map(i => ({...i, tipo:'ACT'})), ...brechas.map(b => ({...b, tema:b.diag, tipo:'NEW'}))];
+            
+            // Regla: 30 al mes, priorizando Altas
+            universe.sort((a,b) => {
+                const prio = {Alta:3, Media:2, Baja:1};
+                return prio[b.prior || 'Media'] - prio[a.prior || 'Media'];
+            });
+
+            const newPlan = [];
+            let currentMonth = 0;
+            let countInMonth = 0;
+
+            universe.forEach(it => {
+                if(countInMonth >= 30) { currentMonth++; countInMonth = 0; }
+                if(currentMonth > 11) return;
+
+                newPlan.push({
+                    anio: state.anio,
+                    codigo: it.codigo || 'NEW',
+                    tema: it.nombre || it.diag,
+                    mes: currentMonth,
+                    accion: it.tipo === 'ACT' ? 'Actualizar' : 'Crear',
+                    prioridad: it.prior || 'Media',
+                    fchPlan: `${state.anio}-${String(currentMonth+1).padStart(2,'0')}-15`
+                });
+                countInMonth++;
+            });
+
+            state.plan = newPlan;
+            renderPlan();
+            alert(`Cronograma generado: ${newPlan.length} actividades distribuidas.`);
+        }
+
+        function syncPlanToSeg() {
+            const currentSegIds = new Set(state.seg.map(s => s.codigo || s.tema));
+            state.plan.forEach(p => {
+                const key = p.codigo || p.tema;
+                if(!currentSegIds.has(key)) {
+                    state.seg.push({
+                        ...p, status: 'Pendiente', socialized: false, progress: 0
+                    });
+                }
+            });
+            renderSeg();
+        }
+
+        /* ================== RENDERING & RULES ================== */
+        const addYears = (f, y) => {
+            if(!f) return '';
+            const d = new Date(f); d.setFullYear(d.getFullYear() + y);
+            return d.toISOString().slice(0,10);
+        };
+        const getVigencia = (c) => String(c).toUpperCase().startsWith('GPC') ? 5 : 3;
+
+        function renderInvent() {
+            const tbody = qs('#tblInvent tbody'); tbody.innerHTML = '';
+            state.inventario.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                const prox = r.fchProx || addYears(r.fchUlt, getVigencia(r.codigo));
+                const isOverdue = prox && new Date(prox) < new Date();
+
+                tr.innerHTML = `
+                    <td style="font-family:monospace; font-weight:bold;"><input value="${r.codigo||''}" class="cr-input" data-idx="${i}" data-key="codigo"></td>
+                    <td><input value="${r.nombre||''}" class="cr-input" data-idx="${i}" data-key="nombre" style="font-weight:900;"></td>
+                    <td><input type="date" value="${r.fchUlt||''}" class="cr-input" data-idx="${i}" data-key="fchUlt"></td>
+                    <td><span class="cr-badge ${isOverdue ? 'prior-Alta' : 'prior-Baja'}" style="color:white;">${prox || '—'}</span></td>
+                    <td class="text-center"><input type="checkbox" ${r.ajuste?'checked':''} data-idx="${i}" data-key="ajuste"></td>
+                    <td><input value="${r.resp||''}" class="cr-input" data-idx="${i}" data-key="resp"></td>
+                    <td><select class="cr-input" data-idx="${i}" data-key="prior">
+                        <option value="Alta" ${r.prior==='Alta'?'selected':''}>Alta</option>
+                        <option value="Media" ${r.prior==='Media'?'selected':''}>Media</option>
+                        <option value="Baja" ${r.prior==='Baja'?'selected':''}>Baja</option>
+                    </select></td>
+                `;
+                tr.querySelectorAll('input, select').forEach(el => {
+                    el.onchange = () => {
+                        const val = el.type === 'checkbox' ? el.checked : el.value;
+                        state.inventario[i][el.dataset.key] = val;
+                        if(el.dataset.key === 'fchUlt' || el.dataset.key === 'codigo') {
+                            state.inventario[i].fchProx = addYears(state.inventario[i].fchUlt, getVigencia(state.inventario[i].codigo));
+                        }
+                        renderInvent();
+                    };
+                });
+                tbody.appendChild(tr);
+            });
+            updateDashboard();
+        }
+
+        /* ================== EVIDENCE & PDF ================== */
+        let sigPath = null;
+        function openEvidenciaModal(idx) {
+            const r = state.seg[idx];
+            qs('#evidDocRef').textContent = `${r.codigo || ''} — ${r.tema || ''}`;
+            qs('#evidModal').style.display = 'flex';
+            qs('#btnGenPDF').onclick = () => generatePDF(idx);
+            initSignature();
+        }
+
+        function initSignature() {
+            const cnv = qs('#sigCanvas'); const ctx = cnv.getContext('2d');
+            let painting = false;
+            cnv.onmousedown = (e) => { painting = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
+            cnv.onmousemove = (e) => { if(painting) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
+            window.onmouseup = () => painting = false;
+            qs('#sigClear').onclick = () => ctx.clearRect(0, 0, cnv.width, cnv.height);
+            qs('#sigSave').onclick = () => { sigPath = cnv.toDataURL(); alert('Firma cargada correctamente.'); };
+        }
+
+        async function generatePDF(idx) {
+            const r = state.seg[idx];
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            pdf.setFontSize(22); pdf.text("Acta de Socialización CTC", 20, 30);
+            pdf.setFontSize(12);
+            pdf.text(`Documento: ${r.tema}`, 20, 50);
+            pdf.text(`Fecha: ${qs('#evidFecha').value || 'S/F'}`, 20, 60);
+            pdf.text(`Facilitador: ${qs('#evidFac').value || 'S/R'}`, 20, 70);
+            
+            if(sigPath) { pdf.addImage(sigPath, 'PNG', 20, 100, 50, 20); pdf.text("Firma del Colaborador", 20, 125); }
+            
+            pdf.save(`Acta_CTC_${slug(r.tema)}.pdf`);
+            alert('PDF generado con éxito.');
+        }
+
+        function renderSeg() {
+            const tbody = qs('#tblSeg tbody'); tbody.innerHTML = '';
+            state.seg.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:800;">${r.tema || ''}</td>
+                    <td><select class="cr-input" data-idx="${i}" data-key="socialized">
+                        <option value="false" ${!r.socialized?'selected':''}>No Socializado</option>
+                        <option value="true" ${r.socialized?'selected':''}>Socializado</option>
+                    </select></td>
+                    <td><select class="cr-input" data-idx="${i}" data-key="status">
+                        <option value="Pendiente" ${r.status==='Pendiente'?'selected':''}>Pendiente</option>
+                        <option value="En Proceso" ${r.status==='En Proceso'?'selected':''}>En Proceso</option>
+                        <option value="Finalizado" ${r.status==='Finalizado'?'selected':''}>Finalizado</option>
+                    </select></td>
+                    <td><div style="font-weight:900; color:${r.status==='Finalizado'?'#10b981':'#ef4444'}">${r.status==='Finalizado'?'100%':'0%'}</div></td>
+                    <td><button class="cr-btn cr-btn-pri" style="padding:0.4rem 0.8rem; font-size:0.75rem;"><i class="fas fa-file-pdf"></i> Evidencia</button></td>
+                `;
+                tr.querySelector('.cr-btn-pri').onclick = () => openEvidenciaModal(i);
+                tr.querySelectorAll('select').forEach(sel => {
+                    sel.onchange = () => {
+                        state.seg[i][sel.dataset.key] = sel.value === 'true' ? true : (sel.value === 'false' ? false : sel.value);
+                        renderSeg();
+                    };
+                });
+                tbody.appendChild(tr);
+            });
+            updateDashboard();
+        }
+
+        /* ================== RENDERING PERFIL & PLAN ================== */
+        function renderPerfil() {
+            const tbody = qs('#tblPerfil tbody'); tbody.innerHTML = '';
+            state.perfil.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:800;"><input value="${r.diag || ''}" class="cr-input" data-key="diag" data-idx="${i}"></td>
+                    <td><input type="number" value="${r.freq || 0}" class="cr-input" data-key="freq" data-idx="${i}"></td>
+                    <td><input value="${r.docVinculado||''}" class="cr-input" data-idx="${i}" data-key="docVinculado"></td>
+                    <td><span class="cr-badge prior-Media" style="color:white;">${r.accion || '—'}</span></td>
+                    <td style="color:#64748b; font-size:0.75rem; font-weight:bold;">${r.sugerencia || ''}</td>
+                `;
+                tr.querySelectorAll('input').forEach(inp => {
+                    inp.onchange = () => { 
+                        state.perfil[i][inp.dataset.key] = inp.value; 
+                        renderPerfil(); 
+                    };
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPlan() {
+            const tbody = qs('#tblPlan tbody'); tbody.innerHTML = '';
+            state.plan.sort((a,b)=>a.mes - b.mes).forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:900; color:#0ea5e9;">${MONTHS[r.mes] || 'S/P'}</td>
+                    <td style="font-weight:800;">${r.tema || ''}</td>
+                    <td><input type="date" value="${r.fchPlan||''}" class="cr-input" data-key="fchPlan" data-idx="${i}"></td>
+                    <td><span style="font-weight:700;">${r.accion || ''}</span></td>
+                    <td><div style="display:flex; align-items:center; gap:8px;"><div class="prior-point prior-${r.prioridad || 'Media'}"></div> ${r.prioridad || 'Media'}</div></td>
+                `;
+                tr.querySelector('input').onchange = (e) => { state.plan[i].fchPlan = e.target.value; };
+                tbody.appendChild(tr);
+            });
+        }
+
+        /* ================== FIREBASE & MODULE INIT ================== */
+        async function saveBatch(coll, data) {
             const { db } = window.firebaseInstance || {};
             const { doc, writeBatch, serverTimestamp } = window.firebaseFirestore || {};
             if(!db) return;
             const batch = writeBatch(db);
-            const fullCollName = `gpc_${collectionName}`;
-            
-            dataArray.forEach(r => {
-                const id = r.codigo || r.id || `AUTOGEN-${Date.now()}-${Math.random()}`;
-                const ref = doc(db, fullCollName, id);
-                batch.set(ref, { ...r, updatedAt: serverTimestamp() }, { merge: true });
+            data.forEach(r => {
+                const id = r.id || r.codigo || `${state.anio}_${slug(r.tema || r.diag || Math.random().toString())}`;
+                batch.set(doc(db, coll, id), { ...r, updatedAt: serverTimestamp() }, { merge: true });
             });
-            
-            try {
-                await batch.commit(); 
-                alert('¡Datos sincronizados correctamente!');
-            } catch(e) { console.error(e); alert('Error al guardar.'); }
-        }
-
-        /* ================== FIREBASE ================== */
-        async function initModule() {
-            const { db, auth } = window.firebaseInstance || {};
-            if (!db || !auth) { setTimeout(initModule, 300); return; }
-            initTabs(); await loadFromDB(); 
+            await batch.commit();
+            alert('¡Sincronización exitosa!');
         }
 
         async function loadFromDB() {
@@ -265,109 +590,34 @@
             const { collection, getDocs, query, where } = window.firebaseFirestore || {};
             if(!db) return;
             try {
-                console.log("📥 Cargando datos de Firebase...");
-                state.inventario = (await getDocs(collection(db, 'gpc_identificacion'))).docs.map(d => d.data());
-                state.plan = (await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)))).docs.map(d=>d.data());
-                state.seg = (await getDocs(collection(db, 'gpc_seguimiento'))).docs.map(d => d.data());
+                const snapInv = await getDocs(collection(db, 'gpc_identificacion'));
+                state.inventario = snapInv.docs.map(d => d.data());
                 
-                if(state.seg.length === 0 && state.plan.length > 0) {
-                    state.seg = state.plan.map(p => ({ ...p, status: 'Pendiente', socialized: false }));
-                }
-
+                const snapPerf = await getDocs(query(collection(db, 'gpc_perfil_anual'), where('anio', '==', state.anio)));
+                state.perfil = snapPerf.docs.map(d => d.data());
+                
+                const snapPlan = await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', Number(state.anio))));
+                state.plan = snapPlan.docs.map(d => d.data());
+                
+                const snapSeg = await getDocs(collection(db, 'gpc_seguimiento'));
+                state.seg = snapSeg.docs.map(d => d.data()).filter(s => Number(s.anio) === Number(state.anio));
+                
                 renderAll();
-            } catch(e) { console.error("Error cargando DB:", e); }
+            } catch(e) { console.error(e); }
         }
 
         function renderAll() {
-            renderInvent();
-            renderPlan();
-            renderSeg();
-            renderActions(qsa('.crono-tab.active')[0]?.dataset.tab || 'inventario');
+            renderInvent(); renderPerfil(); renderPlan(); renderSeg();
+            renderActions(qs('.cr-tab.active').dataset.tab);
         }
 
-        function renderInvent() {
-            const tbody = qs('#tblInvent tbody'); if(!tbody) return; tbody.innerHTML = '';
-            state.inventario.forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="crono-cell-code">${r.codigo || '—'}</td>
-                    <td class="crono-cell-title">${r.nombre || '<input class="crono-input" placeholder="Nombre..." data-key="nombre">'}</td>
-                    <td><input type="date" value="${r.fchUlt||''}" data-key="fchUlt" class="crono-input"></td>
-                    <td class="text-center"><label class="status-badge" style="background:${r.ajuste?'#eff6ff':'#f8fafc'}; border:1px solid #e2e8f0; padding:4px 8px; border-radius:6px; cursor:pointer"><input type="checkbox" ${r.ajuste?'checked':''} data-key="ajuste" style="display:none"> <span>${r.ajuste?'SÍ':'NO'}</span></label></td>
-                    <td class="text-center"><label class="status-badge" style="background:${r.descarte?'#fef2f2':'#f8fafc'}; border:1px solid #e2e8f0; padding:4px 8px; border-radius:6px; cursor:pointer"><input type="checkbox" ${r.descarte?'checked':''} data-key="descarte" style="display:none"> <span>${r.descarte?'SÍ':'NO'}</span></label></td>
-                    <td><input value="${r.resp||'CTC'}" data-key="resp" class="crono-input"></td>
-                    <td><select data-key="prior" class="crono-input">
-                        ${['Alta','Media','Baja'].map(p=>`<option value="${p}" ${r.prior===p?'selected':''}>${p}</option>`).join('')}
-                    </select></td>
-                `;
-                tr.querySelectorAll('input').forEach(inp => {
-                    if(inp.type === 'checkbox') {
-                        inp.onchange = () => {
-                             state.inventario[i][inp.dataset.key] = inp.checked;
-                             renderInvent();
-                        };
-                    } else {
-                        inp.onchange = () => { state.inventario[i][inp.dataset.key] = inp.value; };
-                    }
-                });
-                tbody.appendChild(tr);
-            });
-        }
+        const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-        function renderPlan() {
-            const tbody = qs('#tblPlan tbody'); if(!tbody) return; tbody.innerHTML = '';
-            const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-            
-            state.plan.sort((a,b)=>(a.mes||0)-(b.mes||0)).forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="crono-cell-code">${r.codigo || '—'}</td>
-                    <td class="crono-cell-title">${r.tema || '—'}</td>
-                    <td><span style="font-weight:700; color:#0ea5e9">${r.accion || 'Actualizar'}</span></td>
-                    <td><span style="font-weight:700">${MONTHS[r.mes] || 'S/P'}</span></td>
-                    <td><div style="display:flex; align-items:center"><span class="prior-point prior-${r.prioridad||'Media'}"></span> ${r.prioridad||'Media'}</div></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderSeg() {
-            const tbody = qs('#tblSeg tbody'); if(!tbody) return; tbody.innerHTML = '';
-            state.seg.forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="crono-cell-code">${r.codigo || '—'}</td>
-                    <td class="crono-cell-title">${r.tema || r.nombre || '—'}</td>
-                    <td><select data-key="socialized" class="crono-input">
-                        <option value="false" ${!r.socialized?'selected':''}>No Socializado</option>
-                        <option value="true" ${r.socialized?'selected':''}>Socializado</option>
-                    </select></td>
-                    <td><select data-key="status" class="crono-input">
-                        ${['Pendiente','En Proceso','Finalizado','Ajustado'].map(s=>`<option value="${s}" ${r.status===s?'selected':''}>${s}</option>`).join('')}
-                    </select></td>
-                    <td class="text-center"><span style="font-weight:900; color:${r.status==='Finalizado'?'#22c55e':'#ef4444'}">${r.status==='Finalizado'?'100%':'0%'}</span></td>
-                    <td class="text-center">
-                        <button class="crono-btn crono-btn-pri" style="padding: 0.4rem 0.8rem; font-size: 0.7rem;" onclick="window.saveSingleSeg(${i})">
-                            <i class="fas fa-save"></i>
-                        </button>
-                    </td>
-                `;
-                tr.querySelectorAll('select').forEach(sel => {
-                    sel.onchange = () => { state.seg[i][sel.dataset.key] = sel.value === 'true' ? true : (sel.value === 'false' ? false : sel.value); renderSeg(); };
-                });
-                tbody.appendChild(tr);
-            });
-        }
-        
-        window.saveSingleSeg = async (index) => {
+        async function initModule() {
             const { db } = window.firebaseInstance || {};
-            const { doc, setDoc, serverTimestamp } = window.firebaseFirestore || {};
-            if(!db) return;
-            const r = state.seg[index];
-            const id = r.codigo || r.id || `AUTOGEN-${Date.now()}`;
-            await setDoc(doc(db, 'gpc_seguimiento', id), { ...r, updatedAt: serverTimestamp() }, { merge: true });
-            alert('¡Registro individual guardado!');
-        };
+            if(!db) { setTimeout(initModule, 300); return; }
+            initTabs(); await loadFromDB();
+        }
 
         initModule();
         /*]]>*/
