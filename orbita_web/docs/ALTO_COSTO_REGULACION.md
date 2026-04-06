@@ -57,4 +57,25 @@ Para evitar errores de script (`TypeError`) sin comprometer la lógica rígida, 
 
 ---
 
+## 🔒 5. Concurrencia y Bloqueo de Registros (Anti-Colisión)
+
+Para garantizar la integridad de la auditoría y evitar la sobreescritura accidental de datos, el módulo implementa un **Sistema de Bloqueo No Bloqueante**:
+
+### 🛰️ Mecanismo de Heartbeat (Latido)
+- **Gestión In-Memory**: Los bloqueos se gestionan en la memoria del servidor (`RecordLockController.java`), eliminando la necesidad de escrituras costosas en Firestore y evitando errores de cuota (429).
+- **Adquisición Automática**: Al abrir una ficha, el sistema intenta tomar un "Lock". Si el paciente está siendo auditado por otro usuario, se bloquea el acceso visual con una alerta informativa.
+- **Liberación Garantizada**: El bloqueo se libera automáticamente al:
+  - Cerrar el modal (Botón X o Cancelar).
+  - Guardar exitosamente el registro.
+  - Cerrar la pestaña o el navegador (`beforeunload` con `navigator.sendBeacon`).
+- **Intervalos de Seguridad (Blindaje de Cuota)**: 
+  - **Heartbeat**: Cada 120 segundos para mantener el lock activo.
+  - **Refresco Visual**: Cada 180 segundos para actualizar los indicadores "EN USO" en la tabla principal.
+
+### 🎨 Indicadores Visuales de Estado
+- **Rojo (Bloqueado)**: Indica que la ficha está en uso por otro analista. La fila se deshabilita para prevenir clics accidentales.
+- **Azul (Propia)**: Indica que tú tienes el control exclusivo de esa ficha en la sesión actual.
+
+---
+
 © 2026 Clínica Sagrado Corazón · Departamento de Coordinación Científica

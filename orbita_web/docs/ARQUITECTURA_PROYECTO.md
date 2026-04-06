@@ -11,6 +11,7 @@ El sistema se fundamenta en un stack tecnológico moderno y estándar:
 *   **Persistencia**: [Spring Data JPA](https://spring.io/projects/spring-data-jpa) con Hibernate.
 *   **UI/UX**: [Bootstrap 5](https://getbootstrap.com/) y CSS nativo (Advanced Glassmorphism tier).
 *   **Integración**: Conectividad nativa con **Firebase/Firestore** para persistencia de datos y gestión de usuarios en tiempo real.
+*   **Gestión de Estado (Locks)**: Sistema de concurrencia **In-Memory** gestionado en el servidor Spring (sin persistencia en DB) para evitar colisiones entre analistas de Alto Costo.
 *   **Robustez de UI**: Empleo de listeners seguros para la gestión de bandejas (Pendientes, Validados, Aprobados) y cierre de sesión sincronizado.
 
 ## 📐 Patrón de Diseño: MVC (Model-View-Controller)
