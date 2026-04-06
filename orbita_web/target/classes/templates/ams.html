@@ -43,7 +43,7 @@
           </div>
 
           <div
-            class="glass-card flex-1 min-w-[380px] !p-5 flex flex-col justify-between border-emerald-100/50 border-2 overflow-hidden">
+            class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-emerald-100/50 border-2 overflow-hidden">
             <div class="flex justify-between items-start mb-2">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción de Seguridad AMS</p>
               <span class="material-icons text-emerald-500">verified_user</span>
@@ -62,8 +62,8 @@
 
         <!-- CONTROLES -->
         <div class="flex flex-wrap items-center gap-4">
-          <div class="glass-card !p-2 !rounded-2xl flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
-            <div class="toolbar-pill !px-3 !py-2">
+          <div class="glass-card p-2! rounded-2xl! flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
+            <div class="toolbar-pill px-3! py-2!">
               <span class="material-icons text-emerald-500 text-sm">medical_information</span>
               <select id="pabSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                 <option>Segundo piso</option>
@@ -72,7 +72,7 @@
                 <option selected>UCI / UCE</option>
               </select>
             </div>
-            <div class="toolbar-pill !px-3 !py-2">
+            <div class="toolbar-pill px-3! py-2!">
               <span class="material-icons text-blue-500 text-sm">calendar_month</span>
               <input id="monthInput" type="month"
                 class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
@@ -80,7 +80,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <button id="saveBtn" class="btn-rcf btn-primary-rcf !px-5 !py-3">
+            <button id="saveBtn" class="btn-rcf btn-primary-rcf px-5! py-3!">
               <span class="material-icons text-sm">save</span> Guardar Datos AMS
             </button>
             <div class="flex gap-1">
@@ -95,8 +95,8 @@
         </div>
 
         <!-- ALERTA AMS -->
-        <div id="urgentAlert"
-          class="hidden animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+        <div id="urgentAlert" style="display:none;"
+          class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               <span class="material-icons">pill</span>
@@ -110,13 +110,13 @@
             class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Cerrar</button>
         </div>
 
-        <div id="status"
-          class="hidden stat-card p-4 !rounded-xl text-center font-black text-[10px] uppercase tracking-widest border border-dashed">
+        <div id="status" style="display:none;"
+          class="stat-card p-4 rounded-xl! text-center font-black text-[10px] uppercase tracking-widest border border-dashed">
         </div>
 
         <!-- DASHBOARD KPI -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="stat-card border-b-4 border-b-emerald-600 !p-6">
+          <div class="stat-card border-b-4 border-b-emerald-600 p-6!">
             <div class="flex justify-between items-start mb-4">
               <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Aplicaciones AMS</p>
               <div class="tooltip-container">
@@ -130,7 +130,7 @@
               <span class="material-icons text-xs">check_circle</span> Seguridad Activa
             </div>
           </div>
-          <div class="stat-card border-b-4 border-b-rose-600 !p-6">
+          <div class="stat-card border-b-4 border-b-rose-600 p-6!">
             <div class="flex justify-between items-start mb-4">
               <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuga AMS</p>
               <div class="tooltip-container">
@@ -144,7 +144,7 @@
               <span class="material-icons text-xs">error_outline</span> Brecha de Control
             </div>
           </div>
-          <div class="stat-card border-b-4 border-b-blue-600 !p-6">
+          <div class="stat-card border-b-4 border-b-blue-600 p-6!">
             <div class="flex justify-between items-start mb-4">
               <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">% Adherencia AMS</p>
               <div class="tooltip-container">
@@ -159,13 +159,13 @@
             </div>
           </div>
           <div
-            class="stat-card border-b-4 border-b-emerald-400 !bg-slate-900 !text-white !p-6 flex flex-col justify-center">
+            class="stat-card border-b-4 border-b-emerald-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
             <div class="flex justify-between items-center mb-4 text-white/40">
               <div class="flex items-center gap-2">
                 <p class="text-[9px] font-black uppercase tracking-widest text-emerald-200">AMS AI Intelligence</p>
                 <div class="tooltip-container">
                   <span class="material-icons text-emerald-400/50 text-[10px]">info_outline</span>
-                  <div class="tooltip-content !bg-emerald-600 uppercase tracking-widest">Motor predictivo sobre la
+                  <div class="tooltip-content bg-emerald-600! uppercase tracking-widest">Motor predictivo sobre la
                     seguridad del pabellón basado en volumen de fármacos.</div>
                 </div>
               </div>
@@ -177,7 +177,7 @@
         </div>
 
         <!-- ANALISIS AMS PABELLON -->
-        <div class="glass-card shadow-2xl !p-0 overflow-hidden border border-slate-100">
+        <div class="glass-card shadow-2xl p-0! overflow-hidden border border-slate-100">
           <div
             class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
             <h2 class="text-lg font-black text-slate-800 tracking-tight">Escrutinio Operativo AMS</h2>
@@ -224,8 +224,8 @@
         </div>
 
         <!-- SECCIÓN ANALÍTICA -->
-        <section id="alertsSec" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
-          <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white !shadow-2xl">
+        <section id="alertsSec" style="display:none;" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+          <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white shadow-2xl!">
             <h4 class="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 text-emerald-400 mb-6">
               <span class="material-icons animate-pulse">health_and_safety</span> Mapa de Riesgo Farmacológico
             </h4>
@@ -256,57 +256,71 @@
   <div th:replace="~{layout :: ui-scripts}"></div>
   <div th:replace="~{layout :: auth-scripts}"></div>
 
-  <script th:inline="javascript">
-    const V_CRIT = 100, V_WARN = 200;
-    const pad = n => String(n).padStart(2, "0");
-    const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
-    const getEl = id => document.getElementById(id);
-    const setTxt = (id, t) => { const el = getEl(id); if (el) el.textContent = t; };
+    // Logic Engine AMS
+    const initAMSAnalytics = async () => {
+        if (!window.firebaseInstance || !window.firebaseFirestore) return;
+        const { auth, db } = window.firebaseInstance;
+        const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
 
-    let chart;
-    function updateChart(data) {
-      const canvas = getEl('trendChart'); if (!canvas) return;
-      if (chart) chart.destroy();
-      chart = new Chart(canvas.getContext('2d'), {
-        type: 'line',
-        data: {
-          labels: ['Q1', 'Q2', 'Q3', 'H'],
-          datasets: [{
-            data: data || [40, 60, 55, 80],
-            borderColor: '#10b981', borderWidth: 4, pointRadius: 0, tension: 0.4, fill: true,
-            backgroundColor: 'rgba(16, 185, 129, 0.1)'
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          layout: { padding: 20 },
-          plugins: { legend: { display: false } },
-          scales: { x: { display: false }, y: { display: false, suggestedMin: 0, suggestedMax: 100 } }
+        const ensureAuth = async () => {
+            if (!auth || !auth.currentUser) {
+                try {
+                    await window.firebaseAuth.signInAnonymously();
+                } catch (e) { console.error("Auth error:", e); }
+            }
+            return auth?.currentUser;
+        };
+
+        const V_CRIT = 100, V_WARN = 200;
+        const pad = n => String(n).padStart(2, "0");
+        const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
+        const getEl = id => document.getElementById(id);
+        const setTxt = (id, t) => { const el = getEl(id); if (el) el.textContent = t; };
+
+        let chart;
+        function updateChart(data) {
+            const canvas = getEl('trendChart'); if (!canvas) return;
+            if (chart) chart.destroy();
+            chart = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'H'],
+                    datasets: [{
+                        data: data || [40, 60, 55, 80],
+                        borderColor: '#10b981', borderWidth: 4, pointRadius: 0, tension: 0.4, fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: 20 },
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false, suggestedMin: 0, suggestedMax: 100 } }
+                }
+            });
+            const p = Math.min(100, (data ? data[3] : 80) + (Math.random() * 6 - 2)).toFixed(1);
+            setTxt('predictionScore', p + "%");
+            const lbl = getEl('predictionLabel'); if (lbl) {
+                lbl.textContent = p > 85 ? "SEGURIDAD GARANTIZADA" : "BANDA DE SEGURIDAD OPERATIVA";
+                lbl.className = 'px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ' +
+                    (p > 85 ? 'text-emerald-300 bg-emerald-900' : 'text-blue-100 bg-slate-900');
+            }
         }
-      });
-      const p = Math.min(100, (data ? data[3] : 80) + (Math.random() * 6 - 2)).toFixed(1);
-      setTxt('predictionScore', p + "%");
-      const lbl = getEl('predictionLabel'); if (lbl) {
-        lbl.textContent = p > 85 ? "SEGURIDAD GARANTIZADA" : "BANDA DE SEGURIDAD OPERATIVA";
-        lbl.className = 'px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ' +
-          (p > 85 ? 'text-emerald-300 bg-emerald-900' : 'text-blue-100 bg-slate-900');
-      }
-    }
 
-    const d = new Date(); d.setMonth(d.getMonth() - 1);
-    const mIn = getEl("monthInput"); if (mIn) mIn.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+        const d = new Date(); d.setMonth(d.getMonth() - 1);
+        const mIn = getEl("monthInput"); if (mIn) mIn.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 
-    function addRow(pab = "", cod = "", dcto = "", nom = "", a1 = 0, a2 = 0, h1 = 0, h2 = 0) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-                <td><input type="text" value="${pab}" class="input-rcf !text-[10px]"></td>
-                <td><input type="text" value="${cod}" class="input-rcf !text-slate-400 !text-[10px]"></td>
-                <td><input type="text" value="${nom}" class="input-rcf !text-slate-800 !text-[11px]"></td>
-                <td><input type="number" value="${a1}" data-k="a1" class="input-rcf text-center !font-black !text-emerald-600"></td>
-                <td><input type="number" value="${a2}" data-k="a2" class="input-rcf text-center !font-black !text-emerald-600"></td>
-                <td><input type="number" value="${h1}" data-k="h1" class="input-rcf text-center !text-slate-400"></td>
-                <td><input type="number" value="${h2}" data-k="h2" class="input-rcf text-center !text-slate-400"></td>
+        function addRow(pab = "", cod = "", dcto = "", nom = "", a1 = 0, a2 = 0, h1 = 0, h2 = 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="text" value="${pab}" class="input-rcf text-[10px]!"></td>
+                <td><input type="text" value="${cod}" class="input-rcf text-slate-400! text-[10px]!"></td>
+                <td><input type="text" value="${nom}" class="input-rcf text-slate-800! text-[11px]!"></td>
+                <td><input type="number" value="${a1}" data-k="a1" class="input-rcf text-center font-black! text-emerald-600!"></td>
+                <td><input type="number" value="${a2}" data-k="a2" class="input-rcf text-center font-black! text-emerald-600!"></td>
+                <td><input type="number" value="${h1}" data-k="h1" class="input-rcf text-center text-slate-400!"></td>
+                <td><input type="number" value="${h2}" data-k="h2" class="input-rcf text-center text-slate-400!"></td>
                 <td class="text-right font-black" data-k="ams">0</td>
                 <td class="text-right opacity-50" data-k="hos">0</td>
                 <td class="text-right font-black text-blue-600" data-k="uso">0%</td>
@@ -317,113 +331,165 @@
                     </button>
                 </td>
             `;
-      tr.querySelectorAll('input').forEach(i => i.addEventListener('input', recalcAll));
-      getEl("tbody").appendChild(tr); recalcAll();
-    }
-
-    function recalcAll() {
-      let A = 0, H = 0, rows = [...getEl("tbody").querySelectorAll("tr")];
-      let critCount = 0;
-      rows.forEach(tr => {
-        const ins = tr.querySelectorAll('input');
-        const a1 = toInt(ins[3].value), a2 = toInt(ins[4].value), h1 = toInt(ins[5].value), h2 = toInt(ins[6].value);
-        const ams = a1 + a2, hos = h1 + h2, tot = ams + hos, uso = tot ? ams / tot : 0;
-        tr.querySelector('[data-k="ams"]').textContent = ams;
-        tr.querySelector('[data-k="hos"]').textContent = hos;
-        tr.querySelector('[data-k="uso"]').textContent = (uso * 100).toFixed(0) + "%";
-        const sem = tr.querySelector('[data-k="sem"]');
-        if (ams < V_CRIT) { sem.innerHTML = '<div class="alert-dot-critical mx-auto"></div>'; critCount++; }
-        else if (uso < 0.6) { sem.innerHTML = '<div class="alert-dot-warning mx-auto"></div>'; }
-        else { sem.innerHTML = '<div class="w-2 h-2 rounded-full bg-emerald-400 mx-auto"></div>'; }
-        A += ams; H += hos;
-      });
-      const T = A + H, gUso = T ? (A / T) * 100 : 0;
-      setTxt('tAMS', A); setTxt('tHOS', H); setTxt('tUso', gUso.toFixed(1) + "%");
-      setTxt('mAMS', A); setTxt('mHOS', H); setTxt('mUso', gUso.toFixed(1) + "%");
-      const bar = getEl('mUsoBar'); if (bar) bar.style.width = gUso + "%";
-      getEl('urgentAlert').classList.toggle('hidden', critCount <= 1);
-      updateChart([gUso * 0.6, gUso * 0.8, gUso * 0.9, gUso]);
-      buildAlerts(rows);
-    }
-
-    async function loadPeriodo() {
-      if (!window.firebaseInstance) return;
-      const { db } = window.firebaseInstance; const { query, collection, where, getDocs } = window.firebaseFirestore;
-      const m = getEl("monthInput").value, p = getEl("pabSelect").value; getEl("tbody").innerHTML = "";
-      try {
-        const qy = query(collection(db, "ams_registro_periodos"), where("month", "==", m), where("pabellon", "==", p));
-        const snap = await getDocs(qy);
-        snap.forEach(d => { const x = d.data(); if (x.tipo !== "M") return; addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, x.ams_q1, x.ams_q2, x.hos_q1, x.hos_q2); });
-        recalcAll();
-        msg("Motor AMS Sincronizado", "success");
-      } catch (e) { msg("Error de conexión", "err"); }
-    }
-
-    function buildAlerts(rows) {
-      getEl("critGrid").innerHTML = ""; getEl("modGrid").innerHTML = ""; getEl("goodGrid").innerHTML = "";
-      rows.forEach(tr => {
-        const ins = tr.querySelectorAll('input'), nom = ins[2].value, ams = toInt(tr.querySelector('[data-k="ams"]').textContent), uso = toInt(tr.querySelector('[data-k="uso"]').textContent) / 100;
-        if (!nom) return;
-        const item = `<li>${nom} <span class="float-right opacity-50 font-black">${ams} APP.</span></li>`;
-        if (ams < V_CRIT) getEl("critGrid").insertAdjacentHTML("beforeend", item);
-        else if (uso < 0.6) getEl("modGrid").insertAdjacentHTML("beforeend", item);
-        if (uso > 0.9) getEl("goodGrid").insertAdjacentHTML("beforeend", `<li class="flex items-center gap-2 p-2 bg-white rounded-xl shadow-sm text-[10px] font-black"> 🛡️ ${nom}</li>`);
-      });
-      getEl("alertsSec").classList.toggle("hidden", getEl("critGrid").children.length === 0 && getEl("modGrid").children.length === 0);
-    }
-
-    function msg(t, type) {
-      const s = getEl("status"); s.textContent = t; s.classList.remove("hidden", "text-emerald-500", "text-rose-500");
-      s.classList.add(type === "success" ? "text-emerald-500" : "text-rose-500");
-      setTimeout(() => s.classList.add("hidden"), 3000);
-    }
-
-    getEl("monthInput").addEventListener("change", loadPeriodo);
-    getEl("pabSelect").addEventListener("change", loadPeriodo);
-    getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
-    
-    // Compliance Engine AMS
-    const updateCompliance = async () => {
-        if(!window.firebaseInstance) return;
-        const { db } = window.firebaseInstance; 
-        const { collection, query, where, getDocs, limit } = window.firebaseFirestore;
-        
-        const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
-        const now = new Date();
-        const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
-        const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
-        
-        let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
-        while(curr <= now){
-            const day = curr.getDay(); const iso = curr.toISOString().split('T')[0];
-            if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
-            curr.setDate(curr.getDate()+1);
+            tr.querySelectorAll('input').forEach(i => i.addEventListener('input', recalcAll));
+            getEl("tbody").appendChild(tr); recalcAll();
         }
 
-        const snap = await getDocs(query(collection(db, "ams_registro_periodos"), where("month", "==", mStr), limit(1)));
-        const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
+        function recalcAll() {
+            let A = 0, H = 0, rows = [...getEl("tbody").querySelectorAll("tr")];
+            let critCount = 0;
+            rows.forEach(tr => {
+                const ins = tr.querySelectorAll('input');
+                const a1 = toInt(ins[3].value), a2 = toInt(ins[4].value), h1 = toInt(ins[5].value), h2 = toInt(ins[6].value);
+                const ams = a1 + a2, hos = h1 + h2, tot = ams + hos, uso = tot ? ams / tot : 0;
+                tr.querySelector('[data-k="ams"]').textContent = ams;
+                tr.querySelector('[data-k="hos"]').textContent = hos;
+                tr.querySelector('[data-k="uso"]').textContent = (uso * 100).toFixed(0) + "%";
+                const sem = tr.querySelector('[data-k="sem"]');
+                if (ams < V_CRIT) { sem.innerHTML = '<div class="alert-dot-critical mx-auto"></div>'; critCount++; }
+                else if (uso < 0.6) { sem.innerHTML = '<div class="alert-dot-warning mx-auto"></div>'; }
+                else { sem.innerHTML = '<div class="w-2 h-2 rounded-full bg-emerald-400 mx-auto"></div>'; }
+                A += ams; H += hos;
+            });
+            const T = A + H, gUso = T ? (A / T) * 100 : 0;
+            setTxt('tAMS', A); setTxt('tHOS', H); setTxt('tUso', gUso.toFixed(1) + "%");
+            setTxt('mAMS', A); setTxt('mHOS', H); setTxt('mUso', gUso.toFixed(1) + "%");
+            const bar = getEl('mUsoBar'); if (bar) bar.style.width = gUso + "%";
+            getEl('urgentAlert').classList.toggle('hidden', critCount <= 1);
+            updateChart([gUso * 0.6, gUso * 0.8, gUso * 0.9, gUso]);
+            buildAlerts(rows);
+        }
+
+        async function loadPeriodo() {
+            await ensureAuth();
+            const m = getEl("monthInput").value, p = getEl("pabSelect").value; getEl("tbody").innerHTML = "";
+            try {
+                const qy = query(collection(db, "ams_registro_periodos"), where("month", "==", m), where("pabellon", "==", p));
+                const snap = await getDocs(qy);
+                snap.forEach(d => { const x = d.data(); if (x.tipo !== "M") return; addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, x.ams_q1, x.ams_q2, x.hos_q1, x.hos_q2); });
+                recalcAll();
+                msg("Motor AMS Sincronizado", "success");
+            } catch (e) { msg("Error de conexión", "err"); }
+        }
+
+        async function copyPreviousMonth() {
+            await ensureAuth();
+            const currentM = getEl("monthInput").value;
+            if (!currentM) return;
+            const [y, m] = currentM.split("-").map(Number);
+            let prevY = y, prevM = m - 1;
+            if (prevM === 0) { prevM = 12; prevY--; }
+            const prevMStr = `${prevY}-${String(prevM).padStart(2, "0")}`;
+            const pab = getEl("pabSelect").value;
+
+            try {
+                const qy = query(collection(db, "ams_registro_periodos"), where("month", "==", prevMStr), where("pabellon", "==", pab));
+                const snap = await getDocs(qy);
+                if (snap.empty) {
+                    alert("No se encontraron registros en el mes anterior ("+prevMStr+") para este pabellón.");
+                    return;
+                }
+                if (!confirm("Se copiarán los profesionales de "+prevMStr+". Se borrará lo actual. ¿Continuar?")) return;
+                
+                getEl("tbody").innerHTML = "";
+                snap.forEach(d => {
+                    const x = d.data();
+                    if (x.tipo !== "M") return;
+                    addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, 0, 0, 0, 0);
+                });
+                msg("Base cargada desde " + prevMStr, "success");
+            } catch (e) { msg("Error al copiar datos previos", "err"); }
+        }
+
+        function buildAlerts(rows) {
+            getEl("critGrid").innerHTML = ""; getEl("modGrid").innerHTML = ""; getEl("goodGrid").innerHTML = "";
+            rows.forEach(tr => {
+                const ins = tr.querySelectorAll('input'), nom = ins[2].value, ams = toInt(tr.querySelector('[data-k="ams"]').textContent), uso = toInt(tr.querySelector('[data-k="uso"]').textContent) / 100;
+                if (!nom) return;
+                const item = `<li>${nom} <span class="float-right opacity-50 font-black">${ams} APP.</span></li>`;
+                if (ams < V_CRIT) getEl("critGrid").insertAdjacentHTML("beforeend", item);
+                else if (uso < 0.6) getEl("modGrid").insertAdjacentHTML("beforeend", item);
+                if (uso > 0.9) getEl("goodGrid").insertAdjacentHTML("beforeend", `<li class="flex items-center gap-2 p-2 bg-white rounded-xl shadow-sm text-[10px] font-black"> 🛡️ ${nom}</li>`);
+            });
+            getEl("alertsSec").classList.toggle("hidden", getEl("critGrid").children.length === 0 && getEl("modGrid").children.length === 0);
+        }
+
+        function msg(t, type) {
+            const s = getEl("status"); s.textContent = t; s.classList.remove("hidden", "text-emerald-500", "text-rose-500");
+            s.classList.add(type === "success" ? "text-emerald-500" : "text-rose-500");
+            setTimeout(() => s.classList.add("hidden"), 3000);
+        }
+
+        getEl("quickPrevBtn").addEventListener("click", copyPreviousMonth);
+        getEl("monthInput").addEventListener("change", loadPeriodo);
+        getEl("pabSelect").addEventListener("change", loadPeriodo);
+        getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
+        getEl("saveBtn").addEventListener("click", async () => {
+            await ensureAuth();
+            const month = getEl("monthInput").value, pab = getEl("pabSelect").value;
+            try {
+                for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
+                    const ins = tr.querySelectorAll('input');
+                    const cod = ins[1].value, nom = ins[2].value, a1 = toInt(ins[3].value), a2 = toInt(ins[4].value), h1 = toInt(ins[5].value), h2 = toInt(ins[6].value);
+                    if(!nom) continue;
+                    const id = `M_${month}_0_${slug(pab)}_${slug(cod||nom)}`;
+                    await setDoc(doc(db, "ams_registro_periodos", id), {
+                        tipo:"M", month, quincena:"0", pabellon:pab, cod_prof:cod, nombre:nom, 
+                        ams_q1:a1, ams_q2:a2, hos_q1:h1, hos_q2:h2, total:a1+a2+h1+h2, updatedAt:serverTimestamp()
+                    }, {merge:true});
+                }
+                alert("Guardado completo.");
+            } catch(e) { alert("Error al guardar"); }
+        });
         
-        bar.style.display = "flex";
-        if(snap.size > 0){
-            msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
-            badge.textContent = "Sincronizado";
-        } else {
-            const remains = 5 - workDay;
-            if(remains >= 0){
-                msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
-                badge.textContent = "EN PLAZO";
-            } else {
-                msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
-                badge.textContent = "VENCIDO";
-                badge.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10";
-                icon.className = "w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";
+        // Compliance Engine AMS
+        const updateCompliance = async () => {
+            await ensureAuth();
+            const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+            const now = new Date();
+            const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
+            const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
+            
+            let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
+            while(curr <= now){
+                const day = curr.getDay(); const iso = curr.toISOString().split('T')[0];
+                if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
+                curr.setDate(curr.getDate()+1);
             }
-        }
+
+            const snap = await getDocs(query(collection(db, "ams_registro_periodos"), where("month", "==", mStr), limit(1)));
+            const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
+            if(!bar) return;
+            bar.style.display = "flex";
+            if(snap.size > 0){
+                msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+                badge.textContent = "Sincronizado";
+            } else {
+                const remains = 5 - workDay;
+                if(remains >= 0){
+                    msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                    badge.textContent = "EN PLAZO";
+                } else {
+                    msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                    badge.textContent = "VENCIDO";
+                    badge.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10";
+                    icon.className = "w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";
+                }
+            }
+        };
+
+        window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, (user) => {
+            if (user) {
+                loadPeriodo();
+                updateCompliance();
+            }
+        });
+
+        updateChart();
     };
 
-    window.addEventListener('OrbitaContextReady', () => { loadPeriodo(); updateCompliance(); });
-    if (window.OrbitaContext) { loadPeriodo(); updateCompliance(); }
-    updateChart();
+    window.addEventListener('firebase-ready', initAMSAnalytics);
+    if (window.firebaseInstance) initAMSAnalytics();
   </script>
   <!-- CDN Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>

@@ -31,6 +31,222 @@
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
 
+        // ============================================================
+        // 🔒 LOCKS DE FICHA - SOLO ALTO COSTO
+        // ============================================================
+        const LOCKS_API_BASE = '/api/altocosto/locks';
+        const LOCK_HEARTBEAT_MS = 60000;
+        const LOCKS_REFRESH_MS = 45000;
+
+        const lockState = {
+                currentPatientId: null,
+                heartbeatTimer: null,
+                refreshTimer: null,
+                activeLocksMap: new Map()
+        };
+
+        function getLockUser() {
+                const u = window.orbitaUser || window.OrbitaContext || {};
+                return {
+                        email: String(u.email || auth?.currentUser?.email || '').trim().toLowerCase(),
+                        nombre: String(u.displayName || u.nombre || u.email || auth?.currentUser?.email || 'Usuario').trim()
+                };
+        }
+
+        async function lockFetch(path, method = 'GET', body = null) {
+                const opts = {
+                        method,
+                        headers: { 'Content-Type': 'application/json' }
+                };
+                if (body) opts.body = JSON.stringify(body);
+
+                const res = await fetch(`${LOCKS_API_BASE}${path}`, opts);
+                let data = null;
+                try { data = await res.json(); } catch (_) {}
+                return { ok: res.ok, status: res.status, data };
+        }
+
+        async function tomarLockFicha(pacienteId) {
+                const user = getLockUser();
+                if (!pacienteId || !user.email) {
+                        return { ok: false, blocked: false, message: 'No se pudo identificar el usuario o el paciente.' };
+                }
+
+                const r = await lockFetch('/tomar', 'POST', {
+                        pacienteId: String(pacienteId).trim(),
+                        email: user.email,
+                        nombre: user.nombre
+                });
+
+                if (r.ok && r.data?.success) {
+                        lockState.currentPatientId = String(pacienteId).trim();
+                        iniciarHeartbeatFicha();
+                        return { ok: true, blocked: false, data: r.data };
+                }
+
+                if (r.status === 409 && r.data?.status === 'LOCKED_BY_OTHER') {
+                        const lock = r.data.lock || {};
+                        return {
+                                ok: false,
+                                blocked: true,
+                                message: `Esta ficha ya está siendo trabajada por ${lock.nombre || lock.email || 'otro usuario'}.`
+                        };
+                }
+
+                return {
+                        ok: false,
+                        blocked: false,
+                        message: r.data?.message || 'No se pudo tomar la ficha.'
+                };
+        }
+
+        async function heartbeatFicha() {
+                const user = getLockUser();
+                if (!lockState.currentPatientId || !user.email) return;
+
+                const r = await lockFetch('/heartbeat', 'POST', {
+                        pacienteId: lockState.currentPatientId,
+                        email: user.email
+                });
+
+                if (r.ok && r.data?.success) return;
+
+                if (r.status === 409 || r.status === 410) {
+                        detenerHeartbeatFicha();
+                        alert(r.data?.message || 'La ficha dejó de estar disponible.');
+                }
+        }
+
+        function iniciarHeartbeatFicha() {
+                detenerHeartbeatFicha();
+                lockState.heartbeatTimer = setInterval(() => {
+                        heartbeatFicha().catch(err => console.warn('[LOCKS] heartbeat error', err));
+                }, LOCK_HEARTBEAT_MS);
+        }
+
+        function detenerHeartbeatFicha() {
+                if (lockState.heartbeatTimer) {
+                        clearInterval(lockState.heartbeatTimer);
+                        lockState.heartbeatTimer = null;
+                }
+        }
+
+        async function liberarLockFicha(pacienteId = null) {
+                const user = getLockUser();
+                const pid = pacienteId || lockState.currentPatientId;
+
+                detenerHeartbeatFicha();
+
+                if (!pid || !user.email) {
+                        lockState.currentPatientId = null;
+                        return;
+                }
+
+                try {
+                        await lockFetch('/liberar', 'POST', {
+                                pacienteId: String(pid).trim(),
+                                email: user.email
+                        });
+                } catch (e) {
+                        console.warn('[LOCKS] liberar error', e);
+                } finally {
+                        if (lockState.currentPatientId === pid) {
+                                lockState.currentPatientId = null;
+                        }
+                }
+        }
+
+        async function cargarLocksActivos() {
+                const r = await lockFetch('/activos');
+                return (r.ok && Array.isArray(r.data)) ? r.data : [];
+        }
+
+        function pintarLocksEnTabla() {
+                const user = getLockUser();
+                const rows = document.querySelectorAll('tbody tr[data-paciente-id]');
+
+                rows.forEach(tr => {
+                        const pid = String(tr.getAttribute('data-paciente-id') || '').trim();
+                        const lock = lockState.activeLocksMap.get(pid);
+
+                        tr.classList.remove('lock-by-me', 'lock-by-other');
+                        tr.removeAttribute('title');
+
+                        const old = tr.querySelector('.lock-badge-inline');
+                        if (old) old.remove();
+
+                        if (!lock) return;
+
+                        const badge = document.createElement('span');
+                        badge.className = 'lock-badge-inline';
+                        badge.style.marginLeft = '8px';
+                        badge.style.padding = '2px 8px';
+                        badge.style.borderRadius = '999px';
+                        badge.style.fontSize = '11px';
+                        badge.style.fontWeight = '700';
+
+                        const owner = lock.nombre || lock.email || 'Usuario';
+
+                        if (String(lock.email || '').trim().toLowerCase() === user.email) {
+                                tr.classList.add('lock-by-me');
+                                tr.title = 'Ficha en uso por ti';
+                                badge.textContent = 'En uso por ti';
+                                badge.style.background = '#dbeafe';
+                                badge.style.color = '#1d4ed8';
+                                badge.style.border = '1px solid #bfdbfe';
+                        } else {
+                                tr.classList.add('lock-by-other');
+                                tr.title = `Ficha en uso por ${owner}`;
+                                badge.textContent = `En uso por ${owner}`;
+                                badge.style.background = '#fee2e2';
+                                badge.style.color = '#b91c1c';
+                                badge.style.border = '1px solid #fecaca';
+                        }
+
+                        const firstNameCell = tr.querySelector('td:nth-child(2) .pac-nombre');
+                        if (firstNameCell) firstNameCell.appendChild(badge);
+                });
+        }
+
+        async function refrescarLocksVisuales() {
+                try {
+                        const locks = await cargarLocksActivos();
+                        lockState.activeLocksMap = new Map(
+                                locks.map(x => [String(x.pacienteId || '').trim(), x])
+                        );
+                        pintarLocksEnTabla();
+                } catch (e) {
+                        console.warn('[LOCKS] refresh error', e);
+                }
+        }
+
+        function iniciarRefreshLocks() {
+                if (lockState.refreshTimer) clearInterval(lockState.refreshTimer);
+                lockState.refreshTimer = setInterval(() => {
+                        refrescarLocksVisuales().catch(() => {});
+                }, LOCKS_REFRESH_MS);
+        }
+
+        window.__altoCostoLocks = {
+                tomarLockFicha,
+                liberarLockFicha,
+                refrescarLocksVisuales
+        };
+
+        window.addEventListener('beforeunload', () => {
+                const user = getLockUser();
+                if (!lockState.currentPatientId || !user.email) return;
+                try {
+                        navigator.sendBeacon(
+                                `${LOCKS_API_BASE}/liberar`,
+                                new Blob(
+                                        [JSON.stringify({ pacienteId: lockState.currentPatientId, email: user.email })],
+                                        { type: 'application/json' }
+                                )
+                        );
+                } catch (_) {}
+        });
+
         // 🔥 HELPERS MÍNIMOS REQUERIDOS (BLINDAJE TOTAL)
         const $getID = (id) => document.getElementById(id);
         const $safeGet = (id) => {
@@ -450,9 +666,9 @@
                 "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior"
         ];
 
-        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamiliares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte"];
+        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamiliares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte", "Dx"];
 
-        const VARS_CANCER = ["VAR1_PrimerNombreUsuario", "VAR2_SegundoNombreUsuario", "VAR3_PrimerApellidoUsuario", "VAR4_SegundoApellidoUsuario", "VAR5_TipoIdentificacionUsuario", "VAR6_NumeroIdentificacionUsuario", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_RegimenAfiliacionSGSSS", "VAR11_idEPS", "VAR12_CodigoPertenenciaEtnica", "VAR13_GrupoPoblacional", "VAR14_MunicipioResidencia", "VAR15_NumeroTelefonicopaciente", "VAR16_FechaAfiliacionEPSRegistra", "VAR17_NombreNeoplasia", "VAR18_FechaDx", "VAR19_FechaNotaRemisionMedico", "VAR20_FechaIngresoInstitucionRealizo", "VAR21_TipoEstudioRealizoDiagnostico", "VAR22_MotivoUsuarioNOTuvoDiagnostico", "VAR23_FechaRecoleccionMuestraEstudioHistopatologico", "VAR24_FechaInformHistopatologicoValido", "VAR25_CodigoValidoHabilitacionIPS", "VAR26_FechaPrimeraConsultaMedicoTratante", "VAR27_HistologiaTumorMuestraBiopsia", "VAR28_GradoDiferenciacionTumorSolidoMaligno", "VAR29_SiEsTumorSolido", "VAR30_FechaRealizoEstaEstadificacion", "VAR31_ParaCancerMama", "VAR32_ParaCancerMamaFechaRealizacion", "VAR33_ParaCancerMamaResultadoPrimera", "VAR34_ParaCancerColorrectalEstadificacionDukes", "VAR35_FechaEstadificacionDukes", "VAR36_EstadificacionLinfomaClinicaHodgkin", "VAR37_CancerProstataValorClasificacionGleason", "VAR38_ClasificacionRiesgoLeucemiasLinfomas", "VAR39_FechaClasificacionRiesgo", "VAR40_ObjetivoTratamientoMedicoInic", "VAR41_ObjetivoIntervencionMedicaPeriodoReporte", "VAR42_TieneAntecedenteOtroCancerPrimario", "VAR43_FechaDiagnosticoOtroCancerPrimario", "VAR44_TipoCancerAntecedente", "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR46_FaseQuimioterapiaRecibioUsuarioCorte", "VAR46_1_UsuarioRecibioCorteQuimioterapiaPrefase", "VAR46_2_UsuarioRecibioCorteFaseQuimioterapiaInduccion", "VAR46_3_UsuarioRecibioCorteFaseQuimioterapIntensificacion", "VAR46_4_UsuarioRecibioCorteFaseQuimioterapiaConsolidacion", "VAR46_5_UsuarioRecibioCorteFaseQuimioterapiaReinduccion", "VAR46_6_UsuarioRecibiCorteFaseQuimioterapiaMantenimiento", "VAR46_7_UsuarioRecibioCorteFaseQuimioterapiaMantenimientoL", "VAR46_8_UsuarioRecibiCorteOtraFaseQuimioterapia", "VAR47_NumeroCiclosIniciadosPeriodoReporteActual", "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico", "VAR49_FechaInicioPrimerCicloQuimioterapiaCorte", "VAR50_NumeroIPSPrimerCicloCorte", "VAR51_CodigoIPS1PrimerCicloCorte", "VAR52_CodigoIPS2PrimerCicloCorte", "VAR53_MedicamentosAntineoplasicosPrimerCicloCorte", "VAR53_1_Medicamentoadm1PrimerEsquema", "VAR53_2_Medicamentoadm2PrimerEsquema", "VAR53_3_Medicamentoadm3PrimerEsquema", "VAR53_4_Medicamentoadm4PrimerEsquema", "VAR53_5_Medicamentoadm5PrimerEsquema", "VAR53_6_Medicamentoadm6PrimerEsquema", "VAR53_7_Medicamentoadm7PrimerEsquema", "VAR53_8_Medicamentoadm8PrimerEsquema", "VAR53_9_Medicamentoadm9PrimerEsquema", "VAR54_MedicamentoNoPOS1AdministradoUsuarioPrimerCiclo", "VAR55_MedicamentoNoPOS2AdministradoUsuarioPrimerCiclo", "VAR56_MedicamentoNoPOS3AdministradoUsuarioPrimerCiclo", "VAR57_RecibioQuimioterapiaIntratecalPrimerCiclo", "VAR58_FechaFinalizacionPrimerCicloCorte", "VAR59_CaracteristicasActualesPrimerCicloCorte", "VAR60_MotivoFinalizacionPrimerCiclo", "VAR61_UbicacionTemporalUltimoCicloCorteOncologico", "VAR62_FechaInicioUltimoCicloQuimioterapiaCorte", "VAR63_NumeroIPSSuministranUltimoCicloCorte", "VAR64_CodigoIPS1SuministraUltimoCicloReporte", "VAR65_CodigoIPS2SuministraUltimoCicloReporte", "VAR66_MedicamentosAntineoplasicosEspecialistaCancer", "VAR66_1_Medicamentoadm1UltimoEsquema", "VAR66_2_Medicamentoadm2UltimoEsquema", "VAR66_3_Medicamentoadm3UltimoEsquema", "VAR66_4_Medicamentoadm4UltimoEsquema", "VAR66_5_Medicamentoadm5UltimoEsquema", "VAR66_6_Medicamentoadm6UltimoEsquema", "VAR66_7_Medicamentoadm7UltimoEsquema", "VAR66_8_Medicamentoadm8UltimoEsquema", "VAR66_9_Medicamentoadm9UltimoEsquema", "VAR67_MedicamentoNoPOS1AdministradoUsuarioUltimoCiclo", "VAR68_MedicamentoNoPOS2AdministradoUsuarioUltimoCiclo", "VAR69_MedicamentoNoPOS3AdministradoUsuarioUltimoCiclo", "VAR70_RecibioQuimioterapiaIntratecalUltimoCicloCorte", "VAR71_FechaFinalizacionCicloUltimo", "VAR72_CaracteristicasActualesUltimoCicloCorte", "VAR73_MotivoFinalizacionPrematuraUltimoCiclo", "VAR74_SometidoUsuarioCirugiasCurativasPaliativas", "VAR75_NumeroCirugiasSometidoUsuarioPeriodoReporteActual", "VAR76_FechaRealizacionPrimeraCirugiaReporte", "VAR77_CodigoIPSRealizoPrimeraCirugiaCorte", "VAR78_CodigoPrimeraCirugia", "VAR79_UbicacionTemporalPrimeraCirugiaOncologico", "VAR80_FechaRealizacionUltimoProcedimientoQuirurgico", "VAR81_MotivoHaberRealizadoUltimaIntervencionQuirurgica", "VAR82_CodigoIPSRealizaUltimoProcedimientosQuirugicos", "VAR83_CodigoUltimaCirugia", "VAR84_UbicacionTemporalUltimaCirugiaOncologico", "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia", "VAR86_RecibioUsuarioAlgunTipoRadioterapiaCorteActual", "VAR87_NumeroEsquemasRadioterapiaSuministradosCorteActual", "VAR88_FechaInicioPrimerUnicoEsquemaRadioterapia", "VAR89_UbicacionTemporalPrimerUnicoEsquemaRadioterapia", "VAR90_TipoRadioterapiaAplicadaPrimerUnicoEsquema", "VAR91_NumeroIPSSuministranPrimerUnicoEsquemaRadioterapia", "VAR92_CodigoIPS1SuministraRadioterapia", "VAR93_CodigoIPS2SuministraRadioterapia", "VAR94_FechaFinalizacionPrimerUnicoEsquemaRadioterapia", "VAR95_CaracteristicasActualesPrimerEsquemaRadioterapia", "VAR96_MotivoFinalizacionPrimerEsquemaRadioterapia", "VAR97_FechaInicioUltimoEsquemaRadioterapia", "VAR98_UbicacionTemporalUltimoEsquemaRadioterapia", "VAR99_TipoRadioterapiaAplicadaUltimoEsquemaRadioterapia", "VAR100_NumeroIPSSuministranUltimoEsquemaRadioterapia", "VAR101_CodigoIPS1SuministraRadioterapia1", "VAR102_CodigoIPS2SuministraRadioterapia1", "VAR103_FechaFinalizacionUltimoEsquemaRadioterapia", "VAR104_CaracteristicasActualesUltimoEsquemaRadioterapia", "VAR105_MotivoFinalizacionUltimoEsquemaRadioTerapia", "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras", "VAR107_TipoTrasplanteRecibido", "VAR108_UbicacionTemporalTrasplanteOncologico", "VAR109_FechaTrasplante", "VAR110_CodigoIPSRealizoTrasplante", "VAR111_UsuarioRecibioCirugiaReconstructiva", "VAR112_FechaCirugia", "VAR113_CodigoIPSRealizoCirugiaReconstructiva", "VAR114_UsuarioValoradoConsultaProcedimientoPaliativo", "VAR114_1_UsuarioRecibioConsultaProcedimientoCuidadoPaliativ", "VAR114_2_UsuarioRecibioConsultaCuidadoPaliativo", "VAR114_3_UsuarioRecibioConsultaPaliativoEspecialista", "VAR114_4_UsuarioRecibioConsultaPaliativoGeneral", "VAR114_5_UsuarioRecibioConsultaPaliativoTrabajoSocial", "VAR114_6_UsuarioRecibioConsultaPaliativoNoEspecializado", "VAR115_FechaPrimeraConsultaPaliativoCorte", "VAR116_CodigoIPSRecibioPrimeraValoracionPaliativo", "VAR117_HaSidoValoradoUsuarioPorServicioPsiquiatria", "VAR118_FechaPrimeraConsultaServicioPsiquiatria", "VAR119_CodigoIPSRecibioPrimeraValoracionPsiquiatria", "VAR120_FueValoradoUsuarioPorProfesionalNutricion", "VAR121_FechaConsultaInicialNutricionCorte", "VAR122_CodigoIPSRecibioValoracionNutricion", "VAR123_UsuarioRecibioSoporteNutricional", "VAR124_UsuarioRecibidoTerapiasComplementariasRehabilitaci", "VAR125_TipoTratamientoRecibiendoUsuarioFechaCorte", "VAR126_ResultadoFinalManejoOncologicoCorte", "VAR127_EstadoVitalFinalizarCorte", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior", "VAR129_NovedadClinicaUsuarioFechaCorte", "VAR130_FechaDesafiliacionEPS", "VAR131_FechaMuerte", "VAR132_CausaMuerte", "VAR133_SerialBDUA", "VAR134_V134FechaCorte"];
+        const VARS_CANCER = ["VAR1_PrimerNombreUsuario", "VAR2_SegundoNombreUsuario", "VAR3_PrimerApellidoUsuario", "VAR4_SegundoApellidoUsuario", "VAR5_TipoIdentificacionUsuario", "VAR6_NumeroIdentificacionUsuario", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_RegimenAfiliacionSGSSS", "VAR11_idEPS", "VAR12_CodigoPertenenciaEtnica", "VAR13_GrupoPoblacional", "VAR14_MunicipioResidencia", "VAR15_NumeroTelefonicopaciente", "VAR16_FechaAfiliacionEPSRegistra", "VAR17_NombreNeoplasia", "VAR18_FechaDx", "VAR19_FechaNotaRemisionMedico", "VAR20_FechaIngresoInstitucionRealizo", "VAR21_TipoEstudioRealizoDiagnostico", "VAR22_MotivoUsuarioNOTuvoDiagnostico", "VAR23_FechaRecoleccionMuestraEstudioHistopatologico", "VAR24_FechaInformHistopatologicoValido", "VAR25_CodigoValidoHabilitacionIPS", "VAR26_FechaPrimeraConsultaMedicoTratante", "VAR27_HistologiaTumorMuestraBiopsia", "VAR28_GradoDiferenciacionTumorSolidoMaligno", "VAR29_SiEsTumorSolido", "VAR30_FechaRealizoEstaEstadificacion", "VAR31_ParaCancerMama", "VAR32_ParaCancerMamaFechaRealizacion", "VAR33_ParaCancerMamaResultadoPrimera", "VAR34_ParaCancerColorrectalEstadificacionDukes", "VAR35_FechaEstadificacionDukes", "VAR36_EstadificacionLinfomaClinicaHodgkin", "VAR37_CancerProstataValorClasificacionGleason", "VAR38_ClasificacionRiesgoLeucemiasLinfomas", "VAR39_FechaClasificacionRiesgo", "VAR40_ObjetivoTratamientoMedicoInic", "VAR41_ObjetivoIntervencionMedicaPeriodoReporte", "VAR42_TieneAntecedenteOtroCancerPrimario", "VAR43_FechaDiagnosticoOtroCancerPrimario", "VAR44_TipoCancerAntecedente", "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR46_FaseQuimioterapiaRecibioUsuarioCorte", "VAR46_1_UsuarioRecibioCorteQuimioterapiaPrefase", "VAR46_2_UsuarioRecibioCorteFaseQuimioterapiaInduccion", "VAR46_3_UsuarioRecibioCorteFaseQuimioterapIntensificacion", "VAR46_4_UsuarioRecibioCorteFaseQuimioterapiaConsolidacion", "VAR46_5_UsuarioRecibioCorteFaseQuimioterapiaReinduccion", "VAR46_6_UsuarioRecibiCorteFaseQuimioterapiaMantenimiento", "VAR46_7_UsuarioRecibioCorteFaseQuimioterapiaMantenimientoL", "VAR46_8_UsuarioRecibiCorteOtraFaseQuimioterapia", "VAR47_NumeroCiclosIniciadosPeriodoReporteActual", "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico", "VAR49_FechaInicioPrimerCicloQuimioterapiaCorte", "VAR50_NumeroIPSPrimerCicloCorte", "VAR51_CodigoIPS1PrimerCicloCorte", "VAR52_CodigoIPS2PrimerCicloCorte", "VAR53_MedicamentosAntineoplasicosPrimerCicloCorte", "VAR53_1_Medicamentoadm1PrimerEsquema", "VAR53_2_Medicamentoadm2PrimerEsquema", "VAR53_3_Medicamentoadm3PrimerEsquema", "VAR53_4_Medicamentoadm4PrimerEsquema", "VAR53_5_Medicamentoadm5PrimerEsquema", "VAR53_6_Medicamentoadm6PrimerEsquema", "VAR53_7_Medicamentoadm7PrimerEsquema", "VAR53_8_Medicamentoadm8PrimerEsquema", "VAR53_9_Medicamentoadm9PrimerEsquema", "VAR54_MedicamentoNoPOS1AdministradoUsuarioPrimerCiclo", "VAR55_MedicamentoNoPOS2AdministradoUsuarioPrimerCiclo", "VAR56_MedicamentoNoPOS3AdministradoUsuarioPrimerCiclo", "VAR57_RecibioQuimioterapiaIntratecalPrimerCiclo", "VAR58_FechaFinalizacionPrimerCicloCorte", "VAR59_CaracteristicasActualesPrimerCicloCorte", "VAR60_MotivoFinalizacionPrimerCiclo", "VAR61_UbicacionTemporalUltimoCicloCorteOncologico", "VAR62_FechaInicioUltimoCicloQuimioterapiaCorte", "VAR63_NumeroIPSSuministranUltimoCicloCorte", "VAR64_CodigoIPS1SuministraUltimoCicloReporte", "VAR65_CodigoIPS2SuministraUltimoCicloReporte", "VAR66_MedicamentosAntineoplasicosEspecialistaCancer", "VAR66_1_Medicamentoadm1UltimoEsquema", "VAR66_2_Medicamentoadm2UltimoEsquema", "VAR66_3_Medicamentoadm3UltimoEsquema", "VAR66_4_Medicamentoadm4UltimoEsquema", "VAR66_5_Medicamentoadm5UltimoEsquema", "VAR66_6_Medicamentoadm6UltimoEsquema", "VAR66_7_Medicamentoadm7UltimoEsquema", "VAR66_8_Medicamentoadm8UltimoEsquema", "VAR66_9_Medicamentoadm9UltimoEsquema", "VAR67_MedicamentoNoPOS1AdministradoUsuarioUltimoCiclo", "VAR68_MedicamentoNoPOS2AdministradoUsuarioUltimoCiclo", "VAR69_MedicamentoNoPOS3AdministradoUsuarioUltimoCiclo", "VAR70_RecibioQuimioterapiaIntratecalUltimoCicloCorte", "VAR71_FechaFinalizacionCicloUltimo", "VAR72_CaracteristicasActualesUltimoCicloCorte", "VAR73_MotivoFinalizacionPrematuraUltimoCiclo", "VAR74_SometidoUsuarioCirugiasCurativasPaliativas", "VAR75_NumeroCirugiasSometidoUsuarioPeriodoReporteActual", "VAR76_FechaRealizacionPrimeraCirugiaReporte", "VAR77_CodigoIPSRealizoPrimeraCirugiaCorte", "VAR78_CodigoPrimeraCirugia", "VAR79_UbicacionTemporalPrimeraCirugiaOncologico", "VAR80_FechaRealizacionUltimoProcedimientoQuirurgico", "VAR81_MotivoHaberRealizadoUltimaIntervencionQuirurgica", "VAR82_CodigoIPSRealizaUltimoProcedimientosQuirugicos", "VAR83_CodigoUltimaCirugia", "VAR84_UbicacionTemporalUltimaCirugiaOncologico", "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia", "VAR86_RecibioUsuarioAlgunTipoRadioterapiaCorteActual", "VAR87_NumeroEsquemasRadioterapiaSuministradosCorteActual", "VAR88_FechaInicioPrimerUnicoEsquemaRadioterapia", "VAR89_UbicacionTemporalPrimerUnicoEsquemaRadioterapia", "VAR90_TipoRadioterapiaAplicadaPrimerUnicoEsquema", "VAR91_NumeroIPSSuministranPrimerUnicoEsquemaRadioterapia", "VAR92_CodigoIPS1SuministraRadioterapia", "VAR93_CodigoIPS2SuministraRadioterapia", "VAR94_FechaFinalizacionPrimerUnicoEsquemaRadioterapia", "VAR95_CaracteristicasActualesPrimerEsquemaRadioterapia", "VAR96_MotivoFinalizacionPrimerEsquemaRadioterapia", "VAR97_FechaInicioUltimoEsquemaRadioterapia", "VAR98_UbicacionTemporalUltimoEsquemaRadioterapia", "VAR99_TipoRadioterapiaAplicadaUltimoEsquemaRadioterapia", "VAR100_NumeroIPSSuministranUltimoEsquemaRadioterapia", "VAR101_CodigoIPS1SuministraRadioterapia1", "VAR102_CodigoIPS2SuministraRadioterapia1", "VAR103_FechaFinalizacionUltimoEsquemaRadioterapia", "VAR104_CaracteristicasActualesUltimoEsquemaRadioterapia", "VAR105_MotivoFinalizacionUltimoEsquemaRadioTerapia", "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras", "VAR107_TipoTrasplanteRecibido", "VAR108_UbicacionTemporalTrasplanteOncologico", "VAR109_FechaTrasplante", "VAR110_CodigoIPSRealizoTrasplante", "VAR111_UsuarioRecibioCirugiaReconstructiva", "VAR112_FechaCirugia", "VAR113_CodigoIPSRealizoCirugiaReconstructiva", "VAR114_UsuarioValoradoConsultaProcedimientoPaliativo", "VAR114_1_UsuarioRecibioConsultaProcedimientoCuidadoPaliativ", "VAR114_2_UsuarioRecibioConsultaCuidadoPaliativo", "VAR114_3_UsuarioRecibioConsultaPaliativoEspecialista", "VAR114_4_UsuarioRecibioConsultaPaliativoGeneral", "VAR114_5_UsuarioRecibioConsultaPaliativoTrabajoSocial", "VAR114_6_UsuarioRecibioConsultaPaliativoNoEspecializado", "VAR115_FechaPrimeraConsultaPaliativoCorte", "VAR116_CodigoIPSRecibioPrimeraValoracionPaliativo", "VAR117_HaSidoValoradoUsuarioPorServicioPsiquiatria", "VAR118_FechaPrimeraConsultaServicioPsiquiatria", "VAR119_CodigoIPSRecibioPrimeraValoracionPsiquiatria", "VAR120_FueValoradoUsuarioPorProfesionalNutricion", "VAR121_FechaConsultaInicialNutricionCorte", "VAR122_CodigoIPSRecibioValoracionNutricion", "VAR123_UsuarioRecibioSoporteNutricional", "VAR124_UsuarioRecibidoTerapiasComplementariasRehabilitaci", "VAR125_TipoTratamientoRecibiendoUsuarioFechaCorte", "VAR126_ResultadoFinalManejoOncologicoCorte", "VAR127_EstadoVitalFinalizarCorte", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior", "VAR129_NovedadClinicaUsuarioFechaCorte", "VAR130_FechaDesafiliacionEPS", "VAR131_FechaMuerte", "VAR132_CausaMuerte", "VAR133_SerialBDUA", "VAR134_V134FechaCorte", "Dx"];
 
         const canonKey = (k) => (k || "").toString().trim().replace(/\s+/g, "");
 
@@ -578,34 +794,23 @@
 
 
 
-        // 5) Saneo general (tu estándar) + defaults + formato de fecha
-        window.applyFieldRules = window.applyFieldRules || function (keyStore, rawValue) {
+        // 5) Saneo general (tu estándar) + defaults + formato de fecha + Lógica de IPS
+        window.applyFieldRules = function (keyStore, rawValue) {
                 let v = (rawValue ?? "").toString();
 
-                // Si es fecha: restringe a números y guiones y formatea a AAAA-MM-DD si hay 8 dígitos
+                const numVar = parseInt(keyStore.match(/VAR(\d+)/)?.[1] || "0");
+                const ipsVars = [11, 22, 25, 35, 36, 37, 38, 39, 51, 52, 64, 65, 77, 82, 92, 93, 101, 102, 110, 113, 116, 119, 122, 124];
+
+                // Si es fecha: restringe a números y guiones y formatea a AAAA-MM-DD
                 if (isDateKey(keyStore)) {
-                        // FORZAR SIEMPRE AAAA-MM-DD (ISO), sin depender del formato visible del navegador
                         const el = document.getElementById(`f_${keyStore}`);
-
-                        // Camino perfecto: input type="date"
                         if (el && el.type === "date" && el.valueAsDate instanceof Date) {
-                                const d = el.valueAsDate; // fecha real seleccionada
-                                const Y = d.getFullYear();
-                                const M = String(d.getMonth() + 1).padStart(2, "0");
-                                const D = String(d.getDate()).padStart(2, "0");
-                                return `${Y}-${M}-${D}`;
+                                const d = el.valueAsDate;
+                                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
                         }
-
-                        // Fallback: si por alguna razón llega como DD/MM/AAAA, lo convertimos a ISO
-                        const s = (rawValue ?? "").toString().trim();
-                        const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                        if (m) {
-                                const dd = m[1], mm = m[2], yyyy = m[3];
-                                return `${yyyy}-${mm}-${dd}`;
-                        }
-
-                        // Si ya viene ISO, lo devuelve tal cual; si viene basura, queda como está (y tu validador lo pinta rojo)
-                        return s;
+                        const m = (rawValue ?? "").toString().trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+                        return (rawValue ?? "").toString().trim();
                 }
 
                 // Saneo general para texto
@@ -615,8 +820,14 @@
                         .replace(/[^A-Z0-9 -]/g, "")
                         .trimStart();
 
+                // Lógica específica IPS (Ceros a la izquierda para 12 dígitos)
+                if (ipsVars.includes(numVar)) {
+                        v = v.replace(/\D/g, '');
+                        if (v.length === 11) v = "0" + v;
+                }
+
                 // Default por variable si está vacío
-                const rule = window.FIELD_RULES[keyStore];
+                const rule = (window.FIELD_RULES || {})[keyStore];
                 if (rule?.defaultIfEmpty && v.trim() === "") v = rule.defaultIfEmpty;
 
                 return v.trim();
@@ -3112,6 +3323,21 @@
         };
 
         // --- FUNCIÓN PARA DEVOLVER A PENDIENTES (CORREGIDA) ---
+        window.cerrarModal = () => {
+                const modal = document.getElementById("modalPaciente");
+                if (modal) modal.style.display = "none";
+
+                currentPacienteId = null;
+                cohorteModalActual = null;
+                ultimaVariableEnfocada = "";
+                window.__modalReadOnly = false;
+                window.__originalVariables = {};
+                window.startTime = null;
+                const timerEl = document.getElementById("gestionTimer");
+                if (timerEl) timerEl.textContent = "00:00";
+                if (window.timerInterval) clearInterval(window.timerInterval);
+        };
+
         window.revertirEstado = async () => {
                 if (!currentPacienteId) {
                         console.error("No se encontró el ID del paciente actual.");
@@ -3153,10 +3379,7 @@
                 }
         };
 
-        window.cerrarModal = () => {
-                document.getElementById("modalPaciente").style.display = "none";
-                clearInterval(timerInterval);
-        };
+        // cerrarModal ya está definido arriba con la lógica de lock — esta versión fue eliminada para evitar sobreescritura
 
         window.descartarCambios = () => {
                 if (confirm("¿Está seguro de descartar los cambios? Se cerrará la ficha sin guardar.")) {
@@ -3862,8 +4085,6 @@
 
                                 if (val111 === "2" || val111 === "98") {
                                         enforce("113", "98", "Sin Cirugía Reconstructiva -> IPS N.A.");
-                                        enforce("112", S_NO_APPLY, "Sin Cirugía Reconstructiva -> Fecha N.A.");
-                                } else if (val111 === "1") {
                                         if (val112 === S_NO_APPLY) {
                                                 marcarErrorDuro("111", "Incoherencia: VAR111=1 pero Fecha=1845. Corrija la fecha o cambie a 98.");
                                         } else if (val112 !== "" && val112 !== S_UNKNOWN && val112 < PERIODO_INICIO) {
@@ -3905,20 +4126,6 @@
                         console.error("Error SISCAD:", e);
                 }
         };
-        // =========================================================
-        // ⚡ 4. REGLAS DE TEXTO Y FLUJO EN TIEMPO REAL
-        // =========================================================
-        window.applyFieldRules = (keyStore, value) => {
-                let v = value.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/Ñ/g, "N").replace(/[^A-Z0-9 -]/g, "").trimStart();
-                const match = keyStore.match(/VAR(\d+)/i);
-                if (!match) return v;
-                const numVar = parseInt(match[1]);
-                const cohorteNorm = String(cohorteModalActual || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-                let ipsVars = (cohorteNorm === "cancer") ? [25, 51, 52, 64, 65, 77, 82, 92, 93, 101, 102, 110, 113, 116, 119, 122] : [22, 39];
-                if (ipsVars.includes(numVar)) { v = v.replace(/\D/g, ''); if (v.length === 11) v = "0" + v; }
-                return v;
-        };
 
         window.controlarFlujoYLimpieza = (keyStore) => {
                 const el = document.getElementById(`f_${keyStore}`);
@@ -3947,7 +4154,16 @@
         // =========================================================
         // 🚀 5. ABRIR FICHA (Carga con inyección de estado Volátil y Cronómetro)
         // =========================================================
-        window.abrirFicha = (id, data) => {
+        window.abrirFicha = async (id, data) => {
+                // 🔒 INTERCEPTOR DE LOCKS
+                if (typeof window.__altoCostoLocks?.tomarLockFicha === 'function') {
+                    const res = await window.__altoCostoLocks.tomarLockFicha(id);
+                    if (res.blocked) {
+                        alert(res.message);
+                        return;
+                    }
+                }
+                
                 currentPacienteId = id;
                 // Capture snapshot of original variables to track human vs automatic changes
                 const pSnapshot = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
@@ -4000,14 +4216,33 @@
                         }
                         if (btnDevolver) btnDevolver.style.display = "none";
 
-                        // Solo el analista puede ver el botón de marcar no cohorte
+                        // 📌 Regla de Negocio: Solo la Analista puede MARCAR. Admins solo pueden VER si ya está marcado.
                         if (btnNoCohorte) {
-                                btnNoCohorte.style.display = esAnalista ? "inline-block" : "none";
                                 const yaMarcado = data?.periodos?.[periodoSel]?.no_cohorte === true;
-                                btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
-                                btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
-                                if (yaMarcado) btnNoCohorte.onclick = null;
-                                else btnNoCohorte.onclick = () => window.marcarNoCohorte();
+                                const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin";
+
+                                // Mostrar botón si: Es analista (para marcar o ver) O es Admin y ya está marcado (solo para ver)
+                                if (esAnalista || (esMasterOSuper && yaMarcado)) {
+                                    btnNoCohorte.style.display = "inline-block";
+                                    btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
+                                    btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
+                                    
+                                    if (yaMarcado) {
+                                        btnNoCohorte.onclick = null;
+                                        btnNoCohorte.style.opacity = "0.7";
+                                        btnNoCohorte.style.cursor = "not-allowed";
+                                    } else if (esAnalista) {
+                                        // Solo la analista tiene el evento activo para marcar
+                                        btnNoCohorte.onclick = () => window.marcarNoCohorte();
+                                        btnNoCohorte.style.opacity = "1";
+                                        btnNoCohorte.style.cursor = "pointer";
+                                    } else {
+                                        // Caso Admin viendo algo no marcado (por si acaso entra aquí, aunque el display lo oculta)
+                                        btnNoCohorte.style.display = "none";
+                                    }
+                                } else {
+                                    btnNoCohorte.style.display = "none";
+                                }
                         }
                 }
 
@@ -4059,8 +4294,24 @@
                         const attrVolatil = (!readOnly && esVolatil && String(val).trim() !== "") ? `data-volatil="true" data-confirmado="false"` : '';
 
                         // El tooltip (tip) se busca siempre con la clave técnica ORIGINAL (v)
-                        const tip = (ayuda[v] || ayuda[keyStore] || "").toString().trim();
-                        const labelHTML = `${esc(labelUI)} ${tip ? `<span class="info-icon" data-tip="${esc(tip)}">i</span>` : ``} <span style="color:red;">*</span>`;
+                        // Búsqueda resiliente (Case-insensitive y sin espacios)
+                        const getTip = (obj, k) => {
+                            if (!obj || !k) return "";
+                            // 1. Coincidencia exacta
+                            if (obj[k]) return obj[k];
+                            
+                            // 2. Coincidencia normalizada (Mayúsculas y sin espacios)
+                            const kNorm = k.toUpperCase().replace(/\s+/g, "");
+                            const found = Object.keys(obj).find(key => {
+                                return key.toUpperCase().replace(/\s+/g, "") === kNorm;
+                            });
+                            return found ? obj[found] : "";
+                        };
+                        
+                        const rawTip = (getTip(ayuda, v) || getTip(ayuda, keyStore) || "").toString().trim();
+                        // Si no hay tip, mostramos un mensaje genérico para que siempre aparezca el icono 'i'
+                        const tip = rawTip || "Dato obligatorio según instructivo técnico de la Cuenta de Alto Costo (CAC).";
+                        const labelHTML = `${esc(labelUI)} <span class="info-icon" data-tip="${esc(tip)}">i</span> <span style="color:red;">*</span>`;
 
 
                         // Selects Anidados (Estadio)
@@ -4296,6 +4547,13 @@
         // =========================================================
         async function cargarPacientes() {
                 const authedUser = await ensureAuth();
+                
+                // 🔄 Sync Visual Locks
+                if (window.__altoCostoLocks?.refrescarLocksVisuales) {
+                    window.__altoCostoLocks.refrescarLocksVisuales();
+                    iniciarRefreshLocks();
+                }
+
                 if (!authedUser) {
                     console.warn("[ALTO_COSTO] No se puede cargar sin sesión.");
                     // No bloqueamos por si acaso, pero avisamos
@@ -4608,12 +4866,15 @@
                             </button>`;
 
                                         if (canHide) {
+                                                const hideBtnStyle = esNoCohorte && !yaOculto
+                                                        ? "background:#fee2e2; border:1px solid #f87171; border-radius:4px; opacity:1;"
+                                                        : "background:none;border:none;opacity:0.5;";
                                                 btnActionCell += `
                                 <button onclick="event.stopPropagation(); window.${yaOculto ? 'restaurarPacientePeriodo' : 'ocultarPacientePeriodo'}('${idDoc}','${pPeriodo}', '${nombrePaciente.replace(/'/g, "\\'")}')"
-                                    title="${yaOculto ? 'Restaurar' : 'Ocultar'}"
-                                    style="background:none;border:none;cursor:pointer;font-size:16px;padding:2px 4px;opacity:0.5;"
-                                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.5'">
-                                    ${yaOculto ? '👁️' : '🙈'}
+                                    title="${yaOculto ? 'Restaurar' : (esNoCohorte ? 'Eliminar (recomendado por analista)' : 'Ocultar')}"
+                                    style="cursor:pointer;font-size:16px;padding:2px 4px;${hideBtnStyle}"
+                                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='${esNoCohorte && !yaOculto ? '1' : '0.5'}'">
+                                    ${yaOculto ? '👁️' : (esNoCohorte ? '🚫' : '🙈')}
                                 </button>`;
                                         }
 
@@ -4642,7 +4903,7 @@
                             <td style="padding-left:12px !important;"><span class="pac-id">${idMostrar}</span></td>
                             <td>
                                 <div style="display:flex; flex-direction:column; gap:3px; line-height:1.3;">
-                                    <span class="pac-nombre" style="font-weight:600;">${nombrePaciente}</span>
+                                    <span class="pac-nombre" style="font-weight:600;">${nombrePaciente} ${signalNoCohorte}</span>
                                     ${badgeTipo}
                                 </div>
                             </td>
@@ -6324,9 +6585,8 @@
                 }
         });
 
-        // ─── SISTEMA DE TOOLTIPS DE AYUDA ──────────────────────────────
-        const initTooltips = () => {
-                // Crear el elemento tooltip global (uno solo reutilizable)
+        // ─── SISTEMA DE TOOLTIPS DE AYUDA (DELEGACIÓN GLOBAL) ─────────
+        window.initTooltips = () => {
                 let tooltipEl = document.getElementById('tooltip-ayuda-global');
                 if (!tooltipEl) {
                         tooltipEl = document.createElement('div');
@@ -6335,11 +6595,11 @@
                         document.body.appendChild(tooltipEl);
                 }
 
-                // Delegación de eventos en el modal body
-                const modalBody = document.getElementById('formVariablesContainer');
-                if (!modalBody) return;
+                if (window.__tooltipsInitialized) return;
+                window.__tooltipsInitialized = true;
 
-                modalBody.addEventListener('mouseover', (e) => {
+                // Delegación en document.body para máxima resiliencia ante cambios de DOM
+                document.body.addEventListener('mouseover', (e) => {
                         const icon = e.target.closest('.info-icon');
                         if (!icon) return;
 
@@ -6349,41 +6609,42 @@
                         tooltipEl.textContent = tip;
                         tooltipEl.classList.add('visible');
 
-                        // Posicionar debajo del ícono
                         const rect = icon.getBoundingClientRect();
                         let top = rect.bottom + 8;
                         let left = rect.left;
 
-                        // Evitar que se salga por la derecha
-                        if (left + 320 > window.innerWidth) {
-                                left = window.innerWidth - 330;
-                        }
-                        // Evitar que se salga por abajo
-                        if (top + 100 > window.innerHeight) {
-                                top = rect.top - tooltipEl.offsetHeight - 8;
-                        }
+                        if (left + 320 > window.innerWidth) left = window.innerWidth - 330;
+                        if (top + 100 > window.innerHeight) top = rect.top - (tooltipEl.offsetHeight || 40) - 8;
 
                         tooltipEl.style.top = top + 'px';
                         tooltipEl.style.left = left + 'px';
-                });
+                }, true);
 
-                modalBody.addEventListener('mouseout', (e) => {
-                        const icon = e.target.closest('.info-icon');
-                        if (!icon) return;
-                        tooltipEl.classList.remove('visible');
-                });
+                document.body.addEventListener('mouseout', (e) => {
+                        if (e.target.closest('.info-icon')) {
+                            tooltipEl.classList.remove('visible');
+                        }
+                }, true);
 
-                // Cerrar si se hace scroll
-                modalBody.addEventListener('scroll', () => {
-                        tooltipEl.classList.remove('visible');
-                });
+                // Ocultar si se hace scroll o click en cualquier parte
+                window.addEventListener('scroll', () => tooltipEl.classList.remove('visible'), true);
+                document.addEventListener('mousedown', () => tooltipEl.classList.remove('visible'), true);
         };
 
         // Inicializar tooltips cada vez que se abre una ficha
         const originalAbrirFicha = window.abrirFicha;
-        window.abrirFicha = function (...args) {
-                originalAbrirFicha.apply(this, args);
+        window.abrirFicha = async function (...args) {
+                await originalAbrirFicha.apply(this, args);
                 setTimeout(initTooltips, 200);
+        };
+
+        // 🔒 LIBERAR BLOQUEO AL CERRAR
+        window.cerrarModal = async () => {
+            if (lockState.currentPatientId) {
+                await liberarLockFicha(lockState.currentPatientId);
+            }
+            const modal = document.getElementById("modalPaciente");
+            if (modal) modal.style.display = "none";
         };
 
 
@@ -6447,5 +6708,4 @@
                         alert("Error al marcar registro: " + error.message);
                 }
         };
-
 })();

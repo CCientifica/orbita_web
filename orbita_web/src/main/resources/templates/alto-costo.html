@@ -15,6 +15,13 @@
         .dashboard-layout { display: flex; min-height: 100vh; background-color: #f8fafc; font-family: 'Outfit', sans-serif; overflow: hidden; }
         .content-wrapper { width: 100%; padding-left: 280px; min-height: 100vh; transition: padding-left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; }
         @media (max-width: 991px) { .content-wrapper { padding-left: 0; } .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .navbar { padding: 0 1rem; } .user-info { display: none; } }
+        
+        /* 🔒 Concurrency Lockdown Styles */
+        .lock-by-me { background-color: rgba(59, 130, 246, 0.05) !important; border-left: 4px solid #3b82f6 !important; transition: all 0.2s ease; }
+        .lock-by-other { background-color: rgba(239, 68, 68, 0.03) !important; cursor: not-allowed !important; opacity: 0.85; filter: grayscale(0.2); pointer-events: none; border-left: 4px solid #ef4444 !important; }
+        .lock-by-other td { color: #94a3b8 !important; }
+        .lock-badge-inline { animation: pulseLock 2s infinite; }
+        @keyframes pulseLock { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 
@@ -1556,7 +1563,7 @@
                 </div>
                 <div class="d-flex gap-3 align-items-center">
                     <div id="gestionTimer" class="h4 m-0 fw-800 text-secondary bg-light px-3 py-1 rounded-3">00:00</div>
-                    <button onclick="cerrarModal()" class="btn btn-light rounded-circle p-2 border-0" title="Cerrar">
+                    <button onclick="window.cerrarModal()" class="btn btn-light rounded-circle p-2 border-0" title="Cerrar">
                         <i data-lucide="x" style="width: 20px;"></i>
                     </button>
                 </div>
@@ -1636,7 +1643,7 @@
     <script th:inline="javascript">
         // Se eliminó la inicialización externa para evitar condiciones de carrera con el módulo principal.
     </script>
-    <script type="module" th:src="@{/js/altocosto.js}"></script>
+    <script type="module" th:src="@{/js/altocosto.js(v=20260406_03)}"></script>
 </body>
 
 </html>

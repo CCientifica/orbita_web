@@ -39,7 +39,7 @@
                         </p>
                     </div>
 
-                    <div class="glass-card flex-1 min-w-[380px] !p-5 flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
+                    <div class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
                         <div class="flex justify-between items-start mb-2">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción Próxima Quincena</p>
                             <span class="material-icons text-blue-500">auto_awesome</span>
@@ -57,8 +57,8 @@
 
                 <!-- CONTROLES -->
                 <div class="flex flex-wrap items-center gap-4">
-                    <div class="glass-card !p-2 !rounded-2xl flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
-                        <div class="toolbar-pill !px-3 !py-2">
+                    <div class="glass-card p-2! rounded-2xl! flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
+                        <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-blue-500 text-sm">apartment</span>
                             <select id="pabSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option>Segundo piso</option>
@@ -66,18 +66,18 @@
                                 <option>UCI / UCE</option>
                             </select>
                         </div>
-                        <div class="toolbar-pill !px-3 !py-2">
+                        <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-purple-500 text-sm">schedule</span>
                             <select id="tipoSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="M" selected>Mensual</option>
                                 <option value="Q">Quincenal</option>
                             </select>
                         </div>
-                        <div class="toolbar-pill !px-3 !py-2">
+                        <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-emerald-500 text-sm">event</span>
                             <input id="monthInput" type="month" class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
                         </div>
-                        <div id="quinWrap" class="toolbar-pill !px-3 !py-2 hidden">
+                        <div id="quinWrap" class="toolbar-pill px-3! py-2! hidden">
                             <span class="material-icons text-amber-500 text-sm">per_day</span>
                             <select id="quinInput" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="1">1ra (1-15)</option>
@@ -87,7 +87,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button id="saveBtn" class="btn-rcf btn-primary-rcf !px-5 !py-3">
+                        <button id="saveBtn" class="btn-rcf btn-primary-rcf px-5! py-3!">
                             <span class="material-icons text-sm">save</span> Guardar Datos
                         </button>
                         <div class="flex gap-1">
@@ -105,7 +105,7 @@
                 </div>
 
                 <!-- ALERTA DINÁMICA -->
-                <div id="urgentAlert" class="hidden animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+                <div id="urgentAlert" style="display:none;" class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                             <span class="material-icons">medical_services</span>
@@ -122,7 +122,7 @@
 
                 <!-- DASHBOARD KPI -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="stat-card border-b-4 border-b-blue-600 !p-6">
+                    <div class="stat-card border-b-4 border-b-blue-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Médicos RCF</p>
                             <div class="tooltip-container">
@@ -132,7 +132,7 @@
                         </div>
                         <h2 id="mRCF" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
                     </div>
-                    <div class="stat-card border-b-4 border-b-rose-600 !p-6">
+                    <div class="stat-card border-b-4 border-b-rose-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Brecha Hosvital</p>
                             <div class="tooltip-container">
@@ -142,7 +142,7 @@
                         </div>
                         <h2 id="mHOS" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
                     </div>
-                    <div class="stat-card border-b-4 border-b-emerald-600 !p-6">
+                    <div class="stat-card border-b-4 border-b-emerald-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Efectividad %</p>
                         </div>
@@ -151,7 +151,7 @@
                             <div id="mUsoBar" class="bg-emerald-500 h-full" style="width: 0%"></div>
                         </div>
                     </div>
-                    <div class="stat-card border-b-4 border-b-blue-400 !bg-slate-900 !text-white !p-6 flex flex-col justify-center">
+                    <div class="stat-card border-b-4 border-b-blue-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
                         <div class="flex justify-between items-center mb-4 text-white/40">
                             <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">AI Medical Score</p>
                             <span class="material-icons text-blue-400 text-2xl">insights</span>
@@ -161,7 +161,7 @@
                 </div>
 
                 <!-- TABLA DE DATOS -->
-                <div class="glass-card shadow-2xl !p-0 overflow-hidden border border-slate-100">
+                <div class="glass-card shadow-2xl p-0! overflow-hidden border border-slate-100">
                     <div class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
                         <h2 class="text-lg font-black text-slate-800 tracking-tight">Personal Médico en Servicio</h2>
                         <div class="flex items-center gap-2">
@@ -202,7 +202,7 @@
                 </div>
 
                 <!-- ANALÍTICA AVANZADA -->
-                <section id="alertsSec" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+                <section id="alertsSec" style="display:none;" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
                     <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white">
                         <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
                             <span class="material-icons animate-pulse">analytics</span> Reporte de Adhesión Crítica
@@ -238,11 +238,17 @@
     const initMedicosAnalytics = async () => {
         if (isMedicosInitialized) return;
         if (!window.firebaseInstance || !window.firebaseFirestore) return;
-        isMedicosInitialized = true;
-
-            const { auth, db } = window.firebaseInstance;
+             const { auth, db } = window.firebaseInstance;
             const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
-            const { onAuthStateChanged } = window.firebaseAuth;
+
+            const ensureAuth = async () => {
+                if (!auth || !auth.currentUser) {
+                    try {
+                        await window.firebaseAuth.signInAnonymously();
+                    } catch (e) { console.error("Auth error:", e); }
+                }
+                return auth?.currentUser;
+            };
 
             // Umbrales Médicos
             const V_CRIT = 5, V_WARN = 15, H_WARN_P = 0.40, H_CRIT_P = 0.70;
@@ -306,6 +312,7 @@
             }
 
             async function loadPeriodo(m = getEl("monthInput").value) {
+                await ensureAuth();
                 const t = getEl("tipoSelect").value, p = getEl("pabSelect").value, q = t === "Q" ? getEl("quinInput").value : "0";
                 getEl("tbody").innerHTML = "";
                 try {
@@ -315,6 +322,42 @@
                     recalcAll();
                     msg("Sincronización Médica Exitosa", "success");
                 } catch (e) { msg("Error de carga", "err"); }
+            }
+
+            async function copyPreviousMonth() {
+                await ensureAuth();
+                const currentM = getEl("monthInput").value;
+                if (!currentM) return;
+                const [y, m] = currentM.split("-").map(Number);
+                let prevY = y, prevM = m - 1;
+                if (prevM === 0) { prevM = 12; prevY--; }
+                const prevMStr = `${prevY}-${String(prevM).padStart(2, "0")}`;
+                
+                const pab = getEl("pabSelect").value;
+                const t = getEl("tipoSelect").value;
+                const q = t === "Q" ? getEl("quinInput").value : "0";
+
+                try {
+                    const qy = query(collection(db, "rcf_medicos_periodos"), 
+                        where("tipo", "==", t), 
+                        where("month", "==", prevMStr), 
+                        where("quincena", "==", q), 
+                        where("pabellon", "==", pab));
+                    const snap = await getDocs(qy);
+                    if (snap.empty) {
+                        alert("No se encontraron registros del mes anterior (" + prevMStr + ") para este pabellón.");
+                        return;
+                    }
+                    
+                    if (!confirm("Se copiarán los médicos de " + prevMStr + ". Se borrará lo que tengas en pantalla. ¿Continuar?")) return;
+                    
+                    getEl("tbody").innerHTML = "";
+                    snap.forEach(d => {
+                        const x = d.data();
+                        addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, 0, 0);
+                    });
+                    msg("Base cargada desde " + prevMStr, "success");
+                } catch (e) { msg("Error al copiar datos previos", "err"); }
             }
 
             function recalcAll() {
@@ -364,6 +407,7 @@
                 setTimeout(() => s.style.display = "none", 3000);
             }
 
+            getEl("quickPrevBtn").addEventListener("click", () => copyPreviousMonth());
             getEl("monthInput").addEventListener("change", () => loadPeriodo());
             getEl("pabSelect").addEventListener("change", () => loadPeriodo());
             getEl("tipoSelect").addEventListener("change", () => {
@@ -373,6 +417,7 @@
             getEl("quinInput").addEventListener("change", () => loadPeriodo());
             getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
             getEl("saveBtn").addEventListener("click", async () => {
+                 await ensureAuth();
                  const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
                  try {
                      for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
@@ -388,9 +433,10 @@
                  } catch(e) { alert("Fallo al guardar"); }
             });
 
-            onAuthStateChanged(auth, u => { if(u) loadPeriodo(defaultMonth); });
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { if(u) loadPeriodo(defaultMonth); });
             // Compliance Engine Medicos
             const updateCompliance = async () => {
+                await ensureAuth();
                 const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
                 const now = new Date();
                 const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);

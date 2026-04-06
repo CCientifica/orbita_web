@@ -40,7 +40,7 @@
                         </p>
                     </div>
 
-                    <div class="glass-card flex-1 min-w-[380px] !p-5 flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
+                    <div class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
                         <div class="flex justify-between items-start mb-2">
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción Próxima Quincena</p>
                             <span class="material-icons text-blue-500">auto_awesome</span>
@@ -58,8 +58,8 @@
 
                 <!-- CONTROL INTELECTUAL -->
                 <div class="flex flex-wrap items-center gap-4">
-                    <div class="glass-card !p-2 !rounded-2xl flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
-                        <div class="toolbar-pill !px-3 !py-2">
+                    <div class="glass-card p-2! rounded-2xl! flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
+                        <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-blue-500 text-sm">apartment</span>
                             <select id="pabSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option>Segundo piso</option>
@@ -68,18 +68,18 @@
                                 <option>UCI / UCE</option>
                             </select>
                         </div>
-                        <div class="toolbar-pill !px-3 !py-2">
+                        <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-purple-500 text-sm">schedule</span>
                             <select id="tipoSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="M" selected>Mensual</option>
                                 <option value="Q">Quincenal</option>
                             </select>
                         </div>
-                        <div class="toolbar-pill !px-3 !py-2">
+                        <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-emerald-500 text-sm">event</span>
                             <input id="monthInput" type="month" class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
                         </div>
-                        <div id="quinWrap" class="toolbar-pill !px-3 !py-2 hidden">
+                        <div id="quinWrap" class="toolbar-pill px-3! py-2! hidden">
                             <span class="material-icons text-amber-500 text-sm">pin</span>
                             <select id="quinInput" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="1">1ra</option>
@@ -89,7 +89,7 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button id="saveBtn" class="btn-rcf btn-primary-rcf !px-5 !py-3">
+                        <button id="saveBtn" class="btn-rcf btn-primary-rcf px-5! py-3!">
                             <span class="material-icons text-sm">save</span> Guardar Datos
                         </button>
                         <div class="flex gap-1">
@@ -104,7 +104,7 @@
                 </div>
 
                 <!-- ALERTA DINÁMICA DE SISTEMA -->
-                <div id="urgentAlert" class="hidden animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+                <div id="urgentAlert" style="display:none;" class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                             <span class="material-icons">emergency_share</span>
@@ -121,7 +121,7 @@
 
                 <!-- DASHBOARD KPI -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="stat-card border-b-4 border-b-blue-600 !p-6">
+                    <div class="stat-card border-b-4 border-b-blue-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registros Eff.</p>
                             <div class="tooltip-container">
@@ -131,7 +131,7 @@
                         </div>
                         <h2 id="mRCF" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
                     </div>
-                    <div class="stat-card border-b-4 border-b-rose-600 !p-6">
+                    <div class="stat-card border-b-4 border-b-rose-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuga Datos</p>
                             <div class="tooltip-container">
@@ -141,7 +141,7 @@
                         </div>
                         <h2 id="mHOS" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
                     </div>
-                    <div class="stat-card border-b-4 border-b-emerald-600 !p-6">
+                    <div class="stat-card border-b-4 border-b-emerald-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">% Adhesión</p>
                         </div>
@@ -150,7 +150,7 @@
                             <div id="mUsoBar" class="bg-emerald-500 h-full" style="width: 0%"></div>
                         </div>
                     </div>
-                    <div class="stat-card border-b-4 border-b-blue-400 !bg-slate-900 !text-white !p-6 flex flex-col justify-center">
+                    <div class="stat-card border-b-4 border-b-blue-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
                         <div class="flex justify-between items-center mb-4 text-white/40">
                             <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">Motor IA Predictive</p>
                             <span class="material-icons text-blue-400 text-2xl animate-spin-slow">psychology</span>
@@ -160,7 +160,7 @@
                 </div>
 
                 <!-- ANALISIS DE PABELLÓN -->
-                <div class="glass-card shadow-2xl !p-0 overflow-hidden border border-slate-100">
+                <div class="glass-card shadow-2xl p-0! overflow-hidden border border-slate-100">
                     <div class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
                         <h2 class="text-lg font-black text-slate-800 tracking-tight">Escrutinio Operativo de Personal</h2>
                         <div class="flex items-center gap-2">
@@ -200,7 +200,7 @@
                 </div>
 
                 <!-- SECCIÓN ANALÍTICA AVANZADA -->
-                <section id="alertsSec" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+                <section id="alertsSec" style="display:none;" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
                     <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white">
                         <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
                             <span class="material-icons animate-pulse">analytics</span> Rendimiento Logístico
@@ -240,7 +240,15 @@
 
             const { auth, db } = window.firebaseInstance;
             const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
-            const { onAuthStateChanged } = window.firebaseAuth;
+
+            const ensureAuth = async () => {
+                if (!auth || !auth.currentUser) {
+                    try {
+                        await window.firebaseAuth.signInAnonymously();
+                    } catch (e) { console.error("Auth error:", e); }
+                }
+                return auth?.currentUser;
+            };
 
             const pad = n => String(n).padStart(2, "0");
             const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -301,6 +309,7 @@
             }
 
             async function loadPeriodo(m = getEl("monthInput").value) {
+                await ensureAuth();
                 const t = getEl("tipoSelect").value, p = getEl("pabSelect").value, q = t === "Q" ? getEl("quinInput").value : "0";
                 getEl("tbody").innerHTML = "";
                 try {
@@ -310,6 +319,42 @@
                     recalcAll();
                     msg("Sincronización Auxiliares Exitosa", "success");
                 } catch (e) { msg("Error de carga", "err"); }
+            }
+
+            async function copyPreviousMonth() {
+                await ensureAuth();
+                const currentM = getEl("monthInput").value;
+                if (!currentM) return;
+                const [y, m] = currentM.split("-").map(Number);
+                let prevY = y, prevM = m - 1;
+                if (prevM === 0) { prevM = 12; prevY--; }
+                const prevMStr = `${prevY}-${String(prevM).padStart(2, "0")}`;
+                
+                const pab = getEl("pabSelect").value;
+                const t = getEl("tipoSelect").value;
+                const q = t === "Q" ? getEl("quinInput").value : "0";
+
+                try {
+                    const qy = query(collection(db, "rcf_auxiliares_periodos"), 
+                        where("tipo", "==", t), 
+                        where("month", "==", prevMStr), 
+                        where("quincena", "==", q), 
+                        where("pabellon", "==", pab));
+                    const snap = await getDocs(qy);
+                    if (snap.empty) {
+                        alert("No se encontraron registros del mes anterior (" + prevMStr + ") para este pabellón.");
+                        return;
+                    }
+                    
+                    if (!confirm("Se copiarán los profesionales de " + prevMStr + ". Se borrará lo que tengas en pantalla. ¿Continuar?")) return;
+                    
+                    getEl("tbody").innerHTML = "";
+                    snap.forEach(d => {
+                        const x = d.data();
+                        addRow(x.pabellon, x.cod_prof, x.doc_prof, x.nombre, 0, 0);
+                    });
+                    msg("Base cargada desde " + prevMStr, "success");
+                } catch (e) { msg("Error al copiar datos previos", "err"); }
             }
 
             function recalcAll() {
@@ -360,9 +405,12 @@
                 setTimeout(() => s.style.display = "none", 3000);
             }
 
+            getEl("quickPrevBtn").addEventListener("click", () => copyPreviousMonth());
+            getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
             getEl("monthInput").addEventListener("change", () => loadPeriodo());
             getEl("pabSelect").addEventListener("change", () => loadPeriodo());
             getEl("saveBtn").addEventListener("click", async () => {
+                 await ensureAuth();
                  const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
                  try {
                      for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
@@ -378,9 +426,10 @@
                  } catch(e) { alert("Fallo al guardar"); }
             });
 
-            onAuthStateChanged(auth, u => { if(u) loadPeriodo(defaultMonth); });
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { if(u) loadPeriodo(defaultMonth); });
             // Compliance Engine Auxiliares
             const updateCompliance = async () => {
+                await ensureAuth();
                 const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
                 const now = new Date();
                 const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
@@ -408,8 +457,8 @@
                     } else {
                         msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
                         badge.textContent = "VENCIDO";
-                        badge.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10";
-                        icon.className = "w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";
+                        badge.className = badge.className.replace("bg-emerald-500", "bg-rose-500");
+                        icon.className = icon.className.replace("emerald", "rose");
                     }
                 }
             };

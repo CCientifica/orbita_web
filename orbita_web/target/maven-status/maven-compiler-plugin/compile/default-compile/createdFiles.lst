@@ -1,7 +1,9 @@
+com\clinica\ctc\controller\RecordLockController.class
 com\clinica\ctc\config\OrbitaProperties.class
 META-INF\spring-configuration-metadata.json
 com\clinica\ctc\config\GeminiProperties.class
 com\clinica\ctc\controller\AiController.class
+com\clinica\ctc\controller\RecordLockController$LockInfo.class
 com\clinica\ctc\model\UsuarioPermitido.class
 com\clinica\ctc\repository\UsuarioRepository.class
 com\clinica\ctc\CheckDb.class
@@ -22,5 +24,6 @@ com\clinica\ctc\controller\FirestoreController.class
 com\clinica\ctc\repository\UsuarioPermitidoRepository.class
 com\clinica\ctc\CtcApplication.class
 com\clinica\ctc\model\PacienteCac.class
+com\clinica\ctc\controller\RecordLockController$LockRequest.class
 com\clinica\ctc\security\RoleNormalizationUtils.class
 com\clinica\ctc\repository\RoleRepository.class
