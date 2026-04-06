@@ -35,8 +35,8 @@
         // 🔒 LOCKS DE FICHA - SOLO ALTO COSTO
         // ============================================================
         const LOCKS_API_BASE = '/api/altocosto/locks';
-        const LOCK_HEARTBEAT_MS = 60000;
-        const LOCKS_REFRESH_MS = 45000;
+        const LOCK_HEARTBEAT_MS = 120000; // 2 minutos (Ahorro de cuota)
+        const LOCKS_REFRESH_MS = 180000;  // 3 minutos (Ahorro de cuota)
 
         const lockState = {
                 currentPatientId: null,
@@ -221,6 +221,9 @@
         }
 
         function iniciarRefreshLocks() {
+                if (window.__isLockedTableInitialized) return; // ⚡ GUARDIA ANTI-LOOP 
+                window.__isLockedTableInitialized = true;
+
                 if (lockState.refreshTimer) clearInterval(lockState.refreshTimer);
                 lockState.refreshTimer = setInterval(() => {
                         refrescarLocksVisuales().catch(() => {});
@@ -6550,7 +6553,11 @@
                 const userEmailEl = document.getElementById("userEmail");
                 if (userEmailEl) userEmailEl.textContent = email;
 
-                cargarPacientes();
+                // ⚡ CARGA ÚNICA: Evitar que cambios de permisos disparen múltiples lecturas a Firestore
+                if (!window.__cargaInicialCompletada) {
+                    window.__cargaInicialCompletada = true;
+                    cargarPacientes();
+                }
         };
 
         // 🔄 ESCUCHA DE CONTEXTO REPARADA (Sincronizada con layout.html)
