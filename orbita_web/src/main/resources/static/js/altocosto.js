@@ -12,6 +12,19 @@
         }
 
         const { db, auth } = window.firebaseInstance;
+        const ensureAuth = async () => {
+            if (!auth || !auth.currentUser) {
+                // Si llegamos aquí y no hay auth, intentamos anónimo
+                try {
+                    await window.firebaseAuth.signInAnonymously();
+                    console.log("🔓 [ALTO_COSTO] Sesión anónima establecida");
+                } catch (e) {
+                    console.error("📛 [ALTO_COSTO] Fallo en sesión anónima:", e);
+                }
+            }
+            return auth?.currentUser;
+        };
+        await ensureAuth();
         const {
                 collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
                 query, where, orderBy, onSnapshot, serverTimestamp
@@ -4281,7 +4294,12 @@
         // =========================================================
         // 🔄 CARGAR PACIENTES Y DIBUJAR TABLA / DASHBOARD
         // =========================================================
-        function cargarPacientes() {
+        async function cargarPacientes() {
+                const authedUser = await ensureAuth();
+                if (!authedUser) {
+                    console.warn("[ALTO_COSTO] No se puede cargar sin sesión.");
+                    // No bloqueamos por si acaso, pero avisamos
+                }
                 const elMes = document.getElementById("filtroMes");
                 const elAnio = document.getElementById("filtroAnio");
                 if (!elMes || !elAnio) return;

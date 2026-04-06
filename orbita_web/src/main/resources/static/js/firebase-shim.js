@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
     getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
     query, where, orderBy, onSnapshot, serverTimestamp, limit, writeBatch
@@ -70,6 +70,7 @@ window.firebaseCloudDb = {
 window.firebaseAuth = {
     auth,
     onAuthStateChanged,
+    signInAnonymously: () => signInAnonymously(auth),
     getCurrentUser: () => auth.currentUser,
     signOut: async () => {
         try {
