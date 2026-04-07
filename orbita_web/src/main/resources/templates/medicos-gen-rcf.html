@@ -242,11 +242,7 @@
             const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
 
             const ensureAuth = async () => {
-                if (!auth || !auth.currentUser) {
-                    try {
-                        await window.firebaseAuth.signInAnonymously();
-                    } catch (e) { console.error("Auth error:", e); }
-                }
+                // Autenticación gestionada institucionalmente
                 return auth?.currentUser;
             };
 
@@ -263,7 +259,8 @@
                 const canvas = getEl('trendChart');
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
-                if (window.medicosChart) window.medicosChart.destroy();
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) existingChart.destroy();
                 window.medicosChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -433,7 +430,12 @@
                  } catch(e) { alert("Fallo al guardar"); }
             });
 
-            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { if(u) loadPeriodo(defaultMonth); });
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { 
+                if(u) {
+                    loadPeriodo(defaultMonth); 
+                    updateCompliance();
+                }
+            });
             // Compliance Engine Medicos
             const updateCompliance = async () => {
                 await ensureAuth();
@@ -469,7 +471,6 @@
                     }
                 }
             };
-            updateCompliance();
 
             updateChart();
         }

@@ -332,7 +332,7 @@
                     gap: 24px;
                 }
 
-                .modern-card {
+                .modern-card, .card {
                     background: var(--card);
                     border: 1px solid var(--border);
                     border-radius: 20px;
@@ -341,13 +341,14 @@
                     width: 100%;
                     overflow-x: auto;
                     transition: all 0.2s ease;
+                    margin-bottom: 24px;
                 }
 
-                .modern-card:hover {
+                .modern-card:hover, .card:hover {
                     box-shadow: var(--shadow-hover);
                 }
 
-                .modern-card.full-width {
+                .modern-card.full-width, .card.full-width {
                     grid-column: 1 / -1;
                 }
 
@@ -370,35 +371,52 @@
                 }
 
                 /* Conservamos estilos base para tablas del script original */
-                .table-spec {
+                .table-spec, .table {
                     width: 100%;
                     border-collapse: collapse;
+                    margin-bottom: 1rem;
                 }
 
-                .table-spec th {
-                    font-size: 0.75rem;
+                .table-spec th, .table th {
+                    font-size: 0.8rem;
                     text-transform: uppercase;
-                    color: var(--text-main);
-                    padding: 10px;
-                    background: var(--pri-light);
-                    border: 1px solid var(--border);
+                    color: var(--text-on-dark);
+                    padding: 14px 10px;
+                    background: var(--pri);
+                    border: 1px solid rgba(255,255,255,0.1);
                     text-align: center;
                     font-weight: 700;
+                    letter-spacing: 0.02em;
                 }
 
-                .table-spec td {
-                    padding: 12px;
-                    font-size: 0.9rem;
+                .table-spec td, .table td {
+                    padding: 14px 12px;
+                    font-size: 0.95rem;
                     border: 1px solid var(--border);
                     text-align: center;
                     color: var(--text-main);
                     font-weight: 500;
+                    transition: background 0.2s;
+                }
+
+                .table tr:hover td, .table-spec tr:hover td {
+                    background: rgba(59, 130, 246, 0.03);
                 }
 
                 .table-spec th:first-child,
-                .table-spec td:first-child {
+                .table-spec td:first-child,
+                .table th:first-child,
+                .table td:first-child {
                     text-align: left;
-                    width: 55%;
+                    width: 45%;
+                    font-weight: 600;
+                }
+
+                .table-spec tfoot tr td, .table tfoot tr td {
+                    background: var(--bg);
+                    font-weight: 800;
+                    color: var(--pri-dark);
+                    border-top: 2px solid var(--pri);
                 }
 
                 .kpi {

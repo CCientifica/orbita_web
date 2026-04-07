@@ -2994,7 +2994,7 @@ async function loadYearlyConsolidated(yearId) {
           metaMComp = Math.round(metaAnualTotal / 12);
         }
 
-        let estilo = "border: 1px solid #cbd5e1; padding: 4px;";
+        let estilo = "border: 1px solid #cbd5e1; padding: 10px;";
         if (fila.isMain && metaMComp > 0) {
           const cls = kpiClass(numVal, metaMComp);
           // ✅ CORRECCIÓN DE COLORES SEMÁFORO (KPIs)
@@ -3015,12 +3015,12 @@ async function loadYearlyConsolidated(yearId) {
       const proyAnual = esEficienciaFinal ? promMes : promMes * 12;
 
       // ✅ CORRECCIÓN DE COLORES TOTALES Y PROYECCIÓN
-      let estiloTotal = "border: 1px solid #cbd5e1; font-weight: bold; background: #f1f5f9; color: #253D5B;";
-      let estiloProy = "border: 1px solid #cbd5e1; font-weight: bold; background: #B6B5AF; color: #253D5B;";
-      let estiloPromPrev = "border: 1px solid #cbd5e1; background: #4E6C9F; padding: 4px; color: #ffffff; font-weight: bold;";
+      let estiloTotal = "border: 1px solid #cbd5e1; font-weight: bold; background: #f1f5f9; color: #253D5B; padding: 10px;";
+      let estiloProy = "border: 1px solid #cbd5e1; font-weight: bold; background: #B6B5AF; color: #253D5B; padding: 10px;";
+      let estiloPromPrev = "border: 1px solid #cbd5e1; background: #4E6C9F; padding: 10px; color: #ffffff; font-weight: bold;";
 
       return `<tr>${fila.tdGroup || ''}
-              <td style="border: 1px solid #cbd5e1; text-align: left; padding: 4px; font-weight: bold; background:#f1f5f9; color: #253D5B;">${fila.label}</td>
+              <td style="border: 1px solid #cbd5e1; text-align: left; padding: 10px; font-weight: bold; background:#f1f5f9; color: #253D5B;">${fila.label}</td>
               <td style="${estiloPromPrev}">${fila.isPct ? fmtDec1(promPrev) + '%' : (esEficienciaFinal ? fmtDec1(promPrev) : fmtInt(promPrev))}</td>
               ${celdasMeses}
               <td style="${estiloTotal}">${esEficienciaFinal ? "" : fmtInt(acumuladoReal)}</td>
@@ -3047,12 +3047,12 @@ async function loadYearlyConsolidated(yearId) {
     // Estructura de tabla con paleta de colores institucional SIN TONOS VERDES
     let htmlUrg = `
         <div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:20px;">
-            <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+            <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
                 <thead>
                     <tr style="background: #253D5B; color: #fff;">
-                        <th style="border: 1px solid #fff; padding: 6px; text-align:left;">URGENCIAS</th>
-                        <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                        ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                        <th style="border: 1px solid #fff; padding: 12px; text-align:left;">URGENCIAS</th>
+                        <th style="border: 1px solid #fff; background: #4E6C9F; padding: 12px;">Promedio ${prevYear}</th>
+                        ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                         <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                         <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3077,7 +3077,7 @@ async function loadYearlyConsolidated(yearId) {
         </div>`;
 
     // --- 2. TABLA HOSPITALIZACIÓN (CORREGIDA CON CIERRE INSTITUCIONAL) ---
-    let htmlHosp = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;"><table style="width:100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10px; text-align: center;"><thead><tr style="background: #253D5B; color: #fff;"><th style="border: 1px solid #fff; padding: 6px; text-align:left;">HOSPITALIZACIÓN</th><th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}<th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th><th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th><th style="background: #B6B5AF; color:#253D5B;">PROYECCIÓN CIERRE ${yearId}</th></tr></thead><tbody>`;
+    let htmlHosp = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;"><table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;"><thead><tr style="background: #253D5B; color: #fff;"><th style="border: 1px solid #fff; padding: 12px; text-align:left;">HOSPITALIZACIÓN</th><th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}<th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th><th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th><th style="background: #B6B5AF; color:#253D5B;">PROYECCIÓN CIERRE ${yearId}</th></tr></thead><tbody>`;
 
     htmlHosp += generarFilaHTML({ label: "EGRESOS HOSP. PUESTOS 2, 3 y 4", dbKeys: ["HOSP|EGRESOS HOSP. PUESTOS 2, 3 y 4"], isMain: true, metaKey: 'hospMetaEgresos' }, dataAnual, metasAnuales, totalMetaHosp, metaHospAcum);
     htmlHosp += generarFilaHTML({ label: "Promedio día estancia", dbKeys: ["HOSP|Promedio día estancia"] }, dataAnual, metasAnuales, 0, 0);
@@ -3145,13 +3145,13 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado con Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlCx = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; width:30px;"></th>
-                      <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CIRUGÍA</th>
+                      <th style="border: 1px solid #fff; padding: 12px; text-align:left;">CIRUGÍA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                       <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3184,12 +3184,12 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado con Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlCxEsp = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-            <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+            <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
                 <thead>
                     <tr style="background: #253D5B; color: #fff;">
-                        <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CIRUGÍA POR ESPECIALIDAD</th>
+                        <th style="border: 1px solid #fff; padding: 12px; text-align:left;">CIRUGÍA POR ESPECIALIDAD</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                        ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                        ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                         <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                         <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3230,12 +3230,12 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado principal en Azul Oscuro (#253D5B) y soportes en Azul Medio (#4E6C9F)
     let htmlCE = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10px; text-align: center;">
+          <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
-                      <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CONSULTA EXTERNA</th>
+                      <th style="border: 1px solid #fff; padding: 12px; text-align:left;">CONSULTA EXTERNA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                       <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3273,12 +3273,12 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado en Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlHem = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
-                      <th style="border: 1px solid #fff; padding: 6px; text-align:left;">HEMATO ONCOLOGIA</th>
+                      <th style="border: 1px solid #fff; padding: 12px; text-align:left;">HEMATO ONCOLOGIA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                       <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3315,12 +3315,12 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado principal con Azul Oscuro (#253D5B)
     let htmlHcom = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
-                      <th style="border: 1px solid #fff; padding: 6px; text-align:left;">HEMOCOMPONENTES</th>
+                      <th style="border: 1px solid #fff; padding: 12px; text-align:left;">HEMOCOMPONENTES</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                       <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3346,12 +3346,12 @@ async function loadYearlyConsolidated(yearId) {
     ];
 
     let htmlEndo = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
-                      <th style="border: 1px solid #fff; padding: 6px; text-align:left;">SERVICIO ENDOSCOPIA</th>
+                      <th style="border: 1px solid #fff; padding: 12px; text-align:left;">SERVICIO ENDOSCOPIA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                      ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                       <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3419,13 +3419,13 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado con Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlImg = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-        <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+        <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
             <thead>
                 <tr style="background: #253D5B; color: #fff;">
                     <th style="border: 1px solid #fff; width:30px;"></th>
-                    <th style="border: 1px solid #fff; padding: 6px; text-align:left;">IMÁGENES DIAGNÓSTICAS</th>
+                    <th style="border: 1px solid #fff; padding: 12px; text-align:left;">IMÁGENES DIAGNÓSTICAS</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                    ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                    ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                     <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                     <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3479,13 +3479,13 @@ async function loadYearlyConsolidated(yearId) {
     ];
 
     let htmlLab = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-        <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+        <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
             <thead>
                 <tr style="background: #253D5B; color: #fff;">
                     <th style="border: 1px solid #fff; width:30px;"></th>
-                    <th style="border: 1px solid #fff; padding: 6px; text-align:left;">LABORATORIO CLÍNICO</th>
+                    <th style="border: 1px solid #fff; padding: 12px; text-align:left;">LABORATORIO CLÍNICO</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                    ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                    ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                     <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                     <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>
@@ -3534,12 +3534,12 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado en Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlEst = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-        <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+        <table style="width:100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
             <thead>
                 <tr style="background: #253D5B; color: #fff;">
-                    <th style="border: 1px solid #fff; padding: 6px; text-align:left;">ESTADÍSTICA INSTITUCIONAL</th>
+                    <th style="border: 1px solid #fff; padding: 12px; text-align:left;">ESTADÍSTICA INSTITUCIONAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
-                    ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
+                    ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 12px;">${m}</th>`).join('')}
                     <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
                     <th style="background: #B6B5AF; color:#253D5B; border: 1px solid #fff;">PROYECCIÓN CIERRE ${yearId}</th>

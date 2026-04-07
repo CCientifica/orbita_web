@@ -190,11 +190,7 @@
             const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
 
             const ensureAuth = async () => {
-                if (!auth || !auth.currentUser) {
-                    try {
-                        await window.firebaseAuth.signInAnonymously();
-                    } catch (e) { console.error("Auth error:", e); }
-                }
+                // Autenticación gestionada institucionalmente
                 return auth?.currentUser;
             };
 
@@ -215,9 +211,9 @@
             function updateChart(data) {
                 const canvas = getEl('trendChart');
                 if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                if (window.chartInstance) window.chartInstance.destroy();
-                window.chartInstance = new Chart(ctx, {
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) existingChart.destroy();
+                window.chartInstance = new Chart(canvas.getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: ['M-3', 'M-2', 'M-1', 'Now'],
@@ -362,7 +358,13 @@
                 } catch(e) { msg("Error al guardar", "err"); }
             });
 
-            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { if (u) { loadMonth(defaultMonth); updateCompliance(); } });
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { 
+                if (u) { 
+                    loadMonth(defaultMonth); 
+                    updateCompliance(); 
+                    updateChart();
+                } 
+            });
 
             // Compliance Engine ISA
             const updateCompliance = async () => {
@@ -397,8 +399,6 @@
                     }
                 }
             };
-            updateCompliance();
-            updateChart();
         };
 
         window.addEventListener('firebase-ready', initDigitalAnalytics);

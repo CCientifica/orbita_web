@@ -242,11 +242,8 @@
             const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
 
             const ensureAuth = async () => {
-                if (!auth || !auth.currentUser) {
-                    try {
-                        await window.firebaseAuth.signInAnonymously();
-                    } catch (e) { console.error("Auth error:", e); }
-                }
+                // El login ya se maneja a nivel institucional en firebase-shim.js
+                // No intentamos silent login anónimo para evitar errores de restricción
                 return auth?.currentUser;
             };
 
@@ -261,7 +258,8 @@
                 const canvas = getEl('trendChart');
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
-                if (window.auxiliaresChart) window.auxiliaresChart.destroy();
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) existingChart.destroy();
                 window.auxiliaresChart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -426,7 +424,12 @@
                  } catch(e) { alert("Fallo al guardar"); }
             });
 
-            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { if(u) loadPeriodo(defaultMonth); });
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { 
+                if(u) {
+                    loadPeriodo(defaultMonth); 
+                    updateCompliance();
+                }
+            });
             // Compliance Engine Auxiliares
             const updateCompliance = async () => {
                 await ensureAuth();
@@ -462,7 +465,6 @@
                     }
                 }
             };
-            updateCompliance();
 
             updateChart();
         }

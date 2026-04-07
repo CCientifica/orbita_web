@@ -1489,17 +1489,18 @@
         }
 
         #tblMensual {
-          min-width: 2000px !important;
-          font-size: 13px;
+          min-width: 1800px !important;
+          font-size: 11px !important;
           text-align: center;
           border-collapse: separate !important;
+          font-family: 'Outfit', sans-serif;
         }
 
         #tblMensual th,
         #tblMensual td {
           white-space: nowrap;
           text-align: center !important;
-          padding: 10px;
+          padding: 6px 8px !important;
           border-bottom: 1px solid #f1f5f9;
         }
 
@@ -1549,18 +1550,18 @@
           border: 1px solid #fee2e2;
         }
 
-        /* Sábados y domingos — solo encabezado */
+        /* Sábados y domingos — solo número de color diferencial */
         #tblMensual thead th.wknd {
-          background: #4b5563 !important;
-          color: #ffffff !important;
-          font-weight: 800 !important;
+          background: #134e4a !important; /* Mantener fondo institucional */
+          color: #fb7185 !important; /* Rosa/Rojo suave para el número */
+          font-weight: 900 !important;
         }
 
-        /* Festivos Colombia — solo encabezado */
+        /* Festivos Colombia — solo número de color diferencial */
         #tblMensual thead th.festivo {
-          background: #d97706 !important;
-          color: #ffffff !important;
-          font-weight: 800 !important;
+          background: #134e4a !important; /* Mantener fondo institucional */
+          color: #fbbf24 !important; /* Ámbar para el número */
+          font-weight: 900 !important;
         }
 
         /* Celdas de datos: sin color diferencial, mantienen semáforo */
@@ -2471,7 +2472,7 @@
         </div>
       </div>
 
-      <div id="tab-views" style="padding: 0 20px; max-width: 1536px; margin: 0 auto;">
+      <div id="tab-views" style="padding: 0 20px; width: 100%; margin: 0 auto;">
         <!-- TAB 1: Inteligencia del Periodo -->
         <div class="tab-pane active" id="tab-intel">
           <section id="section-intel" class="fade-in">
@@ -2608,8 +2609,8 @@
                 </div>
               </div>
 
-              <div class="table-wrap" style="margin-top:12px; overflow-x:auto; overflow-y:visible">
-                <table class="table-history" id="tblMensual" style="min-width:1800px;">
+              <div class="table-wrap" style="margin-top:12px; overflow-x:auto; overflow-y:visible; max-height: none !important; border: 1px solid #e2e8f0;">
+                <table class="table-history" id="tblMensual" style="min-width:1800px !important;">
                   <thead id="theadMensual"></thead>
                   <tbody id="tbodyMensual"></tbody>
                 </table>

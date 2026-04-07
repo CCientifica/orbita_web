@@ -2804,14 +2804,14 @@ async function cargarVistaMensual() {
     dias.forEach((d, idx) => {
       const info = dayInfo[idx];
       const cls = info.isHoliday ? "festivo" : info.isWeekend ? "wknd" : "";
-      headerHTML += `<th class="${cls}" title="${info.title}" style="min-width:30px; padding:8px 4px; background:#134e4a !important; color:white !important;">${d}</th>`;
+      headerHTML += `<th class="${cls}" title="${info.title}" style="min-width:30px; padding:6px 4px; background:#134e4a !important; font-size:11px;">${d}</th>`;
     });
 
-    headerHTML += `<th style="background:#065f46; color: white !important;">Logro</th>
-                       <th style="background:#065f46; color: white !important;">% Cumpl</th>
-                       <th style="background:#065f46; color: white !important;">Falta para la meta</th>
-                       <th style="background:#9a3412; color: white !important;">Proyección</th>
-                       <th style="background:#9a3412; color: white !important;">% Cumpl</th>`;
+    headerHTML += `<th style="background:#064e3b !important; color: white !important; font-size:11px; padding:8px;">Logro</th>
+                       <th style="background:#064e3b !important; color: white !important; font-size:11px; padding:8px;">% Cumpl</th>
+                       <th style="background:#064e3b !important; color: white !important; font-size:11px; padding:8px;">Falta</th>
+                       <th style="background:#7c2d12 !important; color: white !important; font-size:11px; padding:8px;">Proy</th>
+                       <th style="background:#7c2d12 !important; color: white !important; font-size:11px; padding:8px;">% Proy</th>`;
 
     headerHTML += `</tr>`;
     safeSetHTML(theadMensual, headerHTML);
@@ -2959,9 +2959,9 @@ async function cargarVistaMensual() {
       const logroAFecha = esPromedio ? (vSuma / (valores.slice(0, diasConDatos).filter(v => v > 0).length || 1)) : vSuma;
 
       let rowHTML = `<tr>
-      <td style="text-align:left !important;"><b>${nombre}</b></td>
-      <td style="background:#f8fafc;">${Math.round(metaMensual).toLocaleString()}</td>
-      <td style="background:#f0f9ff; font-weight:bold; color:#0369a1;">${metaDiaria.toFixed(1)}</td>`;
+      <td style="text-align:left !important; font-size:11px; padding:6px 8px;"><b>${nombre}</b></td>
+      <td style="background:#f8fafc; font-size:11px; padding:6px 8px;">${Math.round(metaMensual).toLocaleString()}</td>
+      <td style="background:#f0f9ff; font-weight:bold; color:#0369a1; font-size:11px; padding:6px 8px;">${metaDiaria.toFixed(1)}</td>`;
 
       valores.forEach((v, idx) => {
         const d = idx + 1;
@@ -2976,7 +2976,7 @@ async function cargarVistaMensual() {
             }
           }
         }
-        rowHTML += `<td class="${cellClass}">${esPromedio ? (v ? v.toFixed(1) : "") : (v || "")}</td>`;
+        rowHTML += `<td class="${cellClass}" style="font-size:11px; font-weight:700; padding:6px 4px;">${esPromedio ? (v ? v.toFixed(1) : "") : (v || "")}</td>`;
       });
 
       const pctCumpl = metaMensual > 0 ? (esInverso ? (metaMensual / logroAFecha) * 100 : (logroAFecha / metaMensual) * 100) : 0;

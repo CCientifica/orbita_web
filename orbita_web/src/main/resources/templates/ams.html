@@ -255,7 +255,7 @@
 
   <div th:replace="~{layout :: ui-scripts}"></div>
   <div th:replace="~{layout :: auth-scripts}"></div>
-
+  <script type="module" th:inline="none">
     // Logic Engine AMS
     const initAMSAnalytics = async () => {
         if (!window.firebaseInstance || !window.firebaseFirestore) return;
@@ -263,11 +263,7 @@
         const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
 
         const ensureAuth = async () => {
-            if (!auth || !auth.currentUser) {
-                try {
-                    await window.firebaseAuth.signInAnonymously();
-                } catch (e) { console.error("Auth error:", e); }
-            }
+            // Autenticación gestionada institucionalmente
             return auth?.currentUser;
         };
 
@@ -281,7 +277,8 @@
         let chart;
         function updateChart(data) {
             const canvas = getEl('trendChart'); if (!canvas) return;
-            if (chart) chart.destroy();
+            const existingChart = Chart.getChart(canvas);
+            if (existingChart) existingChart.destroy();
             chart = new Chart(canvas.getContext('2d'), {
                 type: 'line',
                 data: {
