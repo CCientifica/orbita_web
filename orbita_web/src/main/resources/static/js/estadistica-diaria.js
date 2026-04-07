@@ -30,6 +30,14 @@ const DOW_FULL = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes
 const mesesMap = { ene: "01", feb: "02", mar: "03", abr: "04", may: "05", jun: "06", jul: "07", ago: "08", sep: "09", oct: "10", nov: "11", dic: "12" };
 const KPI_IDS = ["ce", "triages", "urgencias", "camas_hosp", "egresos_hosp", "piso2", "piso3", "piso4", "ocup_hosp", "pde", "camas_uci", "egresos_uci", "ocup_uci", "camas_uce", "egresos_uce", "ocup_uce", "pde_critico", "quirofanos", "proc_quir", "uvr", "fibro", "endoscopia", "colonoscopia", "examenes_ambulatorios", "quimio", "camas_hosp_bloq", "camas_uci_bloq", "camas_uce_bloq", "quirofanos_bloq"];
 
+// Catálogo de festivos colombianos (2024-2027) para cálculos rápidos
+const FESTIVOS_CO = new Set([
+  "2024-01-01","2024-01-08","2024-03-25","2024-03-28","2024-03-29","2024-05-01","2024-05-13","2024-06-03","2024-06-10","2024-07-01","2024-07-20","2024-08-07","2024-08-19","2024-10-14","2024-11-04","2024-11-11","2024-12-08","2024-12-25",
+  "2025-01-01","2025-01-06","2025-03-24","2025-04-17","2025-04-18","2025-05-01","2025-06-02","2025-06-23","2025-06-30","2025-07-20","2025-08-07","2025-08-18","2025-10-13","2025-11-03","2025-11-17","2025-12-08","2025-12-25",
+  "2026-01-01","2026-01-05","2026-03-23","2026-04-02","2026-04-03","2026-05-01","2026-05-18","2026-06-08","2026-06-15","2026-06-29","2026-07-20","2026-08-07","2026-08-17","2026-10-12","2026-11-02","2026-11-16","2026-12-08","2026-12-25",
+  "2027-01-01","2027-01-11","2027-03-22","2027-03-25","2027-03-26","2027-05-01","2027-05-10","2027-05-31","2027-06-07","2027-06-14","2027-07-20","2027-08-07","2027-08-16","2027-10-18","2027-11-01","2027-11-15","2027-12-08","2027-12-25"
+]);
+
 const pad2 = (n) => String(n).padStart(2, '0');
 const pad2b = (n) => String(n).padStart(2, '0');
 const isoFromUTCDate = (d) => d.toISOString().slice(0, 10);
@@ -43,6 +51,7 @@ function easterSundayUTC(year) {
   const a = year % 19, b = Math.floor(year / 100), c = year % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
   return fixedUTC(year, month, day);
 }
+
 function getColombiaHolidays(year) {
   const y = Number(year), map = new Map(), addHoliday = (dt, name) => { const iso = isoFromUTCDate(dt); map.set(iso, map.has(iso) ? `${map.get(iso)} / ${name}` : name); };
   addHoliday(fixedUTC(y, 1, 1), "Año Nuevo"); addHoliday(fixedUTC(y, 5, 1), "Día del Trabajo"); addHoliday(fixedUTC(y, 7, 20), "Independencia"); addHoliday(fixedUTC(y, 8, 7), "Batalla de Boyacá"); addHoliday(fixedUTC(y, 12, 8), "Inmaculada Concepción"); addHoliday(fixedUTC(y, 12, 25), "Navidad");
@@ -51,13 +60,37 @@ function getColombiaHolidays(year) {
   return map;
 }
 
-function parseNumSmart(x) { if (x == null) return 0; const s = String(x).trim(); if (!s) return 0; const norm = s.replace(/%/g, "").replace(/[\s]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(/,(?=\d+$)/g, "."); const v = Number(norm); return Number.isFinite(v) ? v : 0; }
-const daysInMonth = (y, m) => new Date(Number(y), Number(m), 0).getDate();
-const daysInMonthStr = (yyyyMM) => { const [y, m] = yyyyMM.split('-').map(Number); return new Date(y, m, 0).getDate(); };
-function distributeInt(total, days) { const base = Math.floor(total / days), rem = total - base * days; const arr = Array.from({ length: days }, () => base); for (let i = 0; i < rem; i++) arr[i] += 1; return arr; }
-function readYMDFromInput(el) { const v = (el?.value || '').trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { const [y, m, d] = v.split('-').map(Number); return { y, m, d }; } const m = v.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/); if (m) return { y: +m[3], m: +m[2], d: +m[1] }; return null; }
-const isInverseKPI = (k) => k === 'pde' || k === 'pde_critico';
+function diasHabilesMes(y, m) {
+  let count = 0; const days = new Date(y, m, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const dt = new Date(y, m - 1, d);
+    if (dt.getDay() !== 0 && !FESTIVOS_CO.has(dt.toISOString().split('T')[0])) count++;
+  }
+  return count;
+}
+
+function calcularProgresoHab(y, m, dSel) {
+  let trans = 0, totalHab = 0; const days = new Date(y, m, 0).getDate();
+  for (let d = 1; d <= days; d++) {
+    const dt = new Date(y, m - 1, d);
+    const isHab = (dt.getDay() !== 0 && !FESTIVOS_CO.has(dt.toISOString().split('T')[0]));
+    if (isHab) {
+      totalHab++;
+      if (d <= dSel) trans++;
+    }
+  }
+  return { trans, totalHab };
+}
+
+const isInverseKPI = (k) => {
+  const kn = String(k || "").toLowerCase();
+  return kn === 'pde' || kn === 'pde_critico' || kn.endsWith('_bloq');
+};
 function esKpiPromedio(k) { return (k && (k.startsWith('ocup_') || k === 'pde' || k === 'pde_critico' || k === 'camas_hosp' || k === 'camas_uci' || k === 'camas_uce' || k === 'quirofanos')); }
+function daysInMonth(y, m) { return new Date(Number(y), Number(m), 0).getDate(); }
+function daysInMonthStr(yyyyMM) { const [y, m] = yyyyMM.split('-').map(Number); return new Date(y, m, 0).getDate(); }
+function distributeInt(total, days) { const base = Math.floor(total / days), rem = total - base * days; const arr = Array.from({ length: days }, () => base); for (let i = 0; i < rem; i++) arr[i] += 1; return arr; }
+
 function updateMetasTitle(anioStr, mesStr) { const t = document.querySelector("#card-metas h3"); if (t) t.textContent = `Metas mensuales (${MES_NOMBRES[mesStr] || mesStr} ${anioStr})`; }
 const safeSetText = (el, txt) => { if (el) el.textContent = txt; };
 const safeSetHTML = (el, html) => { if (el) el.innerHTML = html; };
@@ -456,7 +489,7 @@ async function cargarAcumuladosHasta(anio, mes, hastaDia, consolidar) {
     const vistos = new Set();
     snap.forEach(docu => {
       const r = docu.data();
-      const k = String(r.kpi || "");
+      const k = String(r.kpi || "").toLowerCase(); // Robustez: siempre minúsculas
       const v = Number(r.valor || 0);
       if (!mapa[k]) mapa[k] = { sum: 0, days: 0 };
       mapa[k].sum += v;
@@ -472,7 +505,7 @@ async function cargarDelDia(anio, mes, diaDD) {
   const snap = await getDocs(collection(db, "realizados", anio, mes, diaDD, "kpi"));
   snap.forEach(docu => {
     const r = docu.data();
-    const k = String(r.kpi || "");
+    const k = String(r.kpi || "").toLowerCase(); // Robustez: siempre minúsculas
     const v = Number(r.valor || 0);
     mapa[k] = v;
   });
@@ -631,6 +664,21 @@ function addMetaCardTo(parentGrid,
     else dStatusColor = '#ef4444';
   }
 
+  // ====== ADICIÓN DINÁMICA: indicador de bloqueo (Camas/Quirófanos) ======
+  const tn = title.toLowerCase();
+  const esCamas = tn.includes('camas') && (tn.includes('hosp') || tn.includes('hospital') || tn.includes('uci') || tn.includes('uce'));
+  const esQuirofanos = tn.includes('quirof') && !tn.includes('proc');
+  let bloqueoN = 0;
+  if ((esCamas || esQuirofanos) && dMeta > 0) {
+    bloqueoN = Math.max(0, Math.round(dMeta - dVal));
+  }
+
+  const bloqueoHTML = bloqueoN > 0
+    ? `<div style="margin-top:8px; padding:4px 8px; border-radius:6px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:9px; font-weight:800; display:flex; align-items:center; gap:4px;">
+         <span>⚠️</span> ${bloqueoN} ${esQuirofanos ? (bloqueoN === 1 ? 'quirófano bloqueado' : 'quirófanos bloqueados') : (bloqueoN === 1 ? 'cama bloqueada' : 'camas bloqueadas')}
+       </div>`
+    : '';
+
   // Render
 
   // ====== MODERN KPI CARD REDESIGN (EXECUTIVE VERSION) ======
@@ -676,6 +724,8 @@ function addMetaCardTo(parentGrid,
       </div>
     </div>
 
+    ${bloqueoHTML}
+
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:10px; font-weight:700; color:#64748b; padding-top:10px; border-top:1px dashed #e2e8f0;">
        <div style="display:flex; align-items:center; gap:6px;">
           AYER: <span style="color:${dStatusColor}; font-weight:900;">${dValTxt}</span>
@@ -702,18 +752,17 @@ function addMetaCardTo(parentGrid,
 /* ===== Refresh principal (Cálculos en Enteros) ===== */
 async function refreshDailyUI() {
   const anio = String(anioDaily.value), mes = String(mesDaily.value);
-  const nDiasMes = daysInMonth(anio, mes);
+  const nDiasMes = diasHabilesMes(anio, mes);
 
-  fechaDaily.min = `${anio}-${mes}-01`;
-  fechaDaily.max = `${anio}-${mes}-${String(nDiasMes).padStart(2, "0")}`;
-  if (!fechaDaily.value) fechaDaily.value = `${anio}-${mes}-01`;
-
-  const idxDia = Number(fechaDaily.value.split("-")[2]) - 1;
-  const diaSel = idxDia + 1;
+  const idxDia = Number(fechaDaily.value.split("-")[2]); 
+  const diaSel = idxDia; 
   const modoYTD = !!chkYTD?.checked;
 
-  const diasTranscurridosRef = modoYTD ? dayOfYear(anio, mes, diaSel) : diaSel;
-  const diasReferenciaTotal = modoYTD ? daysInYear(anio) : nDiasMes;
+  const { trans, totalHab } = calcularProgresoHab(anio, mes, diaSel);
+  const acumulados = await cargarAcumuladosHasta(anio, mes, diaSel);
+
+  const diasTranscurridosRef = trans;
+  const diasReferenciaTotal = totalHab;
 
   // Helper para pesos por día (Proyección inteligente)
   function getWeightedProgress(y, m, dMax, totalDays, weights) {
@@ -745,7 +794,7 @@ async function refreshDailyUI() {
   const hospIndex = Object.fromEntries(hospSnap.docs.map(d => [String(d.id).toLowerCase(), d.data()]));
   const mMes = (row) => Number(row?.mensual?.[mes] ?? 0);
 
-  const acumulados = await cargarAcumuladosHasta(anio, +mes, diaSel, modoYTD);
+  // acumulados ya cargado al inicio de refreshDailyUI
 
   const egMes = mMes(capIndex["hospitalizacion"]);
   const egYTD = sumMensualHasta(capIndex, "hospitalizacion", mes);
@@ -799,9 +848,12 @@ async function refreshDailyUI() {
   metaDiaMap["piso2"] = Math.round(dailyShare(Math.round(egMes * 0.26), nDiasMes, idxDia));
   metaDiaMap["piso3"] = Math.round(dailyShare(Math.round(egMes * 0.33), nDiasMes, idxDia));
   metaDiaMap["piso4"] = Math.round(dailyShare(Math.round(egMes * 0.41), nDiasMes, idxDia));
-  // --- Especial: Exámenes Ambulatorios (1000 ene-nov, 500 dic) ---
-  const exaMesReal = (Number(mes) <= 11) ? 1000 : 500;
-  metaDiaMap["examenes_ambulatorios"] = Math.round(dailyShare(exaMesReal, nDiasMes, idxDia));
+  // --- Especial: Exámenes Ambulatorios (Override SOLO para 2026: Ene-Nov 1000, Dic 500) ---
+  let exaMesBase = exaMes;
+  if (String(anio) === "2026") {
+      exaMesBase = (Number(mes) <= 11) ? 1000 : 500;
+  }
+  metaDiaMap["examenes_ambulatorios"] = Math.round(dailyShare(exaMesBase, nDiasMes, idxDia));
   metaDiaMap["quimio"] = Math.round(dailyShare(quiMes, nDiasMes, idxDia));
 
   metaDiaMap["ocup_uce"] = 100; metaDiaMap["ocup_uci"] = 100; metaDiaMap["ocup_hosp"] = 98; metaDiaMap["pde_critico"] = 5;
@@ -864,16 +916,25 @@ async function refreshDailyUI() {
   // Consulta Externa
   addMetaCardTo(container, "Consulta Externa", metaSum(ceMes, ceYTD), "Ptes", "ce", acumulados, diasTranscurridosRef, diasReferenciaTotal, false, realDiaMap["ce"], metaDiaMap["ce"], modoYTD);
   // --- Llenado de Formulario ---
+  // --- Llenado de Formulario con Valores Redondeados ---
+  const safeSet = (id, val) => { 
+    const el = document.getElementById(id); 
+    if(el) el.value = Math.round(Number(val ?? 0)); 
+  };
+
   KPI_IDS.forEach(id => {
-    const valReal = realDiaMap[id] ?? 0;
-    const valMeta = metaDiaMap[id] ?? 0;
+    const k = id.toLowerCase();
+    // Prioridad a metaDiaMap para metas del día
+    const valMeta = metaDiaMap[k] ?? 0;
+    const valReal = realDiaMap[k] ?? 0;
 
-    const rEl = document.getElementById(`real_${id}`);
-    if (rEl) rEl.value = valReal;
-
-    const mEl = document.getElementById(`meta_${id}`);
-    if (mEl) mEl.value = valMeta;
+    safeSet(`real_${id}`, valReal);
+    safeSet(`meta_${id}`, valMeta);
   });
+
+  // Refuerzos específicos para casos de nombres alternos (como en el código operativo)
+  const exAm = metaDiaMap["examenes_ambulatorios"] ?? metaDiaMap["examenesambulatorios"] ?? 0;
+  safeSet("meta_examenes_ambulatorios", exAm);
 
 
   updateMetasTitle(anio, mes);
@@ -3145,7 +3206,7 @@ async function verificarDatosPendientes() {
     const ahora = new Date();
     const horaActual = ahora.getHours() + ahora.getMinutes() / 60;
     const isoHoy = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
-    const festivos = getColombiaHolidays(ahora.getFullYear());
+    const festivos = FESTIVOS_CO; // Usamos el set global actualizado
     const diaSemanaHoy = ahora.getDay(); // 0=Dom, 6=Sab
 
     // Solo verificar días hábiles (No sábados, No domingos, No Festivos)
@@ -3155,16 +3216,18 @@ async function verificarDatosPendientes() {
     if (horaActual < 12) return;
 
     // Calcular el día hábil anterior
-
     function diaHabilAnterior(fecha) {
       let d = new Date(fecha);
+      const limit = 30; // Evitar bucles infinitos por si acaso
+      let safety = 0;
       do {
         d.setDate(d.getDate() - 1);
         const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const dow = d.getDay();
         const esFestivo = festivos.has(iso);
         if (dow !== 0 && dow !== 6 && !esFestivo) return d;
-      } while (true);
+      } while (++safety < limit);
+      return d;
     }
 
     const diaObjetivo = diaHabilAnterior(ahora);
@@ -3391,6 +3454,32 @@ window.abrirAnalisisIA = async function () {
   if (window.lucide) lucide.createIcons();
 };
 
+/* =================== CATÁLOGO UNIFICADO DE INDICADORES (ESTRATEGIA) =================== */
+
+const DASHBOARD_KPI_CATALOG = [
+  { label: "Triages", id: "triages", unit: "pac", metaKey: "triages", category: "urgencias" },
+  { label: "Urgencias", id: "urgencias", unit: "atenc", metaKey: "urgencias", category: "urgencias" },
+
+  { label: "Egresos Hosp.", id: "egresos_hosp", unit: "egr", metaKey: "egresos_hosp", category: "hospitalizacion" },
+  { label: "Ocupación Hosp.", id: "ocup_hosp", unit: "%", isPct: true, metaKey: "ocup_hosp", target: 95, category: "hospitalizacion" },
+
+  { label: "Egresos UCI", id: "egresos_uci", unit: "egr", metaKey: "egresos_uci", category: "critico" },
+  { label: "Ocupación UCI", id: "ocup_uci", unit: "%", isPct: true, metaKey: "ocup_uci", target: 90, category: "critico" },
+
+  { label: "Egresos UCE", id: "egresos_uce", unit: "egr", metaKey: "egresos_uce", category: "critico" },
+  { label: "Ocupación UCE", id: "ocup_uce", unit: "%", isPct: true, metaKey: "ocup_uce", target: 90, category: "critico" },
+
+  { label: "Proc. Quirúrgicos", id: "proc_quir", unit: "proc", metaKey: "proc_quir", category: "cirugia" },
+  { label: "Producción UVR", id: "uvr", unit: "UVR", metaKey: "uvr", category: "cirugia" },
+
+  { label: "Consulta Ext.", id: "ce", unit: "cons", metaKey: "ce", category: "consulta" },
+  { label: "Quimioterapias", id: "quimio", unit: "ses", metaKey: "quimio", category: "ambulatorio" },
+  { label: "Exámenes Amb.", id: "examenes_ambulatorios", unit: "lab", metaKey: "examenes_ambulatorios", category: "ambulatorio" },
+  { label: "Fibrobroncoscopias", id: "fibro", unit: "proc", metaKey: "fibro", category: "ambulatorio" },
+  { label: "Endoscopias", id: "endoscopia", unit: "proc", metaKey: "endoscopia", category: "ambulatorio" },
+  { label: "Colonoscopias", id: "colonoscopia", unit: "proc", metaKey: "colonoscopia", category: "ambulatorio" }
+];
+
 /* =================== NÚCLEO DE INTELIGENCIA Y PROYECCIONES DIARIAS =================== */
 
 async function runInteligenciaDiaria() {
@@ -3419,19 +3508,25 @@ async function runInteligenciaDiaria() {
 
   if (intelDateBadge) intelDateBadge.textContent = `${dPad} ${mesNombre} ${y}`;
 
-  // 1. Definición de Indicadores Estratégicos
-  // Cruce entre KPI_IDS y Metas Anuales/Mensuales
+  // 1. Definición de Indicadores Estratégicos (Consolidado)
   const indicators = [
     { label: "Triages", id: "triages", unit: "pac", metaKey: "triages" },
     { label: "Urgencias", id: "urgencias", unit: "atenc", metaKey: "urgencias" },
     { label: "Proc. Quirúrgicos", id: "proc_quir", unit: "proc", metaKey: "proc_quir" },
     { label: "Producción UVR", id: "uvr", unit: "UVR", metaKey: "uvr" },
     { label: "Egresos Hosp.", id: "egresos_hosp", unit: "egr", metaKey: "egresos_hosp" },
-    { label: "Ocupación Hosp.", id: "ocup_hosp", unit: "%", isPct: true, metaKey: "ocup_hosp", target: 95 },
+    { label: "Ocupación Hosp.", id: "ocup_hosp", unit: "%", isPct: true, metaKey: "ocup_hosp", target: 98 },
+    { label: "Egresos UCI", id: "egresos_uci", unit: "egr", metaKey: "egresos_uci" },
     { label: "Ocupación UCI", id: "ocup_uci", unit: "%", isPct: true, metaKey: "ocup_uci", target: 90 },
+    { label: "Egresos UCE", id: "egresos_uce", unit: "egr", metaKey: "egresos_uce" },
+    { label: "Ocupación UCE", id: "ocup_uce", unit: "%", isPct: true, metaKey: "ocup_uce", target: 90 },
     { label: "Consulta Ext.", id: "ce", unit: "cons", metaKey: "ce" },
-    { label: "Quimioterapias", id: "quimio", unit: "ses", metaKey: "quimio" }
+    { label: "Quimioterapias", id: "quimio", unit: "ses", metaKey: "quimio" },
+    { label: "Prom. Estancia", id: "pde", unit: "días", metaKey: "pde", target: 3.5 }
   ];
+
+  // Whitelist para el Monitor de Desempeño Predictivo (#intel-container)
+  const MONITOR_KPI_IDS = ["triages", "urgencias", "egresos_hosp", "egresos_uci", "egresos_uce", "proc_quir", "uvr", "ce"];
 
   try {
     // 2. Recopilación de Datos (Mes actual completo hasta hoy)
@@ -3464,7 +3559,14 @@ async function runInteligenciaDiaria() {
       })
     );
 
-    // Traemos Metas Anuales para pro-rata
+    // [NUEVO] Carga de índices de forecast para metas mensuales específicas
+    const capSnap = await getDocs(collection(db, "forecast", String(y), "unidades"));
+    const capIndex = Object.fromEntries(capSnap.docs.map(d => [d.id.toLowerCase(), d.data()]));
+    const hospSnap = await getDocs(collection(db, "forecast_hosp", String(y), "kpis"));
+    const hospIndex = Object.fromEntries(hospSnap.docs.map(d => [d.id, d.data()]));
+    const mMes = (row) => Number(row?.mensual?.[mPad] ?? 0);
+
+    // Metas Anuales (config_anuales) para el resto
     const metaValues = {};
     const metaPromises = indicators.map(async ind => {
       const snap = await getDoc(doc(db, "config_anuales", `${ind.metaKey}_${y}`));
@@ -3474,6 +3576,25 @@ async function runInteligenciaDiaria() {
 
     await Promise.all([...promises, ...metaPromises]);
 
+    function resolveMetaMensual(ind) {
+      const annual = Number(metaValues[ind.id] || 0);
+
+      if (ind.id === "ce") return mMes(capIndex["consulta_externa"]);
+      if (ind.id === "urgencias") return mMes(capIndex["urgencias"]);
+      if (ind.id === "proc_quir") return mMes(capIndex["cirugia"]);
+      if (ind.id === "egresos_hosp") return mMes(capIndex["hospitalizacion"]);
+      if (ind.id === "egresos_uci") return mMes(capIndex["uci"]);
+      if (ind.id === "egresos_uce") return mMes(capIndex["ucin"]);
+      if (ind.id === "pde") return mMes(hospIndex["dias_promedio_estancia"]);
+
+      if (ind.id === "ocup_hosp") return ind.target || 98;
+      if (ind.id === "ocup_uci") return ind.target || 90;
+      if (ind.id === "ocup_uce") return ind.target || 90;
+
+      if (annual > 0) return annual / 12;
+      return ind.target || 0;
+    }
+
     // 3. Procesamiento Analítico
     let htmlTiles = "";
     let htmlMatrix = "";
@@ -3481,8 +3602,8 @@ async function runInteligenciaDiaria() {
     const ranking = [];
 
     indicators.forEach(ind => {
-      const valHoy = dailyData[d][ind.id] || 0;
-      const valAyer = d > 1 ? (dailyData[d - 1][ind.id] || 0) : 0;
+      const valHoy = (dailyData[d] && dailyData[d][ind.id]) || 0;
+      const valAyer = d > 1 ? (dailyData[d - 1] && dailyData[d - 1][ind.id] || 0) : 0;
       const valWow = dataWeekAgo[ind.id] || 0;
 
       // Variaciones
@@ -3493,7 +3614,7 @@ async function runInteligenciaDiaria() {
       let sumSoFar = 0;
       let countSoFar = 0;
       for (let i = 1; i <= d; i++) {
-        if (dailyData[i][ind.id] != null) {
+        if (dailyData[i] && dailyData[i][ind.id] != null) {
           sumSoFar += dailyData[i][ind.id];
           countSoFar++;
         }
@@ -3502,14 +3623,14 @@ async function runInteligenciaDiaria() {
       const isProm = esKpiPromedio(ind.id);
       const avgSoFar = countSoFar > 0 ? (sumSoFar / countSoFar) : 0;
 
-      // Meta mensual estimación (1/12 de la anual si es sumable, o la meta directa si es promedio)
-      // En este proyecto muchas metas se guardan anuales.
-      let metaMensual = isProm ? metaValues[ind.id] : (metaValues[ind.id] / 12);
-      if (metaMensual <= 0 && ind.target) metaMensual = ind.target;
+      // [CORRECCIÓN] Resolución de Meta Mensual desde fuente correcta
+      let metaMensual = resolveMetaMensual(ind);
 
       // Proyección al cierre del mes
       const proyectadoMes = isProm ? avgSoFar : (avgSoFar * daysInCurrentMonth);
       const pctCumplimiento = metaMensual > 0 ? (proyectadoMes * 100 / metaMensual) : 0;
+
+      console.log("RIESGO KPI", ind.id, { metaMensual, proyectadoMes, pctCumplimiento });
 
       // Estado
       let status = "Estable";
@@ -3533,8 +3654,9 @@ async function runInteligenciaDiaria() {
 
       ranking.push({ label: ind.label, pct: pctCumplimiento });
 
-      // Render Tiles (Redesign Executive)
-      htmlTiles += `
+      // [FILTRO] Render Tiles SOLO para whitelisted Monitor de Desempeño Predictivo
+      if (MONITOR_KPI_IDS.includes(ind.id)) {
+        htmlTiles += `
                 <div class="intel-card" style="background:#fff; border-radius:20px; padding:24px; border:1px solid #e2e8f0; border-left:6px solid ${color}; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:all 0.2s ease;">
                     <div class="intel-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
                         <div class="intel-title" style="font-weight:900; color:#1e293b; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:8px;">
@@ -3558,6 +3680,7 @@ async function runInteligenciaDiaria() {
                         <div style="font-size:0.7rem; text-align:right;"><span style="display:block; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:2px;">Variación</span><span style="font-weight:900; color:${deltaDoD >= 0 ? (inv ? '#ef4444' : '#10b981') : (inv ? '#10b981' : '#ef4444')}; font-size:0.95rem;">${deltaDoD >= 0 ? '+' : ''}${deltaDoD.toFixed(1)}%</span></div>
                     </div>
                 </div>`;
+      }
 
       // Render Matrix Row
       htmlMatrix += `

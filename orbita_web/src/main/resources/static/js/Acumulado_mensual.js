@@ -1,22 +1,42 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import {
-  getFirestore, collection, query, where, orderBy, getDocs,
-  setDoc, getDoc, doc, Timestamp, collectionGroup,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+// Acumulado_mensual.js - Integración con Firebase Shim (v10.13.2)
 import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm";
 import { jsPDF } from "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm";
 
-let app = window.firebaseInstance?.app;
-if (!app && window.fbCfg) {
-  // Respaldo en caso de que firebaseInstance no esté listo pero fbCfg sí exista
-  app = initializeApp(window.fbCfg);
-}
-if (!app) throw new Error("Configuración de Firebase no encontrada.");
+// Acceso robusto a Firebase mediante el puente unificado (Shim)
+let db, auth, fs;
 
-const auth = window.firebaseInstance?.auth || getAuth(app);
-const db = window.firebaseInstance?.app ? getFirestore(window.firebaseInstance.app) : getFirestore(app);
+const ensureFirebase = () => {
+    if (window.firebaseFirestore && window.firebaseInstance && window.firebaseAuth) {
+        db = window.firebaseInstance.db;
+        auth = window.firebaseInstance.auth;
+        fs = window.firebaseFirestore;
+        return true;
+    }
+    return false;
+};
+
+// Proxies de funciones del SDK para evitar errores de carga/versión
+const collection = (...args) => { ensureFirebase(); return fs.collection(...args); };
+const doc = (...args) => { ensureFirebase(); return fs.doc(...args); };
+const getDoc = (...args) => { ensureFirebase(); return fs.getDoc(...args); };
+const getDocs = (...args) => { ensureFirebase(); return fs.getDocs(...args); };
+const setDoc = (...args) => { ensureFirebase(); return fs.setDoc(...args); };
+const query = (...args) => { ensureFirebase(); return fs.query(...args); };
+const where = (...args) => { ensureFirebase(); return fs.where(...args); };
+const orderBy = (...args) => { ensureFirebase(); return fs.orderBy(...args); };
+const writeBatch = (...args) => { ensureFirebase(); return fs.writeBatch(...args); };
+const serverTimestamp = (...args) => { ensureFirebase(); return fs.serverTimestamp(...args); };
+
+// Auth Proxies
+const polonAuthStateChanged = (...args) => { ensureFirebase(); return window.firebaseAuth.onAuthStateChanged(...args); };
+const polsignInAnonymously = (...args) => { ensureFirebase(); return window.firebaseAuth.signInAnonymously(...args); };
+
+// Sobreescribir las funciones locales para el polleo
+const onAuthStateChanged = polonAuthStateChanged;
+const signInAnonymously = polsignInAnonymously;
+
+// Ejecución inicial
+ensureFirebase();
 
 function monthPathVariants(year, month0) {
   const y = String(year).padStart(4, '0');
@@ -1140,10 +1160,13 @@ function reduceDailyToAgg(arr) {
     A.cx.uvrTotal += +(pick(cx, ['uvrTotal', 'UVR total', 'uvr']) || 0);
 
     /* ------------------- CIRUGÍA POR ESPECIALIDAD (Agregador) ------------------- */
-    const esps = d.cxEsp || d['cirugiaPorEspecialidad'] || {};
+    const esps = d.cxEsp || d['cirugiaPorEspecialidad'] || d['CIRUGIA_ESP'] || {};
+    // Normalizar llaves del doc actual
+    const espsNorm = {};
+    for (const [ek, ev] of Object.entries(esps)) { espsNorm[ek.toLowerCase()] = ev; }
+
     for (const k in A.cxEsp) {
-      // Buscamos la especialidad en el documento diario (soporta mayúsculas/minúsculas)
-      const e = esps[k] || esps[k?.toUpperCase()] || {};
+      const e = espsNorm[k.toLowerCase()] || {};
       A.cxEsp[k].ptes += +(pick(e, ['ptes', 'Pacientes']) || 0);
       A.cxEsp[k].procs += +(pick(e, ['procs', 'Procedimientos']) || 0);
       A.cxEsp[k].uvr += +(pick(e, ['uvr', 'UVR', 'U.V.R.']) || 0);
@@ -1209,8 +1232,17 @@ function reduceDailyToAgg(arr) {
     const hc = d.hemoComp || d['HEMOCOMPONENTES'] || {};
     const apps = hc.aplicaciones || hc['Aplicaciones'] || {};
     const unid = hc.unidades || hc['Unidades'] || {};
-    for (const k in apps) { A.hemoComp.aplicaciones[k] = (A.hemoComp.aplicaciones[k] || 0) + +(apps[k] || 0); }
-    for (const k in unid) { A.hemoComp.unidades[k] = (A.hemoComp.unidades[k] || 0) + +(unid[k] || 0); }
+    
+    // Mapeo robusto de aplicaciones
+    for (const [dk, dv] of Object.entries(apps)) {
+      const match = Object.keys(A.hemoComp.aplicaciones).find(ak => ak.toLowerCase() === dk.toLowerCase());
+      if (match) A.hemoComp.aplicaciones[match] += +(dv || 0);
+    }
+    // Mapeo robusto de unidades
+    for (const [dk, dv] of Object.entries(unid)) {
+      const match = Object.keys(A.hemoComp.unidades).find(uk => uk.toLowerCase() === dk.toLowerCase());
+      if (match) A.hemoComp.unidades[match] += +(dv || 0);
+    }
     A.hemoComp.pacientes += +(pick(hc, ['pacientes', 'Pacientes']) || 0);
 
     /* ------------------- ENDOSCOPIA ------------------- */
@@ -1243,7 +1275,14 @@ function reduceDailyToAgg(arr) {
     const lab = d.lab || d['LABORATORIO'] || {};
     const lh = lab.hosp || lab.Hospitalario || {};
     const lp = lab.part || lab.Particulares || {};
-    for (const k in A.lab.hosp) { A.lab.hosp[k] += +(lh[k] || 0); }
+    
+    // Normalizar llaves del laboratorio cargado
+    const lhNorm = {};
+    for (const [lk, lv] of Object.entries(lh)) { lhNorm[lk.toLowerCase()] = lv; }
+
+    for (const k in A.lab.hosp) {
+      A.lab.hosp[k] += +(lhNorm[k.toLowerCase()] || 0);
+    }
     A.lab.part.muestras += +(pick(lp, ['muestras', 'Muestras']) || 0);
 
     /* ------------------- ESTADÍSTICA INSTITUCIONAL ------------------- */
@@ -2280,6 +2319,10 @@ async function sumarKpisMes(year, month0, config) {
 /* -------------------- FLUJO DE CARGA Y AUTENTICACIÓN -------------------- */
 
 async function runLoad() {
+    // Poller de seguridad: asegura que Firebase esté listo antes de proceder
+    if (!ensureFirebase() && window.firebaseFirestore) {
+        ensureFirebase();
+    }
   const mval = document.getElementById("month").value;
   if (!mval) { alert("Selecciona un mes."); return; }
   const btn = document.getElementById('btnLoad');

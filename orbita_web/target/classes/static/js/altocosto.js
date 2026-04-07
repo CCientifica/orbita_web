@@ -13,14 +13,10 @@
 
         const { db, auth } = window.firebaseInstance;
         const ensureAuth = async () => {
+            // Ya no intentamos Anonymous Login porque está restringido en el proyecto.
+            // La sesión debe ser establecida por el Auth Bridge (Google Auth).
             if (!auth || !auth.currentUser) {
-                // Si llegamos aquí y no hay auth, intentamos anónimo
-                try {
-                    await window.firebaseAuth.signInAnonymously();
-                    console.log("🔓 [ALTO_COSTO] Sesión anónima establecida");
-                } catch (e) {
-                    console.error("📛 [ALTO_COSTO] Fallo en sesión anónima:", e);
-                }
+                console.warn("⚠️ [ALTO_COSTO] Usuario no autenticado detectado.");
             }
             return auth?.currentUser;
         };
@@ -288,7 +284,7 @@
 
                 // Expansiones estéticas para lectura profesional
                 const exp = {
-                        "Dx": "Diagnóstico", "Tto": "Tratamiento", "Ini": "Inicio",
+                        "Tto": "Tratamiento", "Ini": "Inicio",
                         "Act": "Actual", "Cant": "Cantidad", "Ips": "IPS",
                         "Vhc": "VHC", "Vhb": "VHB", "Vih": "VIH", "Bdua": "BDUA",
                         "id": "ID", "SGSSS": "SGSSS", "Causamuerte": "Causa Muerte",
@@ -484,9 +480,7 @@
                 "VAR64_2_FechaMuerte": "Formato AAAA-MM-DD. SOLO si falleció.",
 
                 "VAR65_SerialBDUA": "Serial/código BDUA del usuario (tal cual aparece en BDUA). No inventar; si no está disponible, usar el comodín permitido por tu estándar.",
-                "VAR66_V66FechaCorte": "Fecha de corte del reporte en formato AAAA-MM-DD (debe ser la definida por el instructivo del periodo).",
-
-                "Dx": "Código CIE-10 del diagnóstico principal objeto de reporte (consistente con tipo de deficiencia y soportes)."
+                "VAR66_V66FechaCorte": "Fecha de corte del reporte en formato AAAA-MM-DD (debe ser la definida por el instructivo del periodo)."
         };
 
         const AYUDA_CANCER = {
@@ -669,9 +663,9 @@
                 "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior"
         ];
 
-        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamiliares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte", "Dx"];
+        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamiliares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte"];
 
-        const VARS_CANCER = ["VAR1_PrimerNombreUsuario", "VAR2_SegundoNombreUsuario", "VAR3_PrimerApellidoUsuario", "VAR4_SegundoApellidoUsuario", "VAR5_TipoIdentificacionUsuario", "VAR6_NumeroIdentificacionUsuario", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_RegimenAfiliacionSGSSS", "VAR11_idEPS", "VAR12_CodigoPertenenciaEtnica", "VAR13_GrupoPoblacional", "VAR14_MunicipioResidencia", "VAR15_NumeroTelefonicopaciente", "VAR16_FechaAfiliacionEPSRegistra", "VAR17_NombreNeoplasia", "VAR18_FechaDx", "VAR19_FechaNotaRemisionMedico", "VAR20_FechaIngresoInstitucionRealizo", "VAR21_TipoEstudioRealizoDiagnostico", "VAR22_MotivoUsuarioNOTuvoDiagnostico", "VAR23_FechaRecoleccionMuestraEstudioHistopatologico", "VAR24_FechaInformHistopatologicoValido", "VAR25_CodigoValidoHabilitacionIPS", "VAR26_FechaPrimeraConsultaMedicoTratante", "VAR27_HistologiaTumorMuestraBiopsia", "VAR28_GradoDiferenciacionTumorSolidoMaligno", "VAR29_SiEsTumorSolido", "VAR30_FechaRealizoEstaEstadificacion", "VAR31_ParaCancerMama", "VAR32_ParaCancerMamaFechaRealizacion", "VAR33_ParaCancerMamaResultadoPrimera", "VAR34_ParaCancerColorrectalEstadificacionDukes", "VAR35_FechaEstadificacionDukes", "VAR36_EstadificacionLinfomaClinicaHodgkin", "VAR37_CancerProstataValorClasificacionGleason", "VAR38_ClasificacionRiesgoLeucemiasLinfomas", "VAR39_FechaClasificacionRiesgo", "VAR40_ObjetivoTratamientoMedicoInic", "VAR41_ObjetivoIntervencionMedicaPeriodoReporte", "VAR42_TieneAntecedenteOtroCancerPrimario", "VAR43_FechaDiagnosticoOtroCancerPrimario", "VAR44_TipoCancerAntecedente", "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR46_FaseQuimioterapiaRecibioUsuarioCorte", "VAR46_1_UsuarioRecibioCorteQuimioterapiaPrefase", "VAR46_2_UsuarioRecibioCorteFaseQuimioterapiaInduccion", "VAR46_3_UsuarioRecibioCorteFaseQuimioterapIntensificacion", "VAR46_4_UsuarioRecibioCorteFaseQuimioterapiaConsolidacion", "VAR46_5_UsuarioRecibioCorteFaseQuimioterapiaReinduccion", "VAR46_6_UsuarioRecibiCorteFaseQuimioterapiaMantenimiento", "VAR46_7_UsuarioRecibioCorteFaseQuimioterapiaMantenimientoL", "VAR46_8_UsuarioRecibiCorteOtraFaseQuimioterapia", "VAR47_NumeroCiclosIniciadosPeriodoReporteActual", "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico", "VAR49_FechaInicioPrimerCicloQuimioterapiaCorte", "VAR50_NumeroIPSPrimerCicloCorte", "VAR51_CodigoIPS1PrimerCicloCorte", "VAR52_CodigoIPS2PrimerCicloCorte", "VAR53_MedicamentosAntineoplasicosPrimerCicloCorte", "VAR53_1_Medicamentoadm1PrimerEsquema", "VAR53_2_Medicamentoadm2PrimerEsquema", "VAR53_3_Medicamentoadm3PrimerEsquema", "VAR53_4_Medicamentoadm4PrimerEsquema", "VAR53_5_Medicamentoadm5PrimerEsquema", "VAR53_6_Medicamentoadm6PrimerEsquema", "VAR53_7_Medicamentoadm7PrimerEsquema", "VAR53_8_Medicamentoadm8PrimerEsquema", "VAR53_9_Medicamentoadm9PrimerEsquema", "VAR54_MedicamentoNoPOS1AdministradoUsuarioPrimerCiclo", "VAR55_MedicamentoNoPOS2AdministradoUsuarioPrimerCiclo", "VAR56_MedicamentoNoPOS3AdministradoUsuarioPrimerCiclo", "VAR57_RecibioQuimioterapiaIntratecalPrimerCiclo", "VAR58_FechaFinalizacionPrimerCicloCorte", "VAR59_CaracteristicasActualesPrimerCicloCorte", "VAR60_MotivoFinalizacionPrimerCiclo", "VAR61_UbicacionTemporalUltimoCicloCorteOncologico", "VAR62_FechaInicioUltimoCicloQuimioterapiaCorte", "VAR63_NumeroIPSSuministranUltimoCicloCorte", "VAR64_CodigoIPS1SuministraUltimoCicloReporte", "VAR65_CodigoIPS2SuministraUltimoCicloReporte", "VAR66_MedicamentosAntineoplasicosEspecialistaCancer", "VAR66_1_Medicamentoadm1UltimoEsquema", "VAR66_2_Medicamentoadm2UltimoEsquema", "VAR66_3_Medicamentoadm3UltimoEsquema", "VAR66_4_Medicamentoadm4UltimoEsquema", "VAR66_5_Medicamentoadm5UltimoEsquema", "VAR66_6_Medicamentoadm6UltimoEsquema", "VAR66_7_Medicamentoadm7UltimoEsquema", "VAR66_8_Medicamentoadm8UltimoEsquema", "VAR66_9_Medicamentoadm9UltimoEsquema", "VAR67_MedicamentoNoPOS1AdministradoUsuarioUltimoCiclo", "VAR68_MedicamentoNoPOS2AdministradoUsuarioUltimoCiclo", "VAR69_MedicamentoNoPOS3AdministradoUsuarioUltimoCiclo", "VAR70_RecibioQuimioterapiaIntratecalUltimoCicloCorte", "VAR71_FechaFinalizacionCicloUltimo", "VAR72_CaracteristicasActualesUltimoCicloCorte", "VAR73_MotivoFinalizacionPrematuraUltimoCiclo", "VAR74_SometidoUsuarioCirugiasCurativasPaliativas", "VAR75_NumeroCirugiasSometidoUsuarioPeriodoReporteActual", "VAR76_FechaRealizacionPrimeraCirugiaReporte", "VAR77_CodigoIPSRealizoPrimeraCirugiaCorte", "VAR78_CodigoPrimeraCirugia", "VAR79_UbicacionTemporalPrimeraCirugiaOncologico", "VAR80_FechaRealizacionUltimoProcedimientoQuirurgico", "VAR81_MotivoHaberRealizadoUltimaIntervencionQuirurgica", "VAR82_CodigoIPSRealizaUltimoProcedimientosQuirugicos", "VAR83_CodigoUltimaCirugia", "VAR84_UbicacionTemporalUltimaCirugiaOncologico", "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia", "VAR86_RecibioUsuarioAlgunTipoRadioterapiaCorteActual", "VAR87_NumeroEsquemasRadioterapiaSuministradosCorteActual", "VAR88_FechaInicioPrimerUnicoEsquemaRadioterapia", "VAR89_UbicacionTemporalPrimerUnicoEsquemaRadioterapia", "VAR90_TipoRadioterapiaAplicadaPrimerUnicoEsquema", "VAR91_NumeroIPSSuministranPrimerUnicoEsquemaRadioterapia", "VAR92_CodigoIPS1SuministraRadioterapia", "VAR93_CodigoIPS2SuministraRadioterapia", "VAR94_FechaFinalizacionPrimerUnicoEsquemaRadioterapia", "VAR95_CaracteristicasActualesPrimerEsquemaRadioterapia", "VAR96_MotivoFinalizacionPrimerEsquemaRadioterapia", "VAR97_FechaInicioUltimoEsquemaRadioterapia", "VAR98_UbicacionTemporalUltimoEsquemaRadioterapia", "VAR99_TipoRadioterapiaAplicadaUltimoEsquemaRadioterapia", "VAR100_NumeroIPSSuministranUltimoEsquemaRadioterapia", "VAR101_CodigoIPS1SuministraRadioterapia1", "VAR102_CodigoIPS2SuministraRadioterapia1", "VAR103_FechaFinalizacionUltimoEsquemaRadioterapia", "VAR104_CaracteristicasActualesUltimoEsquemaRadioterapia", "VAR105_MotivoFinalizacionUltimoEsquemaRadioTerapia", "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras", "VAR107_TipoTrasplanteRecibido", "VAR108_UbicacionTemporalTrasplanteOncologico", "VAR109_FechaTrasplante", "VAR110_CodigoIPSRealizoTrasplante", "VAR111_UsuarioRecibioCirugiaReconstructiva", "VAR112_FechaCirugia", "VAR113_CodigoIPSRealizoCirugiaReconstructiva", "VAR114_UsuarioValoradoConsultaProcedimientoPaliativo", "VAR114_1_UsuarioRecibioConsultaProcedimientoCuidadoPaliativ", "VAR114_2_UsuarioRecibioConsultaCuidadoPaliativo", "VAR114_3_UsuarioRecibioConsultaPaliativoEspecialista", "VAR114_4_UsuarioRecibioConsultaPaliativoGeneral", "VAR114_5_UsuarioRecibioConsultaPaliativoTrabajoSocial", "VAR114_6_UsuarioRecibioConsultaPaliativoNoEspecializado", "VAR115_FechaPrimeraConsultaPaliativoCorte", "VAR116_CodigoIPSRecibioPrimeraValoracionPaliativo", "VAR117_HaSidoValoradoUsuarioPorServicioPsiquiatria", "VAR118_FechaPrimeraConsultaServicioPsiquiatria", "VAR119_CodigoIPSRecibioPrimeraValoracionPsiquiatria", "VAR120_FueValoradoUsuarioPorProfesionalNutricion", "VAR121_FechaConsultaInicialNutricionCorte", "VAR122_CodigoIPSRecibioValoracionNutricion", "VAR123_UsuarioRecibioSoporteNutricional", "VAR124_UsuarioRecibidoTerapiasComplementariasRehabilitaci", "VAR125_TipoTratamientoRecibiendoUsuarioFechaCorte", "VAR126_ResultadoFinalManejoOncologicoCorte", "VAR127_EstadoVitalFinalizarCorte", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior", "VAR129_NovedadClinicaUsuarioFechaCorte", "VAR130_FechaDesafiliacionEPS", "VAR131_FechaMuerte", "VAR132_CausaMuerte", "VAR133_SerialBDUA", "VAR134_V134FechaCorte", "Dx"];
+        const VARS_CANCER = ["VAR1_PrimerNombreUsuario", "VAR2_SegundoNombreUsuario", "VAR3_PrimerApellidoUsuario", "VAR4_SegundoApellidoUsuario", "VAR5_TipoIdentificacionUsuario", "VAR6_NumeroIdentificacionUsuario", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_RegimenAfiliacionSGSSS", "VAR11_idEPS", "VAR12_CodigoPertenenciaEtnica", "VAR13_GrupoPoblacional", "VAR14_MunicipioResidencia", "VAR15_NumeroTelefonicopaciente", "VAR16_FechaAfiliacionEPSRegistra", "VAR17_NombreNeoplasia", "VAR18_FechaDx", "VAR19_FechaNotaRemisionMedico", "VAR20_FechaIngresoInstitucionRealizo", "VAR21_TipoEstudioRealizoDiagnostico", "VAR22_MotivoUsuarioNOTuvoDiagnostico", "VAR23_FechaRecoleccionMuestraEstudioHistopatologico", "VAR24_FechaInformHistopatologicoValido", "VAR25_CodigoValidoHabilitacionIPS", "VAR26_FechaPrimeraConsultaMedicoTratante", "VAR27_HistologiaTumorMuestraBiopsia", "VAR28_GradoDiferenciacionTumorSolidoMaligno", "VAR29_SiEsTumorSolido", "VAR30_FechaRealizoEstaEstadificacion", "VAR31_ParaCancerMama", "VAR32_ParaCancerMamaFechaRealizacion", "VAR33_ParaCancerMamaResultadoPrimera", "VAR34_ParaCancerColorrectalEstadificacionDukes", "VAR35_FechaEstadificacionDukes", "VAR36_EstadificacionLinfomaClinicaHodgkin", "VAR37_CancerProstataValorClasificacionGleason", "VAR38_ClasificacionRiesgoLeucemiasLinfomas", "VAR39_FechaClasificacionRiesgo", "VAR40_ObjetivoTratamientoMedicoInic", "VAR41_ObjetivoIntervencionMedicaPeriodoReporte", "VAR42_TieneAntecedenteOtroCancerPrimario", "VAR43_FechaDiagnosticoOtroCancerPrimario", "VAR44_TipoCancerAntecedente", "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR46_FaseQuimioterapiaRecibioUsuarioCorte", "VAR46_1_UsuarioRecibioCorteQuimioterapiaPrefase", "VAR46_2_UsuarioRecibioCorteFaseQuimioterapiaInduccion", "VAR46_3_UsuarioRecibioCorteFaseQuimioterapIntensificacion", "VAR46_4_UsuarioRecibioCorteFaseQuimioterapiaConsolidacion", "VAR46_5_UsuarioRecibioCorteFaseQuimioterapiaReinduccion", "VAR46_6_UsuarioRecibiCorteFaseQuimioterapiaMantenimiento", "VAR46_7_UsuarioRecibioCorteFaseQuimioterapiaMantenimientoL", "VAR46_8_UsuarioRecibiCorteOtraFaseQuimioterapia", "VAR47_NumeroCiclosIniciadosPeriodoReporteActual", "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico", "VAR49_FechaInicioPrimerCicloQuimioterapiaCorte", "VAR50_NumeroIPSPrimerCicloCorte", "VAR51_CodigoIPS1PrimerCicloCorte", "VAR52_CodigoIPS2PrimerCicloCorte", "VAR53_MedicamentosAntineoplasicosPrimerCicloCorte", "VAR53_1_Medicamentoadm1PrimerEsquema", "VAR53_2_Medicamentoadm2PrimerEsquema", "VAR53_3_Medicamentoadm3PrimerEsquema", "VAR53_4_Medicamentoadm4PrimerEsquema", "VAR53_5_Medicamentoadm5PrimerEsquema", "VAR53_6_Medicamentoadm6PrimerEsquema", "VAR53_7_Medicamentoadm7PrimerEsquema", "VAR53_8_Medicamentoadm8PrimerEsquema", "VAR53_9_Medicamentoadm9PrimerEsquema", "VAR54_MedicamentoNoPOS1AdministradoUsuarioPrimerCiclo", "VAR55_MedicamentoNoPOS2AdministradoUsuarioPrimerCiclo", "VAR56_MedicamentoNoPOS3AdministradoUsuarioPrimerCiclo", "VAR57_RecibioQuimioterapiaIntratecalPrimerCiclo", "VAR58_FechaFinalizacionPrimerCicloCorte", "VAR59_CaracteristicasActualesPrimerCicloCorte", "VAR60_MotivoFinalizacionPrimerCiclo", "VAR61_UbicacionTemporalUltimoCicloCorteOncologico", "VAR62_FechaInicioUltimoCicloQuimioterapiaCorte", "VAR63_NumeroIPSSuministranUltimoCicloCorte", "VAR64_CodigoIPS1SuministraUltimoCicloReporte", "VAR65_CodigoIPS2SuministraUltimoCicloReporte", "VAR66_MedicamentosAntineoplasicosEspecialistaCancer", "VAR66_1_Medicamentoadm1UltimoEsquema", "VAR66_2_Medicamentoadm2UltimoEsquema", "VAR66_3_Medicamentoadm3UltimoEsquema", "VAR66_4_Medicamentoadm4UltimoEsquema", "VAR66_5_Medicamentoadm5UltimoEsquema", "VAR66_6_Medicamentoadm6UltimoEsquema", "VAR66_7_Medicamentoadm7UltimoEsquema", "VAR66_8_Medicamentoadm8UltimoEsquema", "VAR66_9_Medicamentoadm9UltimoEsquema", "VAR67_MedicamentoNoPOS1AdministradoUsuarioUltimoCiclo", "VAR68_MedicamentoNoPOS2AdministradoUsuarioUltimoCiclo", "VAR69_MedicamentoNoPOS3AdministradoUsuarioUltimoCiclo", "VAR70_RecibioQuimioterapiaIntratecalUltimoCicloCorte", "VAR71_FechaFinalizacionCicloUltimo", "VAR72_CaracteristicasActualesUltimoCicloCorte", "VAR73_MotivoFinalizacionPrematuraUltimoCiclo", "VAR74_SometidoUsuarioCirugiasCurativasPaliativas", "VAR75_NumeroCirugiasSometidoUsuarioPeriodoReporteActual", "VAR76_FechaRealizacionPrimeraCirugiaReporte", "VAR77_CodigoIPSRealizoPrimeraCirugiaCorte", "VAR78_CodigoPrimeraCirugia", "VAR79_UbicacionTemporalPrimeraCirugiaOncologico", "VAR80_FechaRealizacionUltimoProcedimientoQuirurgico", "VAR81_MotivoHaberRealizadoUltimaIntervencionQuirurgica", "VAR82_CodigoIPSRealizaUltimoProcedimientosQuirugicos", "VAR83_CodigoUltimaCirugia", "VAR84_UbicacionTemporalUltimaCirugiaOncologico", "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia", "VAR86_RecibioUsuarioAlgunTipoRadioterapiaCorteActual", "VAR87_NumeroEsquemasRadioterapiaSuministradosCorteActual", "VAR88_FechaInicioPrimerUnicoEsquemaRadioterapia", "VAR89_UbicacionTemporalPrimerUnicoEsquemaRadioterapia", "VAR90_TipoRadioterapiaAplicadaPrimerUnicoEsquema", "VAR91_NumeroIPSSuministranPrimerUnicoEsquemaRadioterapia", "VAR92_CodigoIPS1SuministraRadioterapia", "VAR93_CodigoIPS2SuministraRadioterapia", "VAR94_FechaFinalizacionPrimerUnicoEsquemaRadioterapia", "VAR95_CaracteristicasActualesPrimerEsquemaRadioterapia", "VAR96_MotivoFinalizacionPrimerEsquemaRadioterapia", "VAR97_FechaInicioUltimoEsquemaRadioterapia", "VAR98_UbicacionTemporalUltimoEsquemaRadioterapia", "VAR99_TipoRadioterapiaAplicadaUltimoEsquemaRadioterapia", "VAR100_NumeroIPSSuministranUltimoEsquemaRadioterapia", "VAR101_CodigoIPS1SuministraRadioterapia1", "VAR102_CodigoIPS2SuministraRadioterapia1", "VAR103_FechaFinalizacionUltimoEsquemaRadioterapia", "VAR104_CaracteristicasActualesUltimoEsquemaRadioterapia", "VAR105_MotivoFinalizacionUltimoEsquemaRadioTerapia", "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras", "VAR107_TipoTrasplanteRecibido", "VAR108_UbicacionTemporalTrasplanteOncologico", "VAR109_FechaTrasplante", "VAR110_CodigoIPSRealizoTrasplante", "VAR111_UsuarioRecibioCirugiaReconstructiva", "VAR112_FechaCirugia", "VAR113_CodigoIPSRealizoCirugiaReconstructiva", "VAR114_UsuarioValoradoConsultaProcedimientoPaliativo", "VAR114_1_UsuarioRecibioConsultaProcedimientoCuidadoPaliativ", "VAR114_2_UsuarioRecibioConsultaCuidadoPaliativo", "VAR114_3_UsuarioRecibioConsultaPaliativoEspecialista", "VAR114_4_UsuarioRecibioConsultaPaliativoGeneral", "VAR114_5_UsuarioRecibioConsultaPaliativoTrabajoSocial", "VAR114_6_UsuarioRecibioConsultaPaliativoNoEspecializado", "VAR115_FechaPrimeraConsultaPaliativoCorte", "VAR116_CodigoIPSRecibioPrimeraValoracionPaliativo", "VAR117_HaSidoValoradoUsuarioPorServicioPsiquiatria", "VAR118_FechaPrimeraConsultaServicioPsiquiatria", "VAR119_CodigoIPSRecibioPrimeraValoracionPsiquiatria", "VAR120_FueValoradoUsuarioPorProfesionalNutricion", "VAR121_FechaConsultaInicialNutricionCorte", "VAR122_CodigoIPSRecibioValoracionNutricion", "VAR123_UsuarioRecibioSoporteNutricional", "VAR124_UsuarioRecibidoTerapiasComplementariasRehabilitaci", "VAR125_TipoTratamientoRecibiendoUsuarioFechaCorte", "VAR126_ResultadoFinalManejoOncologicoCorte", "VAR127_EstadoVitalFinalizarCorte", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior", "VAR129_NovedadClinicaUsuarioFechaCorte", "VAR130_FechaDesafiliacionEPS", "VAR131_FechaMuerte", "VAR132_CausaMuerte", "VAR133_SerialBDUA", "VAR134_V134FechaCorte"];
 
         const canonKey = (k) => (k || "").toString().trim().replace(/\s+/g, "");
 
@@ -4086,7 +4080,7 @@
                                 if (val113 === "98" && getVal("111") !== "98") enforce("111", "98", "Si IPS (VAR113) es 98 -> VAR111 DEBE SER 98");
                                 if (val112 === S_NO_APPLY && getVal("111") !== "98") enforce("111", "98", "Si Fecha (VAR112) es 1845 -> VAR111 DEBE SER 98");
 
-                                if (val111 === "2" || val111 === "98") {
+                                if (val111 === "1") {
                                         enforce("113", "98", "Sin Cirugía Reconstructiva -> IPS N.A.");
                                         if (val112 === S_NO_APPLY) {
                                                 marcarErrorDuro("111", "Incoherencia: VAR111=1 pero Fecha=1845. Corrija la fecha o cambie a 98.");
@@ -4167,6 +4161,10 @@
                     }
                 }
                 
+                const rolActualSnap = String(window.__userRol || "").toLowerCase().trim();
+                const emailActual = String(window.orbitaUser?.email || "").toLowerCase().trim();
+                console.log(`[DEBUG_AUTH] Abriendo ficha. Rol detectado: "${rolActualSnap}" | Email: "${emailActual}"`);
+
                 currentPacienteId = id;
                 // Capture snapshot of original variables to track human vs automatic changes
                 const pSnapshot = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
@@ -4222,10 +4220,13 @@
                         // 📌 Regla de Negocio: Solo la Analista puede MARCAR. Admins solo pueden VER si ya está marcado.
                         if (btnNoCohorte) {
                                 const yaMarcado = data?.periodos?.[periodoSel]?.no_cohorte === true;
-                                const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin";
+                                const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin" || rolActual === "administrador";
 
                                 // Mostrar botón si: Es analista (para marcar o ver) O es Admin y ya está marcado (solo para ver)
-                                if (esAnalista || (esMasterOSuper && yaMarcado)) {
+                                // NOTA: Verificamos tanto 'analista' como el correo específico si es necesario por seguridad
+                                const permitidoMarcar = esAnalista || emailActual.includes("analistaaltocosto");
+
+                                if (permitidoMarcar || (esMasterOSuper && yaMarcado)) {
                                     btnNoCohorte.style.display = "inline-block";
                                     btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
                                     btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
@@ -4234,13 +4235,14 @@
                                         btnNoCohorte.onclick = null;
                                         btnNoCohorte.style.opacity = "0.7";
                                         btnNoCohorte.style.cursor = "not-allowed";
-                                    } else if (esAnalista) {
+                                        btnNoCohorte.title = "Esta ficha ya fue marcada como ajena a la cohorte";
+                                    } else if (permitidoMarcar) {
                                         // Solo la analista tiene el evento activo para marcar
                                         btnNoCohorte.onclick = () => window.marcarNoCohorte();
                                         btnNoCohorte.style.opacity = "1";
                                         btnNoCohorte.style.cursor = "pointer";
+                                        btnNoCohorte.title = "Clic para marcar este paciente como ajeno a la cohorte";
                                     } else {
-                                        // Caso Admin viendo algo no marcado (por si acaso entra aquí, aunque el display lo oculta)
                                         btnNoCohorte.style.display = "none";
                                     }
                                 } else {
@@ -4594,8 +4596,14 @@
                         "2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03",
                         "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-07-20",
                         "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16",
-                        "2026-12-08", "2026-12-25"
+                        "2026-12-08", "2026-12-25",
+                        // 2027
+                        "2027-01-01", "2027-01-11", "2027-03-22", "2027-03-25", "2027-03-26",
+                        "2027-05-01", "2027-05-17", "2027-06-07", "2027-06-14", "2027-07-05",
+                        "2027-07-20", "2027-08-07", "2027-08-16", "2027-10-18", "2027-11-01",
+                        "2027-11-15", "2027-12-08", "2027-12-25"
                 ]);
+
 
                 const esFestivo = (dt) => {
                         const iso = dt.getFullYear() + "-" +
@@ -4614,8 +4622,8 @@
                         return 9;                   // Lun-Jue
                 };
 
-                // Días hábiles del mes (sin festivos)
-                const diasHabilesColombia = (yearStr, monthStr) => {
+                // Días hábiles de un mes (sin festivos)
+                const diasHabilesMes = (yearStr, monthStr) => {
                         const y = parseInt(yearStr, 10), m = parseInt(monthStr, 10);
                         const last = new Date(y, m, 0).getDate();
                         const arr = [];
@@ -4624,6 +4632,19 @@
                                 if (horasDiaLaboral(dt) > 0) arr.push(dt);
                         }
                         return arr;
+                };
+
+                // Helper: Obtener el N-ésimo día hábil de un mes
+                const getNthHab = (y, m, n) => {
+                    const h = diasHabilesMes(String(y), String(m).padStart(2, '0'));
+                    return h[n - 1] || h[h.length - 1];
+                };
+
+                // Helper: Próximo mes
+                const getProxMes = (y, m) => {
+                    let yy = parseInt(y), mm = parseInt(m) + 1;
+                    if (mm > 12) { mm = 1; yy++; }
+                    return { y: yy, m: mm };
                 };
 
                 // 🔥 HELPER PARA FECHA LOCAL (Evita el bug de las 7:00 PM y UTC)
@@ -4639,73 +4660,79 @@
                 if (typeof window.bandejaActual === 'undefined' || !window.bandejaActual) window.bandejaActual = 'pendiente';
 
                 // =========================================================
-                // 📅 CONSTANTES DE TIEMPO (Declarar antes del onSnapshot para evitar ReferenceError)
+                // 📅 VENTANA OPERATIVA (Institucional: 6to BD M+1 -> 5to BD M+2)
                 // =========================================================
-                const ahora = new Date();
-                const anoActual = ahora.getFullYear();
-                const mesActual = ahora.getMonth() + 1;
+                const ahoraDt = new Date();
+                const hoyStr2 = getLocalYYYYMMDD(ahoraDt);
 
-                const mesesDiferencia = (anoActual * 12 + mesActual) - (parseInt(anio) * 12 + parseInt(mes));
-                const esMesActivo = mesesDiferencia <= 1;
+                // Mes de reporte del filtro
+                const anioFiltro = String(document.getElementById("filtroAnio").value);
+                const mesFiltro = String(document.getElementById("filtroMes").value);
 
-                // Mes actual de trabajo (siempre el mes del calendario hoy)
-                const mesWorkAnio = String(anoActual);
-                const mesWork = String(mesActual).padStart(2, '0');
-                const habilesMesTrabajo = diasHabilesColombia(mesWorkAnio, mesWork);
+                // Calculamos M+1 y M+2
+                const mProx = getProxMes(anioFiltro, mesFiltro);
+                const mSiguiente = getProxMes(mProx.y, mProx.m);
+                
+                // Hitos de la ventana
+                const inicioDt = new Date(getNthHab(mProx.y, mProx.m, 6)); 
+                inicioDt.setHours(0,0,0,0);
+                const finDt = new Date(getNthHab(mSiguiente.y, mSiguiente.m, 5));
+                finDt.setHours(23,59,59,999);
+                
+                const esMesActivo = (ahoraDt >= inicioDt && ahoraDt <= finDt);
+                const esMesCerrado = (ahoraDt > finDt);
+                
+                // Construcción de la lista completa de BD en la ventana
+                const listHabilesVentana = [];
+                // Hábiles de M+1 desde el 6to día
+                const habilesMProx = diasHabilesMes(String(mProx.y), String(mProx.m).padStart(2, '0'));
+                habilesMProx.forEach(d => { if (d >= inicioDt) listHabilesVentana.push(d); });
+                // Hábiles de M+2 hasta el 5to día
+                const habilesMSig = diasHabilesMes(String(mSiguiente.y), String(mSiguiente.m).padStart(2, '0'));
+                habilesMSig.forEach(d => { if (d <= finDt) listHabilesVentana.push(d); });
+                
+                const totalDiasVentana = listHabilesVentana.length;
+                const diasRestantesVentana = listHabilesVentana.filter(d => getLocalYYYYMMDD(d) >= hoyStr2).length;
+                const diasHabilesTranscurridos = totalDiasVentana - diasRestantesVentana;
 
-                // Días hábiles del mes de los datos (filtro)
-                const habilesMesDatos = diasHabilesColombia(anio, mes);
-                const totalHorasMes = habilesMesDatos.reduce((acc, dt) => acc + horasDiaLaboral(dt), 0);
+                console.log(`[VENTANA] Periodo: ${anioFiltro}-${mesFiltro} | Ventana: ${getLocalYYYYMMDD(inicioDt)} a ${getLocalYYYYMMDD(finDt)} | Total Días: ${totalDiasVentana} | Activo: ${esMesActivo}`);
 
-                // hoyStr para comparaciones
-                const hoyStr2 = ahora.getFullYear() + "-" +
-                        String(ahora.getMonth() + 1).padStart(2, "0") + "-" +
-                        String(ahora.getDate()).padStart(2, "0");
 
                 // =========================================================
                 // 🔄 CLASIFICACIÓN DE INCIDENTES Y PREVALENTES (Regla Clínica)
                 // =========================================================
                 function esPacienteIncidente(p) {
                         if (!p) return true;
-
-                        // Un dato se considera presente si no es null, undefined, vacío o solo espacios. 
-                        const isRealValue = (v) => {
-                                if (v === null || v === undefined) return false;
-                                return String(v).trim() !== '';
-                        };
-
+                        const isRealValue = (v) => v !== null && v !== undefined && String(v).trim() !== '';
                         const isKeyClinica = (key) => {
                                 const m = key.match(/^VAR(\d+)/i);
                                 return m && parseInt(m[1]) >= 17;
                         };
-
-                        // 1. Revisar Datos Base y Raíz del documento
                         const base = p.datos_base || {};
                         const combinedKeys = [...Object.keys(p), ...Object.keys(base)];
-
                         for (const k of combinedKeys) {
                                 if (isKeyClinica(k)) {
                                         const val = p[k] ?? base[k];
-                                        if (isRealValue(val)) return false; // ANTIGUO (Cualquier dato clínico >= 17)
+                                        if (isRealValue(val)) return false; 
                                 }
                         }
-
-                        // 2. Revisar TODOS los Periodos (Barrido Histórico)
                         if (p.periodos) {
                                 for (const pKey in p.periodos) {
                                         const vars = p.periodos[pKey]?.variables || {};
                                         for (const vKey in vars) {
                                                 if (isKeyClinica(vKey)) {
-                                                        if (isRealValue(vars[vKey])) return false; // ANTIGUO (Cualquier dato clínico >= 17 en historia)
+                                                        if (isRealValue(vars[vKey])) return false; 
                                                 }
                                         }
                                 }
                         }
-
-                        return true; // Es NUEVO (Solo datos demográficos < 17 o campos vacíos)
+                        return true; 
                 }
+                window.esPacienteIncidenteGlobal = esPacienteIncidente;
 
-                window.__pacientesClasificados = [];
+                // =========================================================
+                // 🔄 CARGAR PACIENTES Y DIBUJAR TABLA / DASHBOARD
+                // =========================================================
                 window.__filtroTipo = 'todos';
                 window.__textoBusqueda = '';
 
@@ -5011,6 +5038,8 @@
                                 let validadosPeriodo = 0; // Se redefine como 'aprobado' únicamente (Caja Fuerte)
                                 let validadosHoy = 0;     // Esfuerzo hoy (validado + aprobado)
                                 let gestadosPeriodo = 0;  // Suma total (validado + aprobado) para cálculos de rezago
+                                
+                                console.log(`[INDICADORS_CALC] Total Periodo: ${totalPeriodo} | Activos: ${pacientesActivos.length}`);
 
                                 // 🔥 NUEVAS MÉTRICAS DE CALIDAD (TASK turn 272/351)
                                 let totalGestionesHoy = 0;
@@ -5116,79 +5145,40 @@
                                         chkMaster.style.display = (window.bandejaActual === "validado") ? "inline-block" : "none";
                                 }
 
-                                // habiles del MES DEL FILTRO → para calcular totalHorasMes y ritmo ideal
-                                // (Ya declarados arriba para evitar error de inicialización)
+                                // ─── CÁLCULO DE META AJUSTADA (VENTANA OPERATIVA) ──────────────
+                                // Meta diaria base (Rhythm): pac. restantes / días restantes de ventana
+                                metaHoyFinal = 0;
+                                let ritmoIdealDiario = totalPeriodo / (totalDiasVentana || 1);
+                                
+                                if (esMesActivo) {
+                                    const validadosHastaAyer = gestadosPeriodo - validadosHoy;
+                                    const pendientesTotalesHoy = Math.max(totalPeriodo - validadosHastaAyer, 0);
+                                    
+                                    // Meta Hoy = Lo que falta distribuido en lo que queda de la ventana institucional
+                                    metaHoyFinal = (diasRestantesVentana > 0)
+                                        ? Math.ceil(pendientesTotalesHoy / diasRestantesVentana)
+                                        : pendientesTotalesHoy;
+                                        
+                                    // % cumplimiento hoy (Esfuerzo del día vs Meta calculada para hoy)
+                                    porcentajeEjecucion = metaHoyFinal > 0
+                                            ? Math.round((validadosHoy / metaHoyFinal) * 100)
+                                            : 100;
 
-                                const totalPacientesMes = totalPeriodo; // se calcula más abajo en el snap
+                                    proyeccionAlRitmoActual = gestadosPeriodo + (validadosHoy * Math.max(diasRestantesVentana - 1, 0));
+                                    
+                                    // Lo que DEBERÍA llevar acumulado hoy idealmente
+                                    pacientesEsperadosHastaHoy = Math.floor(ritmoIdealDiario * diasHabilesTranscurridos);
+                                } else if (esMesCerrado) {
+                                    pacientesEsperadosHastaHoy = totalPeriodo;
+                                    porcentajeEjecucion = 100;
+                                } else {
+                                    // Periodo futuro: no hay meta aún
+                                    pacientesEsperadosHastaHoy = 0;
+                                    porcentajeEjecucion = 0;
+                                }
 
-                                // ─── CÁLCULO DE META AJUSTADA EN TIEMPO REAL ───────────────────────────
-                                // Lógica: distribuir los pacientes restantes entre las horas laborales restantes del mes.
-                                // Si estamos en el mes activo → meta dinámica ajustada al día actual.
-                                // Si estamos en un mes pasado → meta promedio fija.
-
-                                // Fecha de referencia para cálculos: si el mes ya cerró, usar su último día hábil
-                                const fechaReferencia = (() => {
-                                        if (parseInt(anio) === parseInt(anoActual) && parseInt(mes) === parseInt(mesActual)) {
-                                                return ahora; // mes actual: usar ahora mismo
-                                        }
-                                        // Mes anterior: usar el último día hábil del mes seleccionado
-                                        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0); // último día del mes
-                                        // Retroceder hasta encontrar un día hábil
-                                        while (horasDiaLaboral(ultimoDia) === 0) {
-                                                ultimoDia.setDate(ultimoDia.getDate() - 1);
-                                        }
-                                        ultimoDia.setHours(17, 0, 0, 0); // fin de jornada
-                                        return ultimoDia;
-                                })();
-
-                                // (Ya declaradas arriba para evitar error de inicialización)
-                                let horasRestantesMes = 0;
-
-                                // ─── META DINÁMICA RECALCULADA POR REZAGO ─────────────────────────────
-                                // Días hábiles restantes = desde HOY hasta fin del mes ACTUAL de trabajo
-
-                                diasRestantes = habilesMesTrabajo.filter(dt => {
-                                        const dStr = dt.getFullYear() + "-" +
-                                                String(dt.getMonth() + 1).padStart(2, "0") + "-" +
-                                                String(dt.getDate()).padStart(2, "0");
-                                        return dStr >= hoyStr2;
-                                }).length;
-
-                                // Días hábiles YA transcurridos del mes de trabajo (para proyección)
-                                const diasHabilesTranscurridosTrabajo = habilesMesTrabajo.filter(dt => {
-                                        const dStr = dt.getFullYear() + "-" +
-                                                String(dt.getMonth() + 1).padStart(2, "0") + "-" +
-                                                String(dt.getDate()).padStart(2, "0");
-                                        return dStr < hoyStr2;
-                                }).length;
-
-                                // Pacientes ejecutados hasta AYER (usamos gestadosPeriodo para incluir validados en la base)
-                                ejecutadosHastaAyer = gestadosPeriodo - validadosHoy;
-
-                                // Pendientes = total del periodo - lo ya ejecutado hasta ayer
-                                pendientesMes = Math.max(totalPeriodo - ejecutadosHastaAyer, 0);
-
-                                // Meta diaria recalculada con rezago real
-                                diasParaCalcular = Math.max(diasRestantes, 1);
-                                metaHoyFinal = Math.ceil(pendientesMes / diasParaCalcular);
-
-                                // % cumplimiento hoy
-                                porcentajeEjecucion = metaHoyFinal > 0
-                                        ? Math.round((validadosHoy / metaHoyFinal) * 100)
-                                        : 100;
-
-                                // Rezago vs ritmo ideal del mes de datos
-                                const ritmoIdealDiario = habilesMesDatos.length > 0
-                                        ? totalPeriodo / habilesMesDatos.length
-                                        : 0;
-
-                                // Esperado = lo que debió gestionar en los días de trabajo ya transcurridos
-                                pacientesEsperadosHastaHoy = Math.floor(ritmoIdealDiario * diasHabilesTranscurridosTrabajo);
-                                rezagoAcumulado = Math.max(pacientesEsperadosHastaHoy - ejecutadosHastaAyer, 0);
-
-                                // Proyección al ritmo actual
-                                proyeccionAlRitmoActual = ejecutadosHastaAyer + validadosHoy +
-                                        (validadosHoy * Math.max(diasRestantes - 1, 0));
+                                // Rezago acumulado = Esperado total vs Ejecutado real
+                                rezagoAcumulado = Math.max(pacientesEsperadosHastaHoy - gestadosPeriodo, 0);
 
                                 const pctGlobal = totalPeriodo > 0 ? Math.round((validadosPeriodo / totalPeriodo) * 100) : 0;
                                 $setText("globalPctCard", pctGlobal + "%");
@@ -5298,8 +5288,8 @@
                                 // Estado de productividad con semáforo preciso
                                 let estadoProd, colorProd, textoDetalle;
 
-                                const porcentajeAvanceEsperado = habilesMesDatos.length > 0
-                                        ? Math.round((diasHabilesTranscurridosTrabajo / habilesMesDatos.length) * 100)
+                                const porcentajeAvanceEsperado = totalDiasVentana > 0
+                                        ? Math.round((diasHabilesTranscurridos / totalDiasVentana) * 100)
                                         : 0;
 
                                 if (totalPeriodo === 0) {
@@ -5318,7 +5308,7 @@
                                         estadoProd = "✅ AL DÍA";
                                         colorProd = "#22c55e";
                                         const adelanto = Math.abs(rezagoAcumulado);
-                                        textoDetalle = `Va ${adelanto > 0 ? adelanto + " pacientes adelantada" : "exactamente al ritmo ideal"}. Meta diaria: ${metaHoyFinal}. Proyección cierre: ${proyeccionAlRitmoActual}/${totalPeriodo}.`;
+                                        textoDetalle = `Va ${adelanto > 0 ? adelanto + " pacientes adelantada" : "exactamente al ritmo ideal"}. Meta diaria: ${metaHoyFinal} (Cálculo: ${Math.max(totalPeriodo - gestadosPeriodo + validadosHoy, 0)} pendientes / ${diasRestantesVentana} días hábiles restantes). Proyección cierre: ${proyeccionAlRitmoActual}/${totalPeriodo}.`;
 
                                 } else if (rezagoAcumulado <= Math.ceil(totalPeriodo * 0.05)) {
                                         // Rezago menor al 5% — en riesgo leve
@@ -5330,38 +5320,27 @@
                                         // Rezago entre 5% y 15% — retraso significativo
                                         estadoProd = "🔴 RETRASO SIGNIFICATIVO";
                                         colorProd = "#ef4444";
-                                        const necesitaPorDia = diasRestantes > 0
-                                                ? Math.ceil((totalPeriodo - validadosPeriodo) / diasRestantes)
-                                                : totalPeriodo - validadosPeriodo;
-                                        textoDetalle = `⚠️ Rezago acumulado de ${rezagoAcumulado} pacientes. Lleva ${validadosPeriodo}/${pacientesEsperadosHastaHoy} esperados (${porcentajeAvanceEsperado}% del mes transcurrido). Necesita ${necesitaPorDia} pac/día los próximos ${diasRestantes} días hábiles para cerrar el mes.`;
+                                        const necesitaPorDia = diasRestantesVentana > 0
+                                                ? Math.ceil((totalPeriodo - gestadosPeriodo) / diasRestantesVentana)
+                                                : totalPeriodo - gestadosPeriodo;
+                                        textoDetalle = `⚠️ Rezago acumulado de ${rezagoAcumulado} pacientes. Lleva ${gestadosPeriodo}/${pacientesEsperadosHastaHoy} esperados (${porcentajeAvanceEsperado}% del mes transcurrido). Necesita ${necesitaPorDia} pac/día los próximos ${diasRestantesVentana} días hábiles para cerrar el mes.`;
 
                                 } else {
                                         // Rezago mayor al 15% — crítico
                                         estadoProd = "🚨 GESTIÓN CRÍTICA";
                                         colorProd = "#dc2626";
-                                        const necesitaPorDia = diasRestantes > 0
-                                                ? Math.ceil((totalPeriodo - validadosPeriodo) / diasRestantes)
-                                                : totalPeriodo - validadosPeriodo;
+                                        const necesitaPorDia = diasRestantesVentana > 0
+                                                ? Math.ceil((totalPeriodo - gestadosPeriodo) / diasRestantesVentana)
+                                                : totalPeriodo - gestadosPeriodo;
                                         const imposible = necesitaPorDia > (metaHoyFinal * 2.5);
-                                        textoDetalle = `🚨 Rezago crítico: ${rezagoAcumulado} pacientes atrasados. Solo lleva ${validadosPeriodo} de ${pacientesEsperadosHastaHoy} esperados a esta altura del mes. ${imposible ? `⛔ Al ritmo actual es matemáticamente imposible cerrar el mes sin intervención.` : `Necesita ${necesitaPorDia} pac/día en los ${diasRestantes} días hábiles restantes para recuperar.`}`;
+                                        textoDetalle = `🚨 Rezago crítico: ${rezagoAcumulado} pacientes atrasados. Solo lleva ${gestadosPeriodo} de ${pacientesEsperadosHastaHoy} esperados a esta altura del mes. ${imposible ? `⛔ Al ritmo actual es matemáticamente imposible cerrar el mes sin intervención.` : `Necesita ${necesitaPorDia} pac/día en los ${diasRestantesVentana} días hábiles restantes para recuperar.`}`;
                                 }
 
-                                // Calcular días de rezago real
-                                // Días hábiles que han pasado desde el inicio del mes de trabajo
-                                // en los que se debió gestionar pero el % completado está por debajo
-                                const diasDeRezago = (() => {
-                                        if (totalPeriodo === 0) return 0;
+                                // Calcular días de rezago real (basado en ritmo ideal de la ventana)
+                                const diasDeRezago = (totalPeriodo > 0 && ritmoIdealDiario > 0)
+                                        ? Math.round(rezagoAcumulado / ritmoIdealDiario)
+                                        : 0;
 
-                                        // Ritmo ideal: cuántos pacientes por día hábil según mes de datos
-                                        const metaIdealDiaria = habilesMesDatos.length > 0
-                                                ? totalPeriodo / habilesMesDatos.length
-                                                : 0;
-
-                                        // Cuántos días equivale el rezago acumulado vs ritmo ideal
-                                        return metaIdealDiaria > 0
-                                                ? Math.round(rezagoAcumulado / metaIdealDiaria)
-                                                : 0;
-                                })();
 
                                 // Actualizar el indicador
                                 const prodEl = document.getElementById("prodStateCircle");
@@ -5651,28 +5630,28 @@
                         const esCancer = (cohorteNorm === "cancer");
                         const listaVarsEval = esCancer ? VARS_CANCER : VARS_HEMO;
 
-                        // 🚩 LÓGICA DE PACIENTE NUEVO VS ANTIGUO (Reparada Definitivamente)
-                        let tipoPaciente = dataExistente.periodos?.[periodoActual]?.tipo_paciente;
-
-                        // Si es la primera vez que se guarda, evaluamos si ya traía datos
-                        if (!tipoPaciente) {
-                                const datosBase = dataExistente.datos_base || {};
-                                const varsPrevias = dataExistente.periodos?.[periodoActual]?.variables || {};
-                                let camposLlenosBase = 0;
-
-                                listaVarsEval.forEach(vName => {
-                                        const k = typeof window.canonKey === 'function' ? window.canonKey(vName) : vName.replace(/\s+/g, '');
-                                        const valB = datosBase[k] !== undefined ? String(datosBase[k]).trim() : "";
-                                        const valV = varsPrevias[k] !== undefined ? String(varsPrevias[k]).trim() : "";
-                                        // Si el dato existe en datos base o en variables clínicas precargadas
-                                        if (valB !== "" || valV !== "") {
-                                                camposLlenosBase++;
-                                        }
-                                });
-
-                                // Si tiene más de 12 variables precargadas (los 8 demográficos + algo clínico), ya tiene historia
-                                tipoPaciente = (camposLlenosBase > 12) ? "Antiguo" : "Nuevo";
-                        }
+                         // 🚩 LÓGICA DE PACIENTE NUEVO VS ANTIGUO (Reparada Definitivamente)
+                         let tipoPaciente = dataExistente.periodos?.[periodoActual]?.tipo_paciente;
+ 
+                         // Si es la primera vez absoluta que se guarda en este periodo, evaluamos su origen
+                         if (!tipoPaciente || tipoPaciente === "") {
+                                 const datosBase = dataExistente.datos_base || {};
+                                 // IMPORTANTE: Solo contamos lo que ya venía en datos_base para la marca inicial
+                                 let camposLlenosBase = 0;
+ 
+                                 listaVarsEval.forEach(vName => {
+                                         const k = typeof window.canonKey === 'function' ? window.canonKey(vName) : vName.replace(/\s+/g, '');
+                                         const valB = datosBase[k] !== undefined ? String(datosBase[k]).trim() : "";
+                                         
+                                         // Si el dato ya existía históricamente en la base de datos
+                                         if (valB !== "" && valB !== "98" && valB !== "99" && valB !== "1845-01-01") {
+                                                 camposLlenosBase++;
+                                         }
+                                 });
+ 
+                                 // Si tiene más de 12 variables en la base (los demográficos + clínicos históricos), es antiguo
+                                 tipoPaciente = (camposLlenosBase > 12) ? "Antiguo" : "Nuevo";
+                         }
 
                         const tiempoAnterior = Number(dataExistente?.periodos?.[periodoActual]?.tiempo_segundos || 0);
                         const tiempoTotalFinal = tiempoAnterior + elapsedSec;
@@ -6022,7 +6001,7 @@
                         const errCount = Number(per?.auditoria_errores_corregidos ?? 0);
 
                         // 🚩 LÓGICA CORREGIDA: Determinista según VAR17+ (Sacralidad)
-                        const tipoPac = esPacienteIncidente(data) ? "Nuevo" : "Antiguo";
+                        const tipoPac = (typeof esPacienteIncidente === 'function' ? esPacienteIncidente(data) : (window.esPacienteIncidenteGlobal ? window.esPacienteIncidenteGlobal(data) : true)) ? "Nuevo" : "Antiguo";
 
                         // 🔥 Procesar Devoluciones (Historial)
                         const historial = per.historial_devoluciones || [];

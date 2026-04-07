@@ -17,9 +17,9 @@ const firebaseConfig = {
   appId: "1:767906346584:web:59439d16292d3b0ea8bc2d"
 };
 
-const app = (window.firebase && window.firebase.apps && window.firebase.apps.length) 
-            ? window.firebase.app() 
-            : initializeApp(firebaseConfig);
+const app = (window.firebase && window.firebase.apps && window.firebase.apps.length)
+  ? window.firebase.app()
+  : initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -646,7 +646,7 @@ function addMetaCardTo(parentGrid,
   }
 
   let badgeColor = semCls === 'chip-bad' ? '#ef4444' : (semCls === 'chip-warn' ? '#f59e0b' : '#10b981');
-  
+
   const c = document.createElement("div");
   c.className = `meta-mini modern-card-wrapper ${semCls === 'chip-bad' ? 'status-bajo' : (semCls === 'chip-warn' ? 'status-riesgo' : '')}`;
 
@@ -2252,9 +2252,9 @@ await refreshDailyUI();
 /* ========== LÓGICA MODAL CARGA + GRÁFICAS READONLY ========== */
 function inicializarVistaSegunRol() {
   const user = window.orbitaUser || window.currentUser || window.userData;
-  if (!user || (!user.role && !user.rol)) { 
-    setTimeout(inicializarVistaSegunRol, 500); 
-    return; 
+  if (!user || (!user.role && !user.rol)) {
+    setTimeout(inicializarVistaSegunRol, 500);
+    return;
   }
 
   const rawRole = user.role || user.rol || '';
@@ -3385,147 +3385,179 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =================== NÚCLEO DE INTELIGENCIA Y PROYECCIONES DIARIAS =================== */
 
 async function runInteligenciaDiaria() {
-    console.log("Iniciando motor de inteligencia gerencial diaria...");
-    const intelContainer = document.getElementById('intel-container');
-    const intelDateBadge = document.getElementById('intel-date-badge');
-    const intelRanking = document.getElementById('intel-ranking');
-    const intelAlerts = document.getElementById('intel-alerts');
-    const intelPerfMatrix = document.getElementById('intel-perf-matrix');
+  console.log("Iniciando motor de inteligencia gerencial diaria...");
+  const intelContainer = document.getElementById('intel-container');
+  const intelDateBadge = document.getElementById('intel-date-badge');
+  const intelRanking = document.getElementById('intel-ranking');
+  const intelAlerts = document.getElementById('intel-alerts');
+  const intelPerfMatrix = document.getElementById('intel-perf-matrix');
 
-    if (!intelContainer) return;
+  if (!intelContainer) return;
 
-    const anio = document.getElementById('anioDaily').value;
-    const mes = document.getElementById('mesDaily').value;
-    const fechaActual = document.getElementById('fechaDaily').value; // yyyy-mm-dd
-    
-    if (!fechaActual) {
-        intelContainer.innerHTML = "<p style='padding:40px; text-align:center;'>Seleccione una fecha para activar el análisis.</p>";
-        return;
+  const anio = document.getElementById('anioDaily').value;
+  const mes = document.getElementById('mesDaily').value;
+  const fechaActual = document.getElementById('fechaDaily').value; // yyyy-mm-dd
+
+  if (!fechaActual) {
+    intelContainer.innerHTML = "<p style='padding:40px; text-align:center;'>Seleccione una fecha para activar el análisis.</p>";
+    return;
+  }
+
+  const [y, m, d] = fechaActual.split("-").map(Number);
+  const mPad = String(m).padStart(2, '0');
+  const dPad = String(d).padStart(2, '0');
+  const mesNombre = MES_NOMBRES[mPad];
+
+  if (intelDateBadge) intelDateBadge.textContent = `${dPad} ${mesNombre} ${y}`;
+
+  // 1. Definición de Indicadores Estratégicos (Métrica extendida para alertas/ranking)
+  const indicators = [
+    { label: "Triages", id: "triages", unit: "pac", metaKey: "triages" },
+    { label: "Urgencias", id: "urgencias", unit: "atenc", metaKey: "urgencias" },
+    { label: "Proc. Quirúrgicos", id: "proc_quir", unit: "proc", metaKey: "proc_quir" },
+    { label: "Producción UVR", id: "uvr", unit: "UVR", metaKey: "uvr" },
+    { label: "Egresos Hosp.", id: "egresos_hosp", unit: "egr", metaKey: "egresos_hosp" },
+    { label: "Ocupación Hosp.", id: "ocup_hosp", unit: "%", isPct: true, metaKey: "ocup_hosp", target: 98 },
+    { label: "Egresos UCI", id: "egresos_uci", unit: "egr", metaKey: "egresos_uci" },
+    { label: "Ocupación UCI", id: "ocup_uci", unit: "%", isPct: true, metaKey: "ocup_uci", target: 90 },
+    { label: "Egresos UCE", id: "egresos_uce", unit: "egr", metaKey: "egresos_uce" },
+    { label: "Ocupación UCE", id: "ocup_uce", unit: "%", isPct: true, metaKey: "ocup_uce", target: 90 },
+    { label: "Consulta Ext.", id: "ce", unit: "cons", metaKey: "consulta_externa" },
+    { label: "Quimioterapias", id: "quimio", unit: "ses", metaKey: "quimio" },
+    { label: "Prom. Estancia", id: "pde", unit: "días", metaKey: "pde", target: 3.5 }
+  ];
+
+  // Whitelist para el Monitor de Desempeño Predictivo (#intel-container)
+  const MONITOR_KPI_IDS = ["triages", "urgencias", "egresos_hosp", "egresos_uci", "egresos_uce", "proc_quir", "uvr", "ce"];
+
+  try {
+    // 2. Recopilación de Datos (Mes actual completo hasta hoy)
+    const daysInCurrentMonth = daysInMonth(y, m);
+    const dailyData = {}; // dia -> { kpi: val }
+    const promises = [];
+
+    // Traemos datos de todo el mes hasta el día seleccionado
+    for (let i = 1; i <= d; i++) {
+      const diStr = String(i).padStart(2, '0');
+      promises.push(
+        getDocs(collection(db, "realizados", String(y), mPad, diStr, "kpi")).then(snap => {
+          dailyData[i] = {};
+          snap.forEach(doc => {
+            dailyData[i][doc.id] = Number(doc.data().valor || 0);
+          });
+        })
+      );
     }
 
-    const [y, m, d] = fechaActual.split("-").map(Number);
-    const mPad = String(m).padStart(2, '0');
-    const dPad = String(d).padStart(2, '0');
-    const mesNombre = MES_NOMBRES[mPad];
-    
-    if (intelDateBadge) intelDateBadge.textContent = `${dPad} ${mesNombre} ${y}`;
+    // Traemos datos del mismo día la semana pasada (WoW)
+    const dWeekAgo = new Date(y, m - 1, d - 7);
+    const yW = dWeekAgo.getFullYear();
+    const mW = String(dWeekAgo.getMonth() + 1).padStart(2, '0');
+    const dW = String(dWeekAgo.getDate()).padStart(2, '0');
+    let dataWeekAgo = {};
+    promises.push(
+      getDocs(collection(db, "realizados", String(yW), mW, dW, "kpi")).then(snap => {
+        snap.forEach(doc => dataWeekAgo[doc.id] = Number(doc.data().valor || 0));
+      })
+    );
 
-    // 1. Definición de Indicadores Estratégicos
-    // Cruce entre KPI_IDS y Metas Anuales/Mensuales
-    const indicators = [
-        { label: "Triages", id: "triages", unit: "pac", metaKey: "triages" },
-        { label: "Urgencias", id: "urgencias", unit: "atenc", metaKey: "urgencias" },
-        { label: "Proc. Quirúrgicos", id: "proc_quir", unit: "proc", metaKey: "proc_quir" },
-        { label: "Producción UVR", id: "uvr", unit: "UVR", metaKey: "uvr" },
-        { label: "Egresos Hosp.", id: "egresos_hosp", unit: "egr", metaKey: "egresos_hosp" },
-        { label: "Ocupación Hosp.", id: "ocup_hosp", unit: "%", isPct: true, metaKey: "ocup_hosp", target: 95 },
-        { label: "Ocupación UCI", id: "ocup_uci", unit: "%", isPct: true, metaKey: "ocup_uci", target: 90 },
-        { label: "Consulta Ext.", id: "ce", unit: "cons", metaKey: "ce" },
-        { label: "Quimioterapias", id: "quimio", unit: "ses", metaKey: "quimio" }
-    ];
+    // [NUEVO] Carga de índices de forecast para metas mensuales específicas
+    const capSnap = await getDocs(collection(db, "forecast", String(y), "unidades"));
+    const capIndex = Object.fromEntries(capSnap.docs.map(d => [d.id.toLowerCase(), d.data()]));
+    const hospSnap = await getDocs(collection(db, "forecast_hosp", String(y), "kpis"));
+    const hospIndex = Object.fromEntries(hospSnap.docs.map(d => [d.id, d.data()]));
+    const mMes = (row) => Number(row?.mensual?.[mPad] ?? 0);
 
-    try {
-        // 2. Recopilación de Datos (Mes actual completo hasta hoy)
-        const daysInCurrentMonth = daysInMonth(y, m);
-        const dailyData = {}; // dia -> { kpi: val }
-        const promises = [];
+    // Metas Anuales (config_anuales) para el resto
+    const metaValues = {};
+    const metaPromises = indicators.map(async ind => {
+      const snap = await getDoc(doc(db, "config_anuales", `${ind.metaKey}_${y}`));
+      if (snap.exists()) metaValues[ind.id] = Number(snap.data().meta || 0);
+      else metaValues[ind.id] = ind.target || 0;
+    });
 
-        // Traemos datos de todo el mes hasta el día seleccionado
-        for (let i = 1; i <= d; i++) {
-            const diStr = String(i).padStart(2, '0');
-            promises.push(
-                getDocs(collection(db, "realizados", String(y), mPad, diStr, "kpi")).then(snap => {
-                    dailyData[i] = {};
-                    snap.forEach(doc => {
-                        dailyData[i][doc.id] = Number(doc.data().valor || 0);
-                    });
-                })
-            );
+    await Promise.all([...promises, ...metaPromises]);
+
+    function resolveMetaMensual(ind) {
+      const annual = Number(metaValues[ind.id] || 0);
+
+      if (ind.id === "ce") return mMes(capIndex["consulta_externa"]);
+      if (ind.id === "urgencias") return mMes(capIndex["urgencias"]);
+      if (ind.id === "proc_quir") return mMes(capIndex["cirugia"]);
+      if (ind.id === "egresos_hosp") return mMes(capIndex["hospitalizacion"]);
+      if (ind.id === "egresos_uci") return mMes(capIndex["uci"]);
+      if (ind.id === "egresos_uce") return mMes(capIndex["ucin"]);
+      if (ind.id === "pde") return mMes(hospIndex["dias_promedio_estancia"]);
+
+      if (ind.id === "ocup_hosp") return ind.target || 98;
+      if (ind.id === "ocup_uci") return ind.target || 90;
+      if (ind.id === "ocup_uce") return ind.target || 90;
+
+      if (annual > 0) return annual / 12;
+      return ind.target || 0;
+    }
+
+    // 3. Procesamiento Analítico
+    let htmlTiles = "";
+    let htmlMatrix = "";
+    const alerts = [];
+    const ranking = [];
+
+    indicators.forEach(ind => {
+      const valHoy = (dailyData[d] && dailyData[d][ind.id]) || 0;
+      const valAyer = d > 1 ? (dailyData[d - 1] && dailyData[d - 1][ind.id] || 0) : 0;
+      const valWow = dataWeekAgo[ind.id] || 0;
+
+      // Variaciones
+      const deltaDoD = valAyer > 0 ? ((valHoy - valAyer) * 100 / valAyer) : 0;
+      const deltaWoW = valWow > 0 ? ((valHoy - valWow) * 100 / valWow) : 0;
+
+      // month so far
+      let sumSoFar = 0;
+      let countSoFar = 0;
+      for (let i = 1; i <= d; i++) {
+        if (dailyData[i] && dailyData[i][ind.id] != null) {
+          sumSoFar += dailyData[i][ind.id];
+          countSoFar++;
         }
+      }
 
-        // Traemos datos del mismo día la semana pasada (WoW)
-        const dWeekAgo = new Date(y, m - 1, d - 7);
-        const yW = dWeekAgo.getFullYear();
-        const mW = String(dWeekAgo.getMonth() + 1).padStart(2, '0');
-        const dW = String(dWeekAgo.getDate()).padStart(2, '0');
-        let dataWeekAgo = {};
-        promises.push(
-            getDocs(collection(db, "realizados", String(yW), mW, dW, "kpi")).then(snap => {
-                snap.forEach(doc => dataWeekAgo[doc.id] = Number(doc.data().valor || 0));
-            })
-        );
+      const isProm = esKpiPromedio(ind.id);
+      const avgSoFar = countSoFar > 0 ? (sumSoFar / countSoFar) : 0;
 
-        // Traemos Metas Anuales para pro-rata
-        const metaValues = {};
-        const metaPromises = indicators.map(async ind => {
-            const snap = await getDoc(doc(db, "config_anuales", `${ind.metaKey}_${y}`));
-            if (snap.exists()) metaValues[ind.id] = Number(snap.data().meta || 0);
-            else metaValues[ind.id] = ind.target || 0;
+      let metaMensual = resolveMetaMensual(ind);
+
+      // Proyección al cierre del mes
+      const proyectadoMes = isProm ? avgSoFar : (avgSoFar * daysInCurrentMonth);
+      const pctCumplimiento = metaMensual > 0 ? (proyectadoMes * 100 / metaMensual) : 0;
+
+      console.log("RIESGO KPI", ind.id, { metaMensual, proyectadoMes, pctCumplimiento });
+
+      // Estado
+      let status = "Estable";
+      let color = "var(--ok)";
+      const inv = isInverseKPI(ind.id);
+
+      if (inv) {
+        if (pctCumplimiento > 110) { status = "Crítico"; color = "var(--err)"; }
+        else if (pctCumplimiento > 105) { status = "Riesgo"; color = "#f97316"; }
+      } else {
+        if (pctCumplimiento < 85) { status = "Crítico"; color = "var(--err)"; }
+        else if (pctCumplimiento < 95) { status = "Riesgo"; color = "#f97316"; }
+      }
+
+      if (status === "Crítico" || status === "Riesgo") {
+        alerts.push({
+          type: status === "Crítico" ? "err" : "warn",
+          text: `<strong>${ind.label}</strong>: Desviación detectada. Proyección a cierre de mes: <strong>${pctCumplimiento.toFixed(1)}%</strong>.`
         });
+      }
 
-        await Promise.all([...promises, ...metaPromises]);
+      ranking.push({ label: ind.label, pct: pctCumplimiento });
 
-        // 3. Procesamiento Analítico
-        let htmlTiles = "";
-        let htmlMatrix = "";
-        const alerts = [];
-        const ranking = [];
-
-        indicators.forEach(ind => {
-            const valHoy = dailyData[d][ind.id] || 0;
-            const valAyer = d > 1 ? (dailyData[d-1][ind.id] || 0) : 0;
-            const valWow = dataWeekAgo[ind.id] || 0;
-            
-            // Variaciones
-            const deltaDoD = valAyer > 0 ? ((valHoy - valAyer) * 100 / valAyer) : 0;
-            const deltaWoW = valWow > 0 ? ((valHoy - valWow) * 100 / valWow) : 0;
-
-            // month so far
-            let sumSoFar = 0;
-            let countSoFar = 0;
-            for (let i = 1; i <= d; i++) {
-                if (dailyData[i][ind.id] != null) {
-                    sumSoFar += dailyData[i][ind.id];
-                    countSoFar++;
-                }
-            }
-            
-            const isProm = esKpiPromedio(ind.id);
-            const avgSoFar = countSoFar > 0 ? (sumSoFar / countSoFar) : 0;
-            
-            // Meta mensual estimación (1/12 de la anual si es sumable, o la meta directa si es promedio)
-            // En este proyecto muchas metas se guardan anuales.
-            let metaMensual = isProm ? metaValues[ind.id] : (metaValues[ind.id] / 12);
-            if (metaMensual <= 0 && ind.target) metaMensual = ind.target;
-
-            // Proyección al cierre del mes
-            const proyectadoMes = isProm ? avgSoFar : (avgSoFar * daysInCurrentMonth);
-            const pctCumplimiento = metaMensual > 0 ? (proyectadoMes * 100 / metaMensual) : 0;
-
-            // Estado
-            let status = "Estable";
-            let color = "var(--ok)";
-            const inv = isInverseKPI(ind.id);
-
-            if (inv) {
-                if (pctCumplimiento > 110) { status = "Crítico"; color = "var(--err)"; }
-                else if (pctCumplimiento > 105) { status = "Riesgo"; color = "#f97316"; }
-            } else {
-                if (pctCumplimiento < 85) { status = "Crítico"; color = "var(--err)"; }
-                else if (pctCumplimiento < 95) { status = "Riesgo"; color = "#f97316"; }
-            }
-
-            if (status === "Crítico" || status === "Riesgo") {
-                alerts.push({
-                    type: status === "Crítico" ? "err" : "warn",
-                    text: `<strong>${ind.label}</strong>: Desviación detectada. Proyección a cierre de mes: <strong>${pctCumplimiento.toFixed(1)}%</strong>.`
-                });
-            }
-
-            ranking.push({ label: ind.label, pct: pctCumplimiento });
-
-            // Render Tiles (Redesign Executive)
-            htmlTiles += `
+      // [FILTRO] Render Tiles SOLO para whitelisted Monitor de Desempeño Predictivo
+      if (MONITOR_KPI_IDS.includes(ind.id)) {
+        htmlTiles += `
                 <div class="intel-card" style="background:#fff; border-radius:20px; padding:24px; border:1px solid #e2e8f0; border-left:6px solid ${color}; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); transition:all 0.2s ease;">
                     <div class="intel-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px;">
                         <div class="intel-title" style="font-weight:900; color:#1e293b; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:8px;">
@@ -3549,9 +3581,10 @@ async function runInteligenciaDiaria() {
                         <div style="font-size:0.7rem; text-align:right;"><span style="display:block; color:#94a3b8; font-weight:800; text-transform:uppercase; margin-bottom:2px;">Variación</span><span style="font-weight:900; color:${deltaDoD >= 0 ? (inv ? '#ef4444' : '#10b981') : (inv ? '#10b981' : '#ef4444')}; font-size:0.95rem;">${deltaDoD >= 0 ? '+' : ''}${deltaDoD.toFixed(1)}%</span></div>
                     </div>
                 </div>`;
+      }
 
-            // Render Matrix Row
-            htmlMatrix += `
+      // Render Matrix Row (Scorecard completo)
+      htmlMatrix += `
                 <div style="display:grid; grid-template-columns: 120px 1fr; gap:15px; align-items:center; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                     <div style="font-weight:900; font-size:0.8rem; color:#475569; line-height:1.2; text-transform:uppercase;">${ind.label}</div>
                     <div class="perf-matrix" style="display:flex; gap:10px;">
@@ -3569,15 +3602,15 @@ async function runInteligenciaDiaria() {
                         </div>
                     </div>
                 </div>`;
-        });
+    });
 
-        intelContainer.innerHTML = htmlTiles;
-        if (intelPerfMatrix) intelPerfMatrix.innerHTML = htmlMatrix;
+    intelContainer.innerHTML = htmlTiles;
+    if (intelPerfMatrix) intelPerfMatrix.innerHTML = htmlMatrix;
 
-        // 4. Render Alertas
-        if (intelAlerts) {
-            if (alerts.length === 0) {
-                intelAlerts.innerHTML = `
+    // 4. Render Alertas
+    if (intelAlerts) {
+      if (alerts.length === 0) {
+        intelAlerts.innerHTML = `
                     <div class="alert-item" style="border-left:5px solid #10b981; color:#065f46; background:#f0fdf4; padding:20px; border-radius:16px; display:flex; align-items:center; gap:15px;">
                        <i data-lucide="check-circle" style="color:#10b981; width:32px; height:32px;"></i>
                        <div>
@@ -3585,8 +3618,8 @@ async function runInteligenciaDiaria() {
                           <p style="margin:2px 0 0 0; font-size:0.85rem; font-weight:600; opacity:0.8;">El ritmo operativo actual es coherente con los objetivos estratégicos establecidos para el mes.</p>
                        </div>
                     </div>`;
-            } else {
-                intelAlerts.innerHTML = `
+      } else {
+        intelAlerts.innerHTML = `
                     <div style="display:flex; flex-direction:column; gap:10px;">
                        ${alerts.map(a => `
                           <div class="alert-item" style="border-left:5px solid ${a.type === 'err' ? '#ef4444' : '#f59e0b'}; color:${a.type === 'err' ? '#991b1b' : '#92400e'}; background:${a.type === 'err' ? '#fef2f2' : '#fffbeb'}; padding:15px; border-radius:12px; display:flex; align-items:center; gap:12px; font-size:0.85rem; font-weight:700;">
@@ -3594,13 +3627,13 @@ async function runInteligenciaDiaria() {
                              <span>${a.text}</span>
                           </div>`).join('')}
                     </div>`;
-            }
-        }
+      }
+    }
 
-        // 5. Render Ranking
-        if (intelRanking) {
-            const sorted = [...ranking].sort((a, b) => b.pct - a.pct);
-            intelRanking.innerHTML = `
+    // 5. Render Ranking
+    if (intelRanking) {
+      const sorted = [...ranking].sort((a, b) => b.pct - a.pct);
+      intelRanking.innerHTML = `
                 <div style="display:flex; flex-direction:column; gap:8px;">
                    ${sorted.map((r, i) => `
                       <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-radius:12px; background:${i < 2 ? '#ecfdf5' : '#f8fafc'}; border:1px solid ${i < 2 ? '#10b98133' : '#f1f5f9'}">
@@ -3611,72 +3644,72 @@ async function runInteligenciaDiaria() {
                           <span style="font-weight:1000; font-size:0.95rem; color:${i < 2 ? '#059669' : '#1e40af'};">${r.pct.toFixed(1)}%</span>
                       </div>`).join('')}
                 </div>`;
-        }
-
-        // 6. Chart Tendencia
-        const ctxTrend = document.getElementById('chart-intel-trend');
-        if (ctxTrend) {
-            if (window._intelChart) window._intelChart.destroy();
-            const tLabels = Array.from({length: d}, (_, i) => String(i + 1));
-            const tValues = Array.from({length: d}, (_, i) => dailyData[i+1]?.urgencias || 0);
-            window._intelChart = new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: tLabels,
-                    datasets: [{
-                        label: 'Atenciones Urgencias',
-                        data: tValues,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#4f46e5',
-                        pointBorderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                       legend: { display: false },
-                       tooltip: {
-                          backgroundColor: '#1e293b',
-                          padding: 12,
-                          titleFont: { size: 14, weight: 'bold' },
-                          bodyFont: { size: 13 },
-                          displayColors: false
-                       }
-                    },
-                    scales: {
-                        y: { 
-                           beginAtZero: false, 
-                           grid: { color: 'rgba(0,0,0,0.04)', borderDash: [5, 5] },
-                           ticks: { font: { weight: '600' }, color: '#94a3b8' }
-                        },
-                        x: { 
-                           grid: { display: false }, 
-                           title: { display: true, text: 'DÍA DEL MES', font: { size: 10, weight: '900' }, color: '#94a3b8' },
-                           ticks: { font: { weight: '600' }, color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
-        }
-
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    } catch (err) {
-        console.error("Error en runInteligenciaDiaria:", err);
-        intelContainer.innerHTML = "<p style='color:red; padding:20px;'>⚠️ Error al procesar inteligencia analítica.</p>";
     }
+
+    // 6. Chart Tendencia
+    const ctxTrend = document.getElementById('chart-intel-trend');
+    if (ctxTrend) {
+      if (window._intelChart) window._intelChart.destroy();
+      const tLabels = Array.from({ length: d }, (_, i) => String(i + 1));
+      const tValues = Array.from({ length: d }, (_, i) => (dailyData[i + 1] && dailyData[i + 1].urgencias) || 0);
+      window._intelChart = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+          labels: tLabels,
+          datasets: [{
+            label: 'Atenciones Urgencias',
+            data: tValues,
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 4,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: '#4f46e5',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              padding: 12,
+              titleFont: { size: 14, weight: 'bold' },
+              bodyFont: { size: 13 },
+              displayColors: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              grid: { color: 'rgba(0,0,0,0.04)', borderDash: [5, 5] },
+              ticks: { font: { weight: '600' }, color: '#94a3b8' }
+            },
+            x: {
+              grid: { display: false },
+              title: { display: true, text: 'DÍA DEL MES', font: { size: 10, weight: '900' }, color: '#94a3b8' },
+              ticks: { font: { weight: '600' }, color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+  } catch (err) {
+    console.error("Error en runInteligenciaDiaria:", err);
+    intelContainer.innerHTML = "<p style='color:red; padding:20px;'>⚠️ Error al procesar inteligencia analítica.</p>";
+  }
 }
 
 // Hook al cambio de fecha y al refrescar
-if (fechaDaily) fechaDaily.addEventListener("change", runInteligenciaDiaria);
-if (btnRefrescar) btnRefrescar.addEventListener("click", runInteligenciaDiaria);
+if (typeof fechaDaily !== 'undefined' && fechaDaily) fechaDaily.addEventListener("change", runInteligenciaDiaria);
+if (typeof btnRefrescar !== 'undefined' && btnRefrescar) btnRefrescar.addEventListener("click", runInteligenciaDiaria);
 
 // Llamada inicial después de que firebase cargue (o al final del script)
 setTimeout(runInteligenciaDiaria, 2000);

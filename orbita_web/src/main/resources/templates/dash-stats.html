@@ -1,162 +1,583 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{layout :: header('Dashboard Inteligencia y Estadísticas')}"></head>
+<head th:replace="~{layout :: header('Panel de Control Analítico · GECAM')}">
+    <link rel="stylesheet" th:href="@{/styles.css}">
+</head>
 
 <body class="dashboard-layout fade-in">
+    <!-- Sidebar from Layout -->
     <aside th:replace="~{layout :: sidebar}"></aside>
 
     <div class="content-wrapper">
-        <nav th:replace="~{layout :: navbar('Dashboard Inteligencia y Estadísticas')}"></nav>
+        <!-- Navbar from Layout -->
+        <nav th:replace="~{layout :: navbar('Auditoría de Datos e Inteligencia')}"></nav>
 
-        <main class="main-content !p-8">
-            <!-- Header Section -->
-            <header class="glass-header rounded-[32px] p-8 mb-8 text-white relative overflow-hidden">
-                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="px-3 py-1 bg-blue-500/20 rounded-full text-[10px] font-black tracking-widest text-blue-300 uppercase border border-blue-500/30">Intelligence Center</span>
-                            <span id="currentTime" class="text-[10px] font-bold text-white/40">--:--:--</span>
-                        </div>
-                        <h1 class="text-4xl font-black tracking-tight mb-2">Auditoría Institucional <span class="text-blue-400">Analítica</span></h1>
-                        <p class="text-white/60 font-medium max-w-xl">Supervisión de cierres mensuales y adherencia a la carga de estadística diaria.</p>
+        <main class="main-content">
+            <style>
+                /* ====== DASH-STATS PREMIUM DESIGN SYSTEM ====== */
+                :root {
+                    --bg-stats: #f8fafc;
+                    --card-stats: #ffffff;
+                    --pri-stats: #1e293b;
+                    --blue-stats: #3b82f6;
+                    --emerald-stats: #10b981;
+                    --rose-stats: #f43f5e;
+                    --amber-stats: #f59e0b;
+                    --indigo-stats: #6366f1;
+                    --border-stats: #e2e8f0;
+                    --shadow-stats: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+                    --shadow-lg-stats: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                }
+
+                .stats-container {
+                    padding: 2.5rem;
+                    max-width: 1600px;
+                    margin: 0 auto;
+                }
+
+                /* --- Premium Glass Header --- */
+                .stats-header {
+                    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+                    border-radius: 24px;
+                    padding: 2.5rem 3rem;
+                    margin-bottom: 2.5rem;
+                    color: white;
+                    position: relative;
+                    overflow: hidden;
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 2rem;
+                }
+
+                .stats-header::after {
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    right: -10%;
+                    width: 60%;
+                    height: 200%;
+                    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+                    transform: rotate(-15deg);
+                    pointer-events: none;
+                }
+
+                .header-info h1 {
+                    font-size: 2.5rem;
+                    font-weight: 800;
+                    letter-spacing: -0.04em;
+                    margin-bottom: 0.5rem;
+                }
+
+                .header-info h1 span {
+                    color: var(--blue-stats);
+                }
+
+                .header-info p {
+                    color: #94a3b8;
+                    font-weight: 500;
+                    font-size: 1.05rem;
+                }
+
+                .header-controls {
+                    display: flex;
+                    gap: 1.5rem;
+                    z-index: 2;
+                }
+
+                .control-box {
+                    background: rgba(255, 255, 255, 0.03);
+                    backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    padding: 0.75rem 1.25rem;
+                    border-radius: 16px;
+                }
+
+                .control-box label {
+                    display: block;
+                    font-size: 0.65rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 0.15em;
+                    color: #64748b;
+                    margin-bottom: 0.25rem;
+                }
+
+                .control-box input, .control-box span {
+                    font-size: 1.2rem;
+                    font-weight: 800;
+                    color: #fff;
+                    background: transparent;
+                    border: none;
+                    outline: none;
+                    cursor: pointer;
+                }
+
+                /* --- KRI Grid --- */
+                .kri-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2.5rem;
+                }
+
+                .kri-card {
+                    background: var(--card-stats);
+                    border: 1px solid var(--border-stats);
+                    border-radius: 20px;
+                    padding: 1.75rem;
+                    box-shadow: var(--shadow-stats);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                }
+
+                .kri-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: var(--shadow-lg-stats);
+                    border-color: var(--blue-stats);
+                }
+
+                .kri-label {
+                    font-size: 0.75rem;
+                    font-weight: 800;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    margin-bottom: 0.5rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .kri-value {
+                    font-size: 2.25rem;
+                    font-weight: 900;
+                    color: var(--pri-stats);
+                    margin: 0.25rem 0;
+                    letter-spacing: -0.02em;
+                }
+
+                .kri-footer {
+                    margin-top: 1rem;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: #94a3b8;
+                }
+
+                .progress-mini {
+                    height: 6px;
+                    background: #f1f5f9;
+                    border-radius: 100px;
+                    margin-top: 1rem;
+                    overflow: hidden;
+                }
+
+                .progress-mini-inner {
+                    height: 100%;
+                    background: var(--blue-stats);
+                    transition: width 1s ease;
+                }
+
+                /* --- Monitor Grid --- */
+                .monitor-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2.5rem;
+                }
+
+                .module-status-card {
+                    background: var(--card-stats);
+                    border: 1px solid var(--border-stats);
+                    border-radius: 24px;
+                    padding: 2rem;
+                    box-shadow: var(--shadow-stats);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+
+                .module-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                }
+
+                .module-icon {
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 18px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 24px;
+                }
+
+                .badge-status {
+                    padding: 6px 14px;
+                    border-radius: 10px;
+                    font-size: 0.7rem;
+                    font-weight: 900;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+
+                .badge-ok { background: #ecfdf5; color: #059669; }
+                .badge-warn { background: #fffbeb; color: #d97706; }
+                .badge-err { background: #fff1f2; color: #e11d48; }
+
+                .module-body h3 {
+                    font-size: 1.35rem;
+                    font-weight: 800;
+                    color: var(--pri-stats);
+                    margin: 0;
+                }
+
+                .module-body p {
+                    font-size: 0.9rem;
+                    color: #64748b;
+                    margin-top: 0.25rem;
+                }
+
+                .module-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-top: 1px solid #f1f5f9;
+                    padding-top: 1.25rem;
+                }
+
+                .stat-tag {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .stat-tag .label {
+                    font-size: 0.65rem;
+                    font-weight: 800;
+                    color: #94a3b8;
+                    text-transform: uppercase;
+                }
+
+                .stat-tag .val {
+                    font-size: 1.15rem;
+                    font-weight: 800;
+                    color: var(--pri-stats);
+                }
+
+                .btn-goto {
+                    width: 44px;
+                    height: 44px;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #64748b;
+                    transition: all 0.2s;
+                    text-decoration: none;
+                }
+
+                .btn-goto:hover {
+                    background: var(--blue-stats);
+                    color: white;
+                    border-color: var(--blue-stats);
+                    transform: translateX(3px);
+                }
+
+                /* --- Live Terminal Log --- */
+                .terminal-card {
+                    background: #0f172a;
+                    border-radius: 20px;
+                    padding: 1.5rem;
+                    color: #94a3b8;
+                    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                    font-size: 0.75rem;
+                    box-shadow: var(--shadow-lg-stats);
+                    border: 1px solid rgba(255, 255, 255, 0.05);
+                    grid-column: 1 / -1;
+                }
+
+                .terminal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1rem;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    padding-bottom: 0.75rem;
+                }
+
+                .terminal-dots {
+                    display: flex;
+                    gap: 6px;
+                }
+
+                .dot { width: 10px; height: 10px; border-radius: 50%; }
+                .dot-red { background: #ff5f56; }
+                .dot-yellow { background: #ffbd2e; }
+                .dot-green { background: #27c93f; }
+
+                .terminal-body {
+                    height: 180px;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.4rem;
+                }
+
+                .log-line {
+                    display: flex;
+                    gap: 12px;
+                }
+
+                .log-time { color: #475569; }
+                .log-tag { font-weight: 800; }
+                .tag-info { color: #3b82f6; }
+                .tag-success { color: #10b981; }
+                .tag-warn { color: #f59e0b; }
+                .tag-error { color: #f43f5e; }
+
+                /* --- Animaciones --- */
+                @keyframes pulse-active {
+                    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+                    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                }
+
+                .pulse-glow {
+                    animation: pulse-active 2s infinite;
+                }
+
+                /* Custom Scrollbar for Terminal */
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+            </style>
+
+            <div class="stats-container">
+                <!-- Header Section -->
+                <header class="stats-header fade-in">
+                    <div class="header-info">
+                        <h1>Supervisión de <span>Inteligencia</span></h1>
+                        <p>Auditoría en tiempo real de la integridad y oportunidad analítica institucional.</p>
                     </div>
+
+                    <div class="header-controls">
+                        <div class="control-box">
+                            <label>Periodo Fiscal</label>
+                            <input type="month" id="monthFilter">
+                        </div>
+                        <div class="control-box">
+                            <label>Día Hábil Hoy</label>
+                            <span id="currentWorkDay">--</span>
+                        </div>
+                        <div class="control-box" style="background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2);">
+                            <label>Estado Sistema</label>
+                            <span id="currentTime" style="color: var(--blue-stats); font-family: monospace;">--:--:--</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- KRI Row (Top Indicators) -->
+                <div class="kri-grid fade-in" style="animation-delay: 0.1s;">
+                    <!-- Health Score -->
+                    <div class="kri-card">
+                        <div>
+                            <div class="kri-label">
+                                <span>Índice de Salud Analítica</span>
+                                <i class="material-icons" style="font-size: 18px; color: var(--blue-stats)">favorite</i>
+                            </div>
+                            <h2 class="kri-value" id="globalScore">0.0%</h2>
+                        </div>
+                        <div class="kri-footer">
+                            Calidad compuesta de datos y oportunidad.
+                            <div class="progress-mini">
+                                <div id="loadBar" class="progress-mini-inner" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sync Status -->
+                    <div class="kri-card">
+                        <div>
+                            <div class="kri-label">
+                                <span>Módulos Sincronizados</span>
+                                <i class="material-icons" style="font-size: 18px; color: var(--emerald-stats)">sync</i>
+                            </div>
+                            <h2 class="kri-value" id="activeModules">0 / 3</h2>
+                        </div>
+                        <p class="kri-footer" id="reportPeriodText">Cargando...</p>
+                    </div>
+
+                    <!-- Deadline Status -->
+                    <div class="kri-card">
+                        <div>
+                            <div class="kri-label">
+                                <span>Estado de Plazo (Cierre)</span>
+                                <i class="material-icons" style="font-size: 18px; color: var(--amber-stats)">timer</i>
+                            </div>
+                            <h2 class="kri-value" id="deadlineTitle" style="font-size: 1.5rem;">Cálculo...</h2>
+                        </div>
+                        <p id="deadlineStatus" class="kri-footer" style="color: var(--pri-stats); font-weight: 800;">---</p>
+                    </div>
+
+                    <!-- Critical Alerts -->
+                    <div class="kri-card">
+                        <div>
+                            <div class="kri-label">
+                                <span>Reglas de Riesgo</span>
+                                <i class="material-icons" style="font-size: 18px; color: var(--rose-stats)">report_gmailerrorred</i>
+                            </div>
+                            <h2 class="kri-value" id="critAlerts" style="color: var(--rose-stats)">0</h2>
+                        </div>
+                        <p class="kri-footer">Alertas críticas que requieren intervención.</p>
+                    </div>
+                </div>
+
+                <!-- Monitor Dashboard Grid -->
+                <div class="monitor-grid fade-in" style="animation-delay: 0.2s;">
                     
-                    <div class="flex gap-4">
-                        <div class="stat-timer">
-                            <p class="text-[9px] font-black text-blue-300 uppercase mb-1">Periodo de Auditoría</p>
-                            <input type="month" id="monthFilter" class="bg-transparent border-none text-white font-black text-lg focus:ring-0 cursor-pointer">
+                    <!-- MODULE 1: ACUMULADO MENSUAL -->
+                    <div class="module-status-card">
+                        <div class="module-header">
+                            <div class="module-icon" style="background: #eef2ff; color: #6366f1;">
+                                <span class="material-icons">event_available</span>
+                            </div>
+                            <span id="st-acu" class="badge-status badge-err">Sin Datos</span>
                         </div>
-                        <div class="stat-timer bg-emerald-500/10 border-emerald-500/20">
-                            <p class="text-[9px] font-black text-emerald-400 uppercase mb-1">Día Hábil Actual</p>
-                            <p class="text-xl font-black text-white" id="currentWorkDay">--</p>
+                        <div class="module-body">
+                            <h3>Acumulado Mensual</h3>
+                            <p>Cierre contable y estadístico institucional (Mes vencido).</p>
+                        </div>
+                        <div class="module-footer">
+                            <div class="stat-tag">
+                                <span class="label">Plazo Cierre</span>
+                                <span class="val" id="val-acu">Día 5H</span>
+                            </div>
+                            <a href="/acumulado-mensual" class="btn-goto">
+                                <span class="material-icons">east</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- MODULE 2: CONSULTA-CX-IMDX -->
+                    <div class="module-status-card">
+                        <div class="module-header">
+                            <div class="module-icon" style="background: #ecfeff; color: #0891b2;">
+                                <span class="material-icons">fact_check</span>
+                            </div>
+                            <span id="st-imdx" class="badge-status badge-err">Sin Datos</span>
+                        </div>
+                        <div class="module-body">
+                            <h3>Consulta-CX-IMDX</h3>
+                            <p>Indicadores de efectividad y conversión médica del periodo.</p>
+                        </div>
+                        <div class="module-footer">
+                            <div class="stat-tag">
+                                <span class="label">Efectividad</span>
+                                <span class="val" id="val-imdx">--%</span>
+                            </div>
+                            <a href="/consulta-cx-imdx" class="btn-goto">
+                                <span class="material-icons">east</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- MODULE 3: ESTADÍSTICA DIARIA -->
+                    <div class="module-status-card">
+                        <div class="module-header">
+                            <div class="module-icon" style="background: #fff1f2; color: #e11d48;">
+                                <span class="material-icons">trending_up</span>
+                            </div>
+                            <span id="st-diaria" class="badge-status badge-err">Vencido</span>
+                        </div>
+                        <div class="module-body">
+                            <h3>Estadística Diaria</h3>
+                            <p>Registro operativo de producción asistencial del día anterior.</p>
+                        </div>
+                        <div class="module-footer">
+                            <div class="stat-tag">
+                                <span class="label">Último Consolidado</span>
+                                <span class="val" id="val-diaria">--</span>
+                            </div>
+                            <a href="/estadistica-diaria" class="btn-goto">
+                                <span class="material-icons">east</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- LIVE TERMINAL LOG -->
+                    <div class="terminal-card">
+                        <div class="terminal-header">
+                            <div class="terminal-dots">
+                                <div class="dot dot-red"></div>
+                                <div class="dot dot-yellow"></div>
+                                <div class="dot dot-green"></div>
+                            </div>
+                            <div style="color: #475569; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.65rem;">
+                                Live Intelligence Output
+                            </div>
+                        </div>
+                        <div id="auditLog" class="terminal-body custom-scrollbar">
+                            <div class="log-line">
+                                <span class="log-time">[00:00:00]</span>
+                                <span class="log-tag tag-info">[SYSTEM]</span>
+                                <span>Iniciando motor de auditoría prospectiva...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </header>
 
-            <!-- KRI Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <!-- Health Score -->
-                <div class="module-card flex flex-col justify-between">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Indice de Salud</p>
-                        <h2 class="text-4xl font-black text-slate-800" id="globalScore">0.0%</h2>
+                <!-- PERSPECTIVA DE INTELIGENCIA CLÍNICA (Diagnosis & Decisions) -->
+                <div class="mt-12 fade-in" style="animation-delay: 0.3s; margin-bottom: 4rem;">
+                    <div class="flex items-center gap-4 mb-6" style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="height: 2px; flex: 1; background: #e2e8f0;"></div>
+                        <h3 style="font-size: 0.75rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2em; white-space: nowrap;">Recursos de Inteligencia Estratégica</h3>
+                        <div style="height: 2px; flex: 1; background: #e2e8f0;"></div>
                     </div>
-                    <div class="mt-4 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div id="loadBar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                </div>
 
-                <!-- Active Modules -->
-                <div class="module-card flex flex-col justify-between border-l-4 border-l-emerald-500">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Módulos Sincronizados</p>
-                        <h2 class="text-4xl font-black text-slate-800" id="activeModules">0 / 3</h2>
-                    </div>
-                    <p class="text-[10px] font-bold text-slate-400" id="reportPeriodText">Cargando...</p>
-                </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                        <!-- Velocity & Forecast -->
+                        <div class="module-status-card" style="border-left: 4px solid #6366f1; padding: 1.5rem; gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span class="material-icons" style="color: #6366f1;">speed</span>
+                                <h4 style="font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: #1e293b; margin: 0;">Velocidad y Pronóstico</h4>
+                            </div>
+                            <div id="intel-velocity" style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.5;">
+                                Analizando ritmo de facturación y proyección de cierre...
+                            </div>
+                        </div>
 
-                <!-- Compliance Status -->
-                <div class="module-card flex flex-col justify-between">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estado de Plazo</p>
-                        <h2 class="text-2xl font-black" id="deadlineTitle">Calculando...</h2>
-                    </div>
-                    <p id="deadlineStatus" class="text-[10px] font-black">---</p>
-                </div>
+                        <!-- Surgical Efficiency (IMDX) -->
+                        <div class="module-status-card" style="border-left: 4px solid #0891b2; padding: 1.5rem; gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span class="material-icons" style="color: #0891b2;">trending_up</span>
+                                <h4 style="font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: #1e293b; margin: 0;">Eficiencia de Conversión</h4>
+                            </div>
+                            <div id="intel-imdx" style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.5;">
+                                Cruce analítico de efectividad médico-quirúrgica...
+                            </div>
+                        </div>
 
-                <!-- Alert Summary -->
-                <div class="module-card bg-slate-50 border-none">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Alertas Críticas</p>
-                    <div class="flex items-center gap-4">
-                        <h2 class="text-4xl font-black text-rose-500" id="critAlerts">0</h2>
-                        <div class="p-2 bg-rose-100 rounded-lg text-rose-600">
-                             <span class="material-icons">report_problem</span>
+                        <!-- Strategic Actions -->
+                        <div class="module-status-card" style="border-left: 4px solid #d97706; padding: 1.5rem; gap: 1rem; background: rgba(245, 158, 11, 0.05);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span class="material-icons" style="color: #d97706;">assignment_late</span>
+                                <h4 style="font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: #1e293b; margin: 0;">Sugerencias de Gestión</h4>
+                            </div>
+                            <div id="intel-actions" style="font-size: 0.7rem; font-weight: 700; color: #475569; line-height: 1.5; font-style: italic;">
+                                Esperando resultados finales del auditor...
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Modules Monitoring Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                <!-- ACUMULADO MENSUAL -->
-                <div class="module-card">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
-                            <span class="material-icons">analytics</span>
-                        </div>
-                        <span id="st-acu" class="status-badge badge-crit">Sin Datos</span>
-                    </div>
-                    <h4 class="text-lg font-black text-slate-800">Acumulado Mensual</h4>
-                    <p class="text-[10px] font-bold text-slate-400 mt-1">Cierre Institucional (Mes Vencido)</p>
-                    <div class="mt-8 flex justify-between items-end">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-black text-slate-400 uppercase">Cierre Plazo</p>
-                            <p class="text-2xl font-black text-slate-900" id="val-acu">Día 5H</p>
-                        </div>
-                        <a href="/acumulado-mensual" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><span class="material-icons text-slate-400">arrow_forward</span></a>
-                    </div>
-                </div>
-
-                <!-- CONSULTA-CX-IMDX -->
-                <div class="module-card">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="p-3 bg-cyan-50 rounded-2xl text-cyan-600">
-                            <span class="material-icons">assignment_turned_in</span>
-                        </div>
-                        <span id="st-imdx" class="status-badge badge-crit">Sin Datos</span>
-                    </div>
-                    <h4 class="text-lg font-black text-slate-800">Consulta-CX-IMDX</h4>
-                    <p class="text-[10px] font-bold text-slate-400 mt-1">Efectividad y Conversión Médica</p>
-                    <div class="mt-8 flex justify-between items-end">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-black text-slate-400 uppercase">Conversión</p>
-                            <p class="text-2xl font-black text-slate-900" id="val-imdx">--</p>
-                        </div>
-                        <a href="/consulta-cx-imdx" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><span class="material-icons text-slate-400">arrow_forward</span></a>
-                    </div>
-                </div>
-
-                <!-- ESTADISTICA DIARIA -->
-                <div class="module-card">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="p-3 bg-rose-50 rounded-2xl text-rose-600">
-                            <span class="material-icons">update</span>
-                        </div>
-                        <span id="st-diaria" class="status-badge badge-crit">Vencido</span>
-                    </div>
-                    <h4 class="text-lg font-black text-slate-800">Estadística Diaria</h4>
-                    <p class="text-[10px] font-bold text-slate-400 mt-1">Monitoreo día vencido (Real-time)</p>
-                    <div class="mt-8 flex justify-between items-end">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-black text-slate-400 uppercase">Último Registro</p>
-                            <p class="text-2xl font-black text-slate-900" id="val-diaria">--</p>
-                        </div>
-                        <a href="/estadistica-diaria" class="p-2 hover:bg-slate-100 rounded-xl transition-colors"><span class="material-icons text-slate-400">arrow_forward</span></a>
-                    </div>
-                </div>
-
-                <!-- AUDIT LOG -->
-                <div class="module-card bg-slate-900 !text-white border-none shadow-2xl lg:col-span-2">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-sm font-black uppercase tracking-widest text-emerald-400">Bitácora de Sincronización</h4>
-                        <span class="px-2 py-1 bg-white/10 rounded text-[9px] font-bold text-white/60">Live Intelligence</span>
-                    </div>
-                    <div id="auditLog" class="space-y-3 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar text-[10px] font-bold text-slate-300">
-                        <div class="border-l-2 border-emerald-500 pl-3 py-1">Iniciando análisis de infraestructura analítica...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dashboard Trend Section (Place for Charts later) -->
-            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <div class="module-card md:col-span-3">
-                     <h3 class="text-lg font-black text-slate-800 mb-6">Tendencia de Cumplimiento Analítico</h3>
-                     <div class="h-64 flex items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl">
-                         <p class="text-slate-400 font-bold uppercase tracking-wider text-xs">Visualización de Históricos (Próxima Fase)</p>
-                     </div>
-                 </div>
             </div>
         </main>
 
@@ -165,187 +586,292 @@
 
     <!-- Scripts -->
     <div th:replace="~{layout :: scripts}"></div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script th:inline="javascript">
         /* <![CDATA[ */
-        const HOLIDAYS_2026 = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
+        // Catálogo de festivos colombianos (2024-2027) - Sincronizado con Estadistica Diaria
+        const FESTIVOS_CO = new Set([
+            "2024-01-01","2024-01-08","2024-03-25","2024-03-28","2024-03-29","2024-05-01","2024-05-13","2024-06-03","2024-06-10","2024-07-01","2024-07-20","2024-08-07","2024-08-19","2024-10-14","2024-11-04","2024-11-11","2024-12-08","2024-12-25",
+            "2025-01-01","2025-01-06","2025-03-24","2025-04-17","2025-04-18","2025-05-01","2025-06-02","2025-06-23","2025-06-30","2025-07-20","2025-08-07","2025-08-18","2025-10-13","2025-11-03","2025-11-17","2025-12-08","2025-12-25",
+            "2026-01-01","2026-01-05","2026-03-23","2026-04-02","2026-04-03","2026-05-01","2026-05-18","2026-06-08","2026-06-15","2026-06-29","2026-07-20","2026-08-07","2026-08-17","2026-10-12","2026-11-02","2026-11-16","2026-12-08","2026-12-25",
+            "2027-01-01","2027-01-11","2027-03-22","2027-03-25","2027-03-26","2027-05-01","2027-05-10","2027-05-31","2027-06-07","2027-06-14","2027-07-20","2027-08-07","2027-08-16","2027-10-18","2027-11-01","2027-11-15","2027-12-08","2027-12-25"
+        ]);
 
-        // UI Helpers
         const getEl = id => document.getElementById(id);
-        const log = msg => {
+        
+        const log = (msg, type = 'info') => {
             const entry = document.createElement("div");
-            entry.className = "border-l-2 border-emerald-500 pl-3 py-1 animate-in fade-in slide-in-from-left-2 duration-300";
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            entry.className = "log-line animate-in fade-in slide-in-from-left-2 duration-300";
+            
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "log-time";
+            timeSpan.textContent = `[${new Date().toLocaleTimeString('es-CO')}]`;
+            
+            const tagSpan = document.createElement("span");
+            tagSpan.className = `log-tag tag-${type}`;
+            tagSpan.textContent = `[${type.toUpperCase()}]`;
+            
+            const msgSpan = document.createElement("span");
+            msgSpan.textContent = msg;
+            
+            entry.appendChild(timeSpan);
+            entry.appendChild(tagSpan);
+            entry.appendChild(msgSpan);
+            
             const container = getEl("auditLog");
-            container.prepend(entry);
+            if (container) container.prepend(entry);
         };
 
         function getWorkDay(date) {
             let count = 0;
-            let current = new Date(date.getFullYear(), date.getMonth(), 1);
-            while (current <= date) {
-                const day = current.getDay();
-                const iso = current.toISOString().split('T')[0];
-                if (day !== 0 && day !== 6 && !HOLIDAYS_2026.includes(iso)) count++;
-                current.setDate(current.getDate() + 1);
+            const y = date.getFullYear();
+            const m = date.getMonth();
+            const dMax = date.getDate();
+            for (let d = 1; d <= dMax; d++) {
+                const dt = new Date(y, m, d);
+                const day = dt.getDay();
+                const iso = dt.toISOString().split('T')[0];
+                if (day !== 0 && day !== 6 && !FESTIVOS_CO.has(iso)) count++;
             }
             return count;
         }
 
-        const db = window.firebaseInstance?.db;
-        const { collection, query, where, getDocs, limit, orderBy, doc, getDoc } = window.firebaseFirestore;
-
         const updateStatsDashboard = async (targetMonth) => {
-            log(`Auditoría de estadísticas iniciada para: ${targetMonth}`);
-            const [targetYear, targetMonthOnly] = targetMonth.split("-");
-            getEl("reportPeriodText").textContent = `Analizando cierre de ${targetYear}-${targetMonthOnly}`;
+            const db = window.firebaseInstance?.db;
+            const fs = window.firebaseFirestore;
+            if (!db || !fs) {
+                console.warn("Firebase not ready for audit.");
+                return;
+            }
+            
+            const { collection, query, where, getDocs, limit, doc, getDoc } = fs;
+
+            log(`Auditoría de infraestructura iniciada para: ${targetMonth}`, 'info');
+            
+            const [y, m] = targetMonth.split("-");
+            getEl("reportPeriodText").textContent = `Analizando cierre de ${y}-${m}`;
             
             let loadedCount = 0;
             let sumQuality = 0;
-            let critAlerts = 0;
+            let critAlertsCount = 0;
+            let sumUvrDiario = 0;
+            let imdxEffVal = 0;
 
             const now = new Date();
-            const workDay = getWorkDay(now);
+            const workDayToday = getWorkDay(now);
             const currentMonthStr = now.toISOString().slice(0, 7);
 
-            // 1. ACUMULADO MENSUAL (Closing Día 5H)
+            // 1. ACUMULADO MENSUAL
             try {
-                const resRef = doc(db, "realizados", String(targetYear), String(targetMonthOnly), "_mensual");
-                const resSnap = await getDoc(resRef);
+                const acuRef = doc(db, "realizados", y, m, "_mensual");
+                const acuSnap = await getDoc(acuRef);
                 const st = getEl("st-acu");
                 const val = getEl("val-acu");
                 
-                if (resSnap.exists()) {
+                if (acuSnap.exists()) {
                     st.textContent = "Sincronizado";
-                    st.className = "status-badge badge-ok pulse-glow";
+                    st.className = "badge-status badge-ok pulse-glow";
                     val.textContent = "OK";
                     loadedCount++;
                     sumQuality += 100;
-                    log("✓ Acumulado Mensual: Registro administrativo validado.");
+                    log(`✓ Acumulado Mensual (${targetMonth}): Registro validado en nube.`, 'success');
                 } else {
                     if (targetMonth < currentMonthStr) {
-                         if (workDay > 5) {
+                         if (workDayToday > 5) {
                              st.textContent = "Vencido";
-                             st.className = "status-badge badge-crit";
-                             critAlerts++;
-                             log("⚠ Acumulado Mensual: Plazo legal excedido.");
+                             st.className = "badge-status badge-err";
+                             critAlertsCount++;
+                             log(`⚠ Acumulado Mensual (${targetMonth}): PLAZO HÁBIL 5 EXCEDIDO.`, 'error');
                          } else {
                              st.textContent = "En Plazo";
-                             st.className = "status-badge badge-warn";
-                             log("ℹ Acumulado Mensual: Carga pendiente dentro de plazo.");
+                             st.className = "badge-status badge-warn";
+                             log(`ℹ Acumulado Mensual: Pendiente (Día hábil actual: ${workDayToday}).`, 'warn');
                          }
                     } else {
                         st.textContent = "En Curso";
-                        st.className = "status-badge badge-warn";
+                        st.className = "badge-status badge-warn";
                     }
+                    val.textContent = "Pendiente";
                 }
-            } catch (e) { console.error("Error Acu:", e); }
+            } catch (e) { log(`Error Acumulado: ${e.message}`, 'error'); }
 
             // 2. CONSULTA-CX-IMDX
             try {
-                const q = query(collection(db, "estadistica_ce"), where("mes", "==", targetMonth), limit(5));
+                const q = query(collection(db, "estadistica_ce"), where("mes", "==", targetMonth), limit(1));
                 const snap = await getDocs(q);
                 const st = getEl("st-imdx");
                 const val = getEl("val-imdx");
                 
-                if (snap.size > 0) {
+                if (!snap.empty) {
                     st.textContent = "Sincronizado";
-                    st.className = "status-badge badge-ok";
-                    let eff = 0; snap.forEach(d => eff += (d.data().pctEfectividad || 0)*100);
-                    const avgEff = (eff / snap.size).toFixed(1);
-                    val.textContent = avgEff + "%";
+                    st.className = "badge-status badge-ok";
+                    const data = snap.docs[0].data();
+                    imdxEffVal = (data.pctEfectividad !== undefined) ? (parseFloat(data.pctEfectividad) * 100) : 100.0;
+                    val.textContent = imdxEffVal.toFixed(1) + "%";
                     loadedCount++;
-                    sumQuality += Number(avgEff);
-                    log(`✓ IMDX: ${snap.size} especialidades auditadas.`);
+                    sumQuality += 100;
+                    log(`✓ IMDX (${targetMonth}): Datos de efectividad médica vinculados.`, 'success');
                 } else {
                      if (targetMonth < currentMonthStr) {
-                         if (workDay > 5) {
-                             st.textContent = "Vencido";
-                             st.className = "status-badge badge-crit";
-                             critAlerts++;
-                             log("⚠ IMDX: Sin reportes de efectividad médica.");
-                         } else {
-                             st.textContent = "Pendiente";
-                             st.className = "status-badge badge-warn";
-                         }
+                         st.textContent = (workDayToday > 5) ? "Vencido" : "Pendiente";
+                         st.className = (workDayToday > 5) ? "badge-status badge-err" : "badge-status badge-warn";
+                         if (workDayToday > 5) critAlertsCount++;
+                         log(`⚠ IMDX (${targetMonth}): Sin reportes de conversión quirúrgica.`, 'warn');
                     } else {
                         st.textContent = "En Curso";
-                        st.className = "status-badge badge-warn";
+                        st.className = "badge-status badge-warn";
                     }
+                    val.textContent = "--%";
                 }
-            } catch (e) { console.error("Error IMDX:", e); }
+            } catch (e) { log(`Error IMDX: ${e.message}`, 'error'); }
 
-            // 3. ESTADISTICA DIARIA (Real-time monitoring)
+            // 3. ESTADISTICA DIARIA (Auditoría por colección del periodo) & CROSS-AUDIT
             try {
-                // Logic for Daily: check "Yesterday" (LBD)
-                // If today is Monday(1), Fri is LBD.
-                let lbd = new Date();
-                let daysToSub = 1;
-                if (now.getDay() === 1) daysToSub = 3; // Lunes -> Viernes
-                else if (now.getDay() === 0) daysToSub = 2; // Domingo -> Viernes
-                else if (now.getDay() === 6) daysToSub = 1; // Sábado -> Viernes
+                const [ty, tm] = targetMonth.split("-");
+                const ly = String(ty);
+                const lm = String(tm).padStart(2, '0');
                 
-                lbd.setDate(now.getDate() - daysToSub);
-                const lbdISO = lbd.toISOString().split('T')[0];
-                const [l_y, l_m, l_d] = lbdISO.split('-');
+                const monthCol = collection(db, "realizados", ly, lm);
+                const snapDay = await getDocs(monthCol);
                 
-                const dayRef = doc(db, "estadistica_diaria", l_y, l_m, String(parseInt(l_d)));
-                const daySnap = await getDoc(dayRef);
                 const st = getEl("st-diaria");
                 const val = getEl("val-diaria");
 
-                if (daySnap.exists()) {
+                if (!snapDay.empty) {
                     st.textContent = "Sincronizado";
-                    st.className = "status-badge badge-ok pulse-glow";
-                    val.textContent = lbdISO;
+                    st.className = "badge-status badge-ok pulse-glow";
+                    val.textContent = "OK (" + lm + "/" + ly.slice(-2) + ")";
                     loadedCount++;
                     sumQuality += 100;
-                    log(`✓ Estadística Diaria: Día ${lbdISO} cargado correctamente.`);
-                } else {
-                    st.textContent = "Vencido";
-                    st.className = "status-badge badge-crit";
-                    val.textContent = "Pendiente";
-                    critAlerts++;
-                    log(`⚠ Estadística Diaria: No se encontró registro para el cierre de ayer (${lbdISO}).`);
-                }
-            } catch (e) { console.error("Error Diaria:", e); }
+                    log(`✓ Estadística Diaria (${targetMonth}): ${snapDay.size} registros validados.`, 'success');
 
-            // Global UI Update
+                    // --- CROSS-AUDIT ANALÍTICO ---
+                    const acuRef = doc(db, "realizados", ly, lm, "_mensual");
+                    const acuSnap = await getDoc(acuRef);
+                    if (acuSnap.exists()) {
+                        log(`[INSPECT] Iniciando auditoría cruzada de coherencia...`, 'info');
+                        const acuData = acuSnap.data();
+                        const uvrMensual = acuData.cx?.uvrTotal || 0;
+                        
+                        let zeroDays = [];
+                        snapDay.forEach(d => {
+                            if (d.id !== "_mensual") {
+                                const dayUvr = d.data().cx?.uvrTotal || 0;
+                                sumUvrDiario += dayUvr;
+                                if (dayUvr === 0 && (d.data().ce > 0 || d.data().urgencias > 0)) {
+                                    zeroDays.push(d.id);
+                                }
+                            }
+                        });
+
+                        const diff = Math.abs(uvrMensual - sumUvrDiario);
+                        if (diff > 1) {
+                            log(`[INTEGRIDAD] Desfase detectado: ${diff.toFixed(1)} UVRs de diferencia.`, 'warn');
+                            critAlertsCount++;
+                        } else {
+                            log(`[INTEGRIDAD] Coherencia UVR: 100% (Diario vs Mensual).`, 'success');
+                        }
+
+                        if (zeroDays.length > 0) {
+                            log(`[ANOMALÍA] Días ${zeroDays.join(',')} reportan 0 UVR con actividad CE.`, 'error');
+                            critAlertsCount++;
+                        }
+                    }
+                } else {
+                    const isCurrent = (targetMonth === currentMonthStr);
+                    st.textContent = "Vencido";
+                    st.className = "badge-status badge-err";
+                    val.textContent = "Sin Datos";
+                    if (isCurrent || workDayToday > 5) critAlertsCount++;
+                    log(`⚠ Estadística Diaria (${targetMonth}): No hay registros en este periodo.`, 'error');
+                }
+            } catch (e) { log(`Error Diaria: ${e.message}`, 'error'); }
+
             const loadPct = Math.round((loadedCount/3)*100);
             getEl("loadBar").style.width = loadPct + "%";
             getEl("activeModules").textContent = `${loadedCount} / 3`;
-            const gScore = loadedCount ? (sumQuality/3) : 0;
+            const gScore = (sumQuality/3);
             getEl("globalScore").textContent = gScore.toFixed(1) + "%";
-            getEl("critAlerts").textContent = critAlerts;
+            getEl("critAlerts").textContent = critAlertsCount;
 
-            // Health Status Info
             const dTitle = getEl("deadlineTitle");
             const dStatus = getEl("deadlineStatus");
-            if (workDay <= 5) {
-                dTitle.textContent = "En Plazo Cierre";
-                dTitle.className = "text-2xl font-black text-amber-500";
-                dStatus.textContent = `Día Hábil ${workDay} de 5. Queda tiempo para el cierre mensual.`;
+            if (workDayToday <= 5) {
+                if (dTitle) dTitle.textContent = "Cierre en Plazo";
+                if (dTitle) dTitle.style.color = "var(--amber-stats)";
+                if (dStatus) dStatus.textContent = `Día ${workDayToday} de 5 habilitados.`;
             } else {
-                dTitle.textContent = "Periodo Vencido";
-                dTitle.className = "text-2xl font-black text-rose-500";
-                dStatus.textContent = `Día Hábil ${workDay}. El cierre debió ser garantizado al día 5.`;
+                if (dTitle) dTitle.textContent = "Plazo Vencido";
+                if (dTitle) dTitle.style.color = "var(--rose-stats)";
+                if (dStatus) dStatus.textContent = `Día ${workDayToday}. Cierre fuera de término.`;
+            }
+
+            // --- INTELIGENCIA ESTRATÉGICA ---
+            generateIntelligence(y, m, sumUvrDiario, imdxEffVal, targetMonth === currentMonthStr);
+        };
+
+        const generateIntelligence = async (y, m, totalUvr, imdxEff, isCurrent) => {
+            const velDiv = getEl("intel-velocity");
+            const imdxDiv = getEl("intel-imdx");
+            const actDiv = getEl("intel-actions");
+            
+            // 1. Velocidad Operativa
+            const daysInMonth = new Date(parseInt(y), parseInt(m), 0).getDate();
+            const elapsed = isCurrent ? new Date().getDate() : daysInMonth;
+            const avgDaily = (totalUvr / (elapsed || 1)).toFixed(0);
+            const projection = (avgDaily * daysInMonth);
+            
+            if (velDiv) {
+                velDiv.innerHTML = `Ritmo: <b>${avgDaily} UVRs/día</b>.<br>Pronóstico Cierre: <b>${projection.toLocaleString()} UVRs</b>.<br>` + 
+                                   (projection < 40000 ? `<span style="color:#e11d48">⚠ Riesgo de incumplimiento de meta fiscal.</span>` : `🟢 Ritmo coherente con objetivos.`);
+            }
+
+            // 2. Eficiencia IMDX
+            if (imdxDiv) {
+                if (imdxEff > 0) {
+                    imdxDiv.innerHTML = `Efectividad Médico-Quirúrgica: <b>${imdxEff.toFixed(1)}%</b>.<br>` + 
+                                       (imdxEff < 50 ? `<span style="color:#e11d48">Diagnóstico: Alta tasa de cancelación. Sugerir auditoría de cirujanos.</span>` : 
+                                        imdxEff < 80 ? `<span style="color:#d97706">Aviso: Margen de mejora en conversión. Revisar agendamiento.</span>` : 
+                                        `🟢 Operación óptima de conversión médica.`);
+                } else {
+                    imdxDiv.innerHTML = "Sin datos de efectividad suficentes para diagnóstico cruzado.";
+                }
+            }
+
+            // 3. Recomendaciones (Actionable Insights)
+            if (actDiv) {
+                let actions = [];
+                if (imdxEff < 70 && imdxEff > 0) actions.push("Revisar bloqueos de quirófanos por especialidad.");
+                if (totalUvr === 0) actions.push("Reportar falta de carga en producción diaria.");
+                if (isCurrent && getWorkDay(new Date()) > 4) actions.push("Asegurar cierre de carteras antes del día 5H.");
+                
+                if (actions.length === 0) actions.push("Sostener ritmo actual. Monitoreo predictivo sin alertas críticas.");
+                
+                actDiv.innerHTML = `<ul style="margin: 0; padding-left: 1rem;">${actions.map(a => `<li style="margin-bottom: 4px;">${a}</li>`).join('')}</ul>`;
             }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Clock
+            // Reloj Institucional
             setInterval(() => {
                 getEl("currentTime").textContent = new Date().toLocaleTimeString('es-CO');
             }, 1000);
 
-            // Month Filter Logic
-            const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth() - 1);
+            // Carga Inicial
+            const dNow = new Date();
+            const dPrev = new Date(dNow.getFullYear(), dNow.getMonth() - 1, 1);
             const defaultMonth = `${dPrev.getFullYear()}-${String(dPrev.getMonth() + 1).padStart(2, "0")}`;
+            
             getEl("monthFilter").value = defaultMonth;
             getEl("currentWorkDay").textContent = getWorkDay(new Date());
 
-            updateStatsDashboard(defaultMonth);
+            // Polling de Firebase
+            const fbPoller = setInterval(() => {
+                if (window.firebaseInstance?.db) {
+                    clearInterval(fbPoller);
+                    updateStatsDashboard(getEl("monthFilter").value);
+                }
+            }, 500);
 
             getEl("monthFilter").addEventListener("change", (e) => {
                 updateStatsDashboard(e.target.value);

@@ -1,9 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { 
     getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
     query, where, orderBy, onSnapshot, serverTimestamp, limit, writeBatch
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyD-kkAwT7iGI8jJc1wosV--TA4BjOaoH-Q",
@@ -99,4 +99,4 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-console.log("🚀 [FIREBASE-SHIM] SDK v10.8.0 Inicializado - cood-tc");
+console.log("🚀 [FIREBASE-SHIM] SDK v10.13.2 Inicializado - cood-tc");

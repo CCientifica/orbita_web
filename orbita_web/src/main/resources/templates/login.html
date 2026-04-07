@@ -528,10 +528,11 @@
          * HANDSHAKE: Sincronización de Sesión Spring Security
          */
         async function establishSession(email, idToken) {
-            if (!email || !idToken) return;
+            if (isAuthenticating) return; // Protección contra re-entrada
             isAuthenticating = true;
+            
             loader.style.display = 'flex';
-            loaderText.innerText = 'Sincronizando sesión local...';
+            loaderText.innerText = 'Sincronizando sesión institucional...';
 
             try {
                 console.log("🖥️ [ÓRBITA-AUTH] Iniciando Handshake para:", email);
@@ -569,11 +570,15 @@
             if (isLogoutCall && user) {
                 console.log("🚪 [ÓRBITA-AUTH] Detectado fin de sesión. Limpiando Firebase...");
                 await signOut(auth);
+                
+                // NOTA: Limpiamos el parámetro de la URL para evitar bucles en futuros inicios de sesión
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
                 return;
             }
 
-            if (user && !isAuthenticating && !isLogoutCall) {
-                console.log("👤 [ÓRBITA-AUTH] Sesión existente detectada:", user.email);
+            if (user && !isAuthenticating) {
+                console.log("👤 [ÓRBITA-AUTH] Sesión activa detectada:", user.email);
                 const idToken = await user.getIdToken();
                 await establishSession(user.email.toLowerCase().trim(), idToken);
             }
@@ -584,19 +589,30 @@
          */
         googleBtn.addEventListener('click', async () => {
             if (isAuthenticating) return;
-            console.log("🔘 [ÓRBITA-AUTH] Click en Google Workspace...");
             
+            console.log("🔘 [ÓRBITA-AUTH] Iniciando flujo Google Popup...");
+            loader.style.display = 'flex';
+            loaderText.innerText = 'Conectando con Google...';
+
             try {
-                isAuthenticating = true;
-                const result = await signInWithPopup(auth, provider);
-                const idToken = await result.user.getIdToken();
-                console.log("✅ [ÓRBITA-AUTH] Identidad verificada (Google).");
-                await establishSession(result.user.email.toLowerCase().trim(), idToken);
+                // NOTA: No seteamos isAuthenticating=true aquí para permitir 
+                // que onAuthStateChanged detecte el login una vez resuelto.
+                await signInWithPopup(auth, provider);
+                console.log("✅ [ÓRBITA-AUTH] Verificación Google completada.");
+                
+                // NOTA TÉCNICA: No llamamos a establishSession directamente aquí.
+                // onAuthStateChanged (SAFETY NET) se encargará de realizar el handshake
+                // con el servidor de forma asíncrona, evitando bloqueos por COOP Headers.
+                
             } catch (error) {
                 console.error("📛 [ÓRBITA-AUTH] Error en Popup:", error.code);
+                loader.style.display = 'none';
                 isAuthenticating = false;
+                
                 let userMsg = "Error al conectar con Google.";
                 if (error.code === 'auth/popup-blocked') userMsg = "Por favor, habilita los popups.";
+                else if (error.code === 'auth/closed-by-user') return; // Cancelado por usuario
+                
                 alert(userMsg);
             }
         });

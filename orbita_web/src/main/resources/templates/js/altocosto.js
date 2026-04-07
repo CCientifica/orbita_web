@@ -56,7 +56,7 @@
 
                 // Expansiones estéticas para lectura profesional
                 const exp = {
-                        "Dx": "Diagnóstico", "Tto": "Tratamiento", "Ini": "Inicio",
+                        "Tto": "Tratamiento", "Ini": "Inicio",
                         "Act": "Actual", "Cant": "Cantidad", "Ips": "IPS",
                         "Vhc": "VHC", "Vhb": "VHB", "Vih": "VIH", "Bdua": "BDUA",
                         "id": "ID", "SGSSS": "SGSSS", "Causamuerte": "Causa Muerte",
@@ -252,9 +252,7 @@
                 "VAR64_2_FechaMuerte": "Formato AAAA-MM-DD. SOLO si falleció.",
 
                 "VAR65_SerialBDUA": "Serial/código BDUA del usuario (tal cual aparece en BDUA). No inventar; si no está disponible, usar el comodín permitido por tu estándar.",
-                "VAR66_V66FechaCorte": "Fecha de corte del reporte en formato AAAA-MM-DD (debe ser la definida por el instructivo del periodo).",
-
-                "Dx": "Código CIE-10 del diagnóstico principal objeto de reporte (consistente con tipo de deficiencia y soportes)."
+                "VAR66_V66FechaCorte": "Fecha de corte del reporte en formato AAAA-MM-DD (debe ser la definida por el instructivo del periodo)."
         };
 
         const AYUDA_CANCER = {
