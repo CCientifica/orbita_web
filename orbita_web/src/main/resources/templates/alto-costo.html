@@ -12,16 +12,83 @@
     <script th:src="@{/js/orbita-layout-bridge.js}"></script>
     <style>
         /* Estilos específicos de Alto Costo (No duplicar Layout) */
-        .dashboard-layout { display: flex; min-height: 100vh; background-color: #f8fafc; font-family: 'Outfit', sans-serif; overflow: hidden; }
-        .content-wrapper { width: 100%; padding-left: 280px; min-height: 100vh; transition: padding-left 0.3s ease; display: flex; flex-direction: column; overflow-y: auto; }
-        @media (max-width: 991px) { .content-wrapper { padding-left: 0; } .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .navbar { padding: 0 1rem; } .user-info { display: none; } }
-        
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+        }
+
+        .content-wrapper {
+            width: 100%;
+            padding-left: 280px;
+            min-height: 100vh;
+            transition: padding-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 991px) {
+            .content-wrapper {
+                padding-left: 0;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .user-info {
+                display: none;
+            }
+        }
+
         /* 🔒 Concurrency Lockdown Styles */
-        .lock-by-me { background-color: rgba(59, 130, 246, 0.05) !important; border-left: 4px solid #3b82f6 !important; transition: all 0.2s ease; }
-        .lock-by-other { background-color: rgba(239, 68, 68, 0.03) !important; cursor: not-allowed !important; opacity: 0.85; filter: grayscale(0.2); pointer-events: none; border-left: 4px solid #ef4444 !important; }
-        .lock-by-other td { color: #94a3b8 !important; }
-        .lock-badge-inline { animation: pulseLock 2s infinite; }
-        @keyframes pulseLock { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .lock-by-me {
+            background-color: rgba(59, 130, 246, 0.05) !important;
+            border-left: 4px solid #3b82f6 !important;
+            transition: all 0.2s ease;
+        }
+
+        .lock-by-other {
+            background-color: rgba(239, 68, 68, 0.03) !important;
+            cursor: not-allowed !important;
+            opacity: 0.85;
+            filter: grayscale(0.2);
+            pointer-events: none;
+            border-left: 4px solid #ef4444 !important;
+        }
+
+        .lock-by-other td {
+            color: #94a3b8 !important;
+        }
+
+        .lock-badge-inline {
+            animation: pulseLock 2s infinite;
+        }
+
+        @keyframes pulseLock {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -33,6 +100,7 @@
     - admin: Acceso de Visualización y Descarga.
     - auditor: BLOQUEADO (Limitado a Predicción y Estadística).
 -->
+
 <body class="dashboard-layout fade-in">
     <!-- Sidebar from Layout -->
     <aside th:replace="layout :: sidebar"></aside>
@@ -1011,15 +1079,22 @@
 
         <!-- Bloqueo de Acceso para Auditores u otros roles no autorizados -->
         <main class="main-content" sec:authorize="!hasAnyAuthority('master admin', 'super admin', 'admin', 'analista')">
-            <div class="glass-card text-center py-20" style="margin: 40px; border-radius: 24px; padding: 100px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            <div class="glass-card text-center py-20"
+                style="margin: 40px; border-radius: 24px; padding: 100px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                 <div class="text-6xl mb-6" style="font-size: 64px;">🚫</div>
-                <h2 class="text-3xl font-black text-slate-800 mb-4" style="font-size: 24px; font-weight: 900;">Acceso Restringido</h2>
-                <p class="text-slate-500 font-bold max-w-lg mx-auto" style="color: #64748b; font-weight: 700;">Su perfil actual (**auditor**) no posee permisos para gestionar registros de Alto Costo. Esta sección es exclusiva para analistas y administración operativa.</p>
-                <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex" style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; background: #0f172a; color: white;">Volver al Inicio</a>
+                <h2 class="text-3xl font-black text-slate-800 mb-4" style="font-size: 24px; font-weight: 900;">Acceso
+                    Restringido</h2>
+                <p class="text-slate-500 font-bold max-w-lg mx-auto" style="color: #64748b; font-weight: 700;">Su perfil
+                    actual (**auditor**) no posee permisos para gestionar registros de Alto Costo. Esta sección es
+                    exclusiva para analistas y administración operativa.</p>
+                <a href="/home" class="btn-predictive bg-slate-900 text-white mt-8 inline-flex"
+                    style="text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 900; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; background: #0f172a; color: white;">Volver
+                    al Inicio</a>
             </div>
         </main>
 
-        <main class="main-content container-fluid px-3 px-lg-4 py-5" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'analista')">
+        <main class="main-content container-fluid px-3 px-lg-4 py-5"
+            sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'analista')">
             <!-- Header Section -->
             <header
                 class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4 mb-5 fade-in">
@@ -1031,6 +1106,9 @@
                             <i data-lucide="crown" style="width: 28px; height: 28px;"></i>
                         </span>
                         Alto Costo
+                        <div id="badgeCargaStatus"
+                            style="display:inline-flex; align-items:center; padding:5px 12px; border-radius:20px; font-size:0.75rem; font-weight:800; margin-left:15px; vertical-align:middle; text-transform:uppercase;">
+                        </div>
                     </h1>
                     <p class="text-muted mt-2 m-0 fw-500 fs-5">Panel Inteligente de Gestión y Seguimiento Clínico</p>
                 </div>
@@ -1062,7 +1140,8 @@
                         <div class="stat-number" id="countHoyCircle">0</div>
                         <div class="stat-subtitle">Gestión de Hoy</div>
                         <div id="hoySubtitulo"
-                            style="font-size: 10px; color: #94a3b8; margin-top: 4px; font-weight: 600;">Efectividad: 0%
+                            style="font-size: 10px; color: #94a3b8; margin-top: 4px; font-weight: 600;">Inactividad: 0
+                            min · 0%
                         </div>
                     </div>
                 </div>
@@ -1280,7 +1359,8 @@
                 master admin / super admin: acceso total.
             -->
             <!-- Admin Section (Import/Export) -->
-            <div id="adminSection" class="fade-in mb-5" sec:authorize="hasAnyAuthority('master admin', 'super admin', 'analista')">
+            <div id="adminSection" class="fade-in mb-5"
+                sec:authorize="hasAnyAuthority('master admin', 'super admin', 'analista')">
                 <div style="
                     background: linear-gradient(135deg, #e8f4fd 0%, #dbeafe 40%, #ede9fe 100%);
                     border-radius: 24px;
@@ -1346,7 +1426,8 @@
                         align-items: center;
                     ">
                         <!-- Columna Importación -->
-                        <div style="flex: 1; min-width: 280px;" sec:authorize="hasAnyAuthority('master admin', 'super admin')">
+                        <div style="flex: 1; min-width: 280px;"
+                            sec:authorize="hasAnyAuthority('master admin', 'super admin')">
                             <div style="
                                 color: #64748b; font-size: 10px;
                                 font-weight: 800; text-transform: uppercase;
@@ -1378,8 +1459,7 @@
                                     </select>
                                 </div>
                                 <input type="file" id="excelInput" style="display: none;" accept=".xlsx, .xls">
-                                <button onclick="document.getElementById('excelInput').click()" 
-                                    style="
+                                <button onclick="document.getElementById('excelInput').click()" style="
                                     background: linear-gradient(135deg, #3b82f6, #6366f1);
                                     border: none; border-radius: 12px;
                                     padding: 10px 20px; color: white;
@@ -1402,7 +1482,8 @@
                             background: rgba(147,197,253,0.4);
                             margin: 0 2rem;
                             flex-shrink: 0;
-                        " class="d-none d-md-block" sec:authorize="hasAnyAuthority('master admin', 'super admin')"></div>
+                        " class="d-none d-md-block" sec:authorize="hasAnyAuthority('master admin', 'super admin')">
+                        </div>
 
                         <!-- Columna Exportación -->
                         <div style="flex: 1; min-width: 280px;">
@@ -1432,9 +1513,8 @@
                                 </button>
 
                                 <!-- Botón SISCAD Excel -->
-                                <button onclick="exportarSISCADExcel()" 
-                                    sec:authorize="hasAnyAuthority('master admin', 'super admin')"
-                                    style="
+                                <button onclick="exportarSISCADExcel()"
+                                    sec:authorize="hasAnyAuthority('master admin', 'super admin')" style="
                                     background: white;
                                     border: 1px solid #e2e8f0;
                                     border-radius: 12px; padding: 10px 16px;
@@ -1448,9 +1528,8 @@
                                 </button>
 
                                 <!-- Botón Productividad -->
-                                <button onclick="exportarProductividadExcel()" 
-                                    sec:authorize="hasAnyAuthority('master admin', 'super admin')"
-                                    style="
+                                <button onclick="exportarProductividadExcel()"
+                                    sec:authorize="hasAnyAuthority('master admin', 'super admin')" style="
                                     background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.2));
                                     border: 1px solid rgba(52,211,153,0.3);
                                     border-radius: 12px; padding: 10px 18px;
@@ -1464,9 +1543,8 @@
                                 </button>
 
                                 <!-- Botón Mostrar Ocultos -->
-                                <button onclick="window.toggleMostrarOcultos()" id="btnToggleOcultos" 
-                                    sec:authorize="hasAnyAuthority('master admin', 'super admin')"
-                                    style="
+                                <button onclick="window.toggleMostrarOcultos()" id="btnToggleOcultos"
+                                    sec:authorize="hasAnyAuthority('master admin', 'super admin')" style="
                                     background: white; border: 1px solid #e2e8f0;
                                     border-radius: 12px; padding: 10px 16px;
                                     color: #334155; font-weight: 700; font-size: 13px;
@@ -1533,13 +1611,16 @@
         </main>
 
         <!-- Footer from Layout -->
-        <footer th:replace="~{layout :: footer}" class="dashboard-footer" style="background: #f8fafc; border-top: 1px solid #f1f5f9; padding: 1.5rem 3rem;">
+        <footer th:replace="~{layout :: footer}" class="dashboard-footer"
+            style="background: #f8fafc; border-top: 1px solid #f1f5f9; padding: 1.5rem 3rem;">
             <div class="footer-text">
                 <div style="font-weight: 700; color: #334155; margin-bottom: 0.25rem;">&copy; 2026 Orbita Clínica</div>
-                <div style="font-size: 0.75rem; color: #94a3b8;">Clínica Sagrado Corazón · Ecosistema Técnico-Científico Unificado</div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">Clínica Sagrado Corazón · Ecosistema Técnico-Científico
+                    Unificado</div>
             </div>
             <div class="footer-branding" style="display: flex; align-items: center; gap: 2rem;">
-                <img src="/assets/Supersalud_Logo.png" alt="Vigilado Supersalud" class="footer-logo" style="height: 100px; opacity: 0.8;" />
+                <img src="/assets/Supersalud_Logo.png" alt="Vigilado Supersalud" class="footer-logo"
+                    style="height: 100px; opacity: 0.8;" />
             </div>
         </footer>
     </div>
@@ -1557,13 +1638,15 @@
                         <h2 id="modalNombre" class="h5 fw-800 m-0 text-primary">PACIENTE</h2>
                         <div class="d-flex gap-2 align-items-center">
                             <span id="modalID" class="text-muted small fw-600 letter-spacing-1">ID: 0</span>
-                            <span id="modalDx" class="badge bg-primary-soft text-primary border-0 fw-800" style="font-size: 10px; padding: 2px 8px; text-transform: uppercase;">Dx: ---</span>
+                            <span id="modalDx" class="badge bg-primary-soft text-primary border-0 fw-800"
+                                style="font-size: 10px; padding: 2px 8px; text-transform: uppercase;">Dx: ---</span>
                         </div>
                     </div>
                 </div>
                 <div class="d-flex gap-3 align-items-center">
                     <div id="gestionTimer" class="h4 m-0 fw-800 text-secondary bg-light px-3 py-1 rounded-3">00:00</div>
-                    <button onclick="window.cerrarModal()" class="btn btn-light rounded-circle p-2 border-0" title="Cerrar">
+                    <button onclick="window.cerrarModal()" class="btn btn-light rounded-circle p-2 border-0"
+                        title="Cerrar">
                         <i data-lucide="x" style="width: 20px;"></i>
                     </button>
                 </div>
@@ -1621,8 +1704,7 @@
                         <i data-lucide="corner-down-left" style="width: 16px;"></i> DEVOLVER A PENDIENTES
                     </button>
                     <!-- Nueva opción para Analista -->
-                    <button id="btnNoCohorte" onclick="window.marcarNoCohorte()"
-                        class="btn btn-danger fw-800 px-4 py-2 rounded-3 shadow-sm border-0"
+                    <button id="btnNoCohorte" class="btn btn-danger fw-800 px-4 py-2 rounded-3 shadow-sm border-0"
                         style="display: none; background: #dc2626;">
                         <i data-lucide="user-x" style="width: 16px;"></i> NO PERTENECE A COHORTE
                     </button>

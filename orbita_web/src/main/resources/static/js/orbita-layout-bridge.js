@@ -1,9 +1,8 @@
 /**
  * 🛰️ ÓRBITA LAYOUT BRIDGE & ATTRIBUTE TRANSLATOR
  * ---------------------------------------------
- * Versión 1.6: Protección contra recargas duplicadas, sobreinyección de scripts
- * y consultas repetidas a Firestore.
- * Garantiza paridad visual institucional sin romper la lógica local.
+ * Versión 1.7: Soporte para Broadcast en tiempo real (Notificaciones Globales).
+ * Garantiza paridad visual institucional y comunicación administrativa masiva.
  */
 
 (function () {
@@ -206,37 +205,26 @@
     }
 
     async function resolveOrbitaUser(user) {
-        const normalizedEmail = normalizeEmail(user?.email);
-
-        if (!normalizedEmail) {
-            return {
-                email: "",
-                displayName: "Invitado",
-                role: "invitado",
-            };
-        }
-
-        if (
-            permissionCheckedEmail === normalizedEmail &&
-            window.orbitaUser &&
-            window.orbitaUser.email === normalizedEmail
-        ) {
+        // 🛡️ PRIORIDAD BULLETPROOF: Si el servidor ya inyectó un usuario válido, lo respetamos
+        if (window.orbitaUser && window.orbitaUser.email && window.orbitaUser.role !== 'invitado' && window.orbitaUser.role !== 'UNAUTHORIZED') {
+            console.log("🛡️ Orbita Bridge: Usando identidad protegida del servidor.");
             return window.orbitaUser;
         }
 
+        const normalizedEmail = normalizeEmail(user?.email);
+        if (!normalizedEmail) {
+            return { email: "", displayName: "Invitado", role: "invitado" };
+        }
+
+        // Cache de sesión
         const cacheKey = `orbitaUser:${normalizedEmail}`;
         try {
             const cached = sessionStorage.getItem(cacheKey);
             if (cached) {
                 const parsed = JSON.parse(cached);
-                if (parsed && parsed.email === normalizedEmail) {
-                    permissionCheckedEmail = normalizedEmail;
-                    return parsed;
-                }
+                if (parsed && parsed.email === normalizedEmail) return parsed;
             }
-        } catch (e) {
-            console.warn("⚠️ No se pudo leer cache de sesión de orbitaUser:", e);
-        }
+        } catch (e) {}
 
         const firestoreReady = await waitForFirestore();
         if (!firestoreReady) {
@@ -260,18 +248,12 @@
         if (snap.exists()) {
             const data = snap.data() || {};
             orbitaUser.role = data.rol || orbitaUser.role;
-            if (data.nombre) {
-                orbitaUser.displayName = data.nombre;
-            }
+            if (data.nombre) orbitaUser.displayName = data.nombre;
         }
-
-        permissionCheckedEmail = normalizedEmail;
 
         try {
             sessionStorage.setItem(cacheKey, JSON.stringify(orbitaUser));
-        } catch (e) {
-            console.warn("⚠️ No se pudo guardar cache de sesión de orbitaUser:", e);
-        }
+        } catch (e) {}
 
         return orbitaUser;
     }
@@ -330,11 +312,112 @@
         });
     }
 
+    /**
+     * 🛰️ MOTOR DE BROADCAST (Receptor)
+     * Escucha la colección 'orbita_broadcast' en tiempo real.
+     */
+    async function initBroadcastListener() {
+        const firestoreReady = await waitForFirestore();
+        if (!firestoreReady) return;
+
+        console.log("🛰️ Orbita Bridge: Canal de Broadcast sintonizado.");
+
+        const { collection, query, where, orderBy, limit, onSnapshot } = window.firebaseFirestore;
+        const db = window.firebaseInstance?.db;
+        if (!db) return;
+
+        // Consulta simplificada: Escuchamos los últimos cambios sin requerir índices compuestos
+        const q = query(
+            collection(db, "orbita_broadcast"),
+            orderBy("createdAt", "desc"),
+            limit(1)
+        );
+
+        let isFirstLoad = true;
+
+        onSnapshot(q, (snapshot) => {
+            if (isFirstLoad) { isFirstLoad = false; return; }
+
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const data = change.doc.data();
+                    
+                    // Verificación de seguridad en cliente (Evita necesidad de índice en firestore)
+                    if (data.active !== true) return;
+
+                    const myEmail = normalizeEmail(window.orbitaUser?.email);
+                    const isForMe = data.target === "ALL" || normalizeEmail(data.target) === myEmail;
+                    
+                    if (isForMe) {
+                        showOrbitaNotification(data);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 🎨 UI: TOAST DE NOTIFICACIÓN PREMIUM
+     */
+    function showOrbitaNotification(data) {
+        const id = "orbita-toast-" + Date.now();
+        const icon = data.type === "danger" ? "🚨" : data.type === "warning" ? "⚠️" : data.type === "success" ? "✅" : "💬";
+        const borderColor = data.type === "danger" ? "#ef4444" : data.type === "warning" ? "#f97316" : data.type === "success" ? "#22c55e" : "#6366f1";
+
+        const toast = document.createElement("div");
+        toast.id = id;
+        toast.style.cssText = `
+            position: fixed; top: 20px; right: -400px; width: 350px; 
+            background: white; border-left: 5px solid ${borderColor}; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15); border-radius: 12px; 
+            padding: 20px; z-index: 100000; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column; gap: 8px; font-family: 'Outfit', sans-serif;
+        `;
+
+        toast.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.5rem;">${icon}</span>
+                    <div>
+                        <div style="font-weight:900; font-size:0.7rem; color:${borderColor}; text-transform:uppercase; letter-spacing:1px;">Comunicado Orbita</div>
+                        <div style="font-weight:800; color:#1e293b; font-size:1rem; line-height:1.2;">${data.title}</div>
+                    </div>
+                </div>
+                <button onclick="const t = document.getElementById('${id}'); t.style.right='-400px'; setTimeout(()=>t.remove(), 600);" 
+                        style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+            <div style="font-size:0.85rem; color:#64748b; font-weight:600; line-height:1.5; margin-top:5px;">
+                ${data.message}
+            </div>
+            <div style="margin-top:10px; padding-top:10px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:0.65rem; color:#94a3b8; font-weight:700; text-transform:uppercase;">De: ${data.senderName || 'Administración'}</div>
+                <div style="font-size:0.6rem; color:#cbd5e1; font-weight:600;">Ahora mismo</div>
+            </div>
+        `;
+
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.right = "20px"; }, 100);
+        setTimeout(() => {
+            const t = document.getElementById(id);
+            if (t) {
+                t.style.right = "-400px";
+                setTimeout(() => t.remove(), 600);
+            }
+        }, 15000);
+    }
+
     translateAttributes();
+
+    // Exponer la interfaz de notificaciones al mundo global
+    window.showOrbitaBroadcastToast = showOrbitaNotification;
 
     if (isStatic) {
         injectShell().then(() => {
             initAuthBridge();
+            initBroadcastListener();
         });
+    } else {
+        // ModoSpring Boot en vivo
+        initBroadcastListener();
     }
 })();

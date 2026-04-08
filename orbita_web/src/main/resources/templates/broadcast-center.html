@@ -113,16 +113,16 @@
     <!-- Firebase Script Modulo -->
     <script th:inline="javascript">
         /*<![CDATA[*/
-        const API_USER = window.orbitaUser;
+        // Eliminamos API_USER estático para evitar errores de sincronización con los botones
         
         async function initBroadcastCenter() {
-            window.addEventListener('firebase-ready', async () => {
+            const startListing = async () => {
                 const { collection, getDocs, orderBy, query } = window.firebaseFirestore;
                 const db = window.firebaseInstance?.db;
                 if(!db) return;
 
                 try {
-                    // Usamos 'usuarios_permitidos' que es la colección oficial de identidad
+                    console.log("👥 [BROADCAST] Sincronizando directorio de usuarios...");
                     const q = query(collection(db, "usuarios_permitidos"));
                     const snapshot = await getDocs(q);
                     const users = snapshot.docs.map(doc => {
@@ -132,15 +132,21 @@
                             displayName: data.nombre || data.Nombre || data.displayName || doc.id
                         };
                     });
-                    // Ordenar alfabéticamente por nombre
                     users.sort((a, b) => a.displayName.localeCompare(b.displayName));
                     renderUsers(users);
                 } catch(e) {
                     console.error("Error cargando directorio:", e);
                     const list = document.getElementById('usersList');
-                    if(list) list.innerHTML = `<div class="p-4 text-rose-500 text-[10px] font-black uppercase">Error de acceso al directorio</div>`;
+                    if(list) list.innerHTML = `<div class="p-4 text-rose-500 text-[10px] font-black uppercase">Fallo de conexión con el directorio</div>`;
                 }
-            });
+            };
+
+            // Arranque inmediato si Firebase ya está listo, sino esperar evento
+            if (window.firebaseInstance?.db) {
+                startListing();
+            } else {
+                window.addEventListener('firebase-ready', startListing);
+            }
         }
 
         function renderUsers(users) {
@@ -188,61 +194,91 @@
         }
 
         function previewBroadcast() {
+            const currentUser = window.orbitaUser || { displayName: 'Administrador' };
             const msg = {
                 title: document.getElementById('notifTitle').value || 'Título de Prueba',
-                message: document.getElementById('notifMessage').value || 'Escribe algo para ver cómo aparecerá el aviso.',
+                message: document.getElementById('notifMessage').value || 'Escriba un mensaje para previsualizar.',
                 type: document.getElementById('notifType').value,
-                senderName: API_USER.displayName,
+                senderName: currentUser.displayName || 'Administración',
                 target: 'ALL'
             };
-            if(window.showOrbitaBroadcastToast) window.showOrbitaBroadcastToast(msg);
+            if(window.showOrbitaBroadcastToast) {
+                window.showOrbitaBroadcastToast(msg);
+            } else {
+                alert("🔔 VISTA PREVIA:\n\nTítulo: " + msg.title + "\n\nMensaje: " + msg.message);
+            }
         }
 
+        /**
+         * 🛰️ MOTOR DE EMISIÓN DE COMUNICADOS
+         */
         async function sendBroadcast() {
-            const title = document.getElementById('notifTitle').value;
-            const message = document.getElementById('notifMessage').value;
+            const titleEl = document.getElementById('notifTitle');
+            const messageEl = document.getElementById('notifMessage');
+            const title = titleEl.value;
+            const message = messageEl.value;
             const type = document.getElementById('notifType').value;
             const target = document.getElementById('targetEmail').value;
             const btn = document.getElementById('sendBtn');
 
+            // 1. Validaciones Básicas
             if(!title || !message) {
                 alert("⚠️ Datos incompletos. Escribe un título y un mensaje.");
                 return;
             }
 
+            // 2. Recuperar Usuario Actual (Dinámico para Bulletproof)
+            const currentUser = window.orbitaUser;
+            if(!currentUser || !currentUser.email) {
+                alert("❌ Error de Identidad: No se ha detectado tu sesión de Orbita. Intenta recargar la página.");
+                return;
+            }
+
             const confirmMsg = target === 'ALL' 
-                ? "¿Emitir notificación a TODOS los usuarios?"
+                ? "¿ELIMINAR ESTE MENSAJE A TODO EL HOSPITAL?"
                 : `¿Enviar notificación privada a ${target}?`;
 
             if(!confirm(confirmMsg)) return;
 
             btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-4"></i> Transmitiendo...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-4"></i> Contectando con Satélite...`;
+            if(window.lucide) lucide.createIcons();
 
             try {
+                // 3. Esperar a que Firestore esté listo
+                let attempts = 0;
+                while(!window.firebaseFirestore && attempts < 20) {
+                    await new Promise(r => setTimeout(r, 200));
+                    attempts++;
+                }
+
+                if(!window.firebaseFirestore) throw new Error("No se pudo conectar con el servicio de datos (Red LAN saturada o lenta).");
+
                 const { collection, addDoc } = window.firebaseFirestore;
                 const db = window.firebaseInstance?.db;
+                if(!db) throw new Error("Base de datos no disponible.");
                 
-                // Usamos Date.now() numérico para evitar errores de tipo Timestamp en filtros
+                // 4. Ejecutar Transmisión
                 await addDoc(collection(db, "orbita_broadcast"), {
                     title: title.toUpperCase(),
                     message: message,
                     type: type,
                     target: target,
-                    senderName: API_USER.displayName,
-                    senderEmail: API_USER.email,
+                    senderName: currentUser.displayName || currentUser.email,
+                    senderEmail: currentUser.email,
                     createdAt: Date.now(), 
                     active: true
                 });
 
-                console.log("✅ [ÓRBITA-BROADCAST] Comunicación emitida al canal Firestore");
-                alert("🚀 Comunicación emitida con éxito.");
-                document.getElementById('notifTitle').value = '';
-                document.getElementById('notifMessage').value = '';
+                console.log("✅ [ÓRBITA-BROADCAST] Comunicación finalizada con éxito.");
+                alert("🚀 COMUNICADO EMITIDO. Los usuarios conectados recibirán el aviso ahora mismo.");
+                
+                titleEl.value = '';
+                messageEl.value = '';
                 resetAudience();
             } catch(e) {
-                console.error("❌ Error en transmisión:", e);
-                alert("❌ Fallo crítico al transmitir: " + (e.message || e));
+                console.error("❌ Fallo en Broadcast:", e);
+                alert("❌ ERROR CRÍTICO: " + (e.message || "Fallo de conexión con la red de datos. Revisa el cable de red o internet."));
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="zap" class="w-4"></i> Emitir Notificación`;

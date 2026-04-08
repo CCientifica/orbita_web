@@ -14,15 +14,18 @@
                 <!-- Compliance Banner -->
                 <div id="complianceBar" class="compliance-banner" style="display:none">
                     <div class="flex items-center gap-4 relative z-10">
-                        <div id="compIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <div id="compIcon"
+                            class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                             <span class="material-icons">event_available</span>
                         </div>
                         <div>
-                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de Cumplimiento Logístico</p>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de
+                                Cumplimiento Logístico</p>
                             <h4 id="compMsg" class="text-xs font-black italic">--</h4>
                         </div>
                     </div>
-                    <div id="compBadge" class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
+                    <div id="compBadge"
+                        class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
                         Sincronizado
                     </div>
                 </div>
@@ -31,25 +34,32 @@
                 <div class="flex flex-col xl:flex-row gap-6 items-start">
                     <div class="flex-1 space-y-3">
                         <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-purple-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Smart Channels</span>
+                            <span
+                                class="px-3 py-1 bg-purple-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Smart
+                                Channels</span>
                             <h1 class="text-3xl font-black text-slate-900 tracking-tight">Eco Digital — Canales</h1>
                         </div>
                         <p class="text-slate-500 font-bold text-xs max-w-xl leading-relaxed italic">
-                            Monitor de adopción de canales digitales. Análisis de migración desde Hosvital manual hacia Aigenda, ISA BOT y Staff Digital por especialidades.
+                            Monitor de adopción de canales digitales. Análisis de migración desde Hosvital manual hacia
+                            Aigenda, ISA BOT y Staff Digital por especialidades.
                         </p>
                     </div>
 
-                    <div class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-purple-100/50 border-2 overflow-hidden">
+                    <div
+                        class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-purple-100/50 border-2 overflow-hidden">
                         <div class="flex justify-between items-start mb-2">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Adopción Digital Trimestral</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Adopción Digital
+                                Trimestral</p>
                             <span class="material-icons text-purple-500">trending_up</span>
                         </div>
                         <div class="relative h-[200px] w-full bg-slate-50/50 rounded-2xl p-2">
-                            <h3 id="predictionScore" class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
+                            <h3 id="predictionScore"
+                                class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
                             <canvas id="trendChart"></canvas>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span id="predictionLabel" class="text-[9px] font-black text-purple-600 bg-purple-50 px-3 py-1 rounded-full uppercase tracking-widest">Analizando...</span>
+                            <span id="predictionLabel"
+                                class="text-[9px] font-black text-purple-600 bg-purple-50 px-3 py-1 rounded-full uppercase tracking-widest">Analizando...</span>
                             <span class="text-[9px] text-slate-400 font-bold italic">Source: Cloud Metrics</span>
                         </div>
                     </div>
@@ -60,13 +70,17 @@
                     <div class="glass-card p-2! rounded-2xl! flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-purple-500 text-sm">event</span>
-                            <input id="monthInput" type="month" class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
+                            <input id="monthInput" type="month"
+                                class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
                         </div>
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-blue-500 text-sm">add_task</span>
-                            <input id="newSpecInput" type="text" placeholder="Nueva Especialidad" class="bg-transparent font-black outline-none text-[11px] w-36" />
+                            <input id="newSpecInput" type="text" placeholder="Nueva Especialidad"
+                                class="bg-transparent font-black outline-none text-[11px] w-36" />
                         </div>
-                        <button id="addSpecBtn" class="bg-blue-600 text-white rounded-xl px-3 py-1.5 font-black text-[9px] uppercase hover:bg-blue-700 transition-all">+ Añadir</button>
+                        <button id="addSpecBtn"
+                            class="bg-blue-600 text-white rounded-xl px-3 py-1.5 font-black text-[9px] uppercase hover:bg-blue-700 transition-all">+
+                            Añadir</button>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -84,9 +98,12 @@
                     </div>
 
                     <div class="glass-card p-2! rounded-2xl! flex items-center gap-2 ml-auto overflow-hidden">
-                        <input id="copyFromInput" type="month" class="bg-transparent font-black outline-none text-[10px] w-24 px-2" />
-                        <button id="loadFromBtn" class="bg-slate-100 hover:bg-white text-slate-600 rounded-lg px-3 py-1.5 font-black text-[9px] uppercase border border-slate-200">Cargar</button>
-                        <button id="quickPrevBtn" class="bg-slate-800 text-white rounded-lg px-3 py-1.5 font-black text-[9px] uppercase hover:bg-black">Anterior</button>
+                        <input id="copyFromInput" type="month"
+                            class="bg-transparent font-black outline-none text-[10px] w-24 px-2" />
+                        <button id="loadFromBtn"
+                            class="bg-slate-100 hover:bg-white text-slate-600 rounded-lg px-3 py-1.5 font-black text-[9px] uppercase border border-slate-200">Cargar</button>
+                        <button id="quickPrevBtn"
+                            class="bg-slate-800 text-white rounded-lg px-3 py-1.5 font-black text-[9px] uppercase hover:bg-black">Anterior</button>
                     </div>
                 </div>
 
@@ -111,10 +128,12 @@
                         <h2 id="pctHosvital" class="text-2xl font-black text-slate-800 tracking-tighter">0%</h2>
                     </div>
                     <div class="stat-card p-5! bg-slate-900 text-white col-span-2">
-                        <p class="text-[9px] font-black text-purple-300 uppercase tracking-widest mb-2">Canal Dominante</p>
+                        <p class="text-[9px] font-black text-purple-300 uppercase tracking-widest mb-2">Canal Dominante
+                        </p>
                         <h2 id="dominante" class="text-xl font-black text-white truncate">—</h2>
                         <div class="mt-2 text-[9px] font-black text-emerald-400 uppercase flex items-center gap-1">
-                            <span class="material-icons text-[10px]">auto_graph</span> Uso Global: <span id="usoDigital">0%</span>
+                            <span class="material-icons text-[10px]">auto_graph</span> Uso Global: <span
+                                id="usoDigital">0%</span>
                         </div>
                     </div>
                 </div>
@@ -122,8 +141,10 @@
                 <!-- TABLA DE ESPECIALIDADES -->
                 <div class="glass-card shadow-2xl p-0! overflow-hidden border border-slate-100">
                     <div class="px-6 py-5 bg-slate-50/50 flex items-center justify-between border-b border-slate-200">
-                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Sincronización por Especialidad</h2>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consolidado Mensual</span>
+                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Sincronización por Especialidad
+                        </h2>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consolidado
+                            Mensual</span>
                     </div>
 
                     <div class="p-6 overflow-x-auto custom-scrollbar">
@@ -143,7 +164,8 @@
                             <tbody id="tbody"></tbody>
                             <tfoot class="bg-slate-900 text-white font-black">
                                 <tr>
-                                    <td class="px-6 py-4 text-[9px] uppercase tracking-widest opacity-60">Consolidado Mensual</td>
+                                    <td class="px-6 py-4 text-[9px] uppercase tracking-widest opacity-60">Consolidado
+                                        Mensual</td>
                                     <td class="num" id="tAigenda">0</td>
                                     <td class="num" id="tIsa">0</td>
                                     <td class="num" id="tStaff">0</td>
@@ -160,11 +182,13 @@
                 <!-- INSIGHTS AVANZADOS -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
                     <div class="glass-card border-l-8 border-l-blue-600 p-6!">
-                        <h4 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4">⭐ Top Digital Adoption</h4>
+                        <h4 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4">⭐ Top Digital
+                            Adoption</h4>
                         <ul id="topList" class="space-y-2 text-xs font-bold text-slate-700"></ul>
                     </div>
                     <div class="glass-card border-l-8 border-l-amber-500 p-6!">
-                        <h4 class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-4">⚠️ Manual Bottlenecks (Hosvital High)</h4>
+                        <h4 class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-4">⚠️ Manual
+                            Bottlenecks (Hosvital High)</h4>
                         <ul id="lowList" class="space-y-2 text-xs font-bold text-slate-700"></ul>
                     </div>
                 </div>
@@ -178,22 +202,22 @@
     <div th:replace="~{layout :: auth-scripts}"></div>
 
     <script type="module" th:inline="none">
-    let isModuleInitialized = false;
+        let isModuleInitialized = false;
 
-    const initDigitalAnalytics = async () => {
-        if (isModuleInitialized) return;
-        
-        let retry = 0;
-        while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
-            await new Promise(r => setTimeout(r, 100));
-            retry++;
-        }
+        const initDigitalAnalytics = async () => {
+            if (isModuleInitialized) return;
 
-        if (!window.firebaseInstance || !window.firebaseFirestore) return;
-        isModuleInitialized = true;
+            let retry = 0;
+            while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                retry++;
+            }
+
+            if (!window.firebaseInstance || !window.firebaseFirestore) return;
+            isModuleInitialized = true;
 
             const { auth, db } = window.firebaseInstance;
-            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
+            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit, writeBatch, deleteDoc } = window.firebaseFirestore;
 
             const ensureAuth = async () => {
                 // Autenticación gestionada institucionalmente
@@ -204,11 +228,62 @@
             const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
             const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
             const getEl = id => document.getElementById(id);
+            const pdfSafe = (str = "") => String(str).replaceAll("≤", "<=").replaceAll("≥", ">=").replaceAll("•", "-").replaceAll("—", "-").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+
+            const currentKey = () => {
+                const month = (getEl("monthInput").value || "").trim();
+                if (!/^\d{4}-\d{2}$/.test(month)) throw new Error("Mes inválido");
+                return { month };
+            };
+
+            const downloadBlob = (name, blob) => {
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+                document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+            };
+
+            const ensureXLSX = async () => {
+                if (window.XLSX && window.XLSX.utils) return true;
+                return new Promise((resolve) => {
+                    let attempts = 0;
+                    const interval = setInterval(() => {
+                        attempts++;
+                        if (window.XLSX && window.XLSX.utils) {
+                            clearInterval(interval);
+                            resolve(true);
+                        }
+                        if (attempts > 50) {
+                            clearInterval(interval);
+                            resolve(false);
+                        }
+                    }, 100);
+                });
+            };
+
+            const exportToFile = async (rows, filenameBase) => {
+                const headers = ["Periodo", "Especialidad", "Aigenda", "ISA_BOT", "Staff", "Hosvital", "Total", "%_Digital"];
+                const xlsxOK = await ensureXLSX();
+                if (xlsxOK) {
+                    try {
+                        const XL = window.XLSX;
+                        const dataAoA = [headers, ...rows.map(r => headers.map(h => r[h]))];
+                        const ws = XL.utils.aoa_to_sheet(dataAoA);
+                        ws["!cols"] = headers.map(h => ({ wch: Math.max(12, String(h).length + 2) }));
+                        const wb = XL.utils.book_new(); XL.utils.book_append_sheet(wb, ws, "EcoDigital");
+                        XL.writeFile(wb, `${filenameBase}.xlsx`, { bookType: "xlsx" });
+                        return;
+                    } catch (e) { console.error("XLSX fail:", e); }
+                }
+                const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+                const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => esc(r[h])).join(','))).join('\r\n');
+                downloadBlob(`${filenameBase}.csv`, new Blob([csv], { type: "text/csv;charset=utf-8" }));
+            };
+
+            const removedThisSession = new Set();
 
             const statusEl = getEl("status");
-            const msg = (t, type) => { 
-                if(!statusEl) return;
-                statusEl.textContent = t; 
+            const msg = (t, type) => {
+                if (!statusEl) return;
+                statusEl.textContent = t;
                 statusEl.className = `status-msg ${type === 'err' ? 'err' : ''}`;
                 statusEl.style.display = "block";
                 setTimeout(() => statusEl.style.display = "none", 4000);
@@ -244,7 +319,7 @@
             const defaultMonth = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
             getEl("monthInput").value = defaultMonth;
 
-            function addRow(spec="", a=0, i=0, s=0, h=0) {
+            function addRow(spec = "", a = 0, i = 0, s = 0, h = 0) {
                 const tr = document.createElement("tr");
                 tr.setAttribute("data-spec", spec);
                 tr.innerHTML = `
@@ -256,7 +331,7 @@
                     <td class="text-right text-xs opacity-50" data-k="total">0</td>
                     <td class="text-right font-black text-[14px]" data-k="pdig">0%</td>
                     <td class="text-center">
-                        <button class="text-rose-400 hover:text-rose-600" onclick="this.closest('tr').remove(); updateSummary();">
+                        <button class="text-rose-400 hover:text-rose-600" onclick="const s=this.closest('tr').getAttribute('data-spec'); if(s && confirm('¿Eliminar '+s+'?')){ window.removedThisSession.add(s); this.closest('tr').remove(); window.updateSummary(); }">
                             <span class="material-icons text-sm">delete_outline</span>
                         </button>
                     </td>
@@ -264,6 +339,7 @@
                 tr.querySelectorAll('input').forEach(inp => inp.addEventListener("input", updateSummary));
                 getEl("tbody").appendChild(tr);
             }
+            window.removedThisSession = removedThisSession;
 
             const loadMonth = async (m) => {
                 await ensureAuth();
@@ -289,7 +365,7 @@
                         return;
                     }
                     if (!confirm("Se copiarán las especialidades de " + m + ". Se borrará lo actual. ¿Continuar?")) return;
-                    
+
                     getEl("tbody").innerHTML = "";
                     snap.forEach(d => {
                         const x = d.data();
@@ -310,26 +386,26 @@
                     const tot = a + i + s + h, pDig = tot ? (a + i + s) / tot : 0;
                     tr.querySelector('[data-k="total"]').textContent = tot;
                     tr.querySelector('[data-k="pdig"]').textContent = (pDig * 100).toFixed(1) + "%";
-                    const item = `<li class="flex justify-between border-b border-slate-100 pb-1"><span>${spec}</span> <span class="font-black text-blue-600">${(pDig*100).toFixed(0)}%</span></li>`;
-                    if(pDig > 0.8) topList.insertAdjacentHTML("beforeend", item);
-                    else if(tot > 0 && pDig < 0.4) lowList.insertAdjacentHTML("beforeend", item);
+                    const item = `<li class="flex justify-between border-b border-slate-100 pb-1"><span>${spec}</span> <span class="font-black text-blue-600">${(pDig * 100).toFixed(0)}%</span></li>`;
+                    if (pDig > 0.8) topList.insertAdjacentHTML("beforeend", item);
+                    else if (tot > 0 && pDig < 0.4) lowList.insertAdjacentHTML("beforeend", item);
                     A += a; I += i; S += s; H += h;
                 });
                 const T = A + I + S + H, globalUso = T ? (A + I + S) / T : 0;
-                getEl("tAigenda").textContent = A; getEl("pctAigenda").textContent = T ? (A/T*100).toFixed(1)+"%" : "0%";
-                getEl("tIsa").textContent = I; getEl("pctIsa").textContent = T ? (I/T*100).toFixed(1)+"%" : "0%";
-                getEl("tStaff").textContent = S; getEl("pctStaff").textContent = T ? (S/T*100).toFixed(1)+"%" : "0%";
-                getEl("tHosvital").textContent = H; getEl("pctHosvital").textContent = T ? (H/T*100).toFixed(1)+"%" : "0%";
+                getEl("tAigenda").textContent = A; getEl("pctAigenda").textContent = T ? (A / T * 100).toFixed(1) + "%" : "0%";
+                getEl("tIsa").textContent = I; getEl("pctIsa").textContent = T ? (I / T * 100).toFixed(1) + "%" : "0%";
+                getEl("tStaff").textContent = S; getEl("pctStaff").textContent = T ? (S / T * 100).toFixed(1) + "%" : "0%";
+                getEl("tHosvital").textContent = H; getEl("pctHosvital").textContent = T ? (H / T * 100).toFixed(1) + "%" : "0%";
                 getEl("tTotal").textContent = T; getEl("tDigital").textContent = (globalUso * 100).toFixed(1) + "%";
                 getEl("usoDigital").textContent = (globalUso * 100).toFixed(1) + "%";
-                const pairs = [ ["Aigenda", A], ["ISA", I], ["Staff", S], ["Hosvital", H] ].sort((a,b)=>b[1]-a[1]);
+                const pairs = [["Aigenda", A], ["ISA", I], ["Staff", S], ["Hosvital", H]].sort((a, b) => b[1] - a[1]);
                 getEl("dominante").textContent = T ? `${pairs[0][0]} (${pairs[0][1]})` : "—";
                 updateChart([globalUso * 100 * 0.7, globalUso * 100 * 0.4, globalUso * 100 * 0.8, globalUso * 100]);
             }
             window.updateSummary = updateSummary;
 
             getEl("monthInput").addEventListener("change", () => loadMonth(getEl("monthInput").value));
-            
+
             getEl("quickPrevBtn").addEventListener("click", () => {
                 const currentM = getEl("monthInput").value;
                 if (!currentM) return;
@@ -346,30 +422,151 @@
             getEl("addSpecBtn").addEventListener("click", () => {
                 const name = getEl("newSpecInput").value.trim();
                 const exists = [...getEl("tbody").querySelectorAll("tr")].some(tr => tr.getAttribute("data-spec")?.toLowerCase() === name.toLowerCase());
-                if(name && !exists) { addRow(name); getEl("newSpecInput").value = ""; updateSummary(); }
-                else if(exists) alert("La especialidad ya está en la lista.");
+                if (name && !exists) { addRow(name); getEl("newSpecInput").value = ""; updateSummary(); }
+                else if (exists) alert("La especialidad ya está en la lista.");
+            });
+
+            getEl("xlBtn").addEventListener("click", async () => {
+                const k = currentKey();
+                const rows = [...getEl("tbody").querySelectorAll("tr[data-spec]")].map(tr => {
+                    const spec = tr.getAttribute("data-spec");
+                    const ins = tr.querySelectorAll('input');
+                    const a = toInt(ins[0].value), i = toInt(ins[1].value), s = toInt(ins[2].value), h = toInt(ins[3].value);
+                    const tot = a + i + s + h;
+                    return {
+                        Periodo: k.month, Especialidad: spec, Aigenda: a, ISA_BOT: i, Staff: s, Hosvital: h, Total: tot,
+                        "%_Digital": tot ? ((a + i + s) / tot * 100).toFixed(1) + "%" : "0%"
+                    };
+                });
+                await exportToFile(rows, `EcoDigital_${k.month}`);
+            });
+
+            getEl("pdfBtn").addEventListener("click", async () => {
+                const k = currentKey();
+                const { jsPDF } = window.jspdf;
+                const docPdf = new jsPDF({ unit: 'pt', format: 'a4' });
+                const M = 40; let y = 40;
+                const pageW = docPdf.internal.pageSize.getWidth();
+                const pageH = docPdf.internal.pageSize.getHeight();
+                const maxW = pageW - M * 2;
+                const cleanText = (t) => pdfSafe(t).replace(/[^\x00-\x7F]/g, "").trim();
+
+                try {
+                    const img = new Image(); img.src = '/assets/Logo_Clinica.png'; await img.decode();
+                    const logoH = 60; const W = logoH * (img.width / img.height || 3);
+                    docPdf.addImage(img, 'PNG', M, y, W, logoH);
+                } catch { }
+
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(20); docPdf.setTextColor(30, 41, 59);
+                docPdf.text('NUEVA CLÍNICA SAGRADO CORAZÓN', pageW - M, y + 25, { align: 'right' });
+                docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(10); docPdf.setTextColor(100, 116, 139);
+                docPdf.text('NIT 900408220 - 1', pageW - M, y + 40, { align: 'right' });
+                y += 80; docPdf.setDrawColor(226, 232, 240); docPdf.line(M, y, pageW - M, y); y += 30;
+
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(16); docPdf.setTextColor(30, 41, 59);
+                docPdf.text(cleanText(`REPORTE DE ADOPCIÓN ECO DIGITAL`), M, y); y += 20;
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(11); docPdf.setTextColor(139, 92, 246);
+                docPdf.text(cleanText(`Periodo: ${k.month}`), M, y); y += 30;
+
+                const addStyledBlock = (title, listId, color) => {
+                    const items = [...document.querySelectorAll(`#${listId} li span:first-child`)].map(li => cleanText(li.textContent));
+                    if (!items.length) return;
+                    if (y > pageH - 100) { docPdf.addPage(); y = 60; }
+                    docPdf.setFillColor(color[0], color[1], color[2], 0.1);
+                    docPdf.rect(M, y - 12, maxW, 18, 'F');
+                    docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10); docPdf.setTextColor(color[0], color[1], color[2]);
+                    docPdf.text(title.toUpperCase(), M + 5, y); y += 18;
+                    docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(9); docPdf.setTextColor(71, 85, 105);
+                    items.forEach(t => {
+                        if (y > pageH - 40) { docPdf.addPage(); y = 60; }
+                        docPdf.text('• ' + t, M + 10, y, { maxWidth: maxW - 10 }); y += 13;
+                    });
+                    y += 10;
+                };
+
+                addStyledBlock('Especialidades con mayor Adopción Digital', 'topList', [139, 92, 246]);
+                addStyledBlock('Especialidades Manuales (Hosvital > 60%)', 'lowList', [217, 119, 6]);
+
+                if (y > pageH - 150) { docPdf.addPage(); y = 60; }
+
+                const head = [['Especialidad', 'Aigenda', 'ISA BOT', 'Staff', 'Hosvital', 'Total', '% Dig']];
+                const rows = [...getEl("tbody").querySelectorAll("tr[data-spec]")].map(tr => {
+                    const spec = tr.getAttribute("data-spec");
+                    const ins = tr.querySelectorAll('input');
+                    const a = toInt(ins[0].value), i = toInt(ins[1].value), s = toInt(ins[2].value), h = toInt(ins[3].value);
+                    const tot = a + i + s + h;
+                    const p = tot ? ((a + i + s) / tot * 100).toFixed(1) + "%" : "0%";
+                    return [cleanText(spec), a, i, s, h, tot, p];
+                });
+
+                docPdf.autoTable({
+                    startY: y, head, body: rows, theme: 'grid',
+                    styles: { font: 'helvetica', fontSize: 8, cellPadding: 4, lineColor: [226, 232, 240], lineWidth: 0.1 },
+                    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'center' } },
+                    alternateRowStyles: { fillColor: [248, 250, 252] }
+                });
+
+                let yf = docPdf.lastAutoTable.finalY + 30;
+                if (yf > pageH - 80) { docPdf.addPage(); yf = 60; }
+                docPdf.setFillColor(241, 245, 249); docPdf.rect(M, yf, maxW, 40, 'F');
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10); docPdf.setTextColor(30, 41, 59);
+                const A = getEl('tAigenda').textContent, I = getEl('tIsa').textContent, S = getEl('tStaff').textContent, H = getEl('tHosvital').textContent, U = getEl('usoDigital').textContent;
+                docPdf.text(`GLOBAL: Aigenda: ${A} | ISA: ${I} | Staff: ${S} | Hosvital: ${H} | Adopción: ${U}`, pageW / 2, yf + 25, { align: 'center' });
+
+                docPdf.save(`EcoDigital_Reporte_${k.month}.pdf`);
+                msg("PDF Generado", "success");
             });
 
             getEl("saveBtn").addEventListener("click", async () => {
                 await ensureAuth();
-                const month = getEl("monthInput").value;
+                const btn = getEl("saveBtn");
+                const originalHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="material-icons animate-spin text-sm">sync</span> Guardando...';
+
+                const { month } = currentKey();
+                const batch = writeBatch(db);
+                let count = 0;
+
                 try {
-                    for (const tr of [...getEl("tbody").querySelectorAll("tr[data-spec]")]) {
+                    const rows = [...getEl("tbody").querySelectorAll("tr[data-spec]")];
+                    for (const tr of rows) {
                         const spec = tr.getAttribute("data-spec"), ins = tr.querySelectorAll('input');
-                        await setDoc(doc(db, "ecosistema_canales_mensual", `${month}_${slug(spec)}`), {
-                            month, especialidad: spec, aigenda: toInt(ins[0].value), isa: toInt(ins[1].value), staff: toInt(ins[2].value), hosvital: toInt(ins[3].value), updatedAt: serverTimestamp()
-                        }, {merge:true});
+                        const a = toInt(ins[0].value), i = toInt(ins[1].value), s = toInt(ins[2].value), h = toInt(ins[3].value);
+                        const ref = doc(db, "ecosistema_canales_mensual", `${month}_${slug(spec)}`);
+                        batch.set(ref, {
+                            month, especialidad: spec, aigenda: a, isa: i, staff: s, hosvital: h,
+                            total: a + i + s + h, digital: a + i + s, updatedAt: serverTimestamp()
+                        }, { merge: true });
+                        count++;
                     }
-                    alert("Guardado completo.");
-                } catch(e) { msg("Error al guardar", "err"); }
+
+                    for (const s of removedThisSession) {
+                        batch.delete(doc(db, "ecosistema_canales_mensual", `${month}_${slug(s)}`));
+                    }
+
+                    if (count > 0 || removedThisSession.size > 0) {
+                        await batch.commit();
+                        removedThisSession.clear();
+                        msg(`Mes ${month} sincronizado con éxito.`, "success");
+                        alert("Guardado completo.");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    msg("Error al guardar", "err");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
             });
 
-            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { 
-                if (u) { 
-                    loadMonth(defaultMonth); 
-                    updateCompliance(); 
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => {
+                if (u) {
+                    loadMonth(defaultMonth);
+                    updateCompliance();
                     updateChart();
-                } 
+                }
             });
 
             // Compliance Engine ISA
@@ -377,28 +574,28 @@
                 await ensureAuth();
                 const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
                 const now = new Date();
-                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
-                const mStr = `${dPrev.getFullYear()}-${pad(dPrev.getMonth()+1)}`;
+                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth() - 1);
+                const mStr = `${dPrev.getFullYear()}-${pad(dPrev.getMonth() + 1)}`;
                 let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
-                while(curr <= now){
+                while (curr <= now) {
                     const day = curr.getDay(), iso = curr.toISOString().split('T')[0];
-                    if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
-                    curr.setDate(curr.getDate()+1);
+                    if (day !== 0 && day !== 6 && !HOLIDAYS.includes(iso)) workDay++;
+                    curr.setDate(curr.getDate() + 1);
                 }
                 const snap = await getDocs(query(collection(db, "ecosistema_canales_mensual"), where("month", "==", mStr), limit(1)));
                 const bar = getEl("complianceBar"), msgText = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
-                if(!bar) return;
+                if (!bar) return;
                 bar.style.display = "flex";
-                if(snap.size > 0){
-                    msgText.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+                if (snap.size > 0) {
+                    msgText.textContent = `Reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })} cargado exitosamente.`;
                     badge.textContent = "Sincronizado";
                 } else {
                     const remains = 5 - workDay;
-                    if(remains >= 0){
-                        msgText.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                    if (remains >= 0) {
+                        msgText.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })}.`;
                         badge.textContent = "EN PLAZO";
                     } else {
-                        msgText.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                        msgText.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })} fuera de plazo institucional.`;
                         badge.textContent = "VENCIDO";
                         badge.className = "px-4 py-1.5 bg-rose-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10";
                         icon.className = "w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";

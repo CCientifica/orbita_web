@@ -435,7 +435,7 @@
                 "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior"
         ];
 
-        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamiliares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte"];
+        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamilares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte"];
 
         const VARS_CANCER = ["VAR1_PrimerNombreUsuario", "VAR2_SegundoNombreUsuario", "VAR3_PrimerApellidoUsuario", "VAR4_SegundoApellidoUsuario", "VAR5_TipoIdentificacionUsuario", "VAR6_NumeroIdentificacionUsuario", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_RegimenAfiliacionSGSSS", "VAR11_idEPS", "VAR12_CodigoPertenenciaEtnica", "VAR13_GrupoPoblacional", "VAR14_MunicipioResidencia", "VAR15_NumeroTelefonicopaciente", "VAR16_FechaAfiliacionEPSRegistra", "VAR17_NombreNeoplasia", "VAR18_FechaDx", "VAR19_FechaNotaRemisionMedico", "VAR20_FechaIngresoInstitucionRealizo", "VAR21_TipoEstudioRealizoDiagnostico", "VAR22_MotivoUsuarioNOTuvoDiagnostico", "VAR23_FechaRecoleccionMuestraEstudioHistopatologico", "VAR24_FechaInformHistopatologicoValido", "VAR25_CodigoValidoHabilitacionIPS", "VAR26_FechaPrimeraConsultaMedicoTratante", "VAR27_HistologiaTumorMuestraBiopsia", "VAR28_GradoDiferenciacionTumorSolidoMaligno", "VAR29_SiEsTumorSolido", "VAR30_FechaRealizoEstaEstadificacion", "VAR31_ParaCancerMama", "VAR32_ParaCancerMamaFechaRealizacion", "VAR33_ParaCancerMamaResultadoPrimera", "VAR34_ParaCancerColorrectalEstadificacionDukes", "VAR35_FechaEstadificacionDukes", "VAR36_EstadificacionLinfomaClinicaHodgkin", "VAR37_CancerProstataValorClasificacionGleason", "VAR38_ClasificacionRiesgoLeucemiasLinfomas", "VAR39_FechaClasificacionRiesgo", "VAR40_ObjetivoTratamientoMedicoInic", "VAR41_ObjetivoIntervencionMedicaPeriodoReporte", "VAR42_TieneAntecedenteOtroCancerPrimario", "VAR43_FechaDiagnosticoOtroCancerPrimario", "VAR44_TipoCancerAntecedente", "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR46_FaseQuimioterapiaRecibioUsuarioCorte", "VAR46_1_UsuarioRecibioCorteQuimioterapiaPrefase", "VAR46_2_UsuarioRecibioCorteFaseQuimioterapiaInduccion", "VAR46_3_UsuarioRecibioCorteFaseQuimioterapIntensificacion", "VAR46_4_UsuarioRecibioCorteFaseQuimioterapiaConsolidacion", "VAR46_5_UsuarioRecibioCorteFaseQuimioterapiaReinduccion", "VAR46_6_UsuarioRecibiCorteFaseQuimioterapiaMantenimiento", "VAR46_7_UsuarioRecibioCorteFaseQuimioterapiaMantenimientoL", "VAR46_8_UsuarioRecibiCorteOtraFaseQuimioterapia", "VAR47_NumeroCiclosIniciadosPeriodoReporteActual", "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico", "VAR49_FechaInicioPrimerCicloQuimioterapiaCorte", "VAR50_NumeroIPSPrimerCicloCorte", "VAR51_CodigoIPS1PrimerCicloCorte", "VAR52_CodigoIPS2PrimerCicloCorte", "VAR53_MedicamentosAntineoplasicosPrimerCicloCorte", "VAR53_1_Medicamentoadm1PrimerEsquema", "VAR53_2_Medicamentoadm2PrimerEsquema", "VAR53_3_Medicamentoadm3PrimerEsquema", "VAR53_4_Medicamentoadm4PrimerEsquema", "VAR53_5_Medicamentoadm5PrimerEsquema", "VAR53_6_Medicamentoadm6PrimerEsquema", "VAR53_7_Medicamentoadm7PrimerEsquema", "VAR53_8_Medicamentoadm8PrimerEsquema", "VAR53_9_Medicamentoadm9PrimerEsquema", "VAR54_MedicamentoNoPOS1AdministradoUsuarioPrimerCiclo", "VAR55_MedicamentoNoPOS2AdministradoUsuarioPrimerCiclo", "VAR56_MedicamentoNoPOS3AdministradoUsuarioPrimerCiclo", "VAR57_RecibioQuimioterapiaIntratecalPrimerCiclo", "VAR58_FechaFinalizacionPrimerCicloCorte", "VAR59_CaracteristicasActualesPrimerCicloCorte", "VAR60_MotivoFinalizacionPrimerCiclo", "VAR61_UbicacionTemporalUltimoCicloCorteOncologico", "VAR62_FechaInicioUltimoCicloQuimioterapiaCorte", "VAR63_NumeroIPSSuministranUltimoCicloCorte", "VAR64_CodigoIPS1SuministraUltimoCicloReporte", "VAR65_CodigoIPS2SuministraUltimoCicloReporte", "VAR66_MedicamentosAntineoplasicosEspecialistaCancer", "VAR66_1_Medicamentoadm1UltimoEsquema", "VAR66_2_Medicamentoadm2UltimoEsquema", "VAR66_3_Medicamentoadm3UltimoEsquema", "VAR66_4_Medicamentoadm4UltimoEsquema", "VAR66_5_Medicamentoadm5UltimoEsquema", "VAR66_6_Medicamentoadm6UltimoEsquema", "VAR66_7_Medicamentoadm7UltimoEsquema", "VAR66_8_Medicamentoadm8UltimoEsquema", "VAR66_9_Medicamentoadm9UltimoEsquema", "VAR67_MedicamentoNoPOS1AdministradoUsuarioUltimoCiclo", "VAR68_MedicamentoNoPOS2AdministradoUsuarioUltimoCiclo", "VAR69_MedicamentoNoPOS3AdministradoUsuarioUltimoCiclo", "VAR70_RecibioQuimioterapiaIntratecalUltimoCicloCorte", "VAR71_FechaFinalizacionCicloUltimo", "VAR72_CaracteristicasActualesUltimoCicloCorte", "VAR73_MotivoFinalizacionPrematuraUltimoCiclo", "VAR74_SometidoUsuarioCirugiasCurativasPaliativas", "VAR75_NumeroCirugiasSometidoUsuarioPeriodoReporteActual", "VAR76_FechaRealizacionPrimeraCirugiaReporte", "VAR77_CodigoIPSRealizoPrimeraCirugiaCorte", "VAR78_CodigoPrimeraCirugia", "VAR79_UbicacionTemporalPrimeraCirugiaOncologico", "VAR80_FechaRealizacionUltimoProcedimientoQuirurgico", "VAR81_MotivoHaberRealizadoUltimaIntervencionQuirurgica", "VAR82_CodigoIPSRealizaUltimoProcedimientosQuirugicos", "VAR83_CodigoUltimaCirugia", "VAR84_UbicacionTemporalUltimaCirugiaOncologico", "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia", "VAR86_RecibioUsuarioAlgunTipoRadioterapiaCorteActual", "VAR87_NumeroEsquemasRadioterapiaSuministradosCorteActual", "VAR88_FechaInicioPrimerUnicoEsquemaRadioterapia", "VAR89_UbicacionTemporalPrimerUnicoEsquemaRadioterapia", "VAR90_TipoRadioterapiaAplicadaPrimerUnicoEsquema", "VAR91_NumeroIPSSuministranPrimerUnicoEsquemaRadioterapia", "VAR92_CodigoIPS1SuministraRadioterapia", "VAR93_CodigoIPS2SuministraRadioterapia", "VAR94_FechaFinalizacionPrimerUnicoEsquemaRadioterapia", "VAR95_CaracteristicasActualesPrimerEsquemaRadioterapia", "VAR96_MotivoFinalizacionPrimerEsquemaRadioterapia", "VAR97_FechaInicioUltimoEsquemaRadioterapia", "VAR98_UbicacionTemporalUltimoEsquemaRadioterapia", "VAR99_TipoRadioterapiaAplicadaUltimoEsquemaRadioterapia", "VAR100_NumeroIPSSuministranUltimoEsquemaRadioterapia", "VAR101_CodigoIPS1SuministraRadioterapia1", "VAR102_CodigoIPS2SuministraRadioterapia1", "VAR103_FechaFinalizacionUltimoEsquemaRadioterapia", "VAR104_CaracteristicasActualesUltimoEsquemaRadioterapia", "VAR105_MotivoFinalizacionUltimoEsquemaRadioTerapia", "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras", "VAR107_TipoTrasplanteRecibido", "VAR108_UbicacionTemporalTrasplanteOncologico", "VAR109_FechaTrasplante", "VAR110_CodigoIPSRealizoTrasplante", "VAR111_UsuarioRecibioCirugiaReconstructiva", "VAR112_FechaCirugia", "VAR113_CodigoIPSRealizoCirugiaReconstructiva", "VAR114_UsuarioValoradoConsultaProcedimientoPaliativo", "VAR114_1_UsuarioRecibioConsultaProcedimientoCuidadoPaliativ", "VAR114_2_UsuarioRecibioConsultaCuidadoPaliativo", "VAR114_3_UsuarioRecibioConsultaPaliativoEspecialista", "VAR114_4_UsuarioRecibioConsultaPaliativoGeneral", "VAR114_5_UsuarioRecibioConsultaPaliativoTrabajoSocial", "VAR114_6_UsuarioRecibioConsultaPaliativoNoEspecializado", "VAR115_FechaPrimeraConsultaPaliativoCorte", "VAR116_CodigoIPSRecibioPrimeraValoracionPaliativo", "VAR117_HaSidoValoradoUsuarioPorServicioPsiquiatria", "VAR118_FechaPrimeraConsultaServicioPsiquiatria", "VAR119_CodigoIPSRecibioPrimeraValoracionPsiquiatria", "VAR120_FueValoradoUsuarioPorProfesionalNutricion", "VAR121_FechaConsultaInicialNutricionCorte", "VAR122_CodigoIPSRecibioValoracionNutricion", "VAR123_UsuarioRecibioSoporteNutricional", "VAR124_UsuarioRecibidoTerapiasComplementariasRehabilitaci", "VAR125_TipoTratamientoRecibiendoUsuarioFechaCorte", "VAR126_ResultadoFinalManejoOncologicoCorte", "VAR127_EstadoVitalFinalizarCorte", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior", "VAR129_NovedadClinicaUsuarioFechaCorte", "VAR130_FechaDesafiliacionEPS", "VAR131_FechaMuerte", "VAR132_CausaMuerte", "VAR133_SerialBDUA", "VAR134_V134FechaCorte"];
 
@@ -564,47 +564,53 @@
 
 
         // 5) Saneo general (tu estándar) + defaults + formato de fecha
-        window.applyFieldRules = window.applyFieldRules || function (keyStore, rawValue) {
+        window.applyFieldRules = function (keyStore, rawValue) {
+                const key = String(keyStore || "").replace(/\s+/g, "");
                 let v = (rawValue ?? "").toString();
 
-                // Si es fecha: restringe a números y guiones y formatea a AAAA-MM-DD si hay 8 dígitos
-                if (isDateKey(keyStore)) {
-                        // FORZAR SIEMPRE AAAA-MM-DD (ISO), sin depender del formato visible del navegador
-                        const el = document.getElementById(`f_${keyStore}`);
+                const cohorteNorm = String(window.cohorteModalActual || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                        // Camino perfecto: input type="date"
+                // 1) SOPORTE PARA DECIMALES (HEMOFILIA)
+                const decimalVars = new Set(["VAR25_ActividadCoagulanteDelFactor", "VAR32_Peso", "VAR32_1_Dosis"]);
+                if (cohorteNorm.includes("hemo") && decimalVars.has(key)) {
+                        return v.replace(",", ".").replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1").trim();
+                }
+
+                // 2) Caso Fechas
+                if (typeof isDateKey === "function" && isDateKey(keyStore)) {
+                        const el = document.getElementById(`f_${keyStore}`);
                         if (el && el.type === "date" && el.valueAsDate instanceof Date) {
-                                const d = el.valueAsDate; // fecha real seleccionada
+                                const d = el.valueAsDate;
                                 const Y = d.getFullYear();
                                 const M = String(d.getMonth() + 1).padStart(2, "0");
                                 const D = String(d.getDate()).padStart(2, "0");
                                 return `${Y}-${M}-${D}`;
                         }
-
-                        // Fallback: si por alguna razón llega como DD/MM/AAAA, lo convertimos a ISO
-                        const s = (rawValue ?? "").toString().trim();
-                        const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                        if (m) {
-                                const dd = m[1], mm = m[2], yyyy = m[3];
-                                return `${yyyy}-${mm}-${dd}`;
-                        }
-
-                        // Si ya viene ISO, lo devuelve tal cual; si viene basura, queda como está (y tu validador lo pinta rojo)
-                        return s;
                 }
 
-                // Saneo general para texto
+                // 3) Saneo general (Texto)
                 v = v.toUpperCase()
                         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                         .replace(/Ñ/g, "N")
                         .replace(/[^A-Z0-9 -]/g, "")
                         .trimStart();
 
-                // Default por variable si está vacío
+                // 4) Regla de IPS (Cero a la izquierda)
+                const match = key.match(/VAR(\d+)/i);
+                if (match) {
+                        const numVar = parseInt(match[1]);
+                        let ipsVars = (cohorteNorm === "cancer") ? [25, 51, 52, 64, 65, 77, 82, 92, 93, 101, 102, 110, 113, 116, 119, 122] : [22, 39];
+                        if (ipsVars.includes(numVar)) {
+                                v = v.replace(/\D/g, "");
+                                if (v.length === 11) v = "0" + v;
+                        }
+                }
+
+                // 5) Default por variable
                 const rule = window.FIELD_RULES[keyStore];
                 if (rule?.defaultIfEmpty && v.trim() === "") v = rule.defaultIfEmpty;
 
-                return v.trim();
+                return v;
         };
 
         window.SELECT_OPTIONS = window.SELECT_OPTIONS || {};
@@ -2728,7 +2734,7 @@
                 { v: "9999", t: "9999: No aplica (coagulopatía diferente a hemofilia, portadora o EvW)" }
         ];
 
-        window.SELECT_OPTIONS["VAR26_AntecedentesFamiliares"] = [
+        window.SELECT_OPTIONS["VAR26_AntecedentesFamilares"] = [
                 { v: "", t: "Selecciona..." },
                 { v: "0", t: "0: Si" },
                 { v: "1", t: "1: No" },
@@ -3116,6 +3122,32 @@
                         // 🔥 Respetamos el tipo de paciente que ya tenía
                         const tipoPacienteActual = dataExistente.periodos?.[periodoActual]?.tipo_paciente || "Nuevo";
 
+                        const esCancer = (String(cohorteModalActual || "")
+                                .toLowerCase()
+                                .trim()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "") === "cancer");
+
+                        const listaVarsGuardar = esCancer ? VARS_CANCER : VARS_HEMO;
+
+                        // Traer las variables ya existentes para no borrar nada previo
+                        const variablesPrevias = dataExistente?.periodos?.[periodoActual]?.variables || {};
+                        const variablesActualizadas = { ...variablesPrevias };
+
+                        listaVarsGuardar.forEach(keyStore => {
+                                const el = document.getElementById(`f_${keyStore}`);
+                                if (!el) return;
+
+                                let valor = "";
+                                if (el.tagName === "SELECT") {
+                                        valor = String(el.value ?? "").trim();
+                                } else {
+                                        valor = window.applyFieldRules(keyStore, String(el.value ?? ""));
+                                }
+
+                                variablesActualizadas[keyStore] = valor;
+                        });
+
                         const updates = {
                                 ultima_actualizacion: new Date().toISOString(),
                                 ultima_validacion: new Date().toISOString(),
@@ -3125,7 +3157,8 @@
                                 [`periodos.${periodoActual}.validado_el`]: new Date().toISOString(),
                                 [`periodos.${periodoActual}.validador`]: auth.currentUser.email,
                                 [`periodos.${periodoActual}.auditoria_errores_corregidos`]: window.__correccionesCount || 0,
-                                [`periodos.${periodoActual}.tipo_paciente`]: tipoPacienteActual // 🚩 Se mantiene intacto
+                                [`periodos.${periodoActual}.tipo_paciente`]: tipoPacienteActual,
+                                [`periodos.${periodoActual}.variables`]: variablesActualizadas
                         };
 
                         await updateDoc(docRef, updates);
@@ -3176,28 +3209,56 @@
         // 🪄 4. REGLAS DE FORMATO AUTOMÁTICO (FECHAS E IPS)
         // =========================================================
         window.applyFieldRules = (keyStore, value) => {
-                // 1. Limpieza base: mayúsculas, sin tildes, permite guiones y espacios
-                let v = value.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/Ñ/g, "N").replace(/[^A-Z0-9 -]/g, "").trimStart();
+                const key = String(keyStore || "").replace(/\s+/g, "");
+                const cohorteNorm = String(cohorteModalActual || "")
+                        .toLowerCase()
+                        .trim()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "");
 
-                const match = keyStore.match(/VAR(\d+)/i);
+                const decimalVars = new Set([
+                        "VAR25_ActividadCoagulanteDelFactor",
+                        "VAR32_Peso",
+                        "VAR32_1_Dosis"
+                ]);
+
+                let v = String(value ?? "");
+
+                // Variables que sí deben aceptar punto decimal
+                if (decimalVars.has(key)) {
+                        v = v
+                                .replace(",", ".")
+                                .replace(/[^\d.]/g, "")
+                                .replace(/(\..*)\./g, "$1")   // deja solo el primer punto
+                                .trim();
+
+                        // IMPORTANTE:
+                        // aquí NO usamos toFixed(2), porque eso estorba mientras la usuaria escribe
+                        return v;
+                }
+
+                // Limpieza general original para el resto
+                v = v
+                        .toUpperCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/Ñ/g, "N")
+                        .replace(/[^A-Z0-9 -]/g, "")
+                        .trimStart();
+
+                const match = key.match(/VAR(\d+)/i);
                 if (!match) return v;
                 const numVar = parseInt(match[1]);
 
-                const cohorteNorm = String(cohorteModalActual || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-                // 2. Separar las IPS por cohorte para no chocar con las fechas (VAR39)
                 let ipsVars = [];
                 if (cohorteNorm === "cancer") {
-                        // En Cáncer, la 39 es FECHA, así que NO entra aquí
                         ipsVars = [25, 51, 52, 64, 65, 77, 82, 92, 93, 101, 102, 110, 113, 116, 119, 122];
                 } else if (cohorteNorm === "hemofilia") {
-                        // En Hemofilia, la 39 SÍ es IPS
                         ipsVars = [22, 39];
                 }
 
-                // 3. Aplicar limpieza estricta (solo números y completar 0) ÚNICAMENTE a las IPS
                 if (ipsVars.includes(numVar)) {
-                        v = v.replace(/\D/g, ''); // Borra guiones y letras
+                        v = v.replace(/\D/g, "");
                         if (v.length === 11) {
                                 v = "0" + v;
                         }
@@ -3311,7 +3372,7 @@
 
                 // --- 🛡️ LÓGICA DE BLOQUEO (REGLA RÍGIDA: ROJOS + AZULES BLOQUEAN) ---
                 const camposRojos = [...nombresFaltantes, ...window.__erroresDuros];
-                
+
                 // REGLA CRÍTICA: Se bloquea si hay rojos O si hay azules pendientes
                 if (camposRojos.length > 0 || nombresPorConfirmar.length > 0) {
                         // BLOQUEO ACTIVO
@@ -3890,20 +3951,8 @@
                         console.error("Error SISCAD:", e);
                 }
         };
-        // =========================================================
-        // ⚡ 4. REGLAS DE TEXTO Y FLUJO EN TIEMPO REAL
-        // =========================================================
-        window.applyFieldRules = (keyStore, value) => {
-                let v = value.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/Ñ/g, "N").replace(/[^A-Z0-9 -]/g, "").trimStart();
-                const match = keyStore.match(/VAR(\d+)/i);
-                if (!match) return v;
-                const numVar = parseInt(match[1]);
-                const cohorteNorm = String(cohorteModalActual || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-                let ipsVars = (cohorteNorm === "cancer") ? [25, 51, 52, 64, 65, 77, 82, 92, 93, 101, 102, 110, 113, 116, 119, 122] : [22, 39];
-                if (ipsVars.includes(numVar)) { v = v.replace(/\D/g, ''); if (v.length === 11) v = "0" + v; }
-                return v;
-        };
+
 
         window.controlarFlujoYLimpieza = (keyStore) => {
                 const el = document.getElementById(`f_${keyStore}`);
@@ -5463,28 +5512,14 @@
         window.exportarSISCAD = async () => {
                 const p = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
                 const hoy = new Date();
-                const fNameDate =
-                        hoy.getFullYear() +
-                        String(hoy.getMonth() + 1).padStart(2, "0") +
-                        String(hoy.getDate()).padStart(2, "0");
-
-                // 👇 PON AQUÍ el CODEAPB real (6 caracteres) para Hemofilia
+                const fNameDate = hoy.getFullYear() + String(hoy.getMonth() + 1).padStart(2, "0") + String(hoy.getDate()).padStart(2, "0");
                 const CODEAPB = "CODEAPB";
 
-                const norm = (s) =>
-                        String(s ?? "")
-                                .trim()
-                                .toLowerCase()
-                                .normalize("NFD")
-                                .replace(/[\u0300-\u036f]/g, ""); // quita tildes (cáncer -> cancer)
-
+                const norm = (s) => String(s ?? "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const isCancer = (s) => norm(s).includes("cancer");
                 const isHemo = (s) => norm(s).includes("hemofilia") || norm(s).includes("hemo");
 
-                // 1) Traer docs (igual criterio que la UI: filtro por periodos[p])
                 const snap = await getDocs(query(collection(db, "pacientes_cac"), orderBy("ultima_carga", "desc")));
-
-                // 2) Solo validados en el periodo actual
                 const docsValidados = snap.docs.filter(d => norm(d.data()?.periodos?.[p]?.estado) === "validado");
 
                 if (docsValidados.length === 0) {
@@ -5492,187 +5527,144 @@
                         return;
                 }
 
-                // 3) Filtrar por cohorte seleccionada (si no es 'todos')
-                const cohorteSel = cohorteActual;
-                const docsFiltrados = (cohorteSel === "todos")
-                        ? docsValidados
-                        : docsValidados.filter(d => norm(d.data().cohorte) === norm(cohorteSel));
+                const cohorteSel = cohorteActual || "todos";
 
-                if (docsFiltrados.length === 0) {
-                        alert("Nada validado para la cohorte seleccionada.");
-                        return;
-                }
+                const generarYDescargar = (docs, cohorteFmt) => {
+                        const formatoEsCancer = isCancer(cohorteFmt);
+                        let KEYS = formatoEsCancer ? SISCAD_KEYS_CANCER : SISCAD_KEYS_HEMO;
+                        let nombreArchivo = formatoEsCancer ? `${fNameDate}_CODECSC_CANCER.txt` : `${fNameDate}_${CODEAPB}_HEM.txt`;
 
-                // 4) Determinar formato
-                const cohorteFormato = (cohorteSel === "todos")
-                        ? (docsFiltrados[0].data().cohorte || "cáncer")
-                        : cohorteSel;
+                        if (!KEYS) return;
 
-                let KEYS = null;
-                let nombreArchivo = null;
-                const formatoEsCancer = isCancer(cohorteFormato);
-
-                if (formatoEsCancer) {
-                        KEYS = SISCAD_KEYS_CANCER;
-                        // ✅ EXACTO como lo tenías
-                        nombreArchivo = `${fNameDate}_CODECSC_CANCER.txt`;
-                } else if (isHemo(cohorteFormato)) {
-                        if (typeof SISCAD_KEYS_HEMO === "undefined" || !Array.isArray(SISCAD_KEYS_HEMO) || SISCAD_KEYS_HEMO.length === 0) {
-                                alert("Falta definir SISCAD_KEYS_HEMO (header oficial Hemofilia).");
-                                return;
-                        }
-                        KEYS = SISCAD_KEYS_HEMO;
-                        // ✅ Formato exigido
-                        nombreArchivo = `${fNameDate}_${CODEAPB}_HEM.txt`;
-                } else {
-                        alert(`Cohorte no soportada para exportación SISCAD: "${cohorteFormato}"`);
-                        return;
-                }
-
-                // 5) Construir TXT (📌 Ajuste Quirúrgico: Cabezales con errores tipográficos exigidos por SISCAD)
-                const officialHeaderKeys = KEYS.map(k => {
-                        if (k === "VAR16_FechaAfiliacionEPSRegistra") return "VAR16_FechaAiliacionEPSRegistra";
-                        if (k === "VAR28_GradoDiferenciacionTumorSolidoMaligno") return "VAR28_GradoDiferenciacionTumorAolidoMaligno";
-                        if (k === "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico") return "VAR48_UbicacionTtemporalPrimerCicloRelacionOncologico";
-                        if (k === "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia") return "VAR85_EstadoVitalFinalizarUnicaOltimaCirugia";
-                        if (k === "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras") return "VAR106_RecibioUsuarioTtrasplanteCelulasProgenitoras";
-                        if (k === "VAR123_UsuarioRecibioSoporteNutricional") return "VAR123_UusuarioRecibioSoporteNutricional";
-                        if (k === "VAR130_FechaDesafiliacionEPS") return "VAR130_FechaDesafiliaciIonEPS";
-                        return k;
-                });
-                let txt = officialHeaderKeys.join("\t") + "\n";
-
-                docsFiltrados.forEach(d => {
-                        const data = d.data();
-                        const varsPeriodo = data?.periodos?.[p]?.variables || {};
-                        const base = data?.datos_base || {};
-
-                        const fila = KEYS.map(key => {
-                                let val = "";
-
-                                if (varsPeriodo[key] !== undefined && varsPeriodo[key] !== null && `${varsPeriodo[key]}`.trim() !== "") val = `${varsPeriodo[key]}`.trim();
-                                else if (base[key] !== undefined && base[key] !== null && `${base[key]}`.trim() !== "") val = `${base[key]}`.trim();
-                                else if (data[key] !== undefined && data[key] !== null && `${data[key]}`.trim() !== "") val = `${data[key]}`.trim();
-
-                                // Defaults SISCAD típicos SOLO para cáncer (igual que tu export original)
-                                if (formatoEsCancer) {
-                                        if (key.startsWith("VAR2_") && val === "") val = "NONE";
-                                        if (key.startsWith("VAR4_") && val === "") val = "NOAP";
-                                }
-
-                                if (val === "") val = "";
-                                return val;
+                        const officialHeaderKeys = KEYS.map(k => {
+                                if (k === "VAR16_FechaAfiliacionEPSRegistra") return "VAR16_FechaAiliacionEPSRegistra";
+                                if (k === "VAR28_GradoDiferenciacionTumorSolidoMaligno") return "VAR28_GradoDiferenciacionTumorAolidoMaligno";
+                                if (k === "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico") return "VAR48_UbicacionTtemporalPrimerCicloRelacionOncologico";
+                                if (k === "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia") return "VAR85_EstadoVitalFinalizarUnicaOltimaCirugia";
+                                if (k === "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras") return "VAR106_RecibioUsuarioTtrasplanteCelulasProgenitoras";
+                                if (k === "VAR123_UsuarioRecibioSoporteNutricional") return "VAR123_UusuarioRecibioSoporteNutricional";
+                                if (k === "VAR130_FechaDesafiliacionEPS") return "VAR130_FechaDesafiliaciIonEPS";
+                                return k;
                         });
 
-                        txt += fila.join("\t") + "\n";
-                });
+                        let txt = officialHeaderKeys.join("\t") + "\n";
+                        docs.forEach(d => {
+                                const data = d.data();
+                                const varsPeriodo = data?.periodos?.[p]?.variables || {};
+                                const base = data?.datos_base || {};
+                                const fila = KEYS.map(key => {
+                                        let val = "";
+                                        if (varsPeriodo[key] !== undefined && varsPeriodo[key] !== null && `${varsPeriodo[key]}`.trim() !== "") {
+                                                val = `${varsPeriodo[key]}`.trim();
+                                        } else if (base[key] !== undefined && base[key] !== null && `${base[key]}`.trim() !== "") {
+                                                val = `${base[key]}`.trim();
+                                        } else if (data[key] !== undefined && data[key] !== null && `${data[key]}`.trim() !== "") {
+                                                val = `${data[key]}`.trim();
+                                        }
 
-                // 6) Descargar
-                const blob = new Blob([txt], { type: "text/plain;charset=ansi" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = nombreArchivo;
-                link.click();
+                                        if (formatoEsCancer) {
+                                                if (key.startsWith("VAR2_") && val === "") val = "NONE";
+                                                if (key.startsWith("VAR4_") && val === "") val = "NOAP";
+                                        } else if (key === "VAR32_Peso" && val !== "") {
+                                                const n = Number(String(val).replace(",", "."));
+                                                if (!Number.isNaN(n)) val = n.toFixed(2);
+                                        }
+                                        return String(val).replace(/[\t\n\r]/g, " ").trim();
+                                });
+                                txt += fila.join("\t") + "\n";
+                        });
+
+                        const blob = new Blob([txt], { type: "text/plain;charset=ansi" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = nombreArchivo;
+                        link.click();
+                };
+
+                if (cohorteSel === "todos") {
+                        const bCancer = docsValidados.filter(d => isCancer(d.data().cohorte));
+                        const bHemo = docsValidados.filter(d => isHemo(d.data().cohorte));
+                        if (bCancer.length > 0) generarYDescargar(bCancer, "cancer");
+                        if (bHemo.length > 0) generarYDescargar(bHemo, "hemofilia");
+                } else if (isCancer(cohorteSel)) {
+                        const b = docsValidados.filter(d => isCancer(d.data().cohorte));
+                        if (b.length === 0) alert("Nada validado para Cancer.");
+                        else generarYDescargar(b, "cancer");
+                } else if (isHemo(cohorteSel)) {
+                        const b = docsValidados.filter(d => isHemo(d.data().cohorte));
+                        if (b.length === 0) alert("Nada validado para Hemofilia.");
+                        else generarYDescargar(b, "hemofilia");
+                }
         };
 
         window.exportarSISCADExcel = async () => {
                 const p = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
                 const hoy = new Date();
-                const fNameDate =
-                        hoy.getFullYear() +
-                        String(hoy.getMonth() + 1).padStart(2, "0") +
-                        String(hoy.getDate()).padStart(2, "0");
+                const fNameDate = hoy.getFullYear() + String(hoy.getMonth() + 1).padStart(2, "0") + String(hoy.getDate()).padStart(2, "0");
 
-                // 1) Traer docs del periodo (Tarea 4: Consistencia de tipos String)
-                const snap = await getDocs(
-                        query(collection(db, "pacientes_cac"), where("periodo_reporte", "==", String(p)))
-                );
+                const norm = (s) => String(s ?? "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isCancer = (s) => norm(s).includes("cancer");
+                const isHemo = (s) => norm(s).includes("hemofilia") || norm(s).includes("hemo");
 
-                // 2) Solo validados en el periodo actual
-                const docsValidados = snap.docs.filter((d) => {
-                        const data = d.data();
-                        return String(data?.periodos?.[p]?.estado || "").toLowerCase() === "validado";
-                });
+                const snap = await getDocs(query(collection(db, "pacientes_cac"), where("periodo_reporte", "==", String(p))));
+                const docsValidados = snap.docs.filter(d => String(d.data()?.periodos?.[p]?.estado || "").toLowerCase() === "validado");
 
                 if (docsValidados.length === 0) {
                         alert("Nada validado.");
                         return;
                 }
 
-                // 3) Filtrar por cohorte seleccionada (si no es 'todos')
                 const cohorteSel = cohorteActual || "todos";
-                const docsFiltrados =
-                        cohorteSel === "todos"
-                                ? docsValidados
-                                : docsValidados.filter((d) => String(d.data().cohorte || "").toLowerCase() === String(cohorteSel).toLowerCase());
 
-                if (docsFiltrados.length === 0) {
-                        alert("Nada validado para la cohorte seleccionada.");
-                        return;
-                }
+                const generarYDescargarXLSX = (docs, cohorteFmt) => {
+                        const formatoEsCancer = isCancer(cohorteFmt);
+                        let KEYS = formatoEsCancer ? SISCAD_KEYS_CANCER : SISCAD_KEYS_HEMO;
+                        let sufijo = formatoEsCancer ? "CANCER" : "HEM";
 
-                // 4) Determinar KEYS según cohorte (si estás en "todos", toma la del primer doc)
-                let cohorteFormato = cohorteSel === "todos" ? (docsFiltrados[0].data().cohorte || "") : cohorteSel;
-                cohorteFormato = String(cohorteFormato || "").toLowerCase();
+                        if (!KEYS) return;
 
-                let KEYS = null;
-                let sufijo = "";
-
-                if (cohorteFormato === "cáncer" || cohorteFormato === "cancer") {
-                        KEYS = SISCAD_KEYS_CANCER;
-                        sufijo = "CANCER";
-                } else if (cohorteFormato === "hemofilia" || cohorteFormato === "hemo") {
-                        KEYS = SISCAD_KEYS_HEMO;
-                        sufijo = "HEM";
-                } else {
-                        alert("Cohorte no soportada para exportación SISCAD en Excel.");
-                        return;
-                }
-
-                // 5) Construir filas Excel (objeto por fila, keys como headers)
-                const rows = docsFiltrados.map((d) => {
-                        const data = d.data();
-                        const varsPeriodo = data?.periodos?.[p]?.variables || {};
-                        const base = data?.datos_base || {};
-
-                        const row = {};
-                        KEYS.forEach((key) => {
-                                let val = "";
-
-                                // prioridad: variables del periodo -> datos_base -> raíz
-                                if (varsPeriodo[key] !== undefined && varsPeriodo[key] !== null && `${varsPeriodo[key]}`.trim() !== "") {
-                                        val = `${varsPeriodo[key]}`.trim();
-                                } else if (base[key] !== undefined && base[key] !== null && `${base[key]}`.trim() !== "") {
-                                        val = `${base[key]}`.trim();
-                                } else if (data[key] !== undefined && data[key] !== null && `${data[key]}`.trim() !== "") {
-                                        val = `${data[key]}`.trim();
-                                }
-
-                                // defaults SISCAD típicos
-                                if (key.startsWith("VAR2_") && val === "") val = "NONE";
-                                if (key.startsWith("VAR4_") && val === "") val = "NOAP";
-
-                                row[key] = val;
+                        const rows = docs.map(d => {
+                                const data = d.data();
+                                const varsPeriodo = data?.periodos?.[p]?.variables || {};
+                                const base = data?.datos_base || {};
+                                const row = {};
+                                KEYS.forEach(key => {
+                                        let val = varsPeriodo[key] ?? base[key] ?? data[key] ?? "";
+                                        val = `${val}`.trim();
+                                        if (formatoEsCancer) {
+                                                if (key.startsWith("VAR2_") && val === "") val = "NONE";
+                                                if (key.startsWith("VAR4_") && val === "") val = "NOAP";
+                                        } else if (key === "VAR32_Peso" && val !== "") {
+                                                const n = Number(String(val).replace(",", "."));
+                                                if (!Number.isNaN(n)) val = n.toFixed(2);
+                                        }
+                                        row[key] = val;
+                                });
+                                return row;
                         });
 
-                        return row;
-                });
+                        const wb = XLSX.utils.book_new();
+                        const ws = XLSX.utils.json_to_sheet(rows, { header: KEYS });
+                        XLSX.utils.sheet_add_aoa(ws, [KEYS], { origin: "A1" });
+                        XLSX.utils.book_append_sheet(wb, ws, `SISCAD_${sufijo}`);
+                        const CODE = (sufijo === "CANCER") ? "CODECSC" : "CODEAPB";
+                        XLSX.writeFile(wb, `${fNameDate}_${CODE}_${sufijo}.xlsx`);
+                };
 
-                // 6) Crear XLSX con SheetJS
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.json_to_sheet(rows, { header: KEYS });
-
-                // Asegurar orden exacto de columnas (por si SheetJS intenta reordenar)
-                XLSX.utils.sheet_add_aoa(ws, [KEYS], { origin: "A1" });
-
-                XLSX.utils.book_append_sheet(wb, ws, `SISCAD_${sufijo}`);
-
-                // 7) Nombre de archivo (puedes mantener CODEAPB/CODECSC como en TXT)
-                // Si quieres, cámbialo por tu código real:
-                const CODE = (sufijo === "CANCER") ? "CODECSC" : "CODEAPB";
-                const nombreArchivo = `${fNameDate}_${CODE}_${sufijo}.xlsx`;
-
-                XLSX.writeFile(wb, nombreArchivo);
+                if (cohorteSel === "todos") {
+                        const bCancer = docsValidados.filter(d => isCancer(d.data().cohorte));
+                        const bHemo = docsValidados.filter(d => isHemo(d.data().cohorte));
+                        if (bCancer.length > 0) generarYDescargarXLSX(bCancer, "cancer");
+                        if (bHemo.length > 0) generarYDescargarXLSX(bHemo, "hemofilia");
+                } else if (isCancer(cohorteSel)) {
+                        const b = docsValidados.filter(d => isCancer(d.data().cohorte));
+                        if (b.length === 0) alert("Nada validado para Cancer.");
+                        else generarYDescargarXLSX(b, "cancer");
+                } else if (isHemo(cohorteSel)) {
+                        const b = docsValidados.filter(d => isHemo(d.data().cohorte));
+                        if (b.length === 0) alert("Nada validado para Hemofilia.");
+                        else generarYDescargarXLSX(b, "hemofilia");
+                }
         };
 
         // =========================================================

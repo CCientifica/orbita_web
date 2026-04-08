@@ -14,15 +14,18 @@
                 <!-- Compliance Banner -->
                 <div id="complianceBar" class="compliance-banner" style="display:none">
                     <div class="flex items-center gap-4 relative z-10">
-                        <div id="compIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <div id="compIcon"
+                            class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                             <span class="material-icons">event_available</span>
                         </div>
                         <div>
-                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de Cumplimiento Logístico</p>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de
+                                Cumplimiento Logístico</p>
                             <h4 id="compMsg" class="text-xs font-black italic">--</h4>
                         </div>
                     </div>
-                    <div id="compBadge" class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
+                    <div id="compBadge"
+                        class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
                         Sincronizado
                     </div>
                 </div>
@@ -31,25 +34,33 @@
                 <div class="flex flex-col xl:flex-row gap-6 items-start">
                     <div class="flex-1 space-y-3">
                         <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-blue-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Médicos Generales</span>
-                            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Análisis Predictivo Médicos</h1>
+                            <span
+                                class="px-3 py-1 bg-blue-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Médicos
+                                Generales</span>
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tight">Análisis Predictivo Médicos
+                            </h1>
                         </div>
                         <p class="text-slate-500 font-bold text-xs max-w-xl leading-relaxed italic">
-                            Escrutinio de registros clínicos para el personal médico. Sincronización en tiempo real con Hosvital y RCF Engine para el cumplimiento del modelo asistencial.
+                            Escrutinio de registros clínicos para el personal médico. Sincronización en tiempo real con
+                            Hosvital y RCF Engine para el cumplimiento del modelo asistencial.
                         </p>
                     </div>
 
-                    <div class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
+                    <div
+                        class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
                         <div class="flex justify-between items-start mb-2">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción Próxima Quincena</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción
+                                Próxima Quincena</p>
                             <span class="material-icons text-blue-500">auto_awesome</span>
                         </div>
                         <div class="relative h-[200px] w-full bg-slate-50/50 rounded-2xl p-2">
-                            <h3 id="predictionScore" class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
+                            <h3 id="predictionScore"
+                                class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
                             <canvas id="trendChart"></canvas>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span id="predictionLabel" class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Calculando...</span>
+                            <span id="predictionLabel"
+                                class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Calculando...</span>
                             <span class="text-[9px] text-slate-400 font-bold italic">Confidence: 94.2%</span>
                         </div>
                     </div>
@@ -60,7 +71,8 @@
                     <div class="glass-card p-2! rounded-2xl! flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-blue-500 text-sm">apartment</span>
-                            <select id="pabSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                            <select id="pabSelect"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option>Segundo piso</option>
                                 <option selected>Hospitalización</option>
                                 <option>UCI / UCE</option>
@@ -68,18 +80,21 @@
                         </div>
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-purple-500 text-sm">schedule</span>
-                            <select id="tipoSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                            <select id="tipoSelect"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="M" selected>Mensual</option>
                                 <option value="Q">Quincenal</option>
                             </select>
                         </div>
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-emerald-500 text-sm">event</span>
-                            <input id="monthInput" type="month" class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
+                            <input id="monthInput" type="month"
+                                class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
                         </div>
                         <div id="quinWrap" class="toolbar-pill px-3! py-2! hidden">
                             <span class="material-icons text-amber-500 text-sm">per_day</span>
-                            <select id="quinInput" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                            <select id="quinInput"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="1">1ra (1-15)</option>
                                 <option value="2">2da (16-fin)</option>
                             </select>
@@ -105,17 +120,21 @@
                 </div>
 
                 <!-- ALERTA DINÁMICA -->
-                <div id="urgentAlert" style="display:none;" class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+                <div id="urgentAlert" style="display:none;"
+                    class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                             <span class="material-icons">medical_services</span>
                         </div>
                         <div>
-                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 mb-1">Alerta de Cumplimiento Médico</p>
-                            <h4 id="urgentMsg" class="text-sm font-black italic">Se detectó una brecha crítica en la adopción del sistema.</h4>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 mb-1">Alerta de
+                                Cumplimiento Médico</p>
+                            <h4 id="urgentMsg" class="text-sm font-black italic">Se detectó una brecha crítica en la
+                                adopción del sistema.</h4>
                         </div>
                     </div>
-                    <button onclick="document.getElementById('urgentAlert').classList.add('hidden')" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Ignorar</button>
+                    <button onclick="document.getElementById('urgentAlert').classList.add('hidden')"
+                        class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Ignorar</button>
                 </div>
 
                 <div id="status" class="status-msg fade-in"></div>
@@ -127,17 +146,20 @@
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Médicos RCF</p>
                             <div class="tooltip-container">
                                 <span class="material-icons text-slate-300 text-sm">info_outline</span>
-                                <div class="tooltip-content uppercase tracking-widest">Actividades médicas firmadas en la plataforma digital.</div>
+                                <div class="tooltip-content uppercase tracking-widest">Actividades médicas firmadas en
+                                    la plataforma digital.</div>
                             </div>
                         </div>
                         <h2 id="mRCF" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
                     </div>
                     <div class="stat-card border-b-4 border-b-rose-600 p-6!">
                         <div class="flex justify-between items-start mb-4">
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Brecha Hosvital</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Brecha Hosvital
+                            </p>
                             <div class="tooltip-container">
                                 <span class="material-icons text-rose-400 text-sm animate-pulse">priority_high</span>
-                                <div class="tooltip-content uppercase tracking-widest text-rose-200">Actividades en papel o sistema tradicional no replicadas.</div>
+                                <div class="tooltip-content uppercase tracking-widest text-rose-200">Actividades en
+                                    papel o sistema tradicional no replicadas.</div>
                             </div>
                         </div>
                         <h2 id="mHOS" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
@@ -151,9 +173,11 @@
                             <div id="mUsoBar" class="bg-emerald-500 h-full" style="width: 0%"></div>
                         </div>
                     </div>
-                    <div class="stat-card border-b-4 border-b-blue-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
+                    <div
+                        class="stat-card border-b-4 border-b-blue-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
                         <div class="flex justify-between items-center mb-4 text-white/40">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">AI Medical Score</p>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">AI Medical Score
+                            </p>
                             <span class="material-icons text-blue-400 text-2xl">insights</span>
                         </div>
                         <h2 id="aiScore" class="text-4xl font-black tracking-tighter text-white">ALPHA</h2>
@@ -162,11 +186,16 @@
 
                 <!-- TABLA DE DATOS -->
                 <div class="glass-card shadow-2xl p-0! overflow-hidden border border-slate-100">
-                    <div class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
+                    <div
+                        class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
                         <h2 class="text-lg font-black text-slate-800 tracking-tight">Personal Médico en Servicio</h2>
                         <div class="flex items-center gap-2">
-                            <button id="quickPrevBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:text-blue-600 transition-all">Copiar Anterior</button>
-                            <button id="addRowBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-blue-700 transition-all">+ Añadir Médico</button>
+                            <button id="quickPrevBtn"
+                                class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:text-blue-600 transition-all">Copiar
+                                Anterior</button>
+                            <button id="addRowBtn"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-blue-700 transition-all">+
+                                Añadir Médico</button>
                         </div>
                     </div>
 
@@ -189,7 +218,9 @@
                             <tbody id="tbody"></tbody>
                             <tfoot class="bg-slate-900 text-white">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">Consolidado Matemático</td>
+                                    <td colspan="4"
+                                        class="px-6 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">
+                                        Consolidado Matemático</td>
                                     <td class="px-4 text-right font-black" id="tRCF">0</td>
                                     <td class="px-4 text-right font-black" id="tHOS">0</td>
                                     <td class="px-4 text-right font-black opacity-40" id="tTotal">0</td>
@@ -204,23 +235,27 @@
                 <!-- ANALÍTICA AVANZADA -->
                 <section id="alertsSec" style="display:none;" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
                     <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white">
-                        <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
+                        <h4
+                            class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
                             <span class="material-icons animate-pulse">analytics</span> Reporte de Adhesión Crítica
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-3">
-                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Bajos Registros (RCF ≤ 5)</p>
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Bajos Registros
+                                    (RCF ≤ 5)</p>
                                 <ul id="critLowList" class="space-y-2 text-xs font-bold"></ul>
                             </div>
                             <div class="space-y-3">
-                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Uso Moderado</p>
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Uso Moderado
+                                </p>
                                 <ul id="modLowList" class="space-y-2 text-xs font-bold"></ul>
                             </div>
                         </div>
                     </div>
 
                     <div class="glass-card border-l-8 border-l-emerald-400 bg-emerald-50/20">
-                        <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">🏆 Cuadro de Honor</h4>
+                        <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">🏆 Cuadro de
+                            Honor</h4>
                         <ul id="goodList" class="space-y-3 text-xs font-black text-slate-700"></ul>
                     </div>
                 </section>
@@ -234,20 +269,20 @@
     <div th:replace="~{layout :: auth-scripts}"></div>
 
     <script type="module" th:inline="none">
-    let isMedicosInitialized = false;
-    const initMedicosAnalytics = async () => {
-        if (isMedicosInitialized) return;
-        
-        let retry = 0;
-        while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
-            await new Promise(r => setTimeout(r, 100));
-            retry++;
-        }
+        let isMedicosInitialized = false;
+        const initMedicosAnalytics = async () => {
+            if (isMedicosInitialized) return;
 
-        if (!window.firebaseInstance || !window.firebaseFirestore) return;
-        isMedicosInitialized = true;
-             const { auth, db } = window.firebaseInstance;
-            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
+            let retry = 0;
+            while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                retry++;
+            }
+
+            if (!window.firebaseInstance || !window.firebaseFirestore) return;
+            isMedicosInitialized = true;
+            const { auth, db } = window.firebaseInstance;
+            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit, writeBatch } = window.firebaseFirestore;
 
             const ensureAuth = async () => {
                 // Autenticación gestionada institucionalmente
@@ -260,6 +295,65 @@
             const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
             const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
             const getEl = id => document.getElementById(id);
+            const pdfSafe = (str = "") => String(str).replaceAll("≤", "<=").replaceAll("≥", ">=").replaceAll("•", "-").replaceAll("—", "-").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+
+            const currentKey = () => {
+                const tipo = getEl("tipoSelect").value;
+                const month = (getEl("monthInput").value || "").trim();
+                const quin = tipo === "Q" ? (getEl("quinInput").value || "1") : "0";
+                const pab = getEl("pabSelect").value;
+                if (!/^\d{4}-\d{2}$/.test(month)) throw new Error("Mes inválido");
+                return { tipo, month, quin, pab };
+            };
+
+            const downloadBlob = (name, blob) => {
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+                document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+            };
+
+            const ensureXLSX = async () => {
+                if (window.XLSX && window.XLSX.utils) return true;
+                return new Promise((resolve) => {
+                    let attempts = 0;
+                    const interval = setInterval(() => {
+                        attempts++;
+                        if (window.XLSX && window.XLSX.utils) {
+                            clearInterval(interval);
+                            resolve(true);
+                        }
+                        if (attempts > 50) {
+                            clearInterval(interval);
+                            resolve(false);
+                        }
+                    }, 100);
+                });
+            };
+
+            const exportToFile = async (rows, filenameBase) => {
+                const headers = ["Periodo", "Pabellon", "Cod_Prof", "Documento", "Nombre", "RCF", "Hosvital", "Total", "Uso_RCF"];
+                const xlsxOK = await ensureXLSX();
+                if (xlsxOK) {
+                    try {
+                        const XL = window.XLSX;
+                        const dataAoA = [headers, ...rows.map(r => headers.map(h => r[h]))];
+                        const ws = XL.utils.aoa_to_sheet(dataAoA);
+                        ws["!cols"] = headers.map(h => ({ wch: Math.max(12, String(h).length + 2) }));
+                        const wb = XL.utils.book_new(); XL.utils.book_append_sheet(wb, ws, "RCF_MED");
+                        XL.writeFile(wb, `${filenameBase}.xlsx`, { bookType: "xlsx" });
+                        return;
+                    } catch (e) { console.error("XLSX fail:", e); }
+                }
+                const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+                const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => esc(r[h])).join(','))).join('\r\n');
+                downloadBlob(`${filenameBase}.csv`, new Blob([csv], { type: "text/csv;charset=utf-8" }));
+            };
+
+            const fetchPeriodoArray = async ({ tipo, month, quin, pab }) => {
+                const qy = query(collection(db, "rcf_medicos_periodos"),
+                    where("tipo", "==", tipo), where("month", "==", month), where("quincena", "==", quin),
+                    ...(pab ? [where("pabellon", "==", pab)] : []));
+                const snap = await getDocs(qy); const out = []; snap.forEach(d => out.push(d.data())); return out;
+            };
 
             let chart;
 
@@ -293,7 +387,7 @@
             const defaultMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
             getEl("monthInput").value = defaultMonth;
 
-            function addRow(pab="", cod="", dcto="", nom="", rcf=0, hos=0) {
+            function addRow(pab = "", cod = "", dcto = "", nom = "", rcf = 0, hos = 0) {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td><input type="text" value="${pab}" class="input-rcf !text-[12px]"></td>
@@ -337,25 +431,25 @@
                 let prevY = y, prevM = m - 1;
                 if (prevM === 0) { prevM = 12; prevY--; }
                 const prevMStr = `${prevY}-${String(prevM).padStart(2, "0")}`;
-                
+
                 const pab = getEl("pabSelect").value;
                 const t = getEl("tipoSelect").value;
                 const q = t === "Q" ? getEl("quinInput").value : "0";
 
                 try {
-                    const qy = query(collection(db, "rcf_medicos_periodos"), 
-                        where("tipo", "==", t), 
-                        where("month", "==", prevMStr), 
-                        where("quincena", "==", q), 
+                    const qy = query(collection(db, "rcf_medicos_periodos"),
+                        where("tipo", "==", t),
+                        where("month", "==", prevMStr),
+                        where("quincena", "==", q),
                         where("pabellon", "==", pab));
                     const snap = await getDocs(qy);
                     if (snap.empty) {
                         alert("No se encontraron registros del mes anterior (" + prevMStr + ") para este pabellón.");
                         return;
                     }
-                    
+
                     if (!confirm("Se copiarán los médicos de " + prevMStr + ". Se borrará lo que tengas en pantalla. ¿Continuar?")) return;
-                    
+
                     getEl("tbody").innerHTML = "";
                     snap.forEach(d => {
                         const x = d.data();
@@ -421,26 +515,148 @@
             });
             getEl("quinInput").addEventListener("change", () => loadPeriodo());
             getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
-            getEl("saveBtn").addEventListener("click", async () => {
-                 await ensureAuth();
-                 const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
-                 try {
-                     for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
-                         const ins = tr.querySelectorAll('input');
-                         const cod = ins[1].value, dct = ins[2].value, nom = ins[3].value, rcf = toInt(ins[4].value), hos = toInt(ins[5].value);
-                         if(!nom) continue;
-                         const id = `${t}_${m}_${q}_${slug(p)}_${slug(cod||nom)}`;
-                         await setDoc(doc(db, "rcf_medicos_periodos", id), {
-                             tipo:t, month:m, quincena:q, pabellon:p, cod_prof:cod, doc_prof:dct, nombre:nom, rcf, hosvital:hos, total:rcf+hos, updatedAt:serverTimestamp()
-                         }, {merge:true});
-                     }
-                     alert("Datos guardados.");
-                 } catch(e) { alert("Fallo al guardar"); }
+            getEl("xlPabBtn").addEventListener("click", async () => {
+                const k = currentKey(); const periodo = `${k.month}${k.tipo === 'Q' ? ' Q' + k.quin : ''}`;
+                const rows = [...getEl("tbody").querySelectorAll("tr")].map(tr => {
+                    const ins = tr.querySelectorAll("td input");
+                    const pab = ins[0]?.value || "", cod = ins[1]?.value || "", dct = ins[2]?.value || "", nom = ins[3]?.value || "";
+                    const rcf = Number(tr.querySelector('input[data-k="rcf"]')?.value || 0);
+                    const hos = Number(tr.querySelector('input[data-k="hos"]')?.value || 0);
+                    const total = rcf + hos; const uso = total ? rcf / total : 0;
+                    return { Periodo: periodo, Pabellon: pab, Cod_Prof: cod, Documento: dct, Nombre: nom, RCF: rcf, Hosvital: hos, Total: total, Uso_RCF: (uso * 100).toFixed(1) + "%" };
+                });
+                await exportToFile(rows, `RCF_Medicos_${slug(k.pab)}_${k.month}`);
             });
 
-            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { 
-                if(u) {
-                    loadPeriodo(defaultMonth); 
+            getEl("xlAllBtn").addEventListener("click", async () => {
+                try {
+                    const k = currentKey(); const periodo = `${k.month}${k.tipo === 'Q' ? ' Q' + k.quin : ''}`;
+                    const arr = await fetchPeriodoArray({ tipo: k.tipo, month: k.month, quin: k.quin, pab: null });
+                    const rows = arr.map(x => {
+                        const rcf = toInt(x.rcf), hos = toInt(x.hosvital), tot = rcf + hos, uso = tot ? rcf / tot : 0;
+                        return { Periodo: periodo, Pabellon: x.pabellon || "", Cod_Prof: x.cod_prof || "", Documento: x.doc_prof || "", Nombre: x.nombre || "", RCF: rcf, Hosvital: hos, Total: tot, Uso_RCF: (uso * 100).toFixed(1) + "%" };
+                    });
+                    await exportToFile(rows, `RCF_Medicos_Todos_${k.month}`);
+                } catch (e) { console.error(e); msg("Fallo Excel Global", "err"); }
+            });
+
+            getEl("pdfBtn").addEventListener("click", async () => {
+                const k = currentKey();
+                const { jsPDF } = window.jspdf;
+                const docPdf = new jsPDF({ unit: 'pt', format: 'a4' });
+                const M = 40; let y = 40;
+                const pageW = docPdf.internal.pageSize.getWidth();
+                const pageH = docPdf.internal.pageSize.getHeight();
+                const maxW = pageW - M * 2;
+                const cleanText = (t) => pdfSafe(t).replace(/[^\x00-\x7F]/g, "").trim();
+
+                try {
+                    const img = new Image(); img.src = '/assets/Logo_Clinica.png'; await img.decode();
+                    const logoH = 60; const W = logoH * (img.width / img.height || 3);
+                    docPdf.addImage(img, 'PNG', M, y, W, logoH);
+                } catch { }
+
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(20); docPdf.setTextColor(30, 41, 59);
+                docPdf.text('NUEVA CLÍNICA SAGRADO CORAZÓN', pageW - M, y + 25, { align: 'right' });
+                docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(10); docPdf.setTextColor(100, 116, 139);
+                docPdf.text('NIT 900408220 - 1', pageW - M, y + 40, { align: 'right' });
+                y += 80; docPdf.setDrawColor(226, 232, 240); docPdf.line(M, y, pageW - M, y); y += 30;
+
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(16); docPdf.setTextColor(30, 41, 59);
+                docPdf.text(cleanText(`REPORTE DE CUMPLIMIENTO MÉDICO RCF`), M, y); y += 20;
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(11); docPdf.setTextColor(59, 130, 246);
+                docPdf.text(cleanText(`${k.pab} · ${k.month}${k.tipo === 'Q' ? ' Q' + k.quin : ''}`), M, y); y += 30;
+
+                const addStyledBlock = (title, listId, color) => {
+                    const items = [...document.querySelectorAll(`#${listId} li`)].map(li => cleanText(li.textContent));
+                    if (!items.length) return;
+                    if (y > pageH - 100) { docPdf.addPage(); y = 60; }
+                    docPdf.setFillColor(color[0], color[1], color[2], 0.1);
+                    docPdf.rect(M, y - 12, maxW, 18, 'F');
+                    docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10); docPdf.setTextColor(color[0], color[1], color[2]);
+                    docPdf.text(title.toUpperCase(), M + 5, y); y += 18;
+                    docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(9); docPdf.setTextColor(71, 85, 105);
+                    items.forEach(t => {
+                        if (y > pageH - 40) { docPdf.addPage(); y = 60; }
+                        docPdf.text('• ' + t, M + 10, y, { maxWidth: maxW - 10 }); y += 13;
+                    });
+                    y += 10;
+                };
+
+                addStyledBlock('Brecha Crítica - Digitalización', 'critLowList', [220, 38, 38]);
+                addStyledBlock('Baja Adopción - Uso Moderado', 'modLowList', [217, 119, 6]);
+                addStyledBlock('Cuadro de Honor - Digitalización', 'goodList', [22, 163, 74]);
+
+                if (y > pageH - 150) { docPdf.addPage(); y = 60; }
+
+                const head = [['Pabellón', 'Cód. Prof', 'Documento', 'Nombre', 'RCF', 'Hosvital', 'Total', '% Uso']];
+                const rows = [...getEl("tbody").querySelectorAll("tr")].map(tr => {
+                    const ins = tr.querySelectorAll("td input");
+                    const rcf = Number(tr.querySelector('input[data-k="rcf"]').value || 0);
+                    const hos = Number(tr.querySelector('input[data-k="hos"]').value || 0);
+                    const tot = rcf + hos; const uso = tot ? ((rcf / tot) * 100).toFixed(1) + '%' : '0%';
+                    return [cleanText(ins[0].value), cleanText(ins[1].value), cleanText(ins[2].value), cleanText(ins[3].value), rcf, hos, tot, uso];
+                });
+
+                docPdf.autoTable({
+                    startY: y, head, body: rows, theme: 'grid',
+                    styles: { font: 'helvetica', fontSize: 8, cellPadding: 4, lineColor: [226, 232, 240], lineWidth: 0.1 },
+                    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' }, 7: { halign: 'center' } },
+                    alternateRowStyles: { fillColor: [248, 250, 252] }
+                });
+
+                let yf = docPdf.lastAutoTable.finalY + 30;
+                if (yf > pageH - 80) { docPdf.addPage(); yf = 60; }
+                docPdf.setFillColor(241, 245, 249); docPdf.rect(M, yf, maxW, 40, 'F');
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10); docPdf.setTextColor(30, 41, 59);
+                const R = getEl('tRCF').textContent, H = getEl('tHOS').textContent, T = getEl('tTotal').textContent, U = getEl('tUso').textContent;
+                docPdf.text(`RESUMEN GLOBAL:  RCF: ${R}  |  Hosvital: ${H}  |  Total: ${T}  |  Cumplimiento: ${U}`, pageW / 2, yf + 25, { align: 'center' });
+
+                docPdf.save(`RCF_Medicos_${slug(k.pab)}_${k.month}.pdf`);
+                msg("PDF Generado", "success");
+            });
+
+            getEl("saveBtn").addEventListener("click", async () => {
+                await ensureAuth();
+                const btn = getEl("saveBtn");
+                const originalHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="material-icons animate-spin text-sm">sync</span> Guardando...';
+
+                const { tipo, month, quin, pab } = currentKey();
+                const batch = writeBatch(db);
+                let count = 0;
+
+                try {
+                    const rows = [...getEl("tbody").querySelectorAll("tr")];
+                    for (const tr of rows) {
+                        const ins = tr.querySelectorAll('input');
+                        const p = ins[0].value, cod = ins[1].value, dct = ins[2].value, nom = ins[3].value, rcf = toInt(ins[4].value), hos = toInt(ins[5].value);
+                        if (!nom) continue;
+                        const id = `${tipo}_${month}_${quin}_${slug(pab)}_${slug(cod || dct || nom)}`;
+                        const ref = doc(db, "rcf_medicos_periodos", id);
+                        batch.set(ref, {
+                            tipo, month, quincena: quin, pabellon: p, cod_prof: cod, doc_prof: dct, nombre: nom, rcf, hosvital: hos, total: rcf + hos, updatedAt: serverTimestamp()
+                        }, { merge: true });
+                        count++;
+                    }
+                    if (count > 0) {
+                        await batch.commit();
+                        msg(`Guardado exitoso: ${count} registros`, "success");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    msg("Fallo al guardar", "err");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            });
+
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => {
+                if (u) {
+                    loadPeriodo(defaultMonth);
                     updateCompliance();
                 }
             });
@@ -449,30 +665,30 @@
                 await ensureAuth();
                 const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
                 const now = new Date();
-                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
-                const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
-                
+                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth() - 1);
+                const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth() + 1).padStart(2, "0")}`;
+
                 let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
-                while(curr <= now){
+                while (curr <= now) {
                     const day = curr.getDay(); const iso = curr.toISOString().split('T')[0];
-                    if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
-                    curr.setDate(curr.getDate()+1);
+                    if (day !== 0 && day !== 6 && !HOLIDAYS.includes(iso)) workDay++;
+                    curr.setDate(curr.getDate() + 1);
                 }
 
                 const snap = await getDocs(query(collection(db, "rcf_medicos_periodos"), where("month", "==", mStr), limit(1)));
                 const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
-                if(!bar) return;
+                if (!bar) return;
                 bar.style.display = "flex";
-                if(snap.size > 0){
-                    msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+                if (snap.size > 0) {
+                    msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })} cargado exitosamente.`;
                     badge.textContent = "Sincronizado";
                 } else {
                     const remains = 5 - workDay;
-                    if(remains >= 0){
-                        msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                    if (remains >= 0) {
+                        msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })}.`;
                         badge.textContent = "EN PLAZO";
                     } else {
-                        msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                        msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })} fuera de plazo institucional.`;
                         badge.textContent = "VENCIDO";
                         badge.className = "px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest relative z-10";
                         icon.className = "w-8 h-8 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400";
@@ -501,4 +717,5 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <div th:replace="~{layout :: scripts}"></div>
 </body>
+
 </html>

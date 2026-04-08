@@ -14,15 +14,18 @@
                 <!-- Compliance Banner -->
                 <div id="complianceBar" class="compliance-banner" style="display:none">
                     <div class="flex items-center gap-4 relative z-10">
-                        <div id="compIcon" class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <div id="compIcon"
+                            class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                             <span class="material-icons">event_available</span>
                         </div>
                         <div>
-                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de Cumplimiento Logístico</p>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-white/50">Estatus de
+                                Cumplimiento Logístico</p>
                             <h4 id="compMsg" class="text-xs font-black italic">--</h4>
                         </div>
                     </div>
-                    <div id="compBadge" class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
+                    <div id="compBadge"
+                        class="px-4 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase tracking-widest relative z-10">
                         Sincronizado
                     </div>
                 </div>
@@ -31,7 +34,9 @@
                 <div class="flex flex-col xl:flex-row gap-6 items-start">
                     <div class="flex-1 space-y-3">
                         <div class="flex items-center gap-3">
-                            <span class="px-3 py-1 bg-blue-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Live Engine</span>
+                            <span
+                                class="px-3 py-1 bg-blue-600 text-[9px] text-white font-black rounded-lg uppercase tracking-widest shadow-lg animate-bounce">Live
+                                Engine</span>
                             <h1 class="text-3xl font-black text-slate-900 tracking-tight">Análisis Predictivo RCF</h1>
                         </div>
                         <p class="text-slate-500 font-bold text-xs max-w-xl leading-relaxed italic">
@@ -40,17 +45,21 @@
                         </p>
                     </div>
 
-                    <div class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
+                    <div
+                        class="glass-card flex-1 min-w-[380px] p-5! flex flex-col justify-between border-blue-100/50 border-2 overflow-hidden">
                         <div class="flex justify-between items-start mb-2">
-                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción Próxima Quincena</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Predicción
+                                Próxima Quincena</p>
                             <span class="material-icons text-blue-500">auto_awesome</span>
                         </div>
                         <div class="relative h-[200px] w-full bg-slate-50/50 rounded-2xl p-2">
-                            <h3 id="predictionScore" class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
+                            <h3 id="predictionScore"
+                                class="absolute top-4 left-4 text-3xl font-black text-slate-800 z-10">--%</h3>
                             <canvas id="trendChart"></canvas>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span id="predictionLabel" class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Calculando...</span>
+                            <span id="predictionLabel"
+                                class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Calculando...</span>
                             <span class="text-[9px] text-slate-400 font-bold italic">Confidence: 94.2%</span>
                         </div>
                     </div>
@@ -61,7 +70,8 @@
                     <div class="glass-card p-2! rounded-2xl! flex flex-wrap items-center gap-2 flex-1 lg:flex-none">
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-blue-500 text-sm">apartment</span>
-                            <select id="pabSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                            <select id="pabSelect"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option>Segundo piso</option>
                                 <option selected>Tercer piso</option>
                                 <option>Cuarto piso</option>
@@ -70,18 +80,21 @@
                         </div>
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-purple-500 text-sm">schedule</span>
-                            <select id="tipoSelect" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                            <select id="tipoSelect"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="M" selected>Mensual</option>
                                 <option value="Q">Quincenal</option>
                             </select>
                         </div>
                         <div class="toolbar-pill px-3! py-2!">
                             <span class="material-icons text-emerald-500 text-sm">event</span>
-                            <input id="monthInput" type="month" class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
+                            <input id="monthInput" type="month"
+                                class="bg-transparent font-black outline-none cursor-pointer w-28 text-[11px]" />
                         </div>
                         <div id="quinWrap" class="toolbar-pill px-3! py-2! hidden">
                             <span class="material-icons text-amber-500 text-sm">pin</span>
-                            <select id="quinInput" class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
+                            <select id="quinInput"
+                                class="bg-transparent font-black outline-none cursor-pointer text-[11px]">
                                 <option value="1">1ra</option>
                                 <option value="2">2da</option>
                             </select>
@@ -96,25 +109,32 @@
                             <button id="pdfBtn" class="btn-action" title="PDF">
                                 <span class="material-icons">description</span>
                             </button>
-                            <button id="xlPabBtn" class="btn-action" title="Excel">
+                            <button id="xlPabBtn" class="btn-action" title="Excel Pabellón">
                                 <span class="material-icons">query_stats</span>
+                            </button>
+                            <button id="xlAllBtn" class="btn-action" title="Excel Global">
+                                <span class="material-icons">language</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- ALERTA DINÁMICA DE SISTEMA -->
-                <div id="urgentAlert" style="display:none;" class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
+                <div id="urgentAlert" style="display:none;"
+                    class="animate-pulse flex items-center justify-between p-4 bg-rcf-alert text-white rounded-3xl shadow-xl">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                             <span class="material-icons">emergency_share</span>
                         </div>
                         <div>
-                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">Alerta de Cumplimiento</p>
-                            <h4 id="urgentMsg" class="text-sm font-black italic">Detección de Bajo Cumplimiento en Pabellón</h4>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">
+                                Alerta de Cumplimiento</p>
+                            <h4 id="urgentMsg" class="text-sm font-black italic">Detección de Bajo Cumplimiento en
+                                Pabellón</h4>
                         </div>
                     </div>
-                    <button onclick="getEl('urgentAlert').remove()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Cerrar</button>
+                    <button onclick="getEl('urgentAlert').remove()"
+                        class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-widest">Cerrar</button>
                 </div>
 
                 <div id="status" class="status-msg fade-in"></div>
@@ -126,7 +146,8 @@
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Registros Eff.</p>
                             <div class="tooltip-container">
                                 <span class="material-icons text-slate-300 text-sm">info_outline</span>
-                                <div class="tooltip-content uppercase tracking-widest">Actividades clínicas capturadas exitosamente a través de RCF.</div>
+                                <div class="tooltip-content uppercase tracking-widest">Actividades clínicas capturadas
+                                    exitosamente a través de RCF.</div>
                             </div>
                         </div>
                         <h2 id="mRCF" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
@@ -136,7 +157,9 @@
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fuga Datos</p>
                             <div class="tooltip-container">
                                 <span class="material-icons text-rose-400 text-sm animate-pulse">info</span>
-                                <div class="tooltip-content uppercase tracking-widest text-rose-200">Registros en Hosvital NO replicados en RCF. Indica brecha de cumplimiento y pérdida de trazabilidad.</div>
+                                <div class="tooltip-content uppercase tracking-widest text-rose-200">Registros en
+                                    Hosvital NO replicados en RCF. Indica brecha de cumplimiento y pérdida de
+                                    trazabilidad.</div>
                             </div>
                         </div>
                         <h2 id="mHOS" class="text-4xl font-black text-slate-900 tracking-tighter">0</h2>
@@ -150,9 +173,11 @@
                             <div id="mUsoBar" class="bg-emerald-500 h-full" style="width: 0%"></div>
                         </div>
                     </div>
-                    <div class="stat-card border-b-4 border-b-blue-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
+                    <div
+                        class="stat-card border-b-4 border-b-blue-400 bg-slate-900! text-white! p-6! flex flex-col justify-center">
                         <div class="flex justify-between items-center mb-4 text-white/40">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">Motor IA Predictive</p>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-blue-200">Motor IA Predictive
+                            </p>
                             <span class="material-icons text-blue-400 text-2xl animate-spin-slow">psychology</span>
                         </div>
                         <h2 id="aiScore" class="text-4xl font-black tracking-tighter text-white">ALPHA</h2>
@@ -161,11 +186,16 @@
 
                 <!-- ANALISIS DE PABELLÓN -->
                 <div class="glass-card shadow-2xl p-0! overflow-hidden border border-slate-100">
-                    <div class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
-                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Escrutinio Operativo de Personal</h2>
+                    <div
+                        class="px-6 py-5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
+                        <h2 class="text-lg font-black text-slate-800 tracking-tight">Escrutinio Operativo de Personal
+                        </h2>
                         <div class="flex items-center gap-2">
-                            <button id="quickPrevBtn" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:text-blue-600 transition-all">Histórico</button>
-                            <button id="addRowBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-blue-700 transition-all">+ Integrar</button>
+                            <button id="quickPrevBtn"
+                                class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black uppercase hover:text-blue-600 transition-all">Histórico</button>
+                            <button id="addRowBtn"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase hover:bg-blue-700 transition-all">+
+                                Integrar</button>
                         </div>
                     </div>
 
@@ -175,6 +205,7 @@
                                 <tr>
                                     <th class="w-32">Pabellón</th>
                                     <th class="w-24">Cód ID</th>
+                                    <th class="w-24">Documento</th>
                                     <th class="min-w-[280px]">Nombre del Profesional</th>
                                     <th class="w-20 text-right">RCF</th>
                                     <th class="w-20 text-right">Hosp.</th>
@@ -187,7 +218,9 @@
                             <tbody id="tbody"></tbody>
                             <tfoot class="bg-slate-900 text-white">
                                 <tr>
-                                    <td colspan="3" class="px-6 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">Consolidado Matemático</td>
+                                    <td colspan="4"
+                                        class="px-6 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">
+                                        Consolidado Matemático</td>
                                     <td class="px-4 text-right font-black" id="tRCF">0</td>
                                     <td class="px-4 text-right font-black" id="tHOS">0</td>
                                     <td class="px-4 text-right font-black opacity-40" id="tTotal">0</td>
@@ -202,23 +235,27 @@
                 <!-- SECCIÓN ANALÍTICA AVANZADA -->
                 <section id="alertsSec" style="display:none;" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
                     <div class="lg:col-span-2 glass-card border-l-8 border-l-slate-900 bg-slate-900 text-white">
-                        <h4 class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
+                        <h4
+                            class="text-[10px] font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-2 text-blue-400">
                             <span class="material-icons animate-pulse">analytics</span> Rendimiento Logístico
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-3">
-                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Alertas Críticas</p>
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Alertas
+                                    Críticas</p>
                                 <ul id="critLowList" class="space-y-2 text-xs font-bold"></ul>
                             </div>
                             <div class="space-y-3">
-                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Desviaciones</p>
+                                <p class="text-[9px] font-black text-white/40 uppercase tracking-widest">Desviaciones
+                                </p>
                                 <ul id="modLowList" class="space-y-2 text-xs font-bold"></ul>
                             </div>
                         </div>
                     </div>
 
                     <div class="glass-card border-l-8 border-l-emerald-400 bg-emerald-50/20">
-                        <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">🏆 Cuadro Honor</h4>
+                        <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-6">🏆 Cuadro
+                            Honor</h4>
                         <ul id="goodList" class="space-y-3 text-xs font-black text-slate-700"></ul>
                     </div>
                 </section>
@@ -232,21 +269,21 @@
     <div th:replace="~{layout :: auth-scripts}"></div>
 
     <script type="module" th:inline="none">
-    let isAuxiliaresInitialized = false;
-    const initAuxiliaresAnalytics = async () => {
-        if (isAuxiliaresInitialized) return;
-        
-        let retry = 0;
-        while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
-            await new Promise(r => setTimeout(r, 100));
-            retry++;
-        }
+        let isAuxiliaresInitialized = false;
+        const initAuxiliaresAnalytics = async () => {
+            if (isAuxiliaresInitialized) return;
 
-        if (!window.firebaseInstance || !window.firebaseFirestore) return;
-        isAuxiliaresInitialized = true;
+            let retry = 0;
+            while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                retry++;
+            }
+
+            if (!window.firebaseInstance || !window.firebaseFirestore) return;
+            isAuxiliaresInitialized = true;
 
             const { auth, db } = window.firebaseInstance;
-            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
+            const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit, writeBatch } = window.firebaseFirestore;
 
             const ensureAuth = async () => {
                 // El login ya se maneja a nivel institucional en firebase-shim.js
@@ -258,6 +295,66 @@
             const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
             const toInt = v => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0; };
             const getEl = id => document.getElementById(id);
+            const pdfSafe = (str = "") => String(str).replaceAll("≤", "<=").replaceAll("≥", ">=").replaceAll("•", "-").replaceAll("—", "-").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/\u00A0/g, " ").replace(/\s+/g, " ").trim();
+
+            const currentKey = () => {
+                const tipo = getEl("tipoSelect").value;
+                const month = (getEl("monthInput").value || "").trim();
+                const quin = tipo === "Q" ? (getEl("quinInput").value || "1") : "0";
+                const pab = getEl("pabSelect").value;
+                if (!/^\d{4}-\d{2}$/.test(month)) throw new Error("Mes inválido");
+                return { tipo, month, quin, pab };
+            };
+
+            const fetchPeriodoArray = async ({ tipo, month, quin, pab }) => {
+                const qy = query(collection(db, "rcf_auxiliares_periodos"),
+                    where("tipo", "==", tipo), where("month", "==", month), where("quincena", "==", quin),
+                    ...(pab ? [where("pabellon", "==", pab)] : []));
+                const snap = await getDocs(qy); const out = []; snap.forEach(d => out.push(d.data())); return out;
+            };
+
+            const downloadBlob = (name, blob) => {
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+                document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+            };
+
+            const ensureXLSX = async () => {
+                if (window.XLSX && window.XLSX.utils) return true;
+                return new Promise((resolve) => {
+                    let attempts = 0;
+                    const interval = setInterval(() => {
+                        attempts++;
+                        if (window.XLSX && window.XLSX.utils) {
+                            clearInterval(interval);
+                            resolve(true);
+                        }
+                        if (attempts > 50) {
+                            clearInterval(interval);
+                            resolve(false);
+                        }
+                    }, 100);
+                });
+            };
+
+            const exportToFile = async (rows, filenameBase) => {
+                const headers = ["Periodo", "Pabellon", "Cod_Prof", "Documento", "Nombre", "RCF", "Hosvital", "Total", "Uso_RCF"];
+                const xlsxOK = await ensureXLSX();
+                if (xlsxOK) {
+                    try {
+                        const XL = window.XLSX;
+                        const dataAoA = [headers, ...rows.map(r => headers.map(h => r[h]))];
+                        const ws = XL.utils.aoa_to_sheet(dataAoA);
+                        ws["!cols"] = headers.map(h => ({ wch: Math.max(12, String(h).length + 2) }));
+                        const wb = XL.utils.book_new(); XL.utils.book_append_sheet(wb, ws, "RCF_AUX");
+                        XL.writeFile(wb, `${filenameBase}.xlsx`, { bookType: "xlsx" });
+                        return;
+                    } catch (e) { console.error("XLSX fail:", e); }
+                }
+                // Fallback CSV (only if XLSX really fails)
+                const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+                const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => esc(r[h])).join(','))).join('\r\n');
+                downloadBlob(`${filenameBase}.csv`, new Blob([csv], { type: "text/csv;charset=utf-8" }));
+            };
 
             let chart;
 
@@ -296,6 +393,7 @@
                 tr.innerHTML = `
                     <td><input type="text" value="${pab}" class="input-rcf !text-[12px]"></td>
                     <td><input type="text" value="${cod}" class="input-rcf !text-slate-400 !text-[12px]"></td>
+                    <td><input type="text" value="${dcto}" class="input-rcf !text-slate-400 !text-[12px]"></td>
                     <td><input type="text" value="${nom}" class="input-rcf !text-slate-800 !text-[13px]"></td>
                     <td><input type="number" value="${rcf}" data-k="rcf" class="input-rcf text-right !font-black !text-blue-600"></td>
                     <td><input type="number" value="${hos}" data-k="hos" class="input-rcf text-right !font-black !text-slate-400"></td>
@@ -334,25 +432,25 @@
                 let prevY = y, prevM = m - 1;
                 if (prevM === 0) { prevM = 12; prevY--; }
                 const prevMStr = `${prevY}-${String(prevM).padStart(2, "0")}`;
-                
+
                 const pab = getEl("pabSelect").value;
                 const t = getEl("tipoSelect").value;
                 const q = t === "Q" ? getEl("quinInput").value : "0";
 
                 try {
-                    const qy = query(collection(db, "rcf_auxiliares_periodos"), 
-                        where("tipo", "==", t), 
-                        where("month", "==", prevMStr), 
-                        where("quincena", "==", q), 
+                    const qy = query(collection(db, "rcf_auxiliares_periodos"),
+                        where("tipo", "==", t),
+                        where("month", "==", prevMStr),
+                        where("quincena", "==", q),
                         where("pabellon", "==", pab));
                     const snap = await getDocs(qy);
                     if (snap.empty) {
                         alert("No se encontraron registros del mes anterior (" + prevMStr + ") para este pabellón.");
                         return;
                     }
-                    
+
                     if (!confirm("Se copiarán los profesionales de " + prevMStr + ". Se borrará lo que tengas en pantalla. ¿Continuar?")) return;
-                    
+
                     getEl("tbody").innerHTML = "";
                     snap.forEach(d => {
                         const x = d.data();
@@ -367,7 +465,7 @@
                 let criticalCount = 0;
                 rows.forEach(tr => {
                     const ins = tr.querySelectorAll('input');
-                    const rcf = toInt(ins[3].value), hos = toInt(ins[4].value), tot = rcf + hos, uso = tot ? rcf / tot : 0;
+                    const rcf = toInt(ins[4].value), hos = toInt(ins[5].value), tot = rcf + hos, uso = tot ? rcf / tot : 0;
                     tr.querySelector('[data-k="total"]').textContent = tot;
                     tr.querySelector('[data-k="uso"]').textContent = (uso * 100).toFixed(0) + "%";
                     const sem = tr.querySelector('[data-k="sem"]');
@@ -393,7 +491,7 @@
                 cList.innerHTML = ""; mList.innerHTML = ""; glass.innerHTML = "";
                 rows.forEach(tr => {
                     const ins = tr.querySelectorAll('input');
-                    const nom = ins[2].value, rcf = toInt(ins[3].value), tot = toInt(tr.querySelector('[data-k="total"]').textContent);
+                    const nom = ins[3].value, rcf = toInt(ins[4].value), tot = toInt(tr.querySelector('[data-k="total"]').textContent);
                     const uso = tot ? rcf / tot : 0;
                     if (!nom) return;
                     const item = `<li class="flex justify-between items-center opacity-80"><span>${nom}</span> <span class="text-[10px] font-black">${rcf} PV</span></li>`;
@@ -414,26 +512,206 @@
             getEl("addRowBtn").addEventListener("click", () => addRow(getEl("pabSelect").value));
             getEl("monthInput").addEventListener("change", () => loadPeriodo());
             getEl("pabSelect").addEventListener("change", () => loadPeriodo());
+            getEl("tipoSelect").addEventListener("change", () => {
+                getEl("quinWrap").classList.toggle("hidden", getEl("tipoSelect").value !== "Q");
+                loadPeriodo();
+            });
+            getEl("quinInput").addEventListener("change", () => loadPeriodo());
+
             getEl("saveBtn").addEventListener("click", async () => {
-                 await ensureAuth();
-                 const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
-                 try {
-                     for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
-                         const ins = tr.querySelectorAll('input');
-                         const cod = ins[1].value, nom = ins[2].value, rcf = toInt(ins[3].value), hos = toInt(ins[4].value);
-                         if(!nom) continue;
-                         const id = `${t}_${m}_${q}_${slug(p)}_${slug(cod||nom)}`;
-                         await setDoc(doc(db, "rcf_auxiliares_periodos", id), {
-                             tipo:t, month:m, quincena:q, pabellon:p, cod_prof:cod, nombre:nom, rcf, hosvital:hos, total:rcf+hos, updatedAt:serverTimestamp()
-                         }, {merge:true});
-                     }
-                     alert("Datos guardados.");
-                 } catch(e) { alert("Fallo al guardar"); }
+                await ensureAuth();
+                const btn = getEl("saveBtn");
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="material-icons animate-spin text-sm">sync</span> Guardando...';
+
+                const t = getEl("tipoSelect").value, m = getEl("monthInput").value, q = t === "Q" ? getEl("quinInput").value : "0", p = getEl("pabSelect").value;
+                try {
+                    const batch = writeBatch(db);
+                    let count = 0;
+                    for (const tr of [...getEl("tbody").querySelectorAll("tr")]) {
+                        const ins = tr.querySelectorAll('input');
+                        const cod = ins[1].value, dct = ins[2].value, nom = ins[3].value, rcf = toInt(ins[4].value), hos = toInt(ins[5].value);
+                        if (!nom) continue;
+                        const id = `${t}_${m}_${q}_${slug(p)}_${slug(cod || nom)}`;
+                        const ref = doc(db, "rcf_auxiliares_periodos", id);
+                        batch.set(ref, {
+                            tipo: t, month: m, quincena: q, pabellon: p, cod_prof: cod, doc_prof: dct, nombre: nom, rcf, hosvital: hos, total: rcf + hos, updatedAt: serverTimestamp()
+                        }, { merge: true });
+                        count++;
+                    }
+                    if (count > 0) {
+                        await batch.commit();
+                        msg("Datos guardados con éxito", "success");
+                    } else {
+                        msg("No hay datos para guardar", "err");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    msg("Error al guardar", "err");
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             });
 
-            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => { 
-                if(u) {
-                    loadPeriodo(defaultMonth); 
+            // Restored Export Logic
+            getEl("xlPabBtn").addEventListener("click", async () => {
+                const k = currentKey(); const periodo = `${k.month}${k.tipo === 'Q' ? ' Q' + k.quin : ''}`;
+                const rows = [...getEl("tbody").querySelectorAll("tr")].map(tr => {
+                    const ins = tr.querySelectorAll("td input");
+                    const pab = ins[0]?.value || "", cod = ins[1]?.value || "", dct = ins[2]?.value || "", nom = ins[3]?.value || "";
+                    const rcf = Number(tr.querySelector('input[data-k="rcf"]')?.value || 0);
+                    const hos = Number(tr.querySelector('input[data-k="hos"]')?.value || 0);
+                    const total = rcf + hos; const uso = total ? rcf / total : 0;
+                    return { Periodo: periodo, Pabellon: pab, Cod_Prof: cod, Documento: dct, Nombre: nom, RCF: rcf, Hosvital: hos, Total: total, Uso_RCF: (uso * 100).toFixed(1) + "%" };
+                });
+                await exportToFile(rows, `RCF_Aux_${slug(k.pab)}_${k.month}${k.tipo === 'Q' ? '_Q' + k.quin : ''}`);
+            });
+
+            getEl("xlAllBtn").addEventListener("click", async () => {
+                try {
+                    const k = currentKey(); const periodo = `${k.month}${k.tipo === 'Q' ? ' Q' + k.quin : ''}`;
+                    const arr = await fetchPeriodoArray({ tipo: k.tipo, month: k.month, quin: k.quin, pab: null });
+                    const rows = arr.map(x => {
+                        const rcf = toInt(x.rcf), hos = toInt(x.hosvital), tot = rcf + hos, uso = tot ? rcf / tot : 0;
+                        return { Periodo: periodo, Pabellon: x.pabellon || "", Cod_Prof: x.cod_prof || "", Documento: x.doc_prof || "", Nombre: x.nombre || "", RCF: rcf, Hosvital: hos, Total: tot, Uso_RCF: (uso * 100).toFixed(1) + "%" };
+                    });
+                    await exportToFile(rows, `RCF_Aux_Todos_${k.month}${k.tipo === 'Q' ? '_Q' + k.quin : ''}`);
+                } catch (e) {
+                    console.error(e);
+                    msg("No se pudo generar Excel global", "err");
+                }
+            });
+
+            getEl("pdfBtn").addEventListener("click", async () => {
+                const k = currentKey();
+                const { jsPDF } = window.jspdf;
+                const docPdf = new jsPDF({ unit: 'pt', format: 'a4' });
+                const M = 40; let y = 40;
+                const pageW = docPdf.internal.pageSize.getWidth();
+                const pageH = docPdf.internal.pageSize.getHeight();
+                const maxW = pageW - M * 2;
+
+                // Helper para limpiar texto de emojis y caracteres que rompen jsPDF
+                const cleanText = (t) => pdfSafe(t).replace(/[^\x00-\x7F]/g, "").trim();
+
+                // Header con Estética Premium
+                try {
+                    const img = new Image(); img.src = '/assets/Logo_Clinica.png'; await img.decode();
+                    const logoH = 60;
+                    const W = logoH * (img.width / img.height || 3);
+                    docPdf.addImage(img, 'PNG', M, y, W, logoH);
+                } catch (e) { }
+
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(20);
+                docPdf.setTextColor(30, 41, 59);
+                docPdf.text('NUEVA CLÍNICA SAGRADO CORAZÓN', pageW - M, y + 25, { align: 'right' });
+                docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(10);
+                docPdf.setTextColor(100, 116, 139);
+                docPdf.text('NIT 900408220 - 1', pageW - M, y + 40, { align: 'right' });
+                
+                y += 80;
+                docPdf.setDrawColor(226, 232, 240);
+                docPdf.setLineWidth(1);
+                docPdf.line(M, y, pageW - M, y);
+                y += 30;
+
+                // Título del Reporte
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(16);
+                docPdf.setTextColor(30, 41, 59);
+                docPdf.text(cleanText(`REPORTE DE CUMPLIMIENTO RCF`), M, y);
+                y += 20;
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(11);
+                docPdf.setTextColor(59, 130, 246);
+                docPdf.text(cleanText(`${k.pab} · ${k.month}${k.tipo === 'Q' ? ' Q' + k.quin : ''}`), M, y);
+                y += 30;
+
+                // Bloques de Resumen Analítico
+                const addStyledBlock = (title, listId, color) => {
+                    const items = [...document.querySelectorAll(`#${listId} li`)].map(li => cleanText(li.textContent));
+                    if (!items.length) return;
+                    if (y > pageH - 100) { docPdf.addPage(); y = 60; }
+                    
+                    // Fondo sutil para el título
+                    docPdf.setFillColor(color[0], color[1], color[2], 0.1);
+                    docPdf.rect(M, y - 12, maxW, 18, 'F');
+                    
+                    docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10);
+                    docPdf.setTextColor(color[0], color[1], color[2]);
+                    docPdf.text(title.toUpperCase(), M + 5, y); y += 18;
+                    
+                    docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(9);
+                    docPdf.setTextColor(71, 85, 105);
+                    items.forEach(t => {
+                        if (y > pageH - 40) { docPdf.addPage(); y = 60; }
+                        docPdf.text('• ' + t, M + 10, y, { maxWidth: maxW - 10 }); y += 13;
+                    });
+                    y += 10;
+                };
+
+                addStyledBlock('Alerta Crítica - Volumen Bajo', 'critLowList', [220, 38, 38]);
+                addStyledBlock('Alerta Moderada - Volumen Bajo', 'modLowList', [217, 119, 6]);
+                addStyledBlock('Cuadro de Honor - Digitalización', 'goodList', [22, 163, 74]);
+
+                if (y > pageH - 150) { docPdf.addPage(); y = 60; }
+
+                // Tabla de Datos Principal
+                const head = [['Pabellón', 'Cód. Prof', 'Documento', 'Nombre', 'RCF', 'Hosvital', 'Total', '% Uso']];
+                const rows = [...getEl("tbody").querySelectorAll("tr")].map(tr => {
+                    const ins = tr.querySelectorAll("td input");
+                    const rcf = Number(tr.querySelector('input[data-k="rcf"]').value || 0);
+                    const hos = Number(tr.querySelector('input[data-k="hos"]').value || 0);
+                    const tot = rcf + hos; const uso = tot ? ((rcf / tot) * 100).toFixed(1) + '%' : '0%';
+                    return [
+                        cleanText(ins[0].value),
+                        cleanText(ins[1].value),
+                        cleanText(ins[2].value),
+                        cleanText(ins[3].value),
+                        rcf,
+                        hos,
+                        tot,
+                        uso
+                    ];
+                });
+
+                docPdf.autoTable({
+                    startY: y,
+                    head,
+                    body: rows,
+                    theme: 'grid',
+                    styles: { font: 'helvetica', fontSize: 8, cellPadding: 4, lineColor: [226, 232, 240], lineWidth: 0.1 },
+                    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                    columnStyles: {
+                        4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' }, 7: { halign: 'center' }
+                    },
+                    alternateRowStyles: { fillColor: [248, 250, 252] }
+                });
+
+                // Footer de Resumen
+                let yf = docPdf.lastAutoTable.finalY + 30;
+                if (yf > pageH - 80) { docPdf.addPage(); yf = 60; }
+                
+                docPdf.setFillColor(241, 245, 249);
+                docPdf.rect(M, yf, maxW, 40, 'F');
+                docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10);
+                docPdf.setTextColor(30, 41, 59);
+                const R = getEl('tRCF').textContent, H = getEl('tHOS').textContent, T = getEl('tTotal').textContent, U = getEl('tUso').textContent;
+                docPdf.text(`RESUMEN GLOBAL:  RCF: ${R}  |  Hosvital: ${H}  |  Total: ${T}  |  Cumplimiento: ${U}`, pageW / 2, yf + 25, { align: 'center' });
+
+                // Footer de Página
+                const who = (getEl('userEmail')?.textContent || '').trim();
+                const when = new Date().toLocaleString();
+                docPdf.setFontSize(8); docPdf.setTextColor(148, 163, 184);
+                docPdf.text(`Generado por: ${who}  |  Fecha: ${when}  |  Página 1 de 1`, pageW / 2, pageH - 20, { align: 'center' });
+
+                docPdf.save(`RCF_Aux_${slug(k.pab)}_${k.month}.pdf`);
+                msg("PDF Generado con éxito", "success");
+            });
+
+            window.firebaseAuth.onAuthStateChanged(window.firebaseAuth.auth, u => {
+                if (u) {
+                    loadPeriodo(defaultMonth);
                     updateCompliance();
                 }
             });
@@ -442,30 +720,30 @@
                 await ensureAuth();
                 const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
                 const now = new Date();
-                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
-                const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
-                
+                const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth() - 1);
+                const mStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth() + 1).padStart(2, "0")}`;
+
                 let workDay = 0, curr = new Date(now.getFullYear(), now.getMonth(), 1);
-                while(curr <= now){
+                while (curr <= now) {
                     const day = curr.getDay(); const iso = curr.toISOString().split('T')[0];
-                    if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
-                    curr.setDate(curr.getDate()+1);
+                    if (day !== 0 && day !== 6 && !HOLIDAYS.includes(iso)) workDay++;
+                    curr.setDate(curr.getDate() + 1);
                 }
 
                 const snap = await getDocs(query(collection(db, "rcf_auxiliares_periodos"), where("month", "==", mStr), limit(1)));
                 const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
-                if(!bar) return;
+                if (!bar) return;
                 bar.style.display = "flex";
-                if(snap.size > 0){
-                    msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
+                if (snap.size > 0) {
+                    msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })} cargado exitosamente.`;
                     badge.textContent = "Sincronizado";
                 } else {
                     const remains = 5 - workDay;
-                    if(remains >= 0){
-                        msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
+                    if (remains >= 0) {
+                        msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })}.`;
                         badge.textContent = "EN PLAZO";
                     } else {
-                        msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
+                        msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO', { month: 'long' })} fuera de plazo institucional.`;
                         badge.textContent = "VENCIDO";
                         badge.className = badge.className.replace("bg-emerald-500", "bg-rose-500");
                         icon.className = icon.className.replace("emerald", "rose");
@@ -488,7 +766,11 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <div th:replace="~{layout :: scripts}"></div>
 </body>
+
 </html>

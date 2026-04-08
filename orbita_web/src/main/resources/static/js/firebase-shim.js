@@ -96,6 +96,17 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         window.dispatchEvent(new CustomEvent('firebase-ready', { detail: user }));
         window.dispatchEvent(new CustomEvent('firebase-user-ready', { detail: user }));
+    } else {
+        // 🛰️ SOPORTE LAN / BULLETPROOF: Si no hay usuario, iniciamos sesión anónima
+        // para habilitar el acceso a la base de datos de notificaciones.
+        signInAnonymously(auth).then(() => {
+            console.log("🛰️ [FIREBASE-SHIM] Acceso anónimo habilitado para red local.");
+        }).catch(err => {
+            // Si incluso el anónimo falla, forzamos que el sistema esté "listo"
+            // para que los listeners no se queden colgados.
+            window.dispatchEvent(new CustomEvent('firebase-ready', { detail: { email: 'anon@clinica.com' } }));
+            console.warn("⚠️ [FIREBASE-SHIM] Error en login anónimo, forzando modo ready:", err);
+        });
     }
 });
 

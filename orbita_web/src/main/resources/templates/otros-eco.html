@@ -170,251 +170,151 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
 
     <script type="module" th:inline="none">
-        let isOtrosInitialized = false;
+        const { auth, db } = window.firebaseInstance || {};
+        const { collection, setDoc, doc, getDocs, getDoc, query, orderBy, where, serverTimestamp, deleteDoc } = window.firebaseFirestore || {};
 
-        const initOtrosEco = async () => {
-            if (isOtrosInitialized) return;
-            
-            // Esperar activamente a Firebase si aún no está
-            let retry = 0;
-            while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
-                await new Promise(r => setTimeout(r, 100));
-                retry++;
+        const okEl = document.getElementById("status");
+        const ok  = t => { if(!okEl)return; okEl.className="status"; okEl.textContent=t; okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",4000); }
+        const err = t => { if(!okEl)return; okEl.className="status err"; okEl.textContent=t; okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",4000); }
+        const fmtDate = ts => ts?.toDate ? ts.toDate().toLocaleString() : (ts? new Date(ts).toLocaleString():"—");
+        const durStr = ms => { if(!ms || ms<0) return "—"; const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000); return (d?d+"d ":"")+(h?h+"h ":"")+(m?m+"m":""); };
+        const pad = n => String(n).padStart(2,"0");
+
+        const saveBtn = document.getElementById("saveBtn"), clearBtn = document.getElementById("clearBtn");
+        const fNo = document.getElementById("fNo"), fEstado = document.getElementById("fEstado"), fSat = document.getElementById("fSat"), fObs = document.getElementById("fObs"), fDesc = document.getElementById("fDesc");
+        const tbody = document.getElementById("tbody"), tbodyHist = document.getElementById("tbodyHist");
+        const monthFilter = document.getElementById("monthFilter");
+
+        const setEditMode = (active) => {
+            if(!saveBtn) return;
+            const card = document.querySelector(".card-oe");
+            if(active) {
+                saveBtn.textContent = "Actualizar Ticket";
+                saveBtn.style.background = "#0284c7";
+                if(card) { card.style.boxShadow = "0 0 0 4px rgba(2, 132, 199, 0.1)"; card.style.borderColor = "#0284c7"; }
+            } else {
+                saveBtn.textContent = "Guardar Cambios";
+                saveBtn.style.background = "";
+                if(card) { card.style.boxShadow = ""; card.style.borderColor = ""; }
+                sessionStorage.removeItem("oteco_edit_id");
             }
+        };
 
-            if (!window.firebaseInstance || !window.firebaseFirestore) {
-                console.error("[OTROS] Firebase no disponible tras 5 segundos.");
-                return;
-            }
-            isOtrosInitialized = true;
+        function clearForm(){ 
+            fNo.value=""; fEstado.value="Registrado"; fSat.value="Pendiente"; fObs.value=""; fDesc.value=""; 
+            setEditMode(false);
+        }
 
-            const { auth, db } = window.firebaseInstance;
-            const { collection, addDoc, setDoc, doc, getDocs, getDoc, query, orderBy, where, serverTimestamp, deleteDoc, limit } = window.firebaseFirestore;
-
-            const okEl = document.getElementById("status");
-            const ok  = t => { if(!okEl) return; okEl.className="status-msg ok"; okEl.textContent=t; okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",4000); }
-            const err = t => { if(!okEl) return; okEl.className="status-msg err"; okEl.textContent=t; okEl.style.display="block"; setTimeout(()=>okEl.style.display="none",4000); }
-            const fmtDate = ts => ts?.toDate ? ts.toDate().toLocaleString('es-CO', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) : (ts? new Date(ts).toLocaleString('es-CO'):"—");
-            const durStr = ms => { if(!ms || ms<0) return "—"; const d=Math.floor(ms/86400000), h=Math.floor((ms%86400000)/3600000), m=Math.floor((ms%3600000)/60000); return (d?d+"d ":"")+(h?h+"h ":"")+(m?m+"m":""); };
-            const pad = n => String(n).padStart(2,"0");
-            const getEl = id => document.getElementById(id);
-
-            const LINKS = [
-                {label:"Staff Aigenda", url:"https://ecodigital.portubien.co/ct/staff"},
-                {label:"Aigenda", url:"https://ecodigital.portubien.co/citapp/login/view_index2/7"},
-                {label:"Mesa de ayuda Go", url:"https://ecodigital.portubien.co/glpi/index.php?redirect=/front/tracking.injector.php&noAUTO=1"},
-                {label:"AMS", url:"http://192.168.10.13/ams/"},
-                {label:"Indicadores Usabilidad", url:"https://ued.portubien.co/"},
-                {label:"Indicadores CMI", url:"https://ecodigital.portubien.co/cmi/clinicas.html"}
-            ];
-            const linksBar = document.getElementById("linksBar");
-            if(linksBar){
-                linksBar.innerHTML = "";
-                LINKS.forEach(l=>{
-                    const a=document.createElement("a");
-                    a.className="linkbtn"; a.textContent=l.label; a.href=l.url; a.target="_blank"; a.rel="noopener";
-                    linksBar.appendChild(a);
-                });
-            }
-
-            const monthFilter = document.getElementById("monthFilter");
-            const fNo = document.getElementById("fNo"), fEstado = document.getElementById("fEstado"), fSat = document.getElementById("fSat"), fObs = document.getElementById("fObs"), fDesc = document.getElementById("fDesc");
-            const saveBtn = document.getElementById("saveBtn");
-            const tbody = document.getElementById("tbody"), tbodyHist = document.getElementById("tbodyHist");
-            const mTotal=document.getElementById("mTotal"), mGestion=document.getElementById("mGestion"), mCerrados=document.getElementById("mCerrados"), mPct=document.getElementById("mPct"), mConf=document.getElementById("mConf"), mNoConf=document.getElementById("mNoConf"), mTTR=document.getElementById("mTTR");
-
-            const COL_ACTIVOS = collection(db, "ecos_otros_tickets");
-            const COL_HIST = collection(db, "ecos_otros_tickets_hist");
-
-            function monthRange(ym){
-                if(!/^\d{4}-\d{2}$/.test(ym)) return [null,null];
-                const [y,m] = ym.split("-").map(Number);
-                return [new Date(y, m-1, 1, 0,0,0,0), new Date(y, m, 1, 0,0,0,0)];
-            }
-
-            let editingId = null;
-            function clearForm(){ fNo.value=""; fEstado.value="Registrado"; fSat.value="Pendiente"; fObs.value=""; fDesc.value=""; editingId=null; if(saveBtn) delete saveBtn.dataset.id; }
-
-            async function loadTickets() {
-                const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
-                let qAct = query(COL_ACTIVOS, orderBy("createdAt","desc")), qHist = query(COL_HIST, orderBy("closedAt","desc"));
-                
-                // Compliance Engine Otros
-                const updateCompliance = async () => {
-                    const HOLIDAYS = ["2026-01-01", "2026-01-12", "2026-03-23", "2026-04-02", "2026-04-03", "2026-05-01", "2026-05-18", "2026-06-08", "2026-06-15", "2026-06-29", "2026-07-20", "2026-08-07", "2026-08-17", "2026-10-12", "2026-11-02", "2026-11-16", "2026-12-08", "2026-12-25"];
-                    const now = new Date();
-                    const dPrev = new Date(); dPrev.setMonth(dPrev.getMonth()-1);
-                    const mPrevStr = `${dPrev.getFullYear()}-${String(dPrev.getMonth()+1).padStart(2,"0")}`;
-                    
-                    let workDay = 0, currCheck = new Date(now.getFullYear(), now.getMonth(), 1);
-                    while(currCheck <= now){
-                        const day = currCheck.getDay(); const iso = currCheck.toISOString().split('T')[0];
-                        if(day!==0 && day!==6 && !HOLIDAYS.includes(iso)) workDay++;
-                        currCheck.setDate(currCheck.getDate()+1);
-                    }
-
-                    const snap = await getDocs(query(collection(db, "ecos_otros_tickets_hist"), where("month", "==", mPrevStr), limit(1)));
-                    const bar = getEl("complianceBar"), msg = getEl("compMsg"), badge = getEl("compBadge"), icon = getEl("compIcon");
-                    if(!bar) return;
-                    bar.style.display = "flex";
-                    if(snap.size > 0){
-                        msg.textContent = `Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} cargado exitosamente.`;
-                        badge.textContent = "Sincronizado";
-                    } else {
-                        const remains = 5 - workDay;
-                        if(remains >= 0){
-                            msg.textContent = `Faltan ${remains} días hábiles para el cierre del reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})}.`;
-                            badge.textContent = "EN PLAZO";
-                        } else {
-                            msg.textContent = `ALERTA: Reporte de ${dPrev.toLocaleString('es-CO',{month:'long'})} fuera de plazo institucional.`;
-                            badge.textContent = "VENCIDO";
-                            badge.style.background = "#f43f5e";
-                            icon.style.background = "rgba(244, 63, 94, 0.2)";
-                            icon.style.color = "#f43f5e";
-                        }
-                    }
-                };
-                updateCompliance();
-
-                if(start && end){
-                    qAct = query(COL_ACTIVOS, where("createdAt", ">=", start), where("createdAt", "<", end), orderBy("createdAt","desc"));
-                    qHist = query(COL_HIST, where("closedAt", ">=", start), where("closedAt", "<", end), orderBy("closedAt","desc"));
-                }
-                tbody.innerHTML="";
-                try {
-                    const snapA = await getDocs(qAct);
-                    snapA.forEach(d=>{
-                        const x=d.data(); 
-                        const stateCls = x.estado?.toLowerCase().includes('gestión') ? 'badge-gestion' : (x.estado?.toLowerCase().includes('validado') ? 'badge-validado' : 'badge-registrado');
-                        const satCls = x.sat === 'Conforme' ? 'sat-conforme' : (x.sat === 'No conforme' ? 'sat-noconforme' : 'sat-pendiente');
-                        const satIcon = x.sat === 'Conforme' ? 'check_circle' : (x.sat === 'No conforme' ? 'cancel' : 'pending');
-
-                        const tr=document.createElement("tr");
-                        tr.innerHTML=`
-                            <td><span style="font-family:monospace; font-weight:900;">${x.no||""}</span></td>
-                            <td style="max-width:300px;"><div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${x.desc||"—"}</div></td>
-                            <td><span class="badge-status ${stateCls}">${x.estado||""}</span></td>
-                            <td><div class="badge-sat ${satCls}"><span class="material-icons" style="font-size:14px;">${satIcon}</span> ${x.sat||"Pend."}</div></td>
-                            <td style="font-size:11px; color:var(--slate-400);">${fmtDate(x.createdAt)}</td>
-                            <td style="text-align:right;">
-                                <button class="btn-oe" style="padding:6px 10px; height:auto;" data-edit><span class="material-icons" style="font-size:16px;">edit</span></button> 
-                                <button class="btn-oe btn-primary" style="padding:6px 10px; height:auto;" data-close><span class="material-icons" style="font-size:16px;">check</span></button>
-                            </td>`;
-                        tr.querySelector('[data-edit]').addEventListener('click', ()=>{ fNo.value = x.no||""; fEstado.value = x.estado||"Registrado"; fSat.value = x.sat||"Pendiente"; fObs.value = x.obs||""; fDesc.value = x.desc||""; editingId = d.id; if(saveBtn) saveBtn.dataset.id = d.id; window.scrollTo({top:0, behavior:'smooth'}); });
-                        tr.querySelector('[data-close]').addEventListener('click', async ()=>{
-                            if(!confirm("¿Estás seguro de cerrar este ticket y moverlo al histórico?")) return;
-                            try{ 
-                                const mNow = new Date();
-                                const mStr = `${mNow.getFullYear()}-${pad(mNow.getMonth()+1)}`;
-                                await setDoc(doc(db,"ecos_otros_tickets_hist", d.id), {...x, estado:"Cerrado", month:mStr, closedAt: serverTimestamp()}, {merge:true}); 
-                                await deleteDoc(doc(db,"ecos_otros_tickets", d.id)); 
-                                ok("Ticket archivado en histórico."); 
-                                await loadTickets(); await loadMetrics(); 
-                            }catch(e){ err("Error al archivar."); }
-                        });
-                        tbody.appendChild(tr);
-                    });
-                    tbodyHist.innerHTML="";
-                    const snapH = await getDocs(qHist);
-                    snapH.forEach(d=>{
-                        const x=d.data(); const created = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const closed = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null; const ttr = (created && closed) ? (closed - created) : null;
-                        const satCls = x.sat === 'Conforme' ? 'sat-conforme' : (x.sat === 'No conforme' ? 'sat-noconforme' : 'sat-pendiente');
-                        const tr=document.createElement("tr");
-                        tr.innerHTML=`
-                            <td><span style="font-family:monospace; font-weight:900;">${x.no||""}</span></td>
-                            <td style="max-width:300px;"><div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${x.desc||"—"}</div></td>
-                            <td><div class="badge-sat ${satCls}">${x.sat||"Pend."}</div></td>
-                            <td style="font-size:11px;">${fmtDate(x.createdAt)}</td>
-                            <td style="font-size:11px;">${fmtDate(x.closedAt)}</td>
-                            <td><span class="badge-status badge-cerrado">${durStr(ttr)}</span></td>
-                            <td style="color:var(--slate-400); font-style:italic;">${x.obs||"—"}</td>`;
-                        tbodyHist.appendChild(tr);
-                    });
-                } catch(e) { console.error("[OTROS] Error loadTickets:", e); }
-            }
-
-            async function loadMetrics(){
-                const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
-                let qAct = COL_ACTIVOS, qHist = COL_HIST;
-                if(start && end){ qAct = query(COL_ACTIVOS, where("createdAt", ">=", start), where("createdAt", "<", end)); qHist = query(COL_HIST, where("closedAt", ">=", start), where("closedAt", "<", end)); }
-                try {
-                    const [a, h] = await Promise.all([getDocs(qAct), getDocs(qHist)]);
-                    const total = a.size + h.size; const gestion = a.size; const cerrados = h.size;
-                    let conf=0, noconf=0, sumMs=0, nCerr=0;
-                    h.forEach(d=>{
-                        const x=d.data(); if((x.sat||"") === "Conforme") conf++; else if((x.sat||"") === "No conforme") noconf++;
-                        const created = x.createdAt?.toDate?.() ? x.createdAt.toDate() : null; const closed = x.closedAt?.toDate?.() ? x.closedAt.toDate() : null;
-                        if(created && closed){ sumMs += (closed - created); nCerr++; }
-                    });
-                    if(mTotal) mTotal.textContent = total; 
-                    if(mGestion) mGestion.textContent = gestion; 
-                    if(mCerrados) mCerrados.textContent = cerrados; 
-                    if(mPct) mPct.textContent = total? ((cerrados/total)*100).toFixed(1)+"%" : "0%"; 
-                    if(mConf) mConf.textContent = conf; 
-                    if(mNoConf) mNoConf.textContent = noconf; 
-                    if(mTTR) mTTR.textContent = nCerr ? durStr(Math.round(sumMs/nCerr)) : "—";
-                } catch(e) { console.error("[OTROS] Error loadMetrics:", e); }
-            }
-
-            if(saveBtn) saveBtn.addEventListener("click", async ()=>{
-                try{
-                    const mNow = new Date();
-                    const mStr = `${mNow.getFullYear()}-${pad(mNow.getMonth()+1)}`;
-                    const payload = { no: (fNo.value||"").trim(), desc: (fDesc.value||"").trim(), estado: fEstado.value, sat: fSat.value, obs: (fObs.value||"").trim(), updatedBy: auth.currentUser?.email||"", updatedAt: serverTimestamp() };
-                    if(!payload.no){ return err("Referencia de ticket requerida."); }
-                    if(editingId){
-                        if(payload.estado==="Cerrado"){
-                            const snap = await getDoc(doc(db,"ecos_otros_tickets", editingId)); const prev = snap.exists() ? snap.data() : {};
-                            await setDoc(doc(db,"ecos_otros_tickets_hist", editingId), { ...prev, ...payload, estado:"Cerrado", month:mStr, createdAt: prev.createdAt || serverTimestamp(), closedAt: serverTimestamp() }, {merge:true});
-                            await deleteDoc(doc(db,"ecos_otros_tickets", editingId)); ok("Ticket cerrado exitosamente."); editingId=null; clearForm();
-                        }else{ await setDoc(doc(db,"ecos_otros_tickets", editingId), payload, {merge:true}); ok("Actualización correcta."); }
-                    }else{ payload.createdAt = serverTimestamp(); await addDoc(COL_ACTIVOS, payload); ok("Ticket registrado con éxito."); }
-                    await loadTickets(); await loadMetrics();
-                }catch(e){ err("Error al procesar la solicitud."); }
-            });
-
-            const clearBtn = document.getElementById("clearBtn");
-            if(clearBtn) clearBtn.addEventListener("click", clearForm);
-            
-            const applyFilterBtn = document.getElementById("applyFilterBtn");
-            if(applyFilterBtn) applyFilterBtn.addEventListener("click", async ()=>{ await loadTickets(); await loadMetrics(); ok("Criterios aplicados."); });
-            
-            const clearFilterBtn = document.getElementById("clearFilterBtn");
-            if(clearFilterBtn) clearFilterBtn.addEventListener("click", async ()=>{ if(monthFilter) monthFilter.value = ""; await loadTickets(); await loadMetrics(); ok("Filtros removidos."); });
-
-            const xlBtn = document.getElementById("xlBtn");
-            if(xlBtn) xlBtn.addEventListener("click", async ()=>{
-                try{
-                    const XL = window.XLSX; const snapA = await getDocs(COL_ACTIVOS); const snapH = await getDocs(COL_HIST);
-                    const wb = XL.utils.book_new();
-                    const dataA = snapA.docs.map(d=>({Referencia:d.data().no, Descripcion:d.data().desc, Estado:d.data().estado, Satisfaccion:d.data().sat, Creado:fmtDate(d.data().createdAt)}));
-                    const dataH = snapH.docs.map(d=>({Referencia:d.data().no, Descripcion:d.data().desc, Satisfaccion:d.data().sat, Creado:fmtDate(d.data().createdAt), Cerrado:fmtDate(d.data().closedAt)}));
-                    XL.utils.book_append_sheet(wb, XL.utils.json_to_sheet(dataA), "En Gestion");
-                    XL.utils.book_append_sheet(wb, XL.utils.json_to_sheet(dataH), "Historico");
-                    XL.writeFile(wb, `Reporte_OtrosEcos_${new Date().toLocaleDateString()}.xlsx`);
-                }catch(e){ err("Falla en exportación Excel."); }
-            });
-
-            const pdfBtn = document.getElementById("pdfBtn");
-            if(pdfBtn) pdfBtn.addEventListener("click", async ()=>{
-                const { jsPDF } = window.jspdf; const docP = new jsPDF();
-                docP.text("Reporte de Gestión de Tickets - Orbita Clínica", 14, 15);
-                docP.autoTable({ html: '.tbl-oe', startY: 20, theme: 'striped', headStyles: {fillColor: [30, 41, 59]} });
-                docP.save("Reporte_Tickets.pdf");
-            });
-
-            window.firebaseAuth.onAuthStateChanged(auth, u=>{ 
-                if(u){ 
-                    const now = new Date(); now.setMonth(now.getMonth()-1); 
-                    if(monthFilter) monthFilter.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}`; 
-                    loadTickets().then(()=>loadMetrics()); 
-                } 
+        const FAST_ANSWERS = ["Solicitud tramitada con el área de TI.", "Incidencia resuelta en sitio.", "Requerimiento rechazado por falta de justificación.", "Se escala a proveedor externo.", "Usuario capacitado sobre el aplicativo.", "Ajuste en base de datos realizado con éxito."];
+        if(saveBtn) {
+            const ansContainer = document.createElement("div");
+            ansContainer.style.margin = "10px 0";
+            ansContainer.innerHTML = `<p style="font-size:9px; font-weight:900; color:var(--slate-400); text-transform:uppercase; margin-bottom:5px;">Respuestas Rápidas</p><div id="fastAnsList" style="display:flex; flex-wrap:wrap; gap:5px;"></div>`;
+            saveBtn.parentElement.insertAdjacentElement("beforebegin", ansContainer);
+            FAST_ANSWERS.forEach(a => {
+                const b = document.createElement("button");
+                b.style = "padding:4px 8px; background:var(--slate-100); border:none; border-radius:8px; font-size:10px; font-weight:700; color:var(--slate-600); cursor:pointer;";
+                b.textContent = a.split(" ")[0] + "..."; b.title = a;
+                b.onclick = (e) => { e.preventDefault(); fObs.value = a; };
+                document.getElementById("fastAnsList").appendChild(b);
             });
         }
 
-        window.addEventListener('firebase-ready', initOtrosEco);
-        if (window.firebaseInstance) initOtrosEco();
+        const mTotal=document.getElementById("mTotal"), mGestion=document.getElementById("mGestion"), mCerrados=document.getElementById("mCerrados"), mPct=document.getElementById("mPct"), mConf=document.getElementById("mConf"), mNoConf=document.getElementById("mNoConf"), mTTR=document.getElementById("mTTR");
+
+        function monthRange(ym){
+            if(!/^\d{4}-\d{2}$/.test(ym)) return [null,null];
+            const [y,m] = ym.split("-").map(Number);
+            return [new Date(y, m-1, 1), new Date(y, m, 1)];
+        }
+
+        async function loadAll(){
+            if(!db) return;
+            const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
+            let qAct = query(collection(db, "ecos_otros_tickets"), orderBy("createdAt","desc"));
+            if(start && end) qAct = query(collection(db, "ecos_otros_tickets"), where("createdAt", ">=", start), where("createdAt", "<", end), orderBy("createdAt","desc"));
+
+            let qHist = query(collection(db, "ecos_otros_tickets_hist"), orderBy("closedAt","desc"));
+            if(start && end) qHist = query(collection(db, "ecos_otros_tickets_hist"), where("closedAt", ">=", start), where("closedAt", "<", end), orderBy("closedAt","desc"));
+
+            tbody.innerHTML="";
+            try {
+                const snapA = await getDocs(qAct);
+                snapA.forEach(d=>{
+                    const x=d.data(); const tr=document.createElement("tr");
+                    tr.innerHTML=`<td><b style="color:var(--slate-800)">${x.no||""}</b></td><td class="muted">${(x.desc||"").slice(0,80)}...</td><td><span style="font-size:10px; font-weight:900; padding:2px 6px; background:#f1f5f9; border-radius:4px;">${x.estado||""}</span></td><td>${x.sat||""}</td><td>${fmtDate(x.createdAt)}</td><td style="text-align:right"><button class="btn-edit" style="background:none; border:none; color:var(--institutional-blue); font-weight:700; cursor:pointer;">Editar</button> <button class="btn-del" style="background:none; border:none; color:var(--slate-400); cursor:pointer;"><i class="material-icons" style="font-size:16px; position:relative; top:3px;">delete</i></button></td>`;
+                    tr.querySelector('.btn-edit').onclick = (e) => { 
+                        e.preventDefault();
+                        fNo.value = x.no; fEstado.value = x.estado; fSat.value = x.sat; fObs.value = x.obs; fDesc.value = x.desc;
+                        sessionStorage.setItem("oteco_edit_id", d.id);
+                        setEditMode(true); window.scrollTo({ top: 0, behavior: 'smooth' });
+                    };
+                    tr.querySelector('.btn-del').onclick = async (e) => { e.preventDefault(); if(confirm("¿Eliminar?")) { await deleteDoc(doc(db,"ecos_otros_tickets", d.id)); loadAll(); loadMetrics(); ok("Borrado"); } };
+                    tbody.appendChild(tr);
+                });
+
+                tbodyHist.innerHTML="";
+                const snapH = await getDocs(qHist);
+                snapH.forEach(d=>{
+                    const x=d.data(); const created = x.createdAt?.toDate?.(), closed = x.closedAt?.toDate?.();
+                    const tr=document.createElement("tr");
+                    tr.innerHTML=`<td>${x.no||""}</td><td class="muted">${(x.desc||"").slice(0,80)}...</td><td>${x.sat||""}</td><td>${fmtDate(x.createdAt)}</td><td>${fmtDate(x.closedAt)}</td><td>${durStr(closed-created)}</td><td>${x.obs||""}</td>`;
+                    tbodyHist.appendChild(tr);
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadMetrics(){
+            if(!db) return;
+            const ym = monthFilter.value || ""; const [start,end] = monthRange(ym);
+            let qAct = collection(db, "ecos_otros_tickets"), qHist = collection(db, "ecos_otros_tickets_hist");
+            if(start && end){ qAct = query(qAct, where("createdAt", ">=", start), where("createdAt", "<", end)); qHist = query(qHist, where("closedAt", ">=", start), where("closedAt", "<", end)); }
+            const [a, h] = await Promise.all([getDocs(qAct), getDocs(qHist)]);
+            const total = a.size + h.size;
+            let conf=0, sumMs=0, nCerr=0;
+            h.forEach(d=>{ const x=d.data(); if(x.sat==="Conforme") conf++; const c=x.createdAt?.toDate?.(), cl=x.closedAt?.toDate?.(); if(c && cl){ sumMs+=(cl-c); nCerr++; } });
+            mTotal.textContent = total; mGestion.textContent = a.size; mCerrados.textContent = h.size;
+            mPct.textContent = total? ((h.size/total)*100).toFixed(1)+"%" : "0%";
+            mConf.textContent = conf; mTTR.textContent = nCerr ? durStr(Math.round(sumMs/nCerr)) : "—";
+        }
+
+        saveBtn.addEventListener("click", async (e)=>{
+            e.preventDefault(); if(!db || saveBtn.disabled) return;
+            try{
+                saveBtn.disabled = true;
+                const editingId = sessionStorage.getItem("oteco_edit_id");
+                const payload = { no: fNo.value.trim(), desc: fDesc.value.trim(), estado: fEstado.value, sat: fSat.value, obs: fObs.value.trim(), updatedAt: serverTimestamp() };
+                if(!payload.no) { saveBtn.disabled=false; return err("Nº Requerido"); }
+
+                const docId = editingId || payload.no.replace(/\s+/g, "_");
+                
+                if(payload.estado==="Cerrado"){
+                    const snap = await getDoc(doc(db,"ecos_otros_tickets", docId));
+                    if(snap.exists()){
+                        await setDoc(doc(db,"ecos_otros_tickets_hist", docId), { ...snap.data(), ...payload, closedAt: serverTimestamp() }, {merge:true});
+                        await deleteDoc(doc(db,"ecos_otros_tickets", docId));
+                    }
+                } else {
+                    if(!editingId) payload.createdAt = serverTimestamp();
+                    await setDoc(doc(db, "ecos_otros_tickets", docId), payload, {merge:true}); 
+                }
+                ok("Guardado"); clearForm(); loadAll(); loadMetrics();
+            } catch(e) { console.error(e); err("Error"); } finally { saveBtn.disabled = false; }
+        });
+
+        clearBtn.onclick = (e) => { e.preventDefault(); clearForm(); };
+        document.getElementById("applyFilterBtn").onclick = (e) => { e.preventDefault(); loadAll(); loadMetrics(); };
+        document.getElementById("clearFilterBtn").onclick = (e) => { e.preventDefault(); monthFilter.value=""; loadAll(); loadMetrics(); };
+
+        window.addEventListener('firebase-ready', () => { 
+            const linksBar = document.getElementById("linksBar");
+            const LINKS = [{label:"Staff Aigenda", url:"https://ecodigital.portubien.co/ct/staff"}, {label:"Aigenda", url:"https://ecodigital.portubien.co/citapp/login/view_index2/7"}, {label:"Mesa de ayuda Go", url:"https://ecodigital.portubien.co/glpi/index.php?redirect=/front/tracking.injector.php&noAUTO=1"}, {label:"AMS", url:"http://192.168.10.13/ams/"}, {label:"Indicadores Usabilidad", url:"https://ued.portubien.co/"}, {label:"Indicadores CMI", url:"https://ecodigital.portubien.co/cmi/clinicas.html"}];
+            if(linksBar && linksBar.children.length === 0) { LINKS.forEach(l=>{ const a=document.createElement("a"); a.className="linkbtn"; a.textContent=l.label; a.href=l.url; a.target="_blank"; a.rel="noopener"; linksBar.appendChild(a); }); }
+            loadAll(); loadMetrics(); 
+        });
+        if (window.firebaseInstance) { loadAll(); loadMetrics(); }
     </script>
+
     <!-- Tailwind CDN for layout utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
