@@ -47,12 +47,12 @@
 
         const ensureAuth = async () => {
 
-            // Ya no intentamos Anonymous Login porque está restringido en el proyecto.
-            // La sesión debe ser establecida por el Auth Bridge (Google Auth).
-            if (!auth || !auth.currentUser) {
-                console.warn("⚠️ [ALTO_COSTO] Usuario no autenticado detectado.");
-            }
-            return auth?.currentUser;
+                // Ya no intentamos Anonymous Login porque está restringido en el proyecto.
+                // La sesión debe ser establecida por el Auth Bridge (Google Auth).
+                if (!auth || !auth.currentUser) {
+                        console.warn("⚠️ [ALTO_COSTO] Usuario no autenticado detectado.");
+                }
+                return auth?.currentUser;
         };
         await ensureAuth();
         const {
@@ -92,7 +92,7 @@
 
                 const res = await fetch(`${LOCKS_API_BASE}${path}`, opts);
                 let data = null;
-                try { data = await res.json(); } catch (_) {}
+                try { data = await res.json(); } catch (_) { }
                 return { ok: res.ok, status: res.status, data };
         }
 
@@ -256,7 +256,7 @@
 
                 if (lockState.refreshTimer) clearInterval(lockState.refreshTimer);
                 lockState.refreshTimer = setInterval(() => {
-                        refrescarLocksVisuales().catch(() => {});
+                        refrescarLocksVisuales().catch(() => { });
                 }, LOCKS_REFRESH_MS);
         }
 
@@ -277,7 +277,7 @@
                                         { type: 'application/json' }
                                 )
                         );
-                } catch (_) {}
+                } catch (_) { }
         });
 
         // 🔥 HELPERS MÍNIMOS REQUERIDOS (BLINDAJE TOTAL)
@@ -697,7 +697,8 @@
                 "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior"
         ];
 
-        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamiliares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte"];
+        const VARS_HEMO = ["VAR1_PrimerNombre", "VAR2_SegundoNombre", "VAR3_PrimerApellido", "VAR4_SegundoApellido", "VAR5_TipoIdentificacion", "VAR6_Identificacion", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_Regimen", "VAR11_idEPS", "VAR12_idPertenenciaEtnica", "VAR13_idGrupoPoblacional", "VAR14_MunicipioDeResidencia", "VAR15_TelefonoPaciente", "VAR16_FechaAfiliacion", "VAR17_GestacionAlCorte", "VAR18_EnPlanificacion", "VAR19_EdadUsuarioMomentoDx", "VAR20_MotivoPruebaDx", "VAR21_FechaDx", "VAR22_IpsRealizaConfirmacionDx", "VAR23_TipoDeficienciaDiagnosticada", "VAR24_SeveridadSegunNivelFactor", "VAR25_ActividadCoagulanteDelFactor", "VAR26_AntecedentesFamilares", "VAR27_FactorRecibidoTtoIni", "VAR28_EsquemaTtoIni", "VAR29_FechaDeIniPrimerTto", "VAR30_FactorRecibidoTtoAct", "VAR31_EsquemaTtoAct", "VAR32_Peso", "VAR32_1_Dosis", "VAR32_2_FrecuenciaPorSemana", "VAR32_3_UnidadesTotalesEnElPeriodo", "VAR32_4_AplicacionesDelFactorEnElPeriodo", "VAR33_ModalidadAplicacionTratamiento", "VAR34_ViaDeAdministracion", "VAR35_CodigoCumFactorPosRecibido", "VAR36_CodigoCumFactorNoPosRecibido", "VAR37_CodigoCumDeOtrosTratamientosUtilizadosI", "VAR38_CodigoCumDeOtrosTratamientosUtilizadosII", "VAR39_IpsSeguimientoActual", "VAR40_Hemartrosis", "VAR40_1_CantHemartrosisEspontaneasUlt12Meses", "VAR40_2_CantHemartrosisTraumaticasUlt12Meses", "VAR41_HemorragiaIlioPsoas", "VAR42_HemorragiaDeOtrosMusculosTejidos", "VAR43_HemorragiaIntracraneal", "VAR44_HemorragiaEnCuelloOGarganta", "VAR45_HemorragiaOral", "VAR46_OtrasHemorragias", "VAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis", "VAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis", "VAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis", "VAR48_PresenciaDeInhibidor", "VAR48_1_FechaDeterminacionTitulosInhibidor", "VAR48_2_HaRecibidoITI", "VAR48_3_EstaRecibiendoITI", "VAR48_4_DiasEnITI", "VAR49_ArtropatiaHemofilicaCronica", "VAR49_1_CantArticulacionesComprometidas", "VAR50_UsuarioInfectadoPorVhc", "VAR51_UsuarioInfectadoPorVhb", "VAR52_UsuarioInfectadoPorVih", "VAR53_Pseudotumores", "VAR54_Fracturas", "VAR55_Anafilaxis", "VAR55_1_FactorAtribuyeReaccionAnafilactica", "VAR56_CantidadReemplazosArticulares", "VAR56_1_ReemplazosArticularesEnPeriodoDeCorte", "VAR57_LiderAtencion", "VAR57_1_ConsultasConHematologo", "VAR57_2_ConsultasConOrtopedista", "VAR57_3_IntervencionProfesionalEnfermeria", "VAR57_4_ConsultasOdontologo", "VAR57_5_ConsultasNutricionista", "VAR57_6_IntervencionTrabajoSocial", "VAR57_7_ConsultasConFisiatria", "VAR57_8_ConsultasConPsicologia", "VAR57_9_IntervencionQuimicoFarmaceutico", "VAR57_10_IntervencionFisioterapia", "VAR57_11_PrimerNombreMedicoTratantePrincipal", "VAR57_12_SegundoNombreMedicoTratantePrincipal", "VAR57_13_PrimerApellidoMedicoTratantePrincipal", "VAR57_14_SegundoApellidoMedicoTratantePrincipal", "VAR58_CantAtencionesUrgencias", "VAR59_CantEventosHospitalarios", "VAR60_CostoFactoresPos", "VAR61_CostoFactoresNoPos", "VAR62_CostoTotalManejo", "VAR63_CostoIncapacidadesLaborales", "VAR64_Novedades", "VAR64_1_CausaMuerte", "VAR64_2_FechaMuerte", "VAR65_SerialBDUA", "VAR66_V66FechaCorte"];
+
 
         const VARS_CANCER = ["VAR1_PrimerNombreUsuario", "VAR2_SegundoNombreUsuario", "VAR3_PrimerApellidoUsuario", "VAR4_SegundoApellidoUsuario", "VAR5_TipoIdentificacionUsuario", "VAR6_NumeroIdentificacionUsuario", "VAR7_FechaNacimiento", "VAR8_Sexo", "VAR9_Ocupacion", "VAR10_RegimenAfiliacionSGSSS", "VAR11_idEPS", "VAR12_CodigoPertenenciaEtnica", "VAR13_GrupoPoblacional", "VAR14_MunicipioResidencia", "VAR15_NumeroTelefonicopaciente", "VAR16_FechaAfiliacionEPSRegistra", "VAR17_NombreNeoplasia", "VAR18_FechaDx", "VAR19_FechaNotaRemisionMedico", "VAR20_FechaIngresoInstitucionRealizo", "VAR21_TipoEstudioRealizoDiagnostico", "VAR22_MotivoUsuarioNOTuvoDiagnostico", "VAR23_FechaRecoleccionMuestraEstudioHistopatologico", "VAR24_FechaInformHistopatologicoValido", "VAR25_CodigoValidoHabilitacionIPS", "VAR26_FechaPrimeraConsultaMedicoTratante", "VAR27_HistologiaTumorMuestraBiopsia", "VAR28_GradoDiferenciacionTumorSolidoMaligno", "VAR29_SiEsTumorSolido", "VAR30_FechaRealizoEstaEstadificacion", "VAR31_ParaCancerMama", "VAR32_ParaCancerMamaFechaRealizacion", "VAR33_ParaCancerMamaResultadoPrimera", "VAR34_ParaCancerColorrectalEstadificacionDukes", "VAR35_FechaEstadificacionDukes", "VAR36_EstadificacionLinfomaClinicaHodgkin", "VAR37_CancerProstataValorClasificacionGleason", "VAR38_ClasificacionRiesgoLeucemiasLinfomas", "VAR39_FechaClasificacionRiesgo", "VAR40_ObjetivoTratamientoMedicoInic", "VAR41_ObjetivoIntervencionMedicaPeriodoReporte", "VAR42_TieneAntecedenteOtroCancerPrimario", "VAR43_FechaDiagnosticoOtroCancerPrimario", "VAR44_TipoCancerAntecedente", "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual", "VAR46_FaseQuimioterapiaRecibioUsuarioCorte", "VAR46_1_UsuarioRecibioCorteQuimioterapiaPrefase", "VAR46_2_UsuarioRecibioCorteFaseQuimioterapiaInduccion", "VAR46_3_UsuarioRecibioCorteFaseQuimioterapIntensificacion", "VAR46_4_UsuarioRecibioCorteFaseQuimioterapiaConsolidacion", "VAR46_5_UsuarioRecibioCorteFaseQuimioterapiaReinduccion", "VAR46_6_UsuarioRecibiCorteFaseQuimioterapiaMantenimiento", "VAR46_7_UsuarioRecibioCorteFaseQuimioterapiaMantenimientoL", "VAR46_8_UsuarioRecibiCorteOtraFaseQuimioterapia", "VAR47_NumeroCiclosIniciadosPeriodoReporteActual", "VAR48_UbicacionTemporalPrimerCicloRelacionOncologico", "VAR49_FechaInicioPrimerCicloQuimioterapiaCorte", "VAR50_NumeroIPSPrimerCicloCorte", "VAR51_CodigoIPS1PrimerCicloCorte", "VAR52_CodigoIPS2PrimerCicloCorte", "VAR53_MedicamentosAntineoplasicosPrimerCicloCorte", "VAR53_1_Medicamentoadm1PrimerEsquema", "VAR53_2_Medicamentoadm2PrimerEsquema", "VAR53_3_Medicamentoadm3PrimerEsquema", "VAR53_4_Medicamentoadm4PrimerEsquema", "VAR53_5_Medicamentoadm5PrimerEsquema", "VAR53_6_Medicamentoadm6PrimerEsquema", "VAR53_7_Medicamentoadm7PrimerEsquema", "VAR53_8_Medicamentoadm8PrimerEsquema", "VAR53_9_Medicamentoadm9PrimerEsquema", "VAR54_MedicamentoNoPOS1AdministradoUsuarioPrimerCiclo", "VAR55_MedicamentoNoPOS2AdministradoUsuarioPrimerCiclo", "VAR56_MedicamentoNoPOS3AdministradoUsuarioPrimerCiclo", "VAR57_RecibioQuimioterapiaIntratecalPrimerCiclo", "VAR58_FechaFinalizacionPrimerCicloCorte", "VAR59_CaracteristicasActualesPrimerCicloCorte", "VAR60_MotivoFinalizacionPrimerCiclo", "VAR61_UbicacionTemporalUltimoCicloCorteOncologico", "VAR62_FechaInicioUltimoCicloQuimioterapiaCorte", "VAR63_NumeroIPSSuministranUltimoCicloCorte", "VAR64_CodigoIPS1SuministraUltimoCicloReporte", "VAR65_CodigoIPS2SuministraUltimoCicloReporte", "VAR66_MedicamentosAntineoplasicosEspecialistaCancer", "VAR66_1_Medicamentoadm1UltimoEsquema", "VAR66_2_Medicamentoadm2UltimoEsquema", "VAR66_3_Medicamentoadm3UltimoEsquema", "VAR66_4_Medicamentoadm4UltimoEsquema", "VAR66_5_Medicamentoadm5UltimoEsquema", "VAR66_6_Medicamentoadm6UltimoEsquema", "VAR66_7_Medicamentoadm7UltimoEsquema", "VAR66_8_Medicamentoadm8UltimoEsquema", "VAR66_9_Medicamentoadm9UltimoEsquema", "VAR67_MedicamentoNoPOS1AdministradoUsuarioUltimoCiclo", "VAR68_MedicamentoNoPOS2AdministradoUsuarioUltimoCiclo", "VAR69_MedicamentoNoPOS3AdministradoUsuarioUltimoCiclo", "VAR70_RecibioQuimioterapiaIntratecalUltimoCicloCorte", "VAR71_FechaFinalizacionCicloUltimo", "VAR72_CaracteristicasActualesUltimoCicloCorte", "VAR73_MotivoFinalizacionPrematuraUltimoCiclo", "VAR74_SometidoUsuarioCirugiasCurativasPaliativas", "VAR75_NumeroCirugiasSometidoUsuarioPeriodoReporteActual", "VAR76_FechaRealizacionPrimeraCirugiaReporte", "VAR77_CodigoIPSRealizoPrimeraCirugiaCorte", "VAR78_CodigoPrimeraCirugia", "VAR79_UbicacionTemporalPrimeraCirugiaOncologico", "VAR80_FechaRealizacionUltimoProcedimientoQuirurgico", "VAR81_MotivoHaberRealizadoUltimaIntervencionQuirurgica", "VAR82_CodigoIPSRealizaUltimoProcedimientosQuirugicos", "VAR83_CodigoUltimaCirugia", "VAR84_UbicacionTemporalUltimaCirugiaOncologico", "VAR85_EstadoVitalFinalizarUnicaUltimaCirugia", "VAR86_RecibioUsuarioAlgunTipoRadioterapiaCorteActual", "VAR87_NumeroEsquemasRadioterapiaSuministradosCorteActual", "VAR88_FechaInicioPrimerUnicoEsquemaRadioterapia", "VAR89_UbicacionTemporalPrimerUnicoEsquemaRadioterapia", "VAR90_TipoRadioterapiaAplicadaPrimerUnicoEsquema", "VAR91_NumeroIPSSuministranPrimerUnicoEsquemaRadioterapia", "VAR92_CodigoIPS1SuministraRadioterapia", "VAR93_CodigoIPS2SuministraRadioterapia", "VAR94_FechaFinalizacionPrimerUnicoEsquemaRadioterapia", "VAR95_CaracteristicasActualesPrimerEsquemaRadioterapia", "VAR96_MotivoFinalizacionPrimerEsquemaRadioterapia", "VAR97_FechaInicioUltimoEsquemaRadioterapia", "VAR98_UbicacionTemporalUltimoEsquemaRadioterapia", "VAR99_TipoRadioterapiaAplicadaUltimoEsquemaRadioterapia", "VAR100_NumeroIPSSuministranUltimoEsquemaRadioterapia", "VAR101_CodigoIPS1SuministraRadioterapia1", "VAR102_CodigoIPS2SuministraRadioterapia1", "VAR103_FechaFinalizacionUltimoEsquemaRadioterapia", "VAR104_CaracteristicasActualesUltimoEsquemaRadioterapia", "VAR105_MotivoFinalizacionUltimoEsquemaRadioTerapia", "VAR106_RecibioUsuarioTrasplanteCelulasProgenitoras", "VAR107_TipoTrasplanteRecibido", "VAR108_UbicacionTemporalTrasplanteOncologico", "VAR109_FechaTrasplante", "VAR110_CodigoIPSRealizoTrasplante", "VAR111_UsuarioRecibioCirugiaReconstructiva", "VAR112_FechaCirugia", "VAR113_CodigoIPSRealizoCirugiaReconstructiva", "VAR114_UsuarioValoradoConsultaProcedimientoPaliativo", "VAR114_1_UsuarioRecibioConsultaProcedimientoCuidadoPaliativ", "VAR114_2_UsuarioRecibioConsultaCuidadoPaliativo", "VAR114_3_UsuarioRecibioConsultaPaliativoEspecialista", "VAR114_4_UsuarioRecibioConsultaPaliativoGeneral", "VAR114_5_UsuarioRecibioConsultaPaliativoTrabajoSocial", "VAR114_6_UsuarioRecibioConsultaPaliativoNoEspecializado", "VAR115_FechaPrimeraConsultaPaliativoCorte", "VAR116_CodigoIPSRecibioPrimeraValoracionPaliativo", "VAR117_HaSidoValoradoUsuarioPorServicioPsiquiatria", "VAR118_FechaPrimeraConsultaServicioPsiquiatria", "VAR119_CodigoIPSRecibioPrimeraValoracionPsiquiatria", "VAR120_FueValoradoUsuarioPorProfesionalNutricion", "VAR121_FechaConsultaInicialNutricionCorte", "VAR122_CodigoIPSRecibioValoracionNutricion", "VAR123_UsuarioRecibioSoporteNutricional", "VAR124_UsuarioRecibidoTerapiasComplementariasRehabilitaci", "VAR125_TipoTratamientoRecibiendoUsuarioFechaCorte", "VAR126_ResultadoFinalManejoOncologicoCorte", "VAR127_EstadoVitalFinalizarCorte", "VAR128_NovedadADMINISTRATIVAUsuarioReporteAnterior", "VAR129_NovedadClinicaUsuarioFechaCorte", "VAR130_FechaDesafiliacionEPS", "VAR131_FechaMuerte", "VAR132_CausaMuerte", "VAR133_SerialBDUA", "VAR134_V134FechaCorte"];
 
@@ -848,7 +849,7 @@
                 v = v.toUpperCase()
                         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
                         .replace(/Ñ/g, "N")
-                        .replace(/[^A-Z0-9 -]/g, "")
+                        .replace(/[^A-Z0-9 \.-]/g, "")
                         .trimStart();
 
                 // Lógica específica IPS (Ceros a la izquierda para 12 dígitos)
@@ -3247,11 +3248,11 @@
 
         const SISCAD_KEYS_CANCER = SISCAD_HEADER_CANCER.split("\t"); // sin trim, sin map, sin "arreglos"
 
-        // ===== HEADER OFICIAL SISCAD HEMOFILIA (TAB-SEPARADO) =====
+        // ===== HEADER OFICIAL SISCAD HEMOFILIA (TAB-SEPARADO - EXACTAMENTE 66 VARIABLES) =====
         const SISCAD_HEADER_HEMO =
-                "VAR1_PrimerNombre\tVAR2_SegundoNombre\tVAR3_PrimerApellido\tVAR4_SegundoApellido\tVAR5_TipoIdentificacion\tVAR6_Identificacion\tVAR7_FechaNacimiento\tVAR8_Sexo\tVAR9_Ocupacion\tVAR10_Regimen\tVAR11_idEPS\tVAR12_idPertenenciaEtnica\tVAR13_idGrupoPoblacional\tVAR14_MunicipioDeResidencia\tVAR15_TelefonoPaciente\tVAR16_FechaAfiliacion\tVAR17_GestacionAlCorte\tVAR18_EnPlanificacion\tVAR19_EdadUsuarioMomentoDx\tVAR20_MotivoPruebaDx\tVAR21_FechaDx\tVAR22_IpsRealizaConfirmacionDx\tVAR23_TipoDeficienciaDiagnosticada\tVAR24_SeveridadSegunNivelFactor\tVAR25_ActividadCoagulanteDelFactor\tVAR26_AntecedentesFamilares\tVAR27_FactorRecibidoTtoIni\tVAR28_EsquemaTtoIni\tVAR29_FechaDeIniPrimerTto\tVAR30_FactorRecibidoTtoAct\tVAR31_EsquemaTtoAct\tVAR32_Peso\tVAR32_1_Dosis\tVAR32_2_FrecuenciaPorSemana\tVAR32_3_UnidadesTotalesEnElPeriodo\tVAR32_4_AplicacionesDelFactorEnElPeriodo\tVAR33_ModalidadAplicacionTratamiento\tVAR34_ViaDeAdministracion\tVAR35_CodigoCumFactorPosRecibido\tVAR36_CodigoCumFactorNoPosRecibido\tVAR37_CodigoCumDeOtrosTratamientosUtilizadosI\tVAR38_CodigoCumDeOtrosTratamientosUtilizadosII\tVAR39_IpsSeguimientoActual\tVAR40_Hemartrosis\tVAR40_1_CantHemartrosisEspontaneasUlt12Meses\tVAR40_2_CantHemartrosisTraumaticasUlt12Meses\tVAR41_HemorragiaIlioPsoas\tVAR42_HemorragiaDeOtrosMusculosTejidos\tVAR43_HemorragiaIntracraneal\tVAR44_HemorragiaEnCuelloOGarganta\tVAR45_HemorragiaOral\tVAR46_OtrasHemorragias\tVAR47_1_CantOtrasHemorragiasEspontaneasDiffHemartrosis\tVAR47_2_CantOtrasHemorragiasTraumaticasDiffHemartrosis\tVAR47_3_CantOtrasHemorragAsocProcedimientoDiffHemartrosis\tVAR48_PresenciaDeInhibidor\tVAR48_1_FechaDeterminacionTitulosInhibidor\tVAR48_2_HaRecibidoITI\tVAR48_3_EstaRecibiendoITI\tVAR48_4_DiasEnITI\tVAR49_ArtropatiaHemofilicaCronica\tVAR49_1_CantArticulacionesComprometidas\tVAR50_UsuarioInfectadoPorVhc\tVAR51_UsuarioInfectadoPorVhb\tVAR52_UsuarioInfectadoPorVih\tVAR53_Pseudotumores\tVAR54_Fracturas\tVAR55_Anafilaxis\tVAR55_1_FactorAtribuyeReaccionAnafilactica\tVAR56_CantidadReemplazosArticulares\tVAR56_1_ReemplazosArticularesEnPeriodoDeCorte\tVAR57_LiderAtencion\tVAR57_1_ConsultasConHematologo\tVAR57_2_ConsultasConOrtopedista\tVAR57_3_IntervencionProfesionalEnfermeria\tVAR57_4_ConsultasOdontologo\tVAR57_5_ConsultasNutricionista\tVAR57_6_IntervencionTrabajoSocial\tVAR57_7_ConsultasConFisiatria\tVAR57_8_ConsultasConPsicologia\tVAR57_9_IntervencionQuimicoFarmaceutico\tVAR57_10_IntervencionFisioterapia\tVAR57_11_PrimerNombreMedicoTratantePrincipal\tVAR57_12_SegundoNombreMedicoTratantePrincipal\tVAR57_13_PrimerApellidoMedicoTratantePrincipal\tVAR57_14_SegundoApellidoMedicoTratantePrincipal\tVAR58_CantAtencionesUrgencias\tVAR59_CantEventosHospitalarios\tVAR60_CostoFactoresPos\tVAR61_CostoFactoresNoPos\tVAR62_CostoTotalManejo\tVAR63_CostoIncapacidadesLaborales\tVAR64_Novedades\tVAR64_1_CausaMuerte\tVAR64_2_FechaMuerte\tVAR65_SerialBDUA\tVAR66_V66FechaCorte";
+                "VAR1_PrimerNombre\tVAR2_SegundoNombre\tVAR3_PrimerApellido\tVAR4_SegundoApellido\tVAR5_TipoIdentificacion\tVAR6_Identificacion\tVAR7_FechaNacimiento\tVAR8_Sexo\tVAR9_Ocupacion\tVAR10_Regimen\tVAR11_idEPS\tVAR12_idPertenenciaEtnica\tVAR13_idGrupoPoblacional\tVAR14_MunicipioDeResidencia\tVAR15_TelefonoPaciente\tVAR16_FechaAfiliacion\tVAR17_GestacionAlCorte\tVAR18_EnPlanificacion\tVAR19_EdadUsuarioMomentoDx\tVAR20_MotivoPruebaDx\tVAR21_FechaDx\tVAR22_IpsRealizaConfirmacionDx\tVAR23_TipoDeficienciaDiagnosticada\tVAR24_SeveridadSegunNivelFactor\tVAR25_ActividadCoagulanteDelFactor\tVAR26_AntecedentesFamilares\tVAR27_FactorRecibidoTtoIni\tVAR28_EsquemaTtoIni\tVAR29_FechaDeIniPrimerTto\tVAR30_FactorRecibidoTtoAct\tVAR31_EsquemaTtoAct\tVAR32_Peso\tVAR33_ModalidadAplicacionTratamiento\tVAR34_ViaDeAdministracion\tVAR35_CodigoCumFactorPosRecibido\tVAR36_CodigoCumFactorNoPosRecibido\tVAR37_CodigoCumDeOtrosTratamientosUtilizadosI\tVAR38_CodigoCumDeOtrosTratamientosUtilizadosII\tVAR39_IpsSeguimientoActual\tVAR40_Hemartrosis\tVAR41_HemorragiaIlioPsoas\tVAR42_HemorragiaDeOtrosMusculosTejidos\tVAR43_HemorragiaIntracraneal\tVAR44_HemorragiaEnCuelloOGarganta\tVAR45_HemorragiaOral\tVAR46_OtrasHemorragias\tVAR48_PresenciaDeInhibidor\tVAR49_ArtropatiaHemofilicaCronica\tVAR50_UsuarioInfectadoPorVhc\tVAR51_UsuarioInfectadoPorVhb\tVAR52_UsuarioInfectadoPorVih\tVAR53_Pseudotumores\tVAR54_Fracturas\tVAR55_Anafilaxis\tVAR56_CantidadReemplazosArticulares\tVAR57_LiderAtencion\tVAR57_1_ConsultasConHematologo\tVAR57_2_ConsultasConOrtopedista\tVAR57_3_IntervencionProfesionalEnfermeria\tVAR57_4_ConsultasOdontologo\tVAR57_5_ConsultasNutricionista\tVAR57_6_IntervencionTrabajoSocial\tVAR64_Novedades\tVAR64_1_CausaMuerte\tVAR64_2_FechaMuerte\tVAR66_V66FechaCorte";
 
-        const SISCAD_KEYS_HEMO = SISCAD_HEADER_HEMO.split("\t"); // sin trim, sin map
+        const SISCAD_KEYS_HEMO = SISCAD_HEADER_HEMO.split("\t");
 
         // --- VARIABLES DE ESTADO GLOBAL ---
         let currentPacienteId = "";
@@ -3580,7 +3581,7 @@
 
                 // --- 🛡️ LÓGICA DE BLOQUEO (REGLA RÍGIDA: ROJOS + AZULES BLOQUEAN) ---
                 const camposRojos = [...nombresFaltantes, ...window.__erroresDuros];
-                
+
                 // REGLA CRÍTICA: Se bloquea si hay rojos O si hay azules pendientes
                 if (camposRojos.length > 0 || nombresPorConfirmar.length > 0) {
                         // BLOQUEO ACTIVO
@@ -4208,35 +4209,35 @@
                         if (btnDevolver) btnDevolver.style.display = "none";
 
                         if (btnNoCohorte) {
-                                 // 📌 Regla de Negocio: Solo la Analista puede MARCAR. Admins solo pueden VER si ya está marcado.
-                                 const yaMarcado = data?.periodos?.[periodoSel]?.no_cohorte === true;
-                                 const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin" || rolActual === "administrador";
- 
-                                 // Mostrar botón si: Es analista (para marcar o ver) O es Admin y ya está marcado (solo para ver)
-                                 const permitidoMarcar = esAnalista; 
+                                // 📌 Regla de Negocio: Solo la Analista puede MARCAR. Admins solo pueden VER si ya está marcado.
+                                const yaMarcado = data?.periodos?.[periodoSel]?.no_cohorte === true;
+                                const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin" || rolActual === "administrador";
 
-                                 if (permitidoMarcar || (esMasterOSuper && yaMarcado)) {
-                                     btnNoCohorte.style.display = "inline-block";
-                                     btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
-                                     btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
-                                     
-                                     if (yaMarcado) {
-                                         btnNoCohorte.onclick = null;
-                                         btnNoCohorte.style.opacity = "0.7";
-                                         btnNoCohorte.style.cursor = "not-allowed";
-                                         btnNoCohorte.title = "Esta ficha ya fue marcada como ajena a la cohorte";
-                                     } else if (permitidoMarcar) {
-                                         // Solo la analista tiene el evento activo para marcar
-                                         btnNoCohorte.onclick = () => window.marcarNoCohorte();
-                                         btnNoCohorte.style.opacity = "1";
-                                         btnNoCohorte.style.cursor = "pointer";
-                                         btnNoCohorte.title = "Clic para marcar este paciente como ajeno a la cohorte";
-                                     } else {
-                                         btnNoCohorte.style.display = "none";
-                                     }
-                                 } else {
-                                     btnNoCohorte.style.display = "none";
-                                 }
+                                // Mostrar botón si: Es analista (para marcar o ver) O es Admin y ya está marcado (solo para ver)
+                                const permitidoMarcar = esAnalista;
+
+                                if (permitidoMarcar || (esMasterOSuper && yaMarcado)) {
+                                        btnNoCohorte.style.display = "inline-block";
+                                        btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
+                                        btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
+
+                                        if (yaMarcado) {
+                                                btnNoCohorte.onclick = null;
+                                                btnNoCohorte.style.opacity = "0.7";
+                                                btnNoCohorte.style.cursor = "not-allowed";
+                                                btnNoCohorte.title = "Esta ficha ya fue marcada como ajena a la cohorte";
+                                        } else if (permitidoMarcar) {
+                                                // Solo la analista tiene el evento activo para marcar
+                                                btnNoCohorte.onclick = () => window.marcarNoCohorte();
+                                                btnNoCohorte.style.opacity = "1";
+                                                btnNoCohorte.style.cursor = "pointer";
+                                                btnNoCohorte.title = "Clic para marcar este paciente como ajeno a la cohorte";
+                                        } else {
+                                                btnNoCohorte.style.display = "none";
+                                        }
+                                } else {
+                                        btnNoCohorte.style.display = "none";
+                                }
                         }
                 }
 
@@ -4291,18 +4292,18 @@
                         // El tooltip (tip) se busca siempre con la clave técnica ORIGINAL (v)
                         // Búsqueda resiliente (Case-insensitive y sin espacios)
                         const getTip = (obj, k) => {
-                            if (!obj || !k) return "";
-                            // 1. Coincidencia exacta
-                            if (obj[k]) return obj[k];
-                            
-                            // 2. Coincidencia normalizada (Mayúsculas y sin espacios)
-                            const kNorm = k.toUpperCase().replace(/\s+/g, "");
-                            const found = Object.keys(obj).find(key => {
-                                return key.toUpperCase().replace(/\s+/g, "") === kNorm;
-                            });
-                            return found ? obj[found] : "";
+                                if (!obj || !k) return "";
+                                // 1. Coincidencia exacta
+                                if (obj[k]) return obj[k];
+
+                                // 2. Coincidencia normalizada (Mayúsculas y sin espacios)
+                                const kNorm = k.toUpperCase().replace(/\s+/g, "");
+                                const found = Object.keys(obj).find(key => {
+                                        return key.toUpperCase().replace(/\s+/g, "") === kNorm;
+                                });
+                                return found ? obj[found] : "";
                         };
-                        
+
                         const rawTip = (getTip(ayuda, v) || getTip(ayuda, keyStore) || "").toString().trim();
                         // Si no hay tip, mostramos un mensaje genérico para que siempre aparezca el icono 'i'
                         const tip = rawTip || "Dato obligatorio según instructivo técnico de la Cuenta de Alto Costo (CAC).";
@@ -4426,11 +4427,11 @@
                                 if (timerEl) timerEl.textContent = fmtT(totalMostrar);
                         }, 1000);
 
-                         setTimeout(() => {
-                                 window.ejecutarAuditoriaVisual();
-                                 if (typeof window.initTooltips === 'function') window.initTooltips(); 
+                        setTimeout(() => {
+                                window.ejecutarAuditoriaVisual();
+                                if (typeof window.initTooltips === 'function') window.initTooltips();
 
-                                 // Forzar visibilidad del panel de validación
+                                // Forzar visibilidad del panel de validación
                                 const validacionBandeja = document.getElementById("validacionBandeja");
                                 const msgBox = document.getElementById("msgValidacion");
 
@@ -4543,16 +4544,16 @@
         // =========================================================
         async function cargarPacientes() {
                 const authedUser = await ensureAuth();
-                
+
                 // 🔄 Sync Visual Locks
                 if (window.__altoCostoLocks?.refrescarLocksVisuales) {
-                    window.__altoCostoLocks.refrescarLocksVisuales();
-                    iniciarRefreshLocks();
+                        window.__altoCostoLocks.refrescarLocksVisuales();
+                        iniciarRefreshLocks();
                 }
 
                 if (!authedUser) {
-                    console.warn("[ALTO_COSTO] No se puede cargar sin sesión.");
-                    // No bloqueamos por si acaso, pero avisamos
+                        console.warn("[ALTO_COSTO] No se puede cargar sin sesión.");
+                        // No bloqueamos por si acaso, pero avisamos
                 }
                 const elMes = document.getElementById("filtroMes");
                 const elAnio = document.getElementById("filtroAnio");
@@ -4627,15 +4628,15 @@
 
                 // Helper: Obtener el N-ésimo día hábil de un mes
                 const getNthHab = (y, m, n) => {
-                    const h = diasHabilesMes(String(y), String(m).padStart(2, '0'));
-                    return h[n - 1] || h[h.length - 1];
+                        const h = diasHabilesMes(String(y), String(m).padStart(2, '0'));
+                        return h[n - 1] || h[h.length - 1];
                 };
 
                 // Helper: Próximo mes
                 const getProxMes = (y, m) => {
-                    let yy = parseInt(y), mm = parseInt(m) + 1;
-                    if (mm > 12) { mm = 1; yy++; }
-                    return { y: yy, m: mm };
+                        let yy = parseInt(y), mm = parseInt(m) + 1;
+                        if (mm > 12) { mm = 1; yy++; }
+                        return { y: yy, m: mm };
                 };
 
                 // 🔥 HELPER PARA FECHA LOCAL (Evita el bug de las 7:00 PM y UTC)
@@ -4663,16 +4664,16 @@
                 // Calculamos M+1 y M+2
                 const mProx = getProxMes(anioFiltro, mesFiltro);
                 const mSiguiente = getProxMes(mProx.y, mProx.m);
-                
+
                 // Hitos de la ventana
-                const inicioDt = new Date(getNthHab(mProx.y, mProx.m, 6)); 
-                inicioDt.setHours(0,0,0,0);
+                const inicioDt = new Date(getNthHab(mProx.y, mProx.m, 6));
+                inicioDt.setHours(0, 0, 0, 0);
                 const finDt = new Date(getNthHab(mSiguiente.y, mSiguiente.m, 5));
-                finDt.setHours(23,59,59,999);
-                
+                finDt.setHours(23, 59, 59, 999);
+
                 const esMesActivo = (ahoraDt >= inicioDt && ahoraDt <= finDt);
                 const esMesCerrado = (ahoraDt > finDt);
-                
+
                 // Construcción de la lista completa de BD en la ventana
                 const listHabilesVentana = [];
                 // Hábiles de M+1 desde el 6to día
@@ -4681,7 +4682,7 @@
                 // Hábiles de M+2 hasta el 5to día
                 const habilesMSig = diasHabilesMes(String(mSiguiente.y), String(mSiguiente.m).padStart(2, '0'));
                 habilesMSig.forEach(d => { if (d <= finDt) listHabilesVentana.push(d); });
-                
+
                 const totalDiasVentana = listHabilesVentana.length;
                 const diasRestantesVentana = listHabilesVentana.filter(d => getLocalYYYYMMDD(d) >= hoyStr2).length;
                 const diasHabilesTranscurridos = totalDiasVentana - diasRestantesVentana;
@@ -4704,7 +4705,7 @@
                         for (const k of combinedKeys) {
                                 if (isKeyClinica(k)) {
                                         const val = p[k] ?? base[k];
-                                        if (isRealValue(val)) return false; 
+                                        if (isRealValue(val)) return false;
                                 }
                         }
                         if (p.periodos) {
@@ -4712,12 +4713,12 @@
                                         const vars = p.periodos[pKey]?.variables || {};
                                         for (const vKey in vars) {
                                                 if (isKeyClinica(vKey)) {
-                                                        if (isRealValue(vars[vKey])) return false; 
+                                                        if (isRealValue(vars[vKey])) return false;
                                                 }
                                         }
                                 }
                         }
-                        return true; 
+                        return true;
                 }
                 window.esPacienteIncidenteGlobal = esPacienteIncidente;
 
@@ -5029,7 +5030,7 @@
                                 let validadosPeriodo = 0; // Se redefine como 'aprobado' únicamente (Caja Fuerte)
                                 let validadosHoy = 0;     // Esfuerzo hoy (validado + aprobado)
                                 let gestadosPeriodo = 0;  // Suma total (validado + aprobado) para cálculos de rezago
-                                
+
                                 console.log(`[INDICADORS_CALC] Total Periodo: ${totalPeriodo} | Activos: ${pacientesActivos.length}`);
 
                                 // 🔥 NUEVAS MÉTRICAS DE CALIDAD (TASK turn 272/351)
@@ -5140,32 +5141,32 @@
                                 // Meta diaria base (Rhythm): pac. restantes / días restantes de ventana
                                 metaHoyFinal = 0;
                                 let ritmoIdealDiario = totalPeriodo / (totalDiasVentana || 1);
-                                
-                                if (esMesActivo) {
-                                    const validadosHastaAyer = gestadosPeriodo - validadosHoy;
-                                    const pendientesTotalesHoy = Math.max(totalPeriodo - validadosHastaAyer, 0);
-                                    
-                                    // Meta Hoy = Lo que falta distribuido en lo que queda de la ventana institucional
-                                    metaHoyFinal = (diasRestantesVentana > 0)
-                                        ? Math.ceil(pendientesTotalesHoy / diasRestantesVentana)
-                                        : pendientesTotalesHoy;
-                                        
-                                    // % cumplimiento hoy (Esfuerzo del día vs Meta calculada para hoy)
-                                    porcentajeEjecucion = metaHoyFinal > 0
-                                            ? Math.round((validadosHoy / metaHoyFinal) * 100)
-                                            : 100;
 
-                                    proyeccionAlRitmoActual = gestadosPeriodo + (validadosHoy * Math.max(diasRestantesVentana - 1, 0));
-                                    
-                                    // Lo que DEBERÍA llevar acumulado hoy idealmente
-                                    pacientesEsperadosHastaHoy = Math.floor(ritmoIdealDiario * diasHabilesTranscurridos);
+                                if (esMesActivo) {
+                                        const validadosHastaAyer = gestadosPeriodo - validadosHoy;
+                                        const pendientesTotalesHoy = Math.max(totalPeriodo - validadosHastaAyer, 0);
+
+                                        // Meta Hoy = Lo que falta distribuido en lo que queda de la ventana institucional
+                                        metaHoyFinal = (diasRestantesVentana > 0)
+                                                ? Math.ceil(pendientesTotalesHoy / diasRestantesVentana)
+                                                : pendientesTotalesHoy;
+
+                                        // % cumplimiento hoy (Esfuerzo del día vs Meta calculada para hoy)
+                                        porcentajeEjecucion = metaHoyFinal > 0
+                                                ? Math.round((validadosHoy / metaHoyFinal) * 100)
+                                                : 100;
+
+                                        proyeccionAlRitmoActual = gestadosPeriodo + (validadosHoy * Math.max(diasRestantesVentana - 1, 0));
+
+                                        // Lo que DEBERÍA llevar acumulado hoy idealmente
+                                        pacientesEsperadosHastaHoy = Math.floor(ritmoIdealDiario * diasHabilesTranscurridos);
                                 } else if (esMesCerrado) {
-                                    pacientesEsperadosHastaHoy = totalPeriodo;
-                                    porcentajeEjecucion = 100;
+                                        pacientesEsperadosHastaHoy = totalPeriodo;
+                                        porcentajeEjecucion = 100;
                                 } else {
-                                    // Periodo futuro: no hay meta aún
-                                    pacientesEsperadosHastaHoy = 0;
-                                    porcentajeEjecucion = 0;
+                                        // Periodo futuro: no hay meta aún
+                                        pacientesEsperadosHastaHoy = 0;
+                                        porcentajeEjecucion = 0;
                                 }
 
                                 // Rezago acumulado = Esperado total vs Ejecutado real
@@ -5621,28 +5622,28 @@
                         const esCancer = (cohorteNorm === "cancer");
                         const listaVarsEval = esCancer ? VARS_CANCER : VARS_HEMO;
 
-                         // 🚩 LÓGICA DE PACIENTE NUEVO VS ANTIGUO (Reparada Definitivamente)
-                         let tipoPaciente = dataExistente.periodos?.[periodoActual]?.tipo_paciente;
- 
-                         // Si es la primera vez absoluta que se guarda en este periodo, evaluamos su origen
-                         if (!tipoPaciente || tipoPaciente === "") {
-                                 const datosBase = dataExistente.datos_base || {};
-                                 // IMPORTANTE: Solo contamos lo que ya venía en datos_base para la marca inicial
-                                 let camposLlenosBase = 0;
- 
-                                 listaVarsEval.forEach(vName => {
-                                         const k = typeof window.canonKey === 'function' ? window.canonKey(vName) : vName.replace(/\s+/g, '');
-                                         const valB = datosBase[k] !== undefined ? String(datosBase[k]).trim() : "";
-                                         
-                                         // Si el dato ya existía históricamente en la base de datos
-                                         if (valB !== "" && valB !== "98" && valB !== "99" && valB !== "1845-01-01") {
-                                                 camposLlenosBase++;
-                                         }
-                                 });
- 
-                                 // Si tiene más de 12 variables en la base (los demográficos + clínicos históricos), es antiguo
-                                 tipoPaciente = (camposLlenosBase > 12) ? "Antiguo" : "Nuevo";
-                         }
+                        // 🚩 LÓGICA DE PACIENTE NUEVO VS ANTIGUO (Reparada Definitivamente)
+                        let tipoPaciente = dataExistente.periodos?.[periodoActual]?.tipo_paciente;
+
+                        // Si es la primera vez absoluta que se guarda en este periodo, evaluamos su origen
+                        if (!tipoPaciente || tipoPaciente === "") {
+                                const datosBase = dataExistente.datos_base || {};
+                                // IMPORTANTE: Solo contamos lo que ya venía en datos_base para la marca inicial
+                                let camposLlenosBase = 0;
+
+                                listaVarsEval.forEach(vName => {
+                                        const k = typeof window.canonKey === 'function' ? window.canonKey(vName) : vName.replace(/\s+/g, '');
+                                        const valB = datosBase[k] !== undefined ? String(datosBase[k]).trim() : "";
+
+                                        // Si el dato ya existía históricamente en la base de datos
+                                        if (valB !== "" && valB !== "98" && valB !== "99" && valB !== "1845-01-01") {
+                                                camposLlenosBase++;
+                                        }
+                                });
+
+                                // Si tiene más de 12 variables en la base (los demográficos + clínicos históricos), es antiguo
+                                tipoPaciente = (camposLlenosBase > 12) ? "Antiguo" : "Nuevo";
+                        }
 
                         const tiempoAnterior = Number(dataExistente?.periodos?.[periodoActual]?.tiempo_segundos || 0);
                         const tiempoTotalFinal = tiempoAnterior + elapsedSec;
@@ -5783,7 +5784,7 @@
                         return;
                 }
 
-                // 5) Construir TXT (📌 Ajuste Quirúrgico: Cabezales con errores tipográficos exigidos por SISCAD)
+                // 5) Construir TXT (📌 Deduplicado por identificación para evitar filas fantasma)
                 const officialHeaderKeys = KEYS.map(k => {
                         if (k === "VAR16_FechaAfiliacionEPSRegistra") return "VAR16_FechaAiliacionEPSRegistra";
                         if (k === "VAR28_GradoDiferenciacionTumorSolidoMaligno") return "VAR28_GradoDiferenciacionTumorAolidoMaligno";
@@ -5796,8 +5797,15 @@
                 });
                 let txt = officialHeaderKeys.join("\t") + "\n";
 
+                // Deduplicar asegurando que solo salga una fila por ID
+                const idsProcesados = new Set();
+
                 docsFiltrados.forEach(d => {
                         const data = d.data();
+                        const idDoc = data.identificacion || data.datos_base?.VAR6_Identificacion || d.id;
+                        if (idsProcesados.has(idDoc)) return;
+                        idsProcesados.add(idDoc);
+
                         const varsPeriodo = data?.periodos?.[p]?.variables || {};
                         const base = data?.datos_base || {};
 
@@ -5808,13 +5816,12 @@
                                 else if (base[key] !== undefined && base[key] !== null && `${base[key]}`.trim() !== "") val = `${base[key]}`.trim();
                                 else if (data[key] !== undefined && data[key] !== null && `${data[key]}`.trim() !== "") val = `${data[key]}`.trim();
 
-                                // Defaults SISCAD típicos SOLO para cáncer (igual que tu export original)
+                                // Defaults SISCAD típicos SOLO para cáncer
                                 if (formatoEsCancer) {
                                         if (key.startsWith("VAR2_") && val === "") val = "NONE";
                                         if (key.startsWith("VAR4_") && val === "") val = "NOAP";
                                 }
 
-                                if (val === "") val = "";
                                 return val;
                         });
 
@@ -6176,244 +6183,247 @@
         };
 
         // --- CARGUE UNIFICADO: CÁNCER (por posición como ya funciona) + HEMOFILIA (por encabezado) ---
-        document.getElementById('excelInput').addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (!file) return;
+        const excelInputEl = document.getElementById('excelInput');
+        if (excelInputEl) {
+                excelInputEl.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        if (!file) return;
 
-                const cohorte = document.getElementById('tipoCargue').value;
-                const reader = new FileReader();
+                        const cohorte = document.getElementById('tipoCargue').value;
+                        const reader = new FileReader();
 
-                reader.onload = async (event) => {
-                        try {
-                                const data = new Uint8Array(event.target.result);
-                                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-                                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                                const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                        reader.onload = async (event) => {
+                                try {
+                                        const data = new Uint8Array(event.target.result);
+                                        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                                // --- Helper: Excel/Date/serial -> ISO AAAA-MM-DD ---
-                                const toISO = (v) => {
-                                        if (v === null || v === undefined || String(v).trim() === "") return "";
+                                        // --- Helper: Excel/Date/serial -> ISO AAAA-MM-DD ---
+                                        const toISO = (v) => {
+                                                if (v === null || v === undefined || String(v).trim() === "") return "";
 
-                                        // Si ya viene Date (por cellDates:true)
-                                        if (v instanceof Date && !isNaN(v)) {
-                                                const Y = v.getFullYear();
-                                                const M = String(v.getMonth() + 1).padStart(2, "0");
-                                                const D = String(v.getDate()).padStart(2, "0");
-                                                return `${Y}-${M}-${D}`;
-                                        }
-
-                                        // Si viene serial Excel (número)
-                                        if (typeof v === "number" && isFinite(v)) {
-                                                const dc = XLSX.SSF.parse_date_code(v);
-                                                if (dc && dc.y && dc.m && dc.d) {
-                                                        const Y = String(dc.y).padStart(4, "0");
-                                                        const M = String(dc.m).padStart(2, "0");
-                                                        const D = String(dc.d).padStart(2, "0");
+                                                // Si ya viene Date (por cellDates:true)
+                                                if (v instanceof Date && !isNaN(v)) {
+                                                        const Y = v.getFullYear();
+                                                        const M = String(v.getMonth() + 1).padStart(2, "0");
+                                                        const D = String(v.getDate()).padStart(2, "0");
                                                         return `${Y}-${M}-${D}`;
                                                 }
-                                                return String(v);
-                                        }
 
-                                        // Si viene string DD/MM/AAAA
-                                        const s = String(v).trim();
-                                        const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                                        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-
-                                        // Si ya viene ISO, perfecto
-                                        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-
-                                        return s;
-                                };
-
-                                if (!rows || rows.length < 2) {
-                                        alert("El archivo no tiene filas para cargar.");
-                                        return;
-                                }
-
-                                const pAnio = document.getElementById("filtroAnio").value;
-                                const pMes = document.getElementById("filtroMes").value;
-                                const periodo = `${pAnio}-${pMes}`;
-
-                                const cohorteNorm = String(cohorte || "").toLowerCase();
-                                const esCancer = /cancer|cáncer|onc|neo/.test(cohorteNorm);
-
-                                // ====== helpers solo para HEMO (no tocan cáncer) ======
-                                const normHeader = (h) => String(h ?? "").trim().replace(/\s+/g, '');
-                                const headerRow = rows[0] || [];
-                                const H = Object.create(null);
-                                headerRow.forEach((h, idx) => {
-                                        const k = normHeader(h);
-                                        if (k && H[k] === undefined) H[k] = idx;
-                                });
-                                const cellBy = (fila, ...keys) => {
-                                        for (const kRaw of keys) {
-                                                const k = normHeader(kRaw);
-                                                const idx = H[k];
-                                                if (idx !== undefined) {
-                                                        const v = fila[idx];
-                                                        const s = (v !== undefined && v !== null) ? String(v).trim() : "";
-                                                        if (s !== "") return s;
+                                                // Si viene serial Excel (número)
+                                                if (typeof v === "number" && isFinite(v)) {
+                                                        const dc = XLSX.SSF.parse_date_code(v);
+                                                        if (dc && dc.y && dc.m && dc.d) {
+                                                                const Y = String(dc.y).padStart(4, "0");
+                                                                const M = String(dc.m).padStart(2, "0");
+                                                                const D = String(dc.d).padStart(2, "0");
+                                                                return `${Y}-${M}-${D}`;
+                                                        }
+                                                        return String(v);
                                                 }
+
+                                                // Si viene string DD/MM/AAAA
+                                                const s = String(v).trim();
+                                                const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                                                if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+                                                // Si ya viene ISO, perfecto
+                                                if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+                                                return s;
+                                        };
+
+                                        if (!rows || rows.length < 2) {
+                                                alert("El archivo no tiene filas para cargar.");
+                                                return;
                                         }
-                                        return "";
-                                };
 
-                                 const batch = writeBatch(db);
-                                 let totalProcesados = 0;
+                                        const pAnio = document.getElementById("filtroAnio").value;
+                                        const pMes = document.getElementById("filtroMes").value;
+                                        const periodo = `${pAnio}-${pMes}`;
 
-                                 for (let i = 1; i < rows.length; i++) {
-                                         const fila = rows[i];
-                                         if (!fila || fila.length < 7) continue;
+                                        const cohorteNorm = String(cohorte || "").toLowerCase();
+                                        const esCancer = /cancer|cáncer|onc|neo/.test(cohorteNorm);
 
-                                         // =========================================================
-                                         // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
-                                         // =========================================================
-                                         if (esCancer) {
-                                                 const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : "";
-                                                 const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : "";
-                                                 const v6 = fila[6] ? fila[6].toString().trim() : "";
-                                                 if (!v6) continue;
+                                        // ====== helpers solo para HEMO (no tocan cáncer) ======
+                                        const normHeader = (h) => String(h ?? "").trim().replace(/\s+/g, '');
+                                        const headerRow = rows[0] || [];
+                                        const H = Object.create(null);
+                                        headerRow.forEach((h, idx) => {
+                                                const k = normHeader(h);
+                                                if (k && H[k] === undefined) H[k] = idx;
+                                        });
+                                        const cellBy = (fila, ...keys) => {
+                                                for (const kRaw of keys) {
+                                                        const k = normHeader(kRaw);
+                                                        const idx = H[k];
+                                                        if (idx !== undefined) {
+                                                                const v = fila[idx];
+                                                                const s = (v !== undefined && v !== null) ? String(v).trim() : "";
+                                                                if (s !== "") return s;
+                                                        }
+                                                }
+                                                return "";
+                                        };
 
-                                                 const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
-                                                 const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
-                                                 const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
-                                                 const idIdent = v6.toString().trim().replace(/\D/g, '');
-                                                 const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');
-                                                 const docId = `${idIdent}_${idDx}`;
+                                        const batch = writeBatch(db);
+                                        let totalProcesados = 0;
 
-                                                 const pacienteDoc = {
-                                                         identificacion: idIdent,
-                                                         periodo_reporte: periodo,
-                                                         tipo_identificacion: fila[5]?.toString().trim() || "",
-                                                         nombreCompleto: `${v1} ${v3}`.trim().toUpperCase(),
-                                                         cohorte: cohorte,
-                                                         dx: idDx,
-                                                         dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
-                                                         ultima_carga: new Date().toISOString(),
-                                                         periodo_ultima_carga: periodo,
-                                                         datos_base: {
-                                                                 VAR1_PrimerNombreUsuario: v1 || "",
-                                                                 VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
-                                                                 VAR3_PrimerApellidoUsuario: v3 || "",
-                                                                 VAR4_SegundoApellidoUsuario: fila[4]?.toString().trim().toUpperCase() || "NOAP",
-                                                                 VAR5_TipoIdentificacionUsuario: fila[5]?.toString().trim() || "",
-                                                                 VAR6_NumeroIdentificacionUsuario: idIdent || "",
-                                                                 VAR7_FechaNacimiento: toISO(fila[7]),
-                                                                 VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
-                                                         },
-                                                         periodos: {
-                                                                 [periodo]: {
-                                                                         cargado_el: new Date().toISOString(),
-                                                                         validado_el: null,
-                                                                         validador: null,
-                                                                         estado: "pendiente",
-                                                                         variables: {}
-                                                                 }
-                                                         }
-                                                 };
+                                        for (let i = 1; i < rows.length; i++) {
+                                                const fila = rows[i];
+                                                if (!fila || fila.length < 7) continue;
 
-                                                 rows[0].forEach((header, index) => {
-                                                         if (!header) return;
-                                                         const key = header.toString().trim().replace(/\s+/g, '');
-                                                         const valorRaw = fila[index];
-                                                         const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
-                                                         const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-                                                         if (!esDatoBase && key !== "") {
-                                                                 pacienteDoc.periodos[periodo].variables[key] = valor;
-                                                         }
-                                                 });
+                                                // =========================================================
+                                                // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
+                                                // =========================================================
+                                                if (esCancer) {
+                                                        const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : "";
+                                                        const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : "";
+                                                        const v6 = fila[6] ? fila[6].toString().trim() : "";
+                                                        if (!v6) continue;
 
-                                                 batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
-                                                 totalProcesados++;
-                                                 continue;
-                                         }
+                                                        const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
+                                                        const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
+                                                        const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
+                                                        const idIdent = v6.toString().trim().replace(/\D/g, '');
+                                                        const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');
+                                                        const docId = `${idIdent}_${idDx}`;
 
-                                         // =========================================================
-                                         // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
-                                         // =========================================================
-                                         const v1h = cellBy(fila, "VAR1_PrimerNombre");
-                                         const v2h = cellBy(fila, "VAR2_SegundoNombre");
-                                         const v3h = cellBy(fila, "VAR3_PrimerApellido");
-                                         const v4h = cellBy(fila, "VAR4_SegundoApellido");
-                                         const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
-                                         const v6h = cellBy(fila, "VAR6_Identificacion");
-                                         const v7h = cellBy(fila, "VAR7_FechaNacimiento");
-                                         const v8h = cellBy(fila, "VAR8_Sexo");
+                                                        const pacienteDoc = {
+                                                                identificacion: idIdent,
+                                                                periodo_reporte: periodo,
+                                                                tipo_identificacion: fila[5]?.toString().trim() || "",
+                                                                nombreCompleto: `${v1} ${v3}`.trim().toUpperCase(),
+                                                                cohorte: cohorte,
+                                                                dx: idDx,
+                                                                dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
+                                                                ultima_carga: new Date().toISOString(),
+                                                                periodo_ultima_carga: periodo,
+                                                                datos_base: {
+                                                                        VAR1_PrimerNombreUsuario: v1 || "",
+                                                                        VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
+                                                                        VAR3_PrimerApellidoUsuario: v3 || "",
+                                                                        VAR4_SegundoApellidoUsuario: fila[4]?.toString().trim().toUpperCase() || "NOAP",
+                                                                        VAR5_TipoIdentificacionUsuario: fila[5]?.toString().trim() || "",
+                                                                        VAR6_NumeroIdentificacionUsuario: idIdent || "",
+                                                                        VAR7_FechaNacimiento: toISO(fila[7]),
+                                                                        VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
+                                                                },
+                                                                periodos: {
+                                                                        [periodo]: {
+                                                                                cargado_el: new Date().toISOString(),
+                                                                                validado_el: null,
+                                                                                validador: null,
+                                                                                estado: "pendiente",
+                                                                                variables: {}
+                                                                        }
+                                                                }
+                                                        };
 
-                                         const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
-                                         if (!idIdentH) continue;
+                                                        rows[0].forEach((header, index) => {
+                                                                if (!header) return;
+                                                                const key = header.toString().trim().replace(/\s+/g, '');
+                                                                const valorRaw = fila[index];
+                                                                const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
+                                                                const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
+                                                                if (!esDatoBase && key !== "") {
+                                                                        pacienteDoc.periodos[periodo].variables[key] = valor;
+                                                                }
+                                                        });
 
-                                         const docIdH = `${idIdentH}_HEMO`;
-                                         const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                 || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                 || idIdentH;
+                                                        batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
+                                                        totalProcesados++;
+                                                        continue;
+                                                }
 
-                                         const pacienteDocH = {
-                                                 identificacion: idIdentH,
-                                                 periodo_reporte: periodo,
-                                                 tipo_identificacion: v5h || "",
-                                                 nombreCompleto: nombreCompletoH,
-                                                 cohorte: cohorte,
-                                                 dx: "HEMO",
-                                                 dx_descripcion: "Hemofilia",
-                                                 ultima_carga: new Date().toISOString(),
-                                                 periodo_ultima_carga: periodo,
-                                                 datos_base: {
-                                                         VAR1_PrimerNombre: (v1h || "").toUpperCase(),
-                                                         VAR2_SegundoNombre: (v2h || "").toUpperCase(),
-                                                         VAR3_PrimerApellido: (v3h || "").toUpperCase(),
-                                                         VAR4_SegundoApellido: (v4h || "").toUpperCase(),
-                                                         VAR5_TipoIdentificacion: v5h || "",
-                                                         VAR6_Identificacion: idIdentH,
-                                                         VAR7_FechaNacimiento: v7h || "",
-                                                         VAR8_Sexo: (v8h || "").toUpperCase()
-                                                 },
-                                                 periodos: {
-                                                         [periodo]: {
-                                                                 cargado_el: new Date().toISOString(),
-                                                                 validado_el: null,
-                                                                 validador: null,
-                                                                 estado: "pendiente",
-                                                                 variables: {}
-                                                         }
-                                                 }
-                                         };
+                                                // =========================================================
+                                                // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
+                                                // =========================================================
+                                                const v1h = cellBy(fila, "VAR1_PrimerNombre");
+                                                const v2h = cellBy(fila, "VAR2_SegundoNombre");
+                                                const v3h = cellBy(fila, "VAR3_PrimerApellido");
+                                                const v4h = cellBy(fila, "VAR4_SegundoApellido");
+                                                const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
+                                                const v6h = cellBy(fila, "VAR6_Identificacion");
+                                                const v7h = cellBy(fila, "VAR7_FechaNacimiento");
+                                                const v8h = cellBy(fila, "VAR8_Sexo");
 
-                                         rows[0].forEach((header, index) => {
-                                                 if (!header) return;
-                                                 const key = header.toString().trim().replace(/\s+/g, '');
-                                                 if (!key) return;
-                                                 const valorRaw = fila[index];
-                                                 let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
-                                                 if (typeof isDateKey === "function" ? isDateKey(key) : false) {
-                                                         valor = toISO(valorRaw);
-                                                 }
-                                                 const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-                                                 if (!esDatoBase) {
-                                                         pacienteDocH.periodos[periodo].variables[key] = valor;
-                                                 }
-                                         });
+                                                const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
+                                                if (!idIdentH) continue;
 
-                                         batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
-                                         totalProcesados++;
-                                 }
+                                                const docIdH = `${idIdentH}_HEMO`;
+                                                const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
+                                                        || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
+                                                        || idIdentH;
 
-                                 if (totalProcesados > 0) {
-                                     await batch.commit();
-                                     alert(`✅ Sincronización completa: ${totalProcesados} pacientes cargados con éxito.`);
-                                 } else {
-                                     alert("⚠️ No se encontraron registros válidos para cargar.");
-                                 }
-                                 cargarPacientes();
+                                                const pacienteDocH = {
+                                                        identificacion: idIdentH,
+                                                        periodo_reporte: periodo,
+                                                        tipo_identificacion: v5h || "",
+                                                        nombreCompleto: nombreCompletoH,
+                                                        cohorte: cohorte,
+                                                        dx: "HEMO",
+                                                        dx_descripcion: "Hemofilia",
+                                                        ultima_carga: new Date().toISOString(),
+                                                        periodo_ultima_carga: periodo,
+                                                        datos_base: {
+                                                                VAR1_PrimerNombre: (v1h || "").toUpperCase(),
+                                                                VAR2_SegundoNombre: (v2h || "").toUpperCase(),
+                                                                VAR3_PrimerApellido: (v3h || "").toUpperCase(),
+                                                                VAR4_SegundoApellido: (v4h || "").toUpperCase(),
+                                                                VAR5_TipoIdentificacion: v5h || "",
+                                                                VAR6_Identificacion: idIdentH,
+                                                                VAR7_FechaNacimiento: v7h || "",
+                                                                VAR8_Sexo: (v8h || "").toUpperCase()
+                                                        },
+                                                        periodos: {
+                                                                [periodo]: {
+                                                                        cargado_el: new Date().toISOString(),
+                                                                        validado_el: null,
+                                                                        validador: null,
+                                                                        estado: "pendiente",
+                                                                        variables: {}
+                                                                }
+                                                        }
+                                                };
 
-                        } catch (err) {
-                                console.error("Error en correlación:", err);
-                                alert("Error al organizar la base de datos: " + err.message);
-                        }
-                };
+                                                rows[0].forEach((header, index) => {
+                                                        if (!header) return;
+                                                        const key = header.toString().trim().replace(/\s+/g, '');
+                                                        if (!key) return;
+                                                        const valorRaw = fila[index];
+                                                        let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
+                                                        if (typeof isDateKey === "function" ? isDateKey(key) : false) {
+                                                                valor = toISO(valorRaw);
+                                                        }
+                                                        const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
+                                                        if (!esDatoBase) {
+                                                                pacienteDocH.periodos[periodo].variables[key] = valor;
+                                                        }
+                                                });
 
-                reader.readAsArrayBuffer(file);
-        });
+                                                batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
+                                                totalProcesados++;
+                                        }
+
+                                        if (totalProcesados > 0) {
+                                                await batch.commit();
+                                                alert(`✅ Sincronización completa: ${totalProcesados} pacientes cargados con éxito.`);
+                                        } else {
+                                                alert("⚠️ No se encontraron registros válidos para cargar.");
+                                        }
+                                        cargarPacientes();
+
+                                } catch (err) {
+                                        console.error("Error en correlación:", err);
+                                        alert("Error al organizar la base de datos: " + err.message);
+                                }
+                        };
+
+                        reader.readAsArrayBuffer(file);
+                });
+        }
 
         window.manejarEnter = (event, variableActualLabel) => {
                 if (event.key !== "Enter") return;
@@ -6512,8 +6522,8 @@
 
                 // ⚡ CARGA ÚNICA: Evitar que cambios de permisos disparen múltiples lecturas a Firestore
                 if (!window.__cargaInicialCompletada) {
-                    window.__cargaInicialCompletada = true;
-                    cargarPacientes();
+                        window.__cargaInicialCompletada = true;
+                        cargarPacientes();
                 }
         };
 
@@ -6586,7 +6596,7 @@
 
                 document.body.addEventListener('mouseout', (e) => {
                         if (e.target.closest('.info-icon')) {
-                            tooltipEl.classList.remove('visible');
+                                tooltipEl.classList.remove('visible');
                         }
                 }, true);
 
@@ -6604,11 +6614,11 @@
 
         // 🔒 LIBERAR BLOQUEO AL CERRAR
         window.cerrarModal = async () => {
-            if (lockState.currentPatientId) {
-                await liberarLockFicha(lockState.currentPatientId);
-            }
-            const modal = document.getElementById("modalPaciente");
-            if (modal) modal.style.display = "none";
+                if (lockState.currentPatientId) {
+                        await liberarLockFicha(lockState.currentPatientId);
+                }
+                const modal = document.getElementById("modalPaciente");
+                if (modal) modal.style.display = "none";
         };
 
 
