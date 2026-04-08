@@ -111,6 +111,9 @@ public class AuthController {
                     normRole = "super admin";
                 } else if (normalizedEmail.equals("analistaaltocosto@clinicasagradocorazon.com.co")) {
                     normRole = "analista";
+                } else if (normalizedEmail.equals("dirmedica@clinicasagradocorazon.com.co") || 
+                         normalizedEmail.equals("gerencia@clinicasagradocorazon.co")) {
+                    normRole = "admin";
                 } else {
                     throw e; // Otros usuarios siguen bloqueados por 429
                 }

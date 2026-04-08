@@ -12,7 +12,41 @@
         }
 
         const { db, auth } = window.firebaseInstance;
+
+        // 🎨 ESTILOS DINÁMICOS PARA TOOLTIPS (Resiliencia visual)
+        const style = document.createElement('style');
+        style.textContent = `
+                .tooltip-ayuda {
+                        position: fixed;
+                        background: #1e293b;
+                        color: white !important;
+                        padding: 10px 14px;
+                        border-radius: 12px;
+                        font-size: 12px;
+                        line-height: 1.5;
+                        max-width: 320px;
+                        z-index: 999999 !important;
+                        pointer-events: none;
+                        display: none;
+                        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        font-weight: 500;
+                        animation: tooltipFade 0.2s ease-out;
+                }
+                .tooltip-ayuda.visible {
+                        display: block !important;
+                }
+                @keyframes tooltipFade {
+                        from { opacity: 0; transform: translateY(5px); }
+                        to { opacity: 1; transform: translateY(0); }
+                }
+                .info-icon { opacity: 0.8; transition: all 0.2s; }
+                .info-icon:hover { opacity: 1; transform: scale(1.1); background: #3b82f6 !important; }
+        `;
+        document.head.appendChild(style);
+
         const ensureAuth = async () => {
+
             // Ya no intentamos Anonymous Login porque está restringido en el proyecto.
             // La sesión debe ser establecida por el Auth Bridge (Google Auth).
             if (!auth || !auth.currentUser) {
@@ -23,7 +57,7 @@
         await ensureAuth();
         const {
                 collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-                query, where, orderBy, onSnapshot, serverTimestamp
+                query, where, orderBy, onSnapshot, serverTimestamp, writeBatch
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
 
@@ -4132,50 +4166,6 @@
                 if (el.getAttribute("data-volatil") === "true") el.setAttribute("data-confirmado", "true");
 
                 const elV5 = document.getElementById("f_VAR5_TipoIdentificacionUsuario") || document.getElementById("f_VAR5_TipoIdentificacion");
-                const v5Antes = elV5 ? elV5.value : "";
-                const isSelect = (el.tagName === "SELECT");
-                if (!isSelect && el.value.trim() !== "") el.value = window.applyFieldRules(keyStore, el.value);
-                if (!keyStore.includes("VAR5") && elV5 && v5Antes && elV5.value === "") elV5.value = v5Antes;
-
-                clearTimeout(window.validationTimeout);
-                window.validationTimeout = setTimeout(() => { window.ejecutarAuditoriaVisual(); }, 150);
-        };
-
-        document.addEventListener('input', function (e) {
-                if (e.target && e.target.id && e.target.id.startsWith('f_VAR')) { window.controlarFlujoYLimpieza(e.target.id.replace('f_', '')); }
-        });
-        document.addEventListener('change', function (e) {
-                if (e.target && e.target.tagName === 'SELECT' && e.target.id.startsWith('f_VAR')) { window.controlarFlujoYLimpieza(e.target.id.replace('f_', '')); }
-        });
-
-        // =========================================================
-        // 🚀 5. ABRIR FICHA (Carga con inyección de estado Volátil y Cronómetro)
-        // =========================================================
-        window.abrirFicha = async (id, data) => {
-                // 🔒 INTERCEPTOR DE LOCKS
-                if (typeof window.__altoCostoLocks?.tomarLockFicha === 'function') {
-                    const res = await window.__altoCostoLocks.tomarLockFicha(id);
-                    if (res.blocked) {
-                        alert(res.message);
-                        return;
-                    }
-                }
-                
-                const rolActualSnap = String(window.__userRol || "").toLowerCase().trim();
-                const emailActual = String(window.orbitaUser?.email || "").toLowerCase().trim();
-                console.log(`[DEBUG_AUTH] Abriendo ficha. Rol detectado: "${rolActualSnap}" | Email: "${emailActual}"`);
-
-                currentPacienteId = id;
-                // Capture snapshot of original variables to track human vs automatic changes
-                const pSnapshot = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
-                window.__originalVariables = JSON.parse(JSON.stringify(data?.periodos?.[pSnapshot]?.variables || {}));
-
-                cohorteModalActual = data.cohorte || "cáncer";
-                ultimaVariableEnfocada = "";
-
-                const container = document.getElementById("formVariables");
-                if (!container) return;
-                container.innerHTML = "";
 
                 const normCoh = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const isCancer = (normCoh(cohorteModalActual) === "cancer");
@@ -4217,39 +4207,39 @@
                         }
                         if (btnDevolver) btnDevolver.style.display = "none";
 
-                        // 📌 Regla de Negocio: Solo la Analista puede MARCAR. Admins solo pueden VER si ya está marcado.
                         if (btnNoCohorte) {
-                                const yaMarcado = data?.periodos?.[periodoSel]?.no_cohorte === true;
-                                const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin" || rolActual === "administrador";
+                                 // 📌 Regla de Negocio: Solo la Analista puede MARCAR. Admins solo pueden VER si ya está marcado.
+                                 const yaMarcado = data?.periodos?.[periodoSel]?.no_cohorte === true;
+                                 const esMasterOSuper = rolActual === "master admin" || rolActual === "super admin" || rolActual === "administrador";
+ 
+                                 // Mostrar botón si: Es analista (para marcar o ver) O es Admin y ya está marcado (solo para ver)
+                                 const permitidoMarcar = esAnalista; 
 
-                                // Mostrar botón si: Es analista (para marcar o ver) O es Admin y ya está marcado (solo para ver)
-                                // NOTA: Verificamos tanto 'analista' como el correo específico si es necesario por seguridad
-                                const permitidoMarcar = esAnalista || emailActual.includes("analistaaltocosto");
-
-                                if (permitidoMarcar || (esMasterOSuper && yaMarcado)) {
-                                    btnNoCohorte.style.display = "inline-block";
-                                    btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
-                                    btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
-                                    
-                                    if (yaMarcado) {
-                                        btnNoCohorte.onclick = null;
-                                        btnNoCohorte.style.opacity = "0.7";
-                                        btnNoCohorte.style.cursor = "not-allowed";
-                                        btnNoCohorte.title = "Esta ficha ya fue marcada como ajena a la cohorte";
-                                    } else if (permitidoMarcar) {
-                                        // Solo la analista tiene el evento activo para marcar
-                                        btnNoCohorte.onclick = () => window.marcarNoCohorte();
-                                        btnNoCohorte.style.opacity = "1";
-                                        btnNoCohorte.style.cursor = "pointer";
-                                        btnNoCohorte.title = "Clic para marcar este paciente como ajeno a la cohorte";
-                                    } else {
-                                        btnNoCohorte.style.display = "none";
-                                    }
-                                } else {
-                                    btnNoCohorte.style.display = "none";
-                                }
+                                 if (permitidoMarcar || (esMasterOSuper && yaMarcado)) {
+                                     btnNoCohorte.style.display = "inline-block";
+                                     btnNoCohorte.innerHTML = yaMarcado ? `<i data-lucide="check" style="width:16px;"></i> MARCA REGISTRADA` : `<i data-lucide="user-x" style="width:16px;"></i> NO PERTENECE A COHORTE`;
+                                     btnNoCohorte.style.background = yaMarcado ? "#22c55e" : "#dc2626";
+                                     
+                                     if (yaMarcado) {
+                                         btnNoCohorte.onclick = null;
+                                         btnNoCohorte.style.opacity = "0.7";
+                                         btnNoCohorte.style.cursor = "not-allowed";
+                                         btnNoCohorte.title = "Esta ficha ya fue marcada como ajena a la cohorte";
+                                     } else if (permitidoMarcar) {
+                                         // Solo la analista tiene el evento activo para marcar
+                                         btnNoCohorte.onclick = () => window.marcarNoCohorte();
+                                         btnNoCohorte.style.opacity = "1";
+                                         btnNoCohorte.style.cursor = "pointer";
+                                         btnNoCohorte.title = "Clic para marcar este paciente como ajeno a la cohorte";
+                                     } else {
+                                         btnNoCohorte.style.display = "none";
+                                     }
+                                 } else {
+                                     btnNoCohorte.style.display = "none";
+                                 }
                         }
                 }
+
 
                 const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
                 const isFechaVar = (label, k) => (/fecha|date/i.test(label) || /fecha|date/i.test(k));
@@ -4436,10 +4426,11 @@
                                 if (timerEl) timerEl.textContent = fmtT(totalMostrar);
                         }, 1000);
 
-                        setTimeout(() => {
-                                window.ejecutarAuditoriaVisual();
+                         setTimeout(() => {
+                                 window.ejecutarAuditoriaVisual();
+                                 if (typeof window.initTooltips === 'function') window.initTooltips(); 
 
-                                // Forzar visibilidad del panel de validación
+                                 // Forzar visibilidad del panel de validación
                                 const validacionBandeja = document.getElementById("validacionBandeja");
                                 const msgBox = document.getElementById("msgValidacion");
 
@@ -6267,166 +6258,153 @@
                                         return "";
                                 };
 
-                                for (let i = 1; i < rows.length; i++) {
-                                        const fila = rows[i];
-                                        if (!fila || fila.length < 7) continue;
+                                 const batch = writeBatch(db);
+                                 let totalProcesados = 0;
 
-                                        // =========================================================
-                                        // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
-                                        // =========================================================
-                                        if (esCancer) {
-                                                // 1. Extraemos los datos base por posición (columnas fijas del Excel)
-                                                const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : ""; // B - Primer Nombre
-                                                const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : ""; // D - Primer Apellido
-                                                const v6 = fila[6] ? fila[6].toString().trim() : "";               // G - Identificación
-                                                if (!v6) continue;
+                                 for (let i = 1; i < rows.length; i++) {
+                                         const fila = rows[i];
+                                         if (!fila || fila.length < 7) continue;
 
-                                                // 2. Buscamos el Diagnóstico (Dx)
-                                                const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
-                                                const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
-                                                const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
+                                         // =========================================================
+                                         // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
+                                         // =========================================================
+                                         if (esCancer) {
+                                                 const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : "";
+                                                 const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : "";
+                                                 const v6 = fila[6] ? fila[6].toString().trim() : "";
+                                                 if (!v6) continue;
 
-                                                // 3. LLAVE ÚNICA: solo ID + Dx (sin periodo)
-                                                const idIdent = v6.toString().trim().replace(/\D/g, ''); // solo dígitos
-                                                const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');     // limpia para ID
-                                                const docId = `${idIdent}_${idDx}`;
+                                                 const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
+                                                 const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
+                                                 const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
+                                                 const idIdent = v6.toString().trim().replace(/\D/g, '');
+                                                 const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');
+                                                 const docId = `${idIdent}_${idDx}`;
 
-                                                // 4. Estructura del documento (merge-friendly)
-                                                const pacienteDoc = {
-                                                        identificacion: idIdent,
-                                                        periodo_reporte: periodo,
-                                                        tipo_identificacion: fila[5]?.toString().trim() || "",
-                                                        nombreCompleto: `${v1} ${v3}`.trim().toUpperCase(),
-                                                        cohorte: cohorte,
-                                                        dx: idDx,
-                                                        dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
+                                                 const pacienteDoc = {
+                                                         identificacion: idIdent,
+                                                         periodo_reporte: periodo,
+                                                         tipo_identificacion: fila[5]?.toString().trim() || "",
+                                                         nombreCompleto: `${v1} ${v3}`.trim().toUpperCase(),
+                                                         cohorte: cohorte,
+                                                         dx: idDx,
+                                                         dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
+                                                         ultima_carga: new Date().toISOString(),
+                                                         periodo_ultima_carga: periodo,
+                                                         datos_base: {
+                                                                 VAR1_PrimerNombreUsuario: v1 || "",
+                                                                 VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
+                                                                 VAR3_PrimerApellidoUsuario: v3 || "",
+                                                                 VAR4_SegundoApellidoUsuario: fila[4]?.toString().trim().toUpperCase() || "NOAP",
+                                                                 VAR5_TipoIdentificacionUsuario: fila[5]?.toString().trim() || "",
+                                                                 VAR6_NumeroIdentificacionUsuario: idIdent || "",
+                                                                 VAR7_FechaNacimiento: toISO(fila[7]),
+                                                                 VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
+                                                         },
+                                                         periodos: {
+                                                                 [periodo]: {
+                                                                         cargado_el: new Date().toISOString(),
+                                                                         validado_el: null,
+                                                                         validador: null,
+                                                                         estado: "pendiente",
+                                                                         variables: {}
+                                                                 }
+                                                         }
+                                                 };
 
-                                                        ultima_carga: new Date().toISOString(),
-                                                        periodo_ultima_carga: periodo,
+                                                 rows[0].forEach((header, index) => {
+                                                         if (!header) return;
+                                                         const key = header.toString().trim().replace(/\s+/g, '');
+                                                         const valorRaw = fila[index];
+                                                         const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
+                                                         const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
+                                                         if (!esDatoBase && key !== "") {
+                                                                 pacienteDoc.periodos[periodo].variables[key] = valor;
+                                                         }
+                                                 });
 
-                                                        // Datos base (demográficos - se actualizan si vienen nuevos)
-                                                        datos_base: {
-                                                                VAR1_PrimerNombreUsuario: v1 || "",
-                                                                VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
-                                                                VAR3_PrimerApellidoUsuario: v3 || "",
-                                                                VAR4_SegundoApellidoUsuario: fila[4]?.toString().trim().toUpperCase() || "NOAP",
-                                                                VAR5_TipoIdentificacionUsuario: fila[5]?.toString().trim() || "",
-                                                                VAR6_NumeroIdentificacionUsuario: idIdent || "",
-                                                                VAR7_FechaNacimiento: toISO(fila[7]),
-                                                                VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
-                                                        },
+                                                 batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
+                                                 totalProcesados++;
+                                                 continue;
+                                         }
 
-                                                        // Datos del periodo actual (se acumulan cada mes)
-                                                        periodos: {
-                                                                [periodo]: {
-                                                                        cargado_el: new Date().toISOString(),
-                                                                        validado_el: null,
-                                                                        validador: null,
-                                                                        estado: "pendiente",
-                                                                        variables: {}
-                                                                }
-                                                        }
-                                                };
+                                         // =========================================================
+                                         // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
+                                         // =========================================================
+                                         const v1h = cellBy(fila, "VAR1_PrimerNombre");
+                                         const v2h = cellBy(fila, "VAR2_SegundoNombre");
+                                         const v3h = cellBy(fila, "VAR3_PrimerApellido");
+                                         const v4h = cellBy(fila, "VAR4_SegundoApellido");
+                                         const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
+                                         const v6h = cellBy(fila, "VAR6_Identificacion");
+                                         const v7h = cellBy(fila, "VAR7_FechaNacimiento");
+                                         const v8h = cellBy(fila, "VAR8_Sexo");
 
-                                                // Variables del periodo actual
-                                                rows[0].forEach((header, index) => {
-                                                        if (!header) return;
-                                                        const key = header.toString().trim().replace(/\s+/g, '');
-                                                        const valorRaw = fila[index];
-                                                        const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
+                                         const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
+                                         if (!idIdentH) continue;
 
-                                                        // Base = VAR1..VAR8 con frontera (evita VAR66/VAR67 etc.)
-                                                        const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
+                                         const docIdH = `${idIdentH}_HEMO`;
+                                         const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
+                                                 || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
+                                                 || idIdentH;
 
-                                                        if (!esDatoBase && key !== "") {
-                                                                pacienteDoc.periodos[periodo].variables[key] = valor;
-                                                        }
-                                                });
+                                         const pacienteDocH = {
+                                                 identificacion: idIdentH,
+                                                 periodo_reporte: periodo,
+                                                 tipo_identificacion: v5h || "",
+                                                 nombreCompleto: nombreCompletoH,
+                                                 cohorte: cohorte,
+                                                 dx: "HEMO",
+                                                 dx_descripcion: "Hemofilia",
+                                                 ultima_carga: new Date().toISOString(),
+                                                 periodo_ultima_carga: periodo,
+                                                 datos_base: {
+                                                         VAR1_PrimerNombre: (v1h || "").toUpperCase(),
+                                                         VAR2_SegundoNombre: (v2h || "").toUpperCase(),
+                                                         VAR3_PrimerApellido: (v3h || "").toUpperCase(),
+                                                         VAR4_SegundoApellido: (v4h || "").toUpperCase(),
+                                                         VAR5_TipoIdentificacion: v5h || "",
+                                                         VAR6_Identificacion: idIdentH,
+                                                         VAR7_FechaNacimiento: v7h || "",
+                                                         VAR8_Sexo: (v8h || "").toUpperCase()
+                                                 },
+                                                 periodos: {
+                                                         [periodo]: {
+                                                                 cargado_el: new Date().toISOString(),
+                                                                 validado_el: null,
+                                                                 validador: null,
+                                                                 estado: "pendiente",
+                                                                 variables: {}
+                                                         }
+                                                 }
+                                         };
 
-                                                await setDoc(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
-                                                continue; // siguiente fila
-                                        }
+                                         rows[0].forEach((header, index) => {
+                                                 if (!header) return;
+                                                 const key = header.toString().trim().replace(/\s+/g, '');
+                                                 if (!key) return;
+                                                 const valorRaw = fila[index];
+                                                 let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
+                                                 if (typeof isDateKey === "function" ? isDateKey(key) : false) {
+                                                         valor = toISO(valorRaw);
+                                                 }
+                                                 const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
+                                                 if (!esDatoBase) {
+                                                         pacienteDocH.periodos[periodo].variables[key] = valor;
+                                                 }
+                                         });
 
-                                        // =========================================================
-                                        // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
-                                        // =========================================================
-                                        const v1h = cellBy(fila, "VAR1_PrimerNombre");
-                                        const v2h = cellBy(fila, "VAR2_SegundoNombre");
-                                        const v3h = cellBy(fila, "VAR3_PrimerApellido");
-                                        const v4h = cellBy(fila, "VAR4_SegundoApellido");
-                                        const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
-                                        const v6h = cellBy(fila, "VAR6_Identificacion");
-                                        const v7h = cellBy(fila, "VAR7_FechaNacimiento");
-                                        const v8h = cellBy(fila, "VAR8_Sexo");
+                                         batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
+                                         totalProcesados++;
+                                 }
 
-                                        const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
-                                        if (!idIdentH) continue;
-
-                                        const docIdH = `${idIdentH}_HEMO`;
-
-                                        const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                || idIdentH;
-
-                                        const pacienteDocH = {
-                                                identificacion: idIdentH,
-                                                periodo_reporte: periodo,
-                                                tipo_identificacion: v5h || "",
-                                                nombreCompleto: nombreCompletoH,
-                                                cohorte: cohorte,
-                                                dx: "HEMO",
-                                                dx_descripcion: "Hemofilia",
-
-                                                ultima_carga: new Date().toISOString(),
-                                                periodo_ultima_carga: periodo,
-
-                                                datos_base: {
-                                                        VAR1_PrimerNombre: (v1h || "").toUpperCase(),
-                                                        VAR2_SegundoNombre: (v2h || "").toUpperCase(),
-                                                        VAR3_PrimerApellido: (v3h || "").toUpperCase(),
-                                                        VAR4_SegundoApellido: (v4h || "").toUpperCase(),
-                                                        VAR5_TipoIdentificacion: v5h || "",
-                                                        VAR6_Identificacion: idIdentH,
-                                                        VAR7_FechaNacimiento: v7h || "",
-                                                        VAR8_Sexo: (v8h || "").toUpperCase()
-                                                },
-
-                                                periodos: {
-                                                        [periodo]: {
-                                                                cargado_el: new Date().toISOString(),
-                                                                validado_el: null,
-                                                                validador: null,
-                                                                estado: "pendiente",
-                                                                variables: {}
-                                                        }
-                                                }
-                                        };
-
-                                        // Variables del periodo (HEMO): por headers, sin espacios
-                                        rows[0].forEach((header, index) => {
-                                                if (!header) return;
-                                                const key = header.toString().trim().replace(/\s+/g, '');
-                                                if (!key) return;
-
-                                                const valorRaw = fila[index];
-                                                let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
-
-                                                // Si es variable tipo fecha, forzar ISO
-                                                if (typeof isDateKey === "function" ? isDateKey(key) : false) {
-                                                        valor = toISO(valorRaw);
-                                                }
-
-                                                const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-                                                if (!esDatoBase) {
-                                                        pacienteDocH.periodos[periodo].variables[key] = valor;
-                                                }
-                                        });
-
-                                        await setDoc(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
-                                }
-
-                                alert("Sincronización completa.");
-                                cargarPacientes();
+                                 if (totalProcesados > 0) {
+                                     await batch.commit();
+                                     alert(`✅ Sincronización completa: ${totalProcesados} pacientes cargados con éxito.`);
+                                 } else {
+                                     alert("⚠️ No se encontraron registros válidos para cargar.");
+                                 }
+                                 cargarPacientes();
 
                         } catch (err) {
                                 console.error("Error en correlación:", err);

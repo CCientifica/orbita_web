@@ -389,32 +389,89 @@
                     font-size: 11px;
                     font-weight: 900;
                 }
+
                 /* COMPLIANCE DASHBOARD */
                 .pa-dashboard {
-                    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    gap: 2rem; margin-bottom: 2.5rem; animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    gap: 2rem;
+                    margin-bottom: 2.5rem;
+                    animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
                 }
+
                 .pa-stat-card {
-                    background: var(--pa-glass); backdrop-filter: blur(20px);
-                    border-radius: var(--pa-radius); border: 1px solid var(--pa-border);
-                    padding: 2rem; display: flex; align-items: center; gap: 1.5rem;
-                    box-shadow: var(--pa-shadow); transition: transform 0.3s;
+                    background: var(--pa-glass);
+                    backdrop-filter: blur(20px);
+                    border-radius: var(--pa-radius);
+                    border: 1px solid var(--pa-border);
+                    padding: 2rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1.5rem;
+                    box-shadow: var(--pa-shadow);
+                    transition: transform 0.3s;
                 }
-                .pa-stat-card:hover { transform: translateY(-5px); }
+
+                .pa-stat-card:hover {
+                    transform: translateY(-5px);
+                }
+
                 .pa-stat-icon {
-                    width: 64px; height: 64px; border-radius: 20px;
-                    display: flex; align-items: center; justify-content: center;
-                    font-size: 1.5rem; color: white;
+                    width: 64px;
+                    height: 64px;
+                    border-radius: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.5rem;
+                    color: white;
                 }
-                .pa-stat-info h4 { margin: 0; font-size: 0.75rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; }
-                .pa-stat-info div { font-size: 1.75rem; font-weight: 900; color: #0f172a; margin-top: 4px; }
+
+                .pa-stat-info h4 {
+                    margin: 0;
+                    font-size: 0.75rem;
+                    font-weight: 900;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                }
+
+                .pa-stat-info div {
+                    font-size: 1.75rem;
+                    font-weight: 900;
+                    color: #0f172a;
+                    margin-top: 4px;
+                }
 
                 /* Custom Progress Ring */
-                .pa-progress { position: relative; width: 64px; height: 64px; }
-                .pa-progress svg { transform: rotate(-90deg); width: 64px; height: 64px; }
-                .pa-progress circle { fill: none; stroke-width: 6; stroke-linecap: round; }
-                .pa-progress .bg { stroke: #e2e8f0; }
-                .pa-progress .val { stroke: var(--pa-accent); stroke-dasharray: 182; stroke-dashoffset: 182; transition: stroke-dashoffset 1s ease; }
+                .pa-progress {
+                    position: relative;
+                    width: 64px;
+                    height: 64px;
+                }
+
+                .pa-progress svg {
+                    transform: rotate(-90deg);
+                    width: 64px;
+                    height: 64px;
+                }
+
+                .pa-progress circle {
+                    fill: none;
+                    stroke-width: 6;
+                    stroke-linecap: round;
+                }
+
+                .pa-progress .bg {
+                    stroke: #e2e8f0;
+                }
+
+                .pa-progress .val {
+                    stroke: var(--pa-accent);
+                    stroke-dasharray: 182;
+                    stroke-dashoffset: 182;
+                    transition: stroke-dashoffset 1s ease;
+                }
             </style>
 
             <div class="pa-page-wrap">
@@ -648,13 +705,36 @@
         async function loadFromDB() {
             const { db } = window.firebaseInstance || {};
             const { collection, getDocs, query, where } = window.firebaseFirestore || {};
-            if (!db) return;
+            if (!db) {
+                console.warn("⚠️ [GPC_PLAN] Firestore DB non disponible pour loadFromDB");
+                return;
+            }
+            console.log(`📡 [GPC_PLAN] Cargando datos para año: ${state.anio} (Tipo: ${typeof state.anio})...`);
             try {
-                const q = query(collection(db, 'gpc_adherencia_anual'), where('anio', '==', state.anio));
-                const snap = await getDocs(q);
-                state.adherencia = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+                // Defensa contra tipos: Firestore es estricto (Number vs String).
+                // Intentamos primero con Number, y si falla con String.
+                let q = query(collection(db, 'gpc_adherencia_anual'), where('anio', '==', Number(state.anio)));
+                let snap = await getDocs(q);
+
+                if (snap.empty) {
+                    console.log(`⏳ No se encontró como Number, probando como String...`);
+                    q = query(collection(db, 'gpc_adherencia_anual'), where('anio', '==', String(state.anio)));
+                    snap = await getDocs(q);
+                }
+
+                if (snap.empty) {
+                    console.warn(`⚠️ [GPC_PLAN] No se encontraron registros para el año ${state.anio} en ningún formato.`);
+                    state.adherencia = [];
+                } else {
+                    console.log(`✅ [GPC_PLAN] Se encontraron ${snap.size} registros.`);
+                    state.adherencia = snap.docs.map(d => ({ ...d.data(), id: d.id }));
+                }
+
                 state.adherencia.sort((a, b) => (a.mesProg || 0) - (b.mesProg || 0));
-            } catch (e) { console.error("Cloud Error:", e); }
+                renderTable(); // Importante: llamar a renderizar tras cargar
+            } catch (e) {
+                console.error("❌ [GPC_PLAN] Cloud Error:", e);
+            }
         }
 
         function renderTable() {
@@ -841,24 +921,80 @@
         window.setEval = (p, q, v) => { patientsData[p].evals[q] = v; renderAuditTable(); };
 
         function calculateAuditScore() {
-            let numC = 0, numNC = 0;
-            patientsData.forEach(p => p.evals.forEach(v => { if (v === 'C') numC++; if (v === 'NC') numNC++; }));
-            const total = numC + numNC;
-            const score = total > 0 ? Math.round((numC / total) * 100) : 0;
-            qs('#auditScore').textContent = score + '%';
+            let totalCumple = 0;
+            let totalNoCumple = 0;
+
+            patientsData.forEach(p => {
+                p.evals.forEach(val => {
+                    if (val === 'C') totalCumple++;
+                    if (val === 'NC') totalNoCumple++;
+                });
+            });
+
+            let totalValidos = totalCumple + totalNoCumple;
+            let score = 0;
+
+            if (totalValidos > 0) {
+                score = Math.round((totalCumple / totalValidos) * 100);
+            }
+
+            const spanScore = qs('#auditScore');
+            spanScore.textContent = score + '%';
+
+            if (score >= 90) spanScore.style.color = '#166534';
+            else if (score >= 80) spanScore.style.color = '#d97706';
+            else spanScore.style.color = '#991b1b';
         }
 
-        qs('#btnSaveAudit').onclick = () => {
+        qs('#btnSaveAudit').onclick = async () => {
             if (currentAuditIdx === -1) return;
-            const score = parseInt(qs('#auditScore').textContent);
-            state.adherencia[currentAuditIdx].pctAdherencia = score;
-            state.adherencia[currentAuditIdx].preguntasTrazadoras = [...tracerQuestions];
-            state.adherencia[currentAuditIdx].pacientesAuditados = JSON.parse(JSON.stringify(patientsData));
-            state.adherencia[currentAuditIdx].poblacion = qs('#inpPoblacion').value;
 
-            renderTable();
-            qs('#modalAudit').classList.remove('open');
-            alert("✓ Evaluación guardada en memoria. No olvides 'Publicar Plan' para subir a la nube.");
+            const { db } = window.firebaseInstance || {};
+            const { doc, setDoc, serverTimestamp, collection } = window.firebaseFirestore || {};
+            if (!db) { alert("Error: Firebase no está inicializado."); return; }
+
+            // 1. Actualizar estado en memoria
+            const score = parseInt(qs('#auditScore').textContent);
+            const row = state.adherencia[currentAuditIdx];
+
+            row.pctAdherencia = score;
+            row.preguntasTrazadoras = [...tracerQuestions];
+            row.pacientesAuditados = JSON.parse(JSON.stringify(patientsData));
+            row.poblacion = qs('#inpPoblacion').value;
+            row.updatedAt = new Date().toISOString(); // Marca de tiempo local
+
+            // 2. Guardado INMEDIATO en Firebase para evitar fugas
+            const id = row.id || `${state.anio}_${(row.tema || 'unkn').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 25)}`;
+            const col = collection(db, 'gpc_adherencia_anual');
+
+            try {
+                qs('#btnSaveAudit').disabled = true;
+                qs('#btnSaveAudit').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+                await setDoc(doc(col, id), {
+                    ...row,
+                    anio: state.anio,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                console.log(`✅ [GPC_PLAN] Auditoría de "${row.tema}" guardada en la nube.`);
+
+                renderTable();
+                qs('#modalAudit').classList.remove('open');
+                // Alerta más profesional
+                const toast = document.createElement('div');
+                toast.style = "position:fixed; bottom:20px; right:20px; background:#10b981; color:white; padding:15px 25px; border-radius:10px; z-index:99999; font-weight:bold; box-shadow:0 10px 30px rgba(0,0,0,0.2);";
+                toast.innerHTML = "✓ Auditoría guardada y sincronizada en la nube";
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+
+            } catch (error) {
+                console.error("Error guardando auditoría:", error);
+                alert("❌ Error al guardar en la nube. Intente nuevamente.");
+            } finally {
+                qs('#btnSaveAudit').disabled = false;
+                qs('#btnSaveAudit').innerHTML = '✅ Finalizar Auditoría';
+            }
         };
 
         // ══════════════════════════════════════════════════════════
@@ -993,23 +1129,121 @@
         }
 
         qs('#btnExportAuditExcel').onclick = () => {
-            if (patientsData.length === 0) { alert("No hay pacientes para exportar"); return; }
+            if (patientsData.length === 0) { alert("No hay datos para exportar."); return; }
+
+            const tema = qs('#auditTema').textContent || "SIN_DEFINIR";
             const adherencia = qs('#auditScore').textContent;
-            const tema = qs('#auditTema').textContent;
-            let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"></head><body>`;
-            html += `<table style="border-collapse: collapse; font-family: Arial;"><tr><th colspan="4" style="background:#0f172a; color:white; padding:12px;">MATRIZ DE AUDITORÍA GPC: ${tema}</th></tr><tr><th colspan="4" style="background:#1e293b; color:white; padding:10px;">Adherencia Final: ${adherencia}</th></tr></table><br>`;
-            html += `<table style="border-collapse: collapse; font-family: Arial; border:1px solid #e2e8f0;"><thead><tr><th style="background:#f1f5f9; padding:8px;">Ingreso</th><th style="background:#f1f5f9; padding:8px;">Identificación</th><th style="background:#f1f5f9; padding:8px;">Nombre</th>`;
-            tracerQuestions.forEach((q, i) => html += `<th style="background:#f1f5f9; padding:8px;">Rec ${i + 1}: ${q}</th>`);
-            html += `</tr></thead><tbody>`;
-            patientsData.forEach(p => {
-                html += `<tr><td style="border:1px solid #e2e8f0; padding:8px;">${p.ingreso}</td><td style="border:1px solid #e2e8f0; padding:8px;">${p.identificacion}</td><td style="border:1px solid #e2e8f0; padding:8px;">${p.nombre}</td>`;
-                p.evals.forEach(v => html += `<td style="border:1px solid #e2e8f0; padding:8px; text-align:center; font-weight:bold; color:${v === 'C' ? '#10b981' : (v === 'NC' ? '#ef4444' : '#64748b')}">${v}</td>`);
-                html += `</tr>`;
-            });
-            html += `</tbody></table></body></html>`;
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const poblacion = qs('#inpPoblacion').value || 0;
+            const muestra = qs('#inpMuestra').value || 0;
+            const numPacientes = patientsData.length;
+            const numPreguntas = tracerQuestions.length;
+
+            // Construcción del XML de Excel (Excel 2003 XML format es más estable que HTML puro)
+            let tablaHTML = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Matriz Auditoria</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+                    <style>
+                        .excel-text    { mso-number-format:"\\@"; }
+                        .cell-C        { color: #10b981; font-weight: bold; text-align: center; border: 0.5pt solid #000000; }
+                        .cell-NC       { color: #ef4444; font-weight: bold; text-align: center; border: 0.5pt solid #000000; }
+                        .cell-NA       { color: #64748b; font-weight: bold; text-align: center; border: 0.5pt solid #000000; }
+                        .th-dark       { background-color: #0f172a; color: #ffffff; font-weight: bold; border: 0.5pt solid #000000; text-align: center; }
+                        .border-cell   { border: 0.5pt solid #000000; padding: 4px; font-size: 10pt; }
+                        .param-label   { background-color: #f1f5f9; font-weight: bold; border: 0.5pt solid #000000; font-size: 10pt; }
+                        .param-val     { border: 0.5pt solid #000000; text-align: center; font-size: 10pt; }
+                    </style>
+                </head>
+                <body>
+                    <!-- ENCABEZADO TÉCNICO INSTITUCIONAL -->
+                    <table style="border-collapse: collapse; width: 100%;">
+                        <tr>
+                            <td colspan="${numPreguntas + 3}" style="border: 1.0pt solid #000000; text-align: center; vertical-align: middle; font-weight: bold; font-size: 14pt; padding: 15px; background: #ffffff; color: #000000;">
+                                PROGRAMA DE EVALUACIÓN DE ADHERENCIA A GUÍAS DE<br>
+                                PRÁCTICA CLÍNICA Y PROTOCOLOS MÉDICOS
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="1" style="border: 1.0pt solid #000000; text-align: center; font-size: 9pt; font-weight: bold; padding: 5px;">FECHA ACT: Diciembre 2018</td>
+                            <td colspan="1" style="border: 1.0pt solid #000000; text-align: center; font-size: 9pt; font-weight: bold; padding: 5px;">VERSION: 001</td>
+                            <td colspan="${Math.max(1, numPreguntas)}" style="border: 1.0pt solid #000000; text-align: center; font-size: 9pt; font-weight: bold; padding: 5px;">COD: E-GTC-F-003</td>
+                            <td colspan="1" style="border: 1.0pt solid #000000; text-align: center; font-size: 9pt; font-weight: bold; padding: 5px;">PAG: 1/1</td>
+                        </tr>
+                        <tr>
+                            <td colspan="${numPreguntas + 3}" style="border: 1.0pt solid #000000; padding: 8px; font-weight: bold; background: #f8fafc; font-size: 12pt;">
+                                Guía / Protocolo: ${tema}
+                            </td>
+                        </tr>
+                    </table>
+                    <br>
+
+                    <!-- PARÁMETROS -->
+                    <table style="border-collapse: collapse;">
+                        <tr>
+                            <td class="param-label" style="width:200px;">Número de HC a evaluar</td>
+                            <td class="param-val" style="width:100px;">${numPacientes}</td>
+                            <td colspan="${numPreguntas + 1}" rowspan="5" valign="top" class="border-cell">
+                                <b>Recomendaciones Trazadoras:</b><br>
+                                ${tracerQuestions.map((q, i) => `<b>${i + 1}.</b> ${q}`).join('<br>')}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="param-label">% Adherencia GPC</td>
+                            <td class="param-val" style="background:#eff6ff; font-weight:bold; color:#1d4ed8;">${adherencia}</td>
+                        </tr>
+                        <tr>
+                            <td class="param-label">Tamaño muestra (n)</td>
+                            <td class="param-val">${muestra}</td>
+                        </tr>
+                        <tr>
+                            <td class="param-label">Población (N)</td>
+                            <td class="param-val">${poblacion}</td>
+                        </tr>
+                        <tr>
+                            <td class="param-label">Margen Error / Z</td>
+                            <td class="param-val">0,05 / 1,96</td>
+                        </tr>
+                    </table>
+                    <br>
+
+                    <!-- MATRIZ -->
+                    <table style="border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th class="th-dark">Ingreso</th>
+                                <th class="th-dark">Documento</th>
+                                <th class="th-dark">Nombre del Paciente</th>
+                                ${tracerQuestions.map((_, i) => `<th class="th-dark">Recomendación ${i + 1}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${patientsData.map(p => `
+                                <tr>
+                                    <td class="excel-text border-cell">${p.ingreso}</td>
+                                    <td class="excel-text border-cell">${p.identificacion}</td>
+                                    <td class="border-cell">${p.nombre}</td>
+                                    ${p.evals.map(v => {
+                const cls = v === 'C' ? 'cell-C' : (v === 'NC' ? 'cell-NC' : 'cell-NA');
+                return `<td class="${cls}">${v}</td>`;
+            }).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            // 3. Descarga como archivo .xls oficial (Microsoft compatible)
+            const blob = new Blob([tablaHTML], { type: 'application/vnd.ms-excel' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = `Matriz_${tema.replace(/[^a-z0-9]/gi, '_')}.xls`; a.click();
+            const a = document.createElement("a");
+            const safeTema = tema.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_');
+            a.href = url;
+            a.download = `Matriz_Auditoria_${safeTema}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
         };
 
         // EXPORTAR PLAN GENERAL

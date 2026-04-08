@@ -996,6 +996,13 @@
                 </div>
             </div>
 
+            <!-- 👑 ADMINISTRACIÓN MASTER -->
+            <div class="nav-section-title" sec:authorize="hasAuthority('master admin')">Administración Master</div>
+            <a th:href="@{/broadcast}" class="nav-link" sec:authorize="hasAuthority('master admin')">
+                <i data-lucide="megaphone" style="color: #fca5a5;"></i>
+                <span>Orbita Broadcast</span>
+            </a>
+
             <div class="nav-group" id="group-predictiva"
                 sec:authorize="hasAnyAuthority('master admin', 'super admin', 'admin', 'auditor')">
                 <div class="nav-group-header" onclick="toggleNavGroup(this)">
@@ -1162,6 +1169,117 @@
                     window.dispatchEvent(new CustomEvent('user-ready', { detail: window.orbitaUser }));
                 }, 100);
             });
+            // --- 🚀 ORBITA BROADCAST ENGINE (Real-time Global Notifications) ---
+            document.addEventListener('DOMContentLoaded', () => {
+                // Función receptora inyectada en el flujo global
+                const startBroadcastListener = () => {
+                    if(!window.firebaseFirestore || !window.orbitaUser) return;
+                    const { collection, query, where, onSnapshot, limit, orderBy } = window.firebaseFirestore;
+                    const db = window.firebaseInstance?.db;
+                    if(!db) return;
+
+                    console.log("📡 [ÓRBITA-BROADCAST] Listener activado. Esperando comunicados...");
+
+                    // Consulta de alta fiabilidad: Escuchamos los mensajes más recientes
+                    // Usamos filtrado numérico para evitar errores de tipo Timestamp/Date
+                    const fiveMinutesAgo = Date.now() - 300000;
+                    const q = query(
+                        collection(db, "orbita_broadcast"),
+                        where("createdAt", ">", fiveMinutesAgo),
+                        orderBy("createdAt", "desc"),
+                        limit(2)
+                    );
+
+                    onSnapshot(q, (snapshot) => {
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                const msg = change.doc.data();
+                                const msgId = change.doc.id;
+                                
+                                // 👮 FILTRADO EN CLIENTE (Garantiza compatibilidad sin índices Firestore)
+                                const isGlobal = (msg.target === 'ALL');
+                                const isSpecific = (msg.target === window.orbitaUser.email);
+                                const alreadyShown = sessionStorage.getItem(`orbita_notif_${msgId}`);
+
+                                if ((isGlobal || isSpecific) && !alreadyShown) {
+                                    console.log("🔔 [ÓRBITA-BROADCAST] Nuevo mensaje recibido:", msg.title);
+                                    if(typeof window.showOrbitaBroadcastToast === 'function') {
+                                        window.showOrbitaBroadcastToast(msg);
+                                    }
+                                    sessionStorage.setItem(`orbita_notif_${msgId}`, 'true');
+                                }
+                            }
+                        });
+                    }, (err) => {
+                        if (err.message.includes("index")) {
+                            console.error("⚠️ [ÓRBITA-BROADCAST] Falta índice en Firestore. Avisa al Master Admin.");
+                        } else {
+                            console.warn("⚠️ Broadcast Listener Offline:", err.message);
+                        }
+                    });
+                };
+
+                // Esperar a que el puente de Firebase esté totalmente listo
+                if (window.firebaseInstance?.db) {
+                    startBroadcastListener();
+                } else {
+                    window.addEventListener('firebase-ready', startBroadcastListener);
+                }
+            });
+
+            window.showOrbitaBroadcastToast = function(msg) {
+                const toastId = 'toast_' + Date.now();
+                const colors = {
+                    'info': 'border-blue-500',
+                    'success': 'border-emerald-500',
+                    'warning': 'border-amber-500',
+                    'danger': 'border-rose-500'
+                };
+                const icons = {
+                    'info': 'info',
+                    'success': 'check_circle',
+                    'warning': 'warning',
+                    'danger': 'error'
+                };
+                const bgColor = msg.type === 'danger' ? 'bg-slate-900' : 'bg-white';
+                const textColor = msg.type === 'danger' ? 'text-white' : 'text-slate-800';
+
+                const toast = document.createElement('div');
+                toast.id = toastId;
+                toast.className = `fixed top-12 right-12 z-[10000] w-96 p-6 rounded-3xl shadow-2xl! transform translate-x-full transition-all duration-700 flex gap-4 border-l-8 ${colors[msg.type] || 'border-slate-800'} ${bgColor} ${textColor}`;
+                toast.style.backdropFilter = "blur(16px)";
+                toast.style.boxShadow = "0 30px 60px -15px rgba(0,0,0,0.4)";
+                
+                toast.innerHTML = `
+                    <div class="flex-shrink-0">
+                        <span class="material-icons ${msg.type === 'danger' ? 'text-rose-400' : 'text-blue-500'} text-3xl">${icons[msg.type] || 'megaphone'}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Órbitabroadcast • Institucional</p>
+                        <h4 class="text-sm font-black italic mb-2 tracking-tight">${msg.title || 'Atención'}</h4>
+                        <p class="text-[11px] font-bold leading-relaxed opacity-90">${msg.message}</p>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 ${msg.type === 'danger' ? 'border-white/10' : ''}">
+                            <span class="text-[8px] font-black uppercase tracking-widest opacity-40">${msg.senderName || 'Administración'}</span>
+                            <span class="text-[8px] font-black uppercase tracking-widest opacity-30">Ahora</span>
+                        </div>
+                    </div>
+                    <button onclick="this.closest('#${toastId}').style.transform='translateX(150%)'; setTimeout(()=>this.closest('#${toastId}').remove(), 1000);" class="absolute top-4 right-4 opacity-30 hover:opacity-100 transition-opacity p-1">
+                        <span class="material-icons text-sm">close</span>
+                    </button>
+                `;
+                
+                document.body.appendChild(toast);
+                setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+                
+                // Auto-cierre conservador
+                setTimeout(() => {
+                    const el = document.getElementById(toastId);
+                    if(el) {
+                        el.style.transform = 'translateX(150%)';
+                        setTimeout(() => el.remove(), 1000);
+                    }
+                }, 25000);
+            };
             /*]]>*/
         </script>
 

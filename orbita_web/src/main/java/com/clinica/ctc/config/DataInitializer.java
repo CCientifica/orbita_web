@@ -25,6 +25,10 @@ public class DataInitializer implements CommandLineRunner {
         // Crear Usuario ANALISTA_AC (para pruebas locales)
         crearUsuarioSiNoExiste("analista@clinica.com", "Analista de Alto Costo", "ANALISTA_AC");
 
+        // Usuarios Corporativos (Admin)
+        crearUsuarioSiNoExiste("dirmedica@clinicasagradocorazon.com.co", "Dirección Médica", "ADMIN");
+        crearUsuarioSiNoExiste("gerencia@clinicasagradocorazon.co", "Gerencia", "ADMIN");
+
         System.out.println("[ORBITA DATA INITIALIZER] Usuarios base listos en base de datos local.");
     }
 

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: header('Orbita Broadcast')}"></head>
+<body class="bg-slate-50">
+    <div class="dashboard-layout">
+        <aside th:replace="~{layout :: sidebar}"></aside>
+
+        <div class="content-wrapper">
+            <nav th:replace="~{layout :: navbar('Centro de Comunicaciones Masivas')}"></nav>
+
+            <main class="main-content">
+                <div class="container-fluid p-0">
+                    <!-- Header Section -->
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900 tracking-tighter italic">ORBITA BROADCAST</h2>
+                            <p class="text-xs font-bold text-slate-400 tracking-widest uppercase">Sistema de Notificaciones en Tiempo Real — Master Admin</p>
+                        </div>
+                        <div class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl flex items-center gap-2 border border-emerald-100">
+                            <span class="status-dot"></span>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Canal de Transmisión Activo</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Columna Izquierda: Redacción -->
+                        <div class="lg:col-span-8 flex flex-col gap-6">
+                            <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex flex-col gap-6">
+                                <div class="flex items-center gap-4 mb-2">
+                                    <div class="w-12 h-12 bg-institutional-blue/10 rounded-2xl flex items-center justify-center">
+                                        <i data-lucide="send" class="text-institutional-blue"></i>
+                                    </div>
+                                    <h3 class="text-lg font-black text-slate-800 tracking-tight">Nueva Comunicación</h3>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Título del Aviso</label>
+                                        <input type="text" id="notifTitle" placeholder="Ej: Mantenimiento Programado" 
+                                               class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-institutional-blue/10 font-bold text-slate-700 transition-all">
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Alerta</label>
+                                        <select id="notifType" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-none focus:ring-4 focus:ring-institutional-blue/10 font-black text-slate-700 appearance-none cursor-pointer">
+                                            <option value="info">💬 Información General</option>
+                                            <option value="success">✅ Notificación de Éxito</option>
+                                            <option value="warning">⚠️ Aviso Importante</option>
+                                            <option value="danger">🚨 Alerta Crítica / Emergencia</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mensaje Broadcast</label>
+                                    <textarea id="notifMessage" rows="5" placeholder="Escribe el comunicado para los usuarios..." 
+                                              class="w-full px-6 py-4 rounded-[28px] bg-slate-50 border-none focus:ring-4 focus:ring-institutional-blue/10 font-bold text-slate-700 transition-all resize-none"></textarea>
+                                </div>
+
+                                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="users" class="text-slate-400 w-5"></i>
+                                        <span class="text-[11px] font-black text-slate-500 uppercase tracking-widest">Audiencia:</span>
+                                        <span id="targetLabel" class="px-3 py-1 bg-institutional-blue text-white rounded-lg text-[9px] font-black uppercase tracking-widest">Todos los usuarios</span>
+                                        <input type="hidden" id="targetEmail" value="ALL">
+                                    </div>
+                                    <button onclick="resetAudience()" id="resetBtn" class="hidden text-[10px] font-black text-rose-500 uppercase tracking-widest hover:underline px-4">
+                                        X Cancelar Envío Individual
+                                    </button>
+                                </div>
+
+                                <div class="flex justify-end gap-4 mt-2">
+                                    <button onclick="previewBroadcast()" class="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-colors">
+                                        Vista Previa
+                                    </button>
+                                    <button onclick="sendBroadcast()" id="sendBtn" class="px-10 py-4 bg-institutional-blue text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:shadow-xl hover:shadow-institutional-blue/20 transition-all flex items-center gap-3">
+                                        <i data-lucide="zap" class="w-4"></i>
+                                        Emitir Notificación
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Selección de Usuario -->
+                        <div class="lg:col-span-4 flex flex-col gap-6">
+                            <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 h-full max-h-[800px] flex flex-col">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-black text-slate-800 tracking-tight">Directorio Personal</h3>
+                                    <div id="userCount" class="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1 rounded-full uppercase">--- Usuarios</div>
+                                </div>
+
+                                <div class="relative mb-6">
+                                    <input type="text" id="searchUser" placeholder="Buscar por nombre o correo..." 
+                                           class="w-full pl-12 pr-6 py-3 rounded-xl bg-slate-50 border-none text-[11px] font-bold text-slate-600 focus:ring-2 focus:ring-institutional-blue/10">
+                                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 text-slate-400"></i>
+                                </div>
+
+                                <div id="usersList" class="flex-1 overflow-y-auto pr-2 flex flex-col gap-2">
+                                    <!-- Usuarios dinámicos -->
+                                    <div class="p-8 text-center text-slate-300">
+                                        <i data-lucide="loader-2" class="animate-spin w-8 h-8 mx-auto mb-4"></i>
+                                        <p class="text-[10px] font-black uppercase tracking-widest">Cargando Personal...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <footer th:replace="~{layout :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Firebase Script Modulo -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const API_USER = window.orbitaUser;
+        
+        async function initBroadcastCenter() {
+            window.addEventListener('firebase-ready', async () => {
+                const { collection, getDocs, orderBy, query } = window.firebaseFirestore;
+                const db = window.firebaseInstance?.db;
+                if(!db) return;
+
+                try {
+                    // Usamos 'usuarios_permitidos' que es la colección oficial de identidad
+                    const q = query(collection(db, "usuarios_permitidos"));
+                    const snapshot = await getDocs(q);
+                    const users = snapshot.docs.map(doc => {
+                        const data = doc.data();
+                        return {
+                            email: doc.id,
+                            displayName: data.nombre || data.Nombre || data.displayName || doc.id
+                        };
+                    });
+                    // Ordenar alfabéticamente por nombre
+                    users.sort((a, b) => a.displayName.localeCompare(b.displayName));
+                    renderUsers(users);
+                } catch(e) {
+                    console.error("Error cargando directorio:", e);
+                    const list = document.getElementById('usersList');
+                    if(list) list.innerHTML = `<div class="p-4 text-rose-500 text-[10px] font-black uppercase">Error de acceso al directorio</div>`;
+                }
+            });
+        }
+
+        function renderUsers(users) {
+            const list = document.getElementById('usersList');
+            const count = document.getElementById('userCount');
+            if(!list || !users) return;
+
+            count.innerText = `${users.length} USUARIOS`;
+            list.innerHTML = '';
+
+            users.forEach(u => {
+                const item = document.createElement('div');
+                item.className = "group p-4 bg-slate-50 hover:bg-institutional-blue/5 rounded-2xl cursor-pointer transition-all border border-transparent hover:border-institutional-blue/20 flex items-center gap-4";
+                item.onclick = () => selectTarget(u.email, u.displayName);
+
+                item.innerHTML = `
+                    <div class="w-10 h-10 rounded-xl bg-white text-institutional-blue font-black flex items-center justify-center text-xs shadow-sm group-hover:scale-110 transition-transform">
+                        ${u.displayName?.substring(0,1).toUpperCase() || '?'}
+                    </div>
+                    <div class="flex-1 min-width-0">
+                        <p class="text-[11px] font-black text-slate-800 mb-0.5 truncate">${u.displayName || 'Sin Nombre'}</p>
+                        <p class="text-[9px] font-bold text-slate-400 truncate tracking-tight">${u.email}</p>
+                    </div>
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <i data-lucide="radio" class="w-4 text-institutional-blue"></i>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            if(window.lucide) lucide.createIcons();
+        }
+
+        function selectTarget(email, name) {
+            document.getElementById('targetEmail').value = email;
+            document.getElementById('targetLabel').innerText = `INDIVIDUAL: ${name}`;
+            document.getElementById('targetLabel').className = "px-3 py-1 bg-rose-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest";
+            document.getElementById('resetBtn').classList.remove('hidden');
+        }
+
+        function resetAudience() {
+            document.getElementById('targetEmail').value = 'ALL';
+            document.getElementById('targetLabel').innerText = "Todos los usuarios";
+            document.getElementById('targetLabel').className = "px-3 py-1 bg-institutional-blue text-white rounded-lg text-[9px] font-black uppercase tracking-widest";
+            document.getElementById('resetBtn').classList.add('hidden');
+        }
+
+        function previewBroadcast() {
+            const msg = {
+                title: document.getElementById('notifTitle').value || 'Título de Prueba',
+                message: document.getElementById('notifMessage').value || 'Escribe algo para ver cómo aparecerá el aviso.',
+                type: document.getElementById('notifType').value,
+                senderName: API_USER.displayName,
+                target: 'ALL'
+            };
+            if(window.showOrbitaBroadcastToast) window.showOrbitaBroadcastToast(msg);
+        }
+
+        async function sendBroadcast() {
+            const title = document.getElementById('notifTitle').value;
+            const message = document.getElementById('notifMessage').value;
+            const type = document.getElementById('notifType').value;
+            const target = document.getElementById('targetEmail').value;
+            const btn = document.getElementById('sendBtn');
+
+            if(!title || !message) {
+                alert("⚠️ Datos incompletos. Escribe un título y un mensaje.");
+                return;
+            }
+
+            const confirmMsg = target === 'ALL' 
+                ? "¿Emitir notificación a TODOS los usuarios?"
+                : `¿Enviar notificación privada a ${target}?`;
+
+            if(!confirm(confirmMsg)) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin w-4"></i> Transmitiendo...`;
+
+            try {
+                const { collection, addDoc } = window.firebaseFirestore;
+                const db = window.firebaseInstance?.db;
+                
+                // Usamos Date.now() numérico para evitar errores de tipo Timestamp en filtros
+                await addDoc(collection(db, "orbita_broadcast"), {
+                    title: title.toUpperCase(),
+                    message: message,
+                    type: type,
+                    target: target,
+                    senderName: API_USER.displayName,
+                    senderEmail: API_USER.email,
+                    createdAt: Date.now(), 
+                    active: true
+                });
+
+                console.log("✅ [ÓRBITA-BROADCAST] Comunicación emitida al canal Firestore");
+                alert("🚀 Comunicación emitida con éxito.");
+                document.getElementById('notifTitle').value = '';
+                document.getElementById('notifMessage').value = '';
+                resetAudience();
+            } catch(e) {
+                console.error("❌ Error en transmisión:", e);
+                alert("❌ Fallo crítico al transmitir: " + (e.message || e));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="zap" class="w-4"></i> Emitir Notificación`;
+                if(window.lucide) lucide.createIcons();
+            }
+        }
+
+        // Búsqueda en directorio
+        document.getElementById('searchUser').oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('#usersList > div');
+            items.forEach(it => {
+                const text = it.innerText.toLowerCase();
+                it.style.display = text.includes(val) ? 'flex' : 'none';
+            });
+        };
+
+        initBroadcastCenter();
+        /*]]>*/
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if(typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'institutional-blue': '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

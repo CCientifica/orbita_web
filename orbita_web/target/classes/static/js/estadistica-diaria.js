@@ -1267,15 +1267,19 @@ const updateAllDashboard = async () => {
         flex: '0 0 auto'
       });
 
-      const fill = document.createElement('div');
-      Object.assign(fill.style, {
-        position: 'absolute',
-        left: '0',
-        right: '0',
-        bottom: '0',
-        height: `${avancePct}%`,
-        background: `linear-gradient(180deg, ${hexToRgba(accent, 0.62)} 0%, ${hexToRgba(accent, 0.28)} 100%)`
-      });
+      // ✅ FIX: Solo crear el relleno si el avance es mayor a 0 para evitar error de canvas 0x0 en html2canvas
+      if (avancePct > 0) {
+        const fill = document.createElement('div');
+        Object.assign(fill.style, {
+          position: 'absolute',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          height: `${Math.max(1, avancePct)}%`, // Mínimo 1% para asegurar dimensiones
+          background: `linear-gradient(180deg, ${hexToRgba(accent, 0.62)} 0%, ${hexToRgba(accent, 0.28)} 100%)`
+        });
+        gauge.appendChild(fill);
+      }
 
       const overlay = document.createElement('div');
       Object.assign(overlay.style, {
@@ -1323,7 +1327,6 @@ const updateAllDashboard = async () => {
 
       overlay.appendChild(label);
       overlay.appendChild(pct);
-      gauge.appendChild(fill);
       gauge.appendChild(overlay);
 
       return gauge;
@@ -1542,6 +1545,10 @@ const updateAllDashboard = async () => {
 
     stage.appendChild(grid);
     document.body.appendChild(stage);
+
+    // ✅ FIX: Esperar un momento a que el navegador procese el layout del 'stage' 
+    // antes de que html2canvas intente capturarlo.
+    await new Promise(r => setTimeout(r, 200));
 
     try {
       const canvas = await html2canvas(stage, {
