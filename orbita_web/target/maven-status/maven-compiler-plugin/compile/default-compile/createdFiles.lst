@@ -19,6 +19,7 @@ com\clinica\ctc\repository\PacienteCacRepository.class
 com\clinica\ctc\controller\AuthController.class
 com\clinica\ctc\config\GeminiProperties$Api.class
 com\clinica\ctc\config\SecurityConfig.class
+com\clinica\ctc\controller\BroadcastController.class
 com\clinica\ctc\controller\PageController.class
 com\clinica\ctc\controller\FirestoreController.class
 com\clinica\ctc\repository\UsuarioPermitidoRepository.class

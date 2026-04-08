@@ -17,7 +17,7 @@
                 query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
- 
+
         // 🎨 SISTEMA DE ESTILOS PREMIUM PARA AYUDAS Y TOOLTIPS
         if (!document.getElementById('altocosto-ui-styles')) {
                 const style = document.createElement('style');
@@ -4328,8 +4328,8 @@
                                         btnNoCohorte.style.opacity = yaMarcado ? "0.7" : "1";
                                         btnNoCohorte.style.cursor = (esAnalista && !yaMarcado) ? "pointer" : "default";
 
-                                        btnNoCohorte.innerHTML = yaMarcado 
-                                                ? `<i data-lucide="check-circle" style="width:16px;"></i> REPORTADO POR ANALISTA: NO PERTENECE A COHORTE` 
+                                        btnNoCohorte.innerHTML = yaMarcado
+                                                ? `<i data-lucide="check-circle" style="width:16px;"></i> REPORTADO POR ANALISTA: NO PERTENECE A COHORTE`
                                                 : `<i data-lucide="user-x" style="width:16px;"></i> MARCAR: NO PERTENECE A ESTA COHORTE`;
 
                                         if (esAnalista && !yaMarcado) {
@@ -4412,7 +4412,7 @@
                         const rawTip = (getTip(ayuda, v) || getTip(ayuda, keyStore) || "").toString().trim();
                         // Si no hay tip, mostramos un mensaje genérico para que siempre aparezca el icono 'i'
                         const tip = rawTip || "Dato obligatorio según instructivo técnico de la Cuenta de Alto Costo (CAC).";
-                        
+
                         // Solo mostramos icono de ayuda a Analistas y Administradores
                         const helpIconHTML = puedeVerAyudas ? `<span class="info-icon" data-tip="${esc(tip)}">i</span>` : '';
                         const labelHTML = `${esc(labelUI)} ${helpIconHTML} <span style="color:red;">*</span>`;
@@ -4722,7 +4722,7 @@
 
                 const getDiasHabilesCiclo = (y, m) => {
                         const yNum = parseInt(y), mNum = parseInt(m);
-                        
+
                         // 1. Ciclo SIEMPRE inicia en el 5to día hábil del mes seleccionado
                         const habilesInicio = diasHabilesColombia(yNum, mNum);
                         const fechaInicioCiclo = habilesInicio[4] || habilesInicio[habilesInicio.length - 1];
@@ -4735,7 +4735,7 @@
 
                         // 3. Obtener TODOS los días hábiles operativos del ciclo completo
                         const diasCiclo = [];
-                        
+
                         // Días desde el inicio del ciclo hasta fin de mes corriente
                         habilesInicio.forEach(d => {
                                 if (d.getTime() >= fechaInicioCiclo.getTime()) diasCiclo.push(new Date(d));
@@ -4959,7 +4959,7 @@
 
                                 const idMostrar = p?.datos_base?.VAR6_NumeroIdentificacionUsuario || p?.datos_base?.VAR6_Identificacion || p?.identificacion || "---";
                                 const secsPeriodo = Number(p?.periodos?.[pPeriodo]?.tiempo_segundos ?? 0) || 0;
-                                
+
                                 const esNoCohorte = p?.periodos?.[pPeriodo]?.no_cohorte === true;
                                 if (esNoCohorte) {
                                         tr.style.background = "linear-gradient(to right, #fff1f2, #ffffff)";
@@ -5076,7 +5076,7 @@
                                 } else {
                                         tr.style.cursor = "default";
                                 }
-                                
+
                                 tr.setAttribute('data-paciente-id', idDoc);
                                 tbody.appendChild(tr);
                         });
@@ -6372,144 +6372,219 @@
         const excelField = document.getElementById('excelInput');
         if (excelField) {
                 excelField.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (!file) return;
+                        const file = e.target.files[0];
+                        if (!file) return;
 
-                const cohorte = document.getElementById('tipoCargue').value;
-                const reader = new FileReader();
+                        const cohorte = document.getElementById('tipoCargue').value;
+                        const reader = new FileReader();
 
-                reader.onload = async (event) => {
-                        try {
-                                const data = new Uint8Array(event.target.result);
-                                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-                                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                                const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                        reader.onload = async (event) => {
+                                try {
+                                        const data = new Uint8Array(event.target.result);
+                                        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                                        const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                                // --- Helper: Excel/Date/serial -> ISO AAAA-MM-DD ---
-                                const toISO = (v) => {
-                                        if (v === null || v === undefined || String(v).trim() === "") return "";
+                                        // --- Helper: Excel/Date/serial -> ISO AAAA-MM-DD ---
+                                        const toISO = (v) => {
+                                                if (v === null || v === undefined || String(v).trim() === "") return "";
 
-                                        // Si ya viene Date (por cellDates:true)
-                                        if (v instanceof Date && !isNaN(v)) {
-                                                const Y = v.getFullYear();
-                                                const M = String(v.getMonth() + 1).padStart(2, "0");
-                                                const D = String(v.getDate()).padStart(2, "0");
-                                                return `${Y}-${M}-${D}`;
-                                        }
-
-                                        // Si viene serial Excel (número)
-                                        if (typeof v === "number" && isFinite(v)) {
-                                                const dc = XLSX.SSF.parse_date_code(v);
-                                                if (dc && dc.y && dc.m && dc.d) {
-                                                        const Y = String(dc.y).padStart(4, "0");
-                                                        const M = String(dc.m).padStart(2, "0");
-                                                        const D = String(dc.d).padStart(2, "0");
+                                                // Si ya viene Date (por cellDates:true)
+                                                if (v instanceof Date && !isNaN(v)) {
+                                                        const Y = v.getFullYear();
+                                                        const M = String(v.getMonth() + 1).padStart(2, "0");
+                                                        const D = String(v.getDate()).padStart(2, "0");
                                                         return `${Y}-${M}-${D}`;
                                                 }
-                                                return String(v);
-                                        }
 
-                                        // Si viene string DD/MM/AAAA
-                                        const s = String(v).trim();
-                                        const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                                        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-
-                                        // Si ya viene ISO, perfecto
-                                        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-
-                                        return s;
-                                };
-
-                                if (!rows || rows.length < 2) {
-                                        alert("El archivo no tiene filas para cargar.");
-                                        return;
-                                }
-
-                                const pAnio = document.getElementById("filtroAnio").value;
-                                const pMes = document.getElementById("filtroMes").value;
-                                const periodo = `${pAnio}-${pMes}`;
-
-                                const cohorteNorm = String(cohorte || "").toLowerCase();
-                                const esCancer = /cancer|cáncer|onc|neo/.test(cohorteNorm);
-
-                                // ====== helpers solo para HEMO (no tocan cáncer) ======
-                                const normHeader = (h) => String(h ?? "").trim().replace(/\s+/g, '');
-                                const headerRow = rows[0] || [];
-                                const H = Object.create(null);
-                                headerRow.forEach((h, idx) => {
-                                        const k = normHeader(h);
-                                        if (k && H[k] === undefined) H[k] = idx;
-                                });
-                                const cellBy = (fila, ...keys) => {
-                                        for (const kRaw of keys) {
-                                                const k = normHeader(kRaw);
-                                                const idx = H[k];
-                                                if (idx !== undefined) {
-                                                        const v = fila[idx];
-                                                        const s = (v !== undefined && v !== null) ? String(v).trim() : "";
-                                                        if (s !== "") return s;
+                                                // Si viene serial Excel (número)
+                                                if (typeof v === "number" && isFinite(v)) {
+                                                        const dc = XLSX.SSF.parse_date_code(v);
+                                                        if (dc && dc.y && dc.m && dc.d) {
+                                                                const Y = String(dc.y).padStart(4, "0");
+                                                                const M = String(dc.m).padStart(2, "0");
+                                                                const D = String(dc.d).padStart(2, "0");
+                                                                return `${Y}-${M}-${D}`;
+                                                        }
+                                                        return String(v);
                                                 }
+
+                                                // Si viene string DD/MM/AAAA
+                                                const s = String(v).trim();
+                                                const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                                                if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+                                                // Si ya viene ISO, perfecto
+                                                if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+                                                return s;
+                                        };
+
+                                        if (!rows || rows.length < 2) {
+                                                alert("El archivo no tiene filas para cargar.");
+                                                return;
                                         }
-                                        return "";
-                                };
 
-                                const batch = writeBatch(db);
-                                let countBatch = 0;
+                                        const pAnio = document.getElementById("filtroAnio").value;
+                                        const pMes = document.getElementById("filtroMes").value;
+                                        const periodo = `${pAnio}-${pMes}`;
 
-                                // Indicador de carga
-                                const btnOriginalText = e.target.labels?.[0]?.textContent || "Cargar";
-                                if (e.target.labels?.[0]) e.target.labels[0].textContent = "⚙️ Procesando...";
+                                        const cohorteNorm = String(cohorte || "").toLowerCase();
+                                        const esCancer = /cancer|cáncer|onc|neo/.test(cohorteNorm);
 
-                                for (let i = 1; i < rows.length; i++) {
-                                        const fila = rows[i];
-                                        if (!fila || fila.length < 7) continue;
+                                        // ====== helpers solo para HEMO (no tocan cáncer) ======
+                                        const normHeader = (h) => String(h ?? "").trim().replace(/\s+/g, '');
+                                        const headerRow = rows[0] || [];
+                                        const H = Object.create(null);
+                                        headerRow.forEach((h, idx) => {
+                                                const k = normHeader(h);
+                                                if (k && H[k] === undefined) H[k] = idx;
+                                        });
+                                        const cellBy = (fila, ...keys) => {
+                                                for (const kRaw of keys) {
+                                                        const k = normHeader(kRaw);
+                                                        const idx = H[k];
+                                                        if (idx !== undefined) {
+                                                                const v = fila[idx];
+                                                                const s = (v !== undefined && v !== null) ? String(v).trim() : "";
+                                                                if (s !== "") return s;
+                                                        }
+                                                }
+                                                return "";
+                                        };
 
-                                        // =========================================================
-                                        // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
-                                        // =========================================================
-                                        if (esCancer) {
-                                                // 1. Extraemos los datos base por posición (columnas fijas del Excel)
-                                                const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : ""; // B - Primer Nombre
-                                                const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : ""; // D - Primer Apellido
-                                                const v6 = fila[6] ? fila[6].toString().trim() : "";               // G - Identificación
-                                                if (!v6) continue;
+                                        const batch = writeBatch(db);
+                                        let countBatch = 0;
 
-                                                // 2. Buscamos el Diagnóstico (Dx)
-                                                const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
-                                                const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
-                                                const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
+                                        // Indicador de carga
+                                        const btnOriginalText = e.target.labels?.[0]?.textContent || "Cargar";
+                                        if (e.target.labels?.[0]) e.target.labels[0].textContent = "⚙️ Procesando...";
 
-                                                // 3. LLAVE ÚNICA: solo ID + Dx (sin periodo)
-                                                const idIdent = v6.toString().trim().replace(/\D/g, ''); // solo dígitos
-                                                const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');     // limpia para ID
-                                                const docId = `${idIdent}_${idDx}`;
+                                        for (let i = 1; i < rows.length; i++) {
+                                                const fila = rows[i];
+                                                if (!fila || fila.length < 7) continue;
 
-                                                // 4. Estructura del documento (merge-friendly)
-                                                const pacienteDoc = {
-                                                        identificacion: idIdent,
+                                                // =========================================================
+                                                // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
+                                                // =========================================================
+                                                if (esCancer) {
+                                                        // 1. Extraemos los datos base por posición (columnas fijas del Excel)
+                                                        const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : ""; // B - Primer Nombre
+                                                        const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : ""; // D - Primer Apellido
+                                                        const v6 = fila[6] ? fila[6].toString().trim() : "";               // G - Identificación
+                                                        if (!v6) continue;
+
+                                                        // 2. Buscamos el Diagnóstico (Dx)
+                                                        const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
+                                                        const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
+                                                        const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
+
+                                                        // 3. LLAVE ÚNICA: solo ID + Dx (sin periodo)
+                                                        const idIdent = v6.toString().trim().replace(/\D/g, ''); // solo dígitos
+                                                        const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');     // limpia para ID
+                                                        const docId = `${idIdent}_${idDx}`;
+
+                                                        // 4. Estructura del documento (merge-friendly)
+                                                        const pacienteDoc = {
+                                                                identificacion: idIdent,
+                                                                periodo_reporte: periodo,
+                                                                tipo_identificacion: fila[5]?.toString().trim() || "",
+                                                                nombreCompleto: `${v1} ${v3}`.trim().toUpperCase(),
+                                                                cohorte: cohorte,
+                                                                dx: idDx,
+                                                                dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
+
+                                                                ultima_carga: new Date().toISOString(),
+                                                                periodo_ultima_carga: periodo,
+
+                                                                // Datos base (demográficos - se actualizan si vienen nuevos)
+                                                                datos_base: {
+                                                                        VAR1_PrimerNombreUsuario: v1 || "",
+                                                                        VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
+                                                                        VAR3_PrimerApellidoUsuario: v3 || "",
+                                                                        VAR4_SegundoApellidoUsuario: fila[4]?.toString().trim().toUpperCase() || "NOAP",
+                                                                        VAR5_TipoIdentificacionUsuario: fila[5]?.toString().trim() || "",
+                                                                        VAR6_NumeroIdentificacionUsuario: idIdent || "",
+                                                                        VAR7_FechaNacimiento: toISO(fila[7]),
+                                                                        VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
+                                                                },
+
+                                                                // Datos del periodo actual (se acumulan cada mes)
+                                                                periodos: {
+                                                                        [periodo]: {
+                                                                                cargado_el: new Date().toISOString(),
+                                                                                validado_el: null,
+                                                                                validador: null,
+                                                                                estado: "pendiente",
+                                                                                variables: {}
+                                                                        }
+                                                                }
+                                                        };
+
+                                                        // Variables del periodo actual
+                                                        rows[0].forEach((header, index) => {
+                                                                if (!header) return;
+                                                                const key = header.toString().trim().replace(/\s+/g, '');
+                                                                const valorRaw = fila[index];
+                                                                const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
+
+                                                                // Base = VAR1..VAR8 con frontera (evita VAR66/VAR67 etc.)
+                                                                const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
+
+                                                                if (!esDatoBase && key !== "") {
+                                                                        pacienteDoc.periodos[periodo].variables[key] = valor;
+                                                                }
+                                                        });
+
+                                                        batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
+                                                        countBatch++;
+                                                        continue; // siguiente fila
+                                                }
+
+                                                // =========================================================
+                                                // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
+                                                // =========================================================
+                                                const v1h = cellBy(fila, "VAR1_PrimerNombre");
+                                                const v2h = cellBy(fila, "VAR2_SegundoNombre");
+                                                const v3h = cellBy(fila, "VAR3_PrimerApellido");
+                                                const v4h = cellBy(fila, "VAR4_SegundoApellido");
+                                                const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
+                                                const v6h = cellBy(fila, "VAR6_Identificacion");
+                                                const v7h = cellBy(fila, "VAR7_FechaNacimiento");
+                                                const v8h = cellBy(fila, "VAR8_Sexo");
+
+                                                const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
+                                                if (!idIdentH) continue;
+
+                                                const docIdH = `${idIdentH}_HEMO`;
+
+                                                const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
+                                                        || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
+                                                        || idIdentH;
+
+                                                const pacienteDocH = {
+                                                        identificacion: idIdentH,
                                                         periodo_reporte: periodo,
-                                                        tipo_identificacion: fila[5]?.toString().trim() || "",
-                                                        nombreCompleto: `${v1} ${v3}`.trim().toUpperCase(),
+                                                        tipo_identificacion: v5h || "",
+                                                        nombreCompleto: nombreCompletoH,
                                                         cohorte: cohorte,
-                                                        dx: idDx,
-                                                        dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
+                                                        dx: "HEMO",
+                                                        dx_descripcion: "Hemofilia",
 
                                                         ultima_carga: new Date().toISOString(),
                                                         periodo_ultima_carga: periodo,
 
-                                                        // Datos base (demográficos - se actualizan si vienen nuevos)
                                                         datos_base: {
-                                                                VAR1_PrimerNombreUsuario: v1 || "",
-                                                                VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
-                                                                VAR3_PrimerApellidoUsuario: v3 || "",
-                                                                VAR4_SegundoApellidoUsuario: fila[4]?.toString().trim().toUpperCase() || "NOAP",
-                                                                VAR5_TipoIdentificacionUsuario: fila[5]?.toString().trim() || "",
-                                                                VAR6_NumeroIdentificacionUsuario: idIdent || "",
-                                                                VAR7_FechaNacimiento: toISO(fila[7]),
-                                                                VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
+                                                                VAR1_PrimerNombre: (v1h || "").toUpperCase(),
+                                                                VAR2_SegundoNombre: (v2h || "").toUpperCase(),
+                                                                VAR3_PrimerApellido: (v3h || "").toUpperCase(),
+                                                                VAR4_SegundoApellido: (v4h || "").toUpperCase(),
+                                                                VAR5_TipoIdentificacion: v5h || "",
+                                                                VAR6_Identificacion: idIdentH,
+                                                                VAR7_FechaNacimiento: v7h || "",
+                                                                VAR8_Sexo: (v8h || "").toUpperCase()
                                                         },
 
-                                                        // Datos del periodo actual (se acumulan cada mes)
                                                         periodos: {
                                                                 [periodo]: {
                                                                         cargado_el: new Date().toISOString(),
@@ -6521,124 +6596,49 @@
                                                         }
                                                 };
 
-                                                // Variables del periodo actual
+                                                // Variables del periodo (HEMO): por headers, sin espacios
                                                 rows[0].forEach((header, index) => {
                                                         if (!header) return;
                                                         const key = header.toString().trim().replace(/\s+/g, '');
+                                                        if (!key) return;
+
                                                         const valorRaw = fila[index];
-                                                        const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
+                                                        let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
 
-                                                        // Base = VAR1..VAR8 con frontera (evita VAR66/VAR67 etc.)
+                                                        // Si es variable tipo fecha, forzar ISO
+                                                        if (typeof isDateKey === "function" ? isDateKey(key) : false) {
+                                                                valor = toISO(valorRaw);
+                                                        }
+
                                                         const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-
-                                                        if (!esDatoBase && key !== "") {
-                                                                pacienteDoc.periodos[periodo].variables[key] = valor;
+                                                        if (!esDatoBase) {
+                                                                pacienteDocH.periodos[periodo].variables[key] = valor;
                                                         }
                                                 });
 
-                                                batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
+                                                batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
                                                 countBatch++;
-                                                continue; // siguiente fila
                                         }
 
-                                        // =========================================================
-                                        // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
-                                        // =========================================================
-                                        const v1h = cellBy(fila, "VAR1_PrimerNombre");
-                                        const v2h = cellBy(fila, "VAR2_SegundoNombre");
-                                        const v3h = cellBy(fila, "VAR3_PrimerApellido");
-                                        const v4h = cellBy(fila, "VAR4_SegundoApellido");
-                                        const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
-                                        const v6h = cellBy(fila, "VAR6_Identificacion");
-                                        const v7h = cellBy(fila, "VAR7_FechaNacimiento");
-                                        const v8h = cellBy(fila, "VAR8_Sexo");
+                                        if (countBatch > 0) {
+                                                await batch.commit();
+                                        }
 
-                                        const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
-                                        if (!idIdentH) continue;
+                                        // Restaurar botón y alertar
+                                        if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
+                                        alert(`Sincronización completa: ${countBatch} pacientes procesados correctamente.`);
+                                        cargarPacientes();
 
-                                        const docIdH = `${idIdentH}_HEMO`;
-
-                                        const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                || idIdentH;
-
-                                        const pacienteDocH = {
-                                                identificacion: idIdentH,
-                                                periodo_reporte: periodo,
-                                                tipo_identificacion: v5h || "",
-                                                nombreCompleto: nombreCompletoH,
-                                                cohorte: cohorte,
-                                                dx: "HEMO",
-                                                dx_descripcion: "Hemofilia",
-
-                                                ultima_carga: new Date().toISOString(),
-                                                periodo_ultima_carga: periodo,
-
-                                                datos_base: {
-                                                        VAR1_PrimerNombre: (v1h || "").toUpperCase(),
-                                                        VAR2_SegundoNombre: (v2h || "").toUpperCase(),
-                                                        VAR3_PrimerApellido: (v3h || "").toUpperCase(),
-                                                        VAR4_SegundoApellido: (v4h || "").toUpperCase(),
-                                                        VAR5_TipoIdentificacion: v5h || "",
-                                                        VAR6_Identificacion: idIdentH,
-                                                        VAR7_FechaNacimiento: v7h || "",
-                                                        VAR8_Sexo: (v8h || "").toUpperCase()
-                                                },
-
-                                                periodos: {
-                                                        [periodo]: {
-                                                                cargado_el: new Date().toISOString(),
-                                                                validado_el: null,
-                                                                validador: null,
-                                                                estado: "pendiente",
-                                                                variables: {}
-                                                        }
-                                                }
-                                        };
-
-                                        // Variables del periodo (HEMO): por headers, sin espacios
-                                        rows[0].forEach((header, index) => {
-                                                if (!header) return;
-                                                const key = header.toString().trim().replace(/\s+/g, '');
-                                                if (!key) return;
-
-                                                const valorRaw = fila[index];
-                                                let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
-
-                                                // Si es variable tipo fecha, forzar ISO
-                                                if (typeof isDateKey === "function" ? isDateKey(key) : false) {
-                                                        valor = toISO(valorRaw);
-                                                }
-
-                                                const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-                                                if (!esDatoBase) {
-                                                        pacienteDocH.periodos[periodo].variables[key] = valor;
-                                                }
-                                        });
-
-                                        batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
-                                        countBatch++;
+                                } catch (err) {
+                                        console.error("Error en correlación:", err);
+                                        alert("Error al organizar la base de datos: " + err.message);
+                                        if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
                                 }
+                        };
 
-                                if (countBatch > 0) {
-                                        await batch.commit();
-                                }
-
-                                // Restaurar botón y alertar
-                                if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
-                                alert(`Sincronización completa: ${countBatch} pacientes procesados correctamente.`);
-                                cargarPacientes();
-
-                        } catch (err) {
-                                console.error("Error en correlación:", err);
-                                alert("Error al organizar la base de datos: " + err.message);
-                                if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
-                        }
-                };
-
-                reader.readAsArrayBuffer(file);
-        });
-}
+                        reader.readAsArrayBuffer(file);
+                });
+        }
 
         window.manejarEnter = (event, variableActualLabel) => {
                 if (event.key !== "Enter") return;
@@ -6878,7 +6878,7 @@
 
         window.marcarNoCohorte = async () => {
                 if (!currentPacienteId) return;
-                const confirmMsg = "❓ ¿Confirma que este paciente NO PERTENECE a la cohorte seleccionada?\n\nEsta marca será visible para el Master Admin, quien decidirá si ocultar el registro.";
+                const confirmMsg = "❓ ¿Confirma que este paciente NO PERTENECE a la cohorte seleccionada?\n\nEsta marca será visible para el Super Admin, quien decidirá si ocultar el registro.";
                 if (!confirm(confirmMsg)) return;
 
                 try {
