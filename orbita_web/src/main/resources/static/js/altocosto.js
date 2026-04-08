@@ -14,7 +14,7 @@
         const { db, auth } = window.firebaseInstance;
         const {
                 collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-                query, where, orderBy, limit, onSnapshot, serverTimestamp
+                query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
  
@@ -4720,6 +4720,50 @@
                         return arr;
                 };
 
+                const getDiasHabilesCiclo = (y, m) => {
+                        const yNum = parseInt(y), mNum = parseInt(m);
+                        
+                        // 1. Ciclo SIEMPRE inicia en el 5to día hábil del mes seleccionado
+                        const habilesInicio = diasHabilesColombia(yNum, mNum);
+                        const fechaInicioCiclo = habilesInicio[4] || habilesInicio[habilesInicio.length - 1];
+
+                        // 2. Ciclo SIEMPRE termina en el 5to día hábil del mes siguiente
+                        let nY = yNum, nM = mNum + 1;
+                        if (nM > 12) { nM = 1; nY++; }
+                        const habilesFin = diasHabilesColombia(nY, nM);
+                        const fechaFinCiclo = habilesFin[4] || habilesFin[habilesFin.length - 1];
+
+                        // 3. Obtener TODOS los días hábiles operativos del ciclo completo
+                        const diasCiclo = [];
+                        
+                        // Días desde el inicio del ciclo hasta fin de mes corriente
+                        habilesInicio.forEach(d => {
+                                if (d.getTime() >= fechaInicioCiclo.getTime()) diasCiclo.push(new Date(d));
+                        });
+
+                        // Días hábiles del mes siguiente hasta el cierre del ciclo
+                        habilesFin.forEach(d => {
+                                if (d.getTime() < fechaFinCiclo.getTime()) diasCiclo.push(new Date(d));
+                        });
+
+                        return diasCiclo;
+                };
+
+
+                const getCicloOperativoHoy = () => {
+                        const h = new Date();
+                        const hSolo = new Date(h.getFullYear(), h.getMonth(), h.getDate());
+                        const hY = h.getFullYear(), hM = h.getMonth() + 1;
+                        const dH = diasHabilesColombia(hY, hM);
+                        const cutoff = dH[4] || dH[dH.length - 1];
+                        if (hSolo < cutoff) {
+                                let pY = hY, pM = hM - 1;
+                                if (pM < 1) { pM = 12; pY--; }
+                                return { y: pY, m: pM };
+                        }
+                        return { y: hY, m: hM };
+                };
+
                 // 🔥 HELPER PARA FECHA LOCAL (Evita el bug de las 7:00 PM y UTC)
                 const getLocalYYYYMMDD = (dateVal) => {
                         if (!dateVal) return "";
@@ -4729,6 +4773,9 @@
                                 String(d.getMonth() + 1).padStart(2, '0') + "-" +
                                 String(d.getDate()).padStart(2, '0');
                 };
+
+                const hoyNatural = new Date();
+                const hoySoloFecha = new Date(hoyNatural.getFullYear(), hoyNatural.getMonth(), hoyNatural.getDate());
 
                 if (typeof window.bandejaActual === 'undefined' || !window.bandejaActual) window.bandejaActual = 'pendiente';
 
@@ -4740,15 +4787,12 @@
                 const mesActual = ahora.getMonth() + 1;
 
                 const mesesDiferencia = (anoActual * 12 + mesActual) - (parseInt(anio) * 12 + parseInt(mes));
-                const esMesActivo = mesesDiferencia <= 1;
+                const esMesActivo = (mesesDiferencia <= 1);
 
-                // Mes actual de trabajo (siempre el mes del calendario hoy)
-                const mesWorkAnio = String(anoActual);
-                const mesWork = String(mesActual).padStart(2, '0');
-                const habilesMesTrabajo = diasHabilesColombia(mesWorkAnio, mesWork);
+                const cHoy = getCicloOperativoHoy();
+                const habilesMesTrabajo = getDiasHabilesCiclo(cHoy.y, cHoy.m);
 
-                // Días hábiles del mes de los datos (filtro)
-                const habilesMesDatos = diasHabilesColombia(anio, mes);
+                const habilesMesDatos = getDiasHabilesCiclo(anio, mes);
                 const totalHorasMes = habilesMesDatos.reduce((acc, dt) => acc + horasDiaLaboral(dt), 0);
 
                 // hoyStr para comparaciones
@@ -5258,19 +5302,15 @@
                                 // ─── META DINÁMICA RECALCULADA POR REZAGO ─────────────────────────────
                                 // Días hábiles restantes = desde HOY hasta fin del mes ACTUAL de trabajo
 
-                                diasRestantes = habilesMesTrabajo.filter(dt => {
-                                        const dStr = dt.getFullYear() + "-" +
-                                                String(dt.getMonth() + 1).padStart(2, "0") + "-" +
-                                                String(dt.getDate()).padStart(2, "0");
-                                        return dStr >= hoyStr2;
+                                const hoyTime = hoySoloFecha.getTime();
+
+                                diasRestantes = habilesMesDatos.filter(dt => {
+                                        return dt.getTime() >= hoyTime;
                                 }).length;
 
-                                // Días hábiles YA transcurridos del mes de trabajo (para proyección)
-                                const diasHabilesTranscurridosTrabajo = habilesMesTrabajo.filter(dt => {
-                                        const dStr = dt.getFullYear() + "-" +
-                                                String(dt.getMonth() + 1).padStart(2, "0") + "-" +
-                                                String(dt.getDate()).padStart(2, "0");
-                                        return dStr < hoyStr2;
+                                // Días hábiles YA transcurridos del ciclo seleccionado (para proyección)
+                                const diasHabilesTranscurridosTrabajo = habilesMesDatos.filter(dt => {
+                                        return dt.getTime() < hoyTime;
                                 }).length;
 
                                 // Pacientes ejecutados hasta AYER (usamos gestadosPeriodo para incluir validados en la base)
@@ -6329,7 +6369,9 @@
         };
 
         // --- CARGUE UNIFICADO: CÁNCER (por posición como ya funciona) + HEMOFILIA (por encabezado) ---
-        document.getElementById('excelInput').addEventListener('change', function (e) {
+        const excelField = document.getElementById('excelInput');
+        if (excelField) {
+                excelField.addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (!file) return;
 
@@ -6411,6 +6453,13 @@
                                         return "";
                                 };
 
+                                const batch = writeBatch(db);
+                                let countBatch = 0;
+
+                                // Indicador de carga
+                                const btnOriginalText = e.target.labels?.[0]?.textContent || "Cargar";
+                                if (e.target.labels?.[0]) e.target.labels[0].textContent = "⚙️ Procesando...";
+
                                 for (let i = 1; i < rows.length; i++) {
                                         const fila = rows[i];
                                         if (!fila || fila.length < 7) continue;
@@ -6487,7 +6536,8 @@
                                                         }
                                                 });
 
-                                                await setDoc(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
+                                                batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
+                                                countBatch++;
                                                 continue; // siguiente fila
                                         }
 
@@ -6566,20 +6616,29 @@
                                                 }
                                         });
 
-                                        await setDoc(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
+                                        batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
+                                        countBatch++;
                                 }
 
-                                alert("Sincronización completa.");
+                                if (countBatch > 0) {
+                                        await batch.commit();
+                                }
+
+                                // Restaurar botón y alertar
+                                if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
+                                alert(`Sincronización completa: ${countBatch} pacientes procesados correctamente.`);
                                 cargarPacientes();
 
                         } catch (err) {
                                 console.error("Error en correlación:", err);
                                 alert("Error al organizar la base de datos: " + err.message);
+                                if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
                         }
                 };
 
                 reader.readAsArrayBuffer(file);
         });
+}
 
         window.manejarEnter = (event, variableActualLabel) => {
                 if (event.key !== "Enter") return;
