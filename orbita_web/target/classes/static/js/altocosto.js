@@ -3351,6 +3351,7 @@
         };
 
         window.cambiarCohorte = (c) => {
+                window.cohorteActual = c;
                 cohorteActual = c;
                 document.querySelectorAll('.cohort-pill').forEach(p => p.classList.remove('active'));
                 const pill = document.getElementById('pill-' + c);
@@ -3542,6 +3543,7 @@
         // 🚫 LISTAS DE VARIABLES VOLÁTILES (AZULES) SEGÚN MANUALES
         // =========================================================
         const VOLATILES_CANCER = [
+                "VAR18_FechaDx",
                 "VAR41_ObjetivoIntervencionMedicaPeriodoReporte",
                 "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual",
                 "VAR47_NumeroCiclosIniciadosPeriodoReporteActual",
@@ -5971,7 +5973,7 @@
                         return;
                 }
 
-                const cohorteSel = cohorteActual || "todos";
+                const cohorteSel = (window.cohorteActual || cohorteActual || "todos").toString().toLowerCase().trim();
 
                 const generarYDescargar = (docs, cohorteFmt) => {
                         const formatoEsCancer = isCancer(cohorteFmt);
@@ -6080,7 +6082,7 @@
                         return;
                 }
 
-                const cohorteSel = cohorteActual || "todos";
+                const cohorteSel = (window.cohorteActual || cohorteActual || "todos").toString().toLowerCase().trim();
 
                 const generarYDescargarXLSX = (docs, cohorteFmt) => {
                         const formatoEsCancer = isCancer(cohorteFmt);

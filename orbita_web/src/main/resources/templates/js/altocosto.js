@@ -3275,6 +3275,7 @@
         // 🚫 LISTAS DE VARIABLES VOLÁTILES (AZULES) SEGÚN MANUALES
         // =========================================================
         const VOLATILES_CANCER = [
+                "VAR18_FechaDx",
                 "VAR41_ObjetivoIntervencionMedicaPeriodoReporte",
                 "VAR45_RecibioUsuarioQuimioterapiaPeriodoCorteActual",
                 "VAR47_NumeroCiclosIniciadosPeriodoReporteActual",
@@ -4315,6 +4316,7 @@
 
         window.cambiarCohorte = (c) => {
                 window.cohorteActual = c;
+                cohorteActual = c; // actualizar local también
                 document.querySelectorAll('.cohort-pill').forEach(p => p.classList.remove('active'));
                 $safeGet('pill-' + c).classList.add('active');
                 window.cargarPacientes();
@@ -5527,7 +5529,7 @@
                         return;
                 }
 
-                const cohorteSel = cohorteActual || "todos";
+                const cohorteSel = (window.cohorteActual || cohorteActual || "todos").toString().toLowerCase().trim();
 
                 const generarYDescargar = (docs, cohorteFmt) => {
                         const formatoEsCancer = isCancer(cohorteFmt);
@@ -5614,7 +5616,7 @@
                         return;
                 }
 
-                const cohorteSel = cohorteActual || "todos";
+                const cohorteSel = (window.cohorteActual || cohorteActual || "todos").toString().toLowerCase().trim();
 
                 const generarYDescargarXLSX = (docs, cohorteFmt) => {
                         const formatoEsCancer = isCancer(cohorteFmt);
