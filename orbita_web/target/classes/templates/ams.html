@@ -257,8 +257,18 @@
   <div th:replace="~{layout :: auth-scripts}"></div>
   <script type="module" th:inline="none">
     // Logic Engine AMS
+    let isAMSInitialized = false;
     const initAMSAnalytics = async () => {
+        if (isAMSInitialized) return;
+        
+        let retry = 0;
+        while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            retry++;
+        }
+
         if (!window.firebaseInstance || !window.firebaseFirestore) return;
+        isAMSInitialized = true;
         const { auth, db } = window.firebaseInstance;
         const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;
 

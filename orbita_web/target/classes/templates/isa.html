@@ -182,9 +182,15 @@
 
     const initDigitalAnalytics = async () => {
         if (isModuleInitialized) return;
-        isModuleInitialized = true;
+        
+        let retry = 0;
+        while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            retry++;
+        }
 
-            if (!window.firebaseInstance || !window.firebaseFirestore) return;
+        if (!window.firebaseInstance || !window.firebaseFirestore) return;
+        isModuleInitialized = true;
 
             const { auth, db } = window.firebaseInstance;
             const { collection, query, where, getDocs, setDoc, doc, serverTimestamp, limit } = window.firebaseFirestore;

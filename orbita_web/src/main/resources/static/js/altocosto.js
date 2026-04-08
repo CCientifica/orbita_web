@@ -349,6 +349,17 @@
         };
 
         /**
+         * 🏁 HELPER CICLO OPERATIVO
+         * Retorna el mes operativo (Data Month N-1) según la fecha actual.
+         */
+        function getCicloOperativoHoy() {
+                const h = new Date();
+                let pY = h.getFullYear(), pM = h.getMonth(); // getMonth() es 0-11
+                if (pM === 0) { pM = 12; pY--; }
+                return { y: pY, m: pM };
+        }
+
+        /**
          * 🎨 HELPER DE PRESENTACIÓN (UI) - ÓRBITA PREMIUM
          * Transforma nombres técnicos (Ej: VAR1_PrimerNombre) a formato legible (Ej: VAR1 : Primer Nombre)
          * SOLO para visualización en el modal, sin afectar lógica ni TXT.
@@ -4659,9 +4670,10 @@
                 const elAnio = document.getElementById("filtroAnio");
                 if (!elMes || !elAnio) return;
 
-                // Tarea 1: Valores por defecto válidos
-                const mes = elMes.value || String(new Date().getMonth() + 1).padStart(2, '0');
-                const anio = elAnio.value || String(new Date().getFullYear());
+                // Tarea 1: Valores por defecto válidos (Data Month N-1 por flujo de trabajo)
+                const cDefault = getCicloOperativoHoy();
+                const mes = elMes.value || String(cDefault.m).padStart(2, '0');
+                const anio = elAnio.value || String(cDefault.y);
                 const pPeriodo = `${anio}-${mes}`;
 
                 // Tarea 2: Blindaje de Query (No procesar si el formato es inválido)
@@ -4750,19 +4762,7 @@
                 };
 
 
-                const getCicloOperativoHoy = () => {
-                        const h = new Date();
-                        const hSolo = new Date(h.getFullYear(), h.getMonth(), h.getDate());
-                        const hY = h.getFullYear(), hM = h.getMonth() + 1;
-                        const dH = diasHabilesColombia(hY, hM);
-                        const cutoff = dH[4] || dH[dH.length - 1];
-                        if (hSolo < cutoff) {
-                                let pY = hY, pM = hM - 1;
-                                if (pM < 1) { pM = 12; pY--; }
-                                return { y: pY, m: pM };
-                        }
-                        return { y: hY, m: hM };
-                };
+
 
                 // 🔥 HELPER PARA FECHA LOCAL (Evita el bug de las 7:00 PM y UTC)
                 const getLocalYYYYMMDD = (dateVal) => {
@@ -4789,11 +4789,17 @@
                 const mesesDiferencia = (anoActual * 12 + mesActual) - (parseInt(anio) * 12 + parseInt(mes));
                 const esMesActivo = (mesesDiferencia <= 1);
 
-                const cHoy = getCicloOperativoHoy();
-                const habilesMesTrabajo = getDiasHabilesCiclo(cHoy.y, cHoy.m);
+                // 🚀 LÓGICA DE CICLO REACTIVO (N+1)
+                // Los pacientes del mes N se trabajan en el ciclo operativo del mes N+1 (5 al 5)
+                let anioTrabajo = parseInt(anio), mesTrabajo = parseInt(mes) + 1;
+                if (mesTrabajo > 12) { mesTrabajo = 1; anioTrabajo++; }
 
-                const habilesMesDatos = getDiasHabilesCiclo(anio, mes);
-                const totalHorasMes = habilesMesDatos.reduce((acc, dt) => acc + horasDiaLaboral(dt), 0);
+                const habilesMesTrabajo = getDiasHabilesCiclo(anioTrabajo, mesTrabajo);
+                const habilesMesDatos = habilesMesTrabajo; // Usamos el ciclo de trabajo como base para la data
+                
+
+
+                const totalHorasMes = habilesMesTrabajo.reduce((acc, dt) => acc + horasDiaLaboral(dt), 0);
 
                 // hoyStr para comparaciones
                 const hoyStr2 = ahora.getFullYear() + "-" +
@@ -5302,18 +5308,29 @@
                                 // ─── META DINÁMICA RECALCULADA POR REZAGO ─────────────────────────────
                                 // Días hábiles restantes = desde HOY hasta fin del mes ACTUAL de trabajo
 
+                                // Determinamos si el ciclo ya debe considerarse iniciado precozmente
+                                const inicioOficial = habilesMesTrabajo[0];
+                                const cicloIniciadoPrecoz = ahora < inicioOficial && totalPeriodo > 0;
+
                                 const hoyTime = hoySoloFecha.getTime();
 
-                                diasRestantes = habilesMesDatos.filter(dt => {
-                                        return dt.getTime() >= hoyTime;
-                                }).length;
-
-                                // Días hábiles YA transcurridos del ciclo seleccionado (para proyección)
-                                const diasHabilesTranscurridosTrabajo = habilesMesDatos.filter(dt => {
+                                let diasHabilesTranscurridosTrabajo = habilesMesTrabajo.filter(dt => {
                                         return dt.getTime() < hoyTime;
                                 }).length;
 
-                                // Pacientes ejecutados hasta AYER (usamos gestadosPeriodo para incluir validados en la base)
+                                // ✨ AJUSTE REACTIVO: Si estamos antes del día 5 pero ya hay datos, 
+                                // forzamos a que sea el Día 1 para que la meta sea visible y no haya rezago infinito.
+                                if (diasHabilesTranscurridosTrabajo === 0 && totalPeriodo > 0) {
+                                        diasHabilesTranscurridosTrabajo = 1;
+                                }
+
+                                // Días restantes del ciclo
+                                diasRestantes = habilesMesTrabajo.filter(dt => {
+                                        return dt.getTime() >= hoyTime;
+                                }).length;
+                                if (cicloIniciadoPrecoz) diasRestantes = habilesMesTrabajo.length;
+
+                                // Pacientes ejecutados hasta AYER
                                 ejecutadosHastaAyer = gestadosPeriodo - validadosHoy;
 
                                 // Pendientes = total del periodo - lo ya ejecutado hasta ayer
@@ -5335,7 +5352,7 @@
 
                                 // Esperado = lo que debió gestionar en los días de trabajo ya transcurridos
                                 pacientesEsperadosHastaHoy = Math.floor(ritmoIdealDiario * diasHabilesTranscurridosTrabajo);
-                                rezagoAcumulado = Math.max(pacientesEsperadosHastaHoy - ejecutadosHastaAyer, 0);
+                                rezagoAcumulado = Math.max(pacientesEsperadosHastaHoy - gestadosPeriodo, 0);
 
                                 // Proyección al ritmo actual
                                 proyeccionAlRitmoActual = ejecutadosHastaAyer + validadosHoy +
@@ -5475,7 +5492,7 @@
                                         // Rezago menor al 5% — en riesgo leve
                                         estadoProd = "⚠️ LEVE RETRASO";
                                         colorProd = "#f59e0b";
-                                        textoDetalle = `Lleva ${validadosPeriodo} pac. pero debería llevar ${pacientesEsperadosHastaHoy} a esta altura del mes (${porcentajeAvanceEsperado}% del tiempo transcurrido). Rezago: ${rezagoAcumulado} pacientes. Meta hoy ajustada: ${metaHoyFinal}.`;
+                                        textoDetalle = `Lleva ${gestadosPeriodo} pac. pero debería llevar ${pacientesEsperadosHastaHoy} a esta altura del mes (${porcentajeAvanceEsperado}% del tiempo transcurrido). Rezago: ${rezagoAcumulado} pacientes. Meta hoy: ${metaHoyFinal}. Faltan ${diasRestantes} días hábiles para cerrar.`;
 
                                 } else if (rezagoAcumulado <= Math.ceil(totalPeriodo * 0.15)) {
                                         // Rezago entre 5% y 15% — retraso significativo
@@ -5484,7 +5501,7 @@
                                         const necesitaPorDia = diasRestantes > 0
                                                 ? Math.ceil((totalPeriodo - validadosPeriodo) / diasRestantes)
                                                 : totalPeriodo - validadosPeriodo;
-                                        textoDetalle = `⚠️ Rezago acumulado de ${rezagoAcumulado} pacientes. Lleva ${validadosPeriodo}/${pacientesEsperadosHastaHoy} esperados (${porcentajeAvanceEsperado}% del mes transcurrido). Necesita ${necesitaPorDia} pac/día los próximos ${diasRestantes} días hábiles para cerrar el mes.`;
+                                        textoDetalle = `⚠️ Rezago acumulado de ${rezagoAcumulado} pacientes. Lleva ${gestadosPeriodo}/${pacientesEsperadosHastaHoy} esperados (${porcentajeAvanceEsperado}% del mes). Necesita ${necesitaPorDia} pac/día en los ${diasRestantes} días hábiles restantes para cerrar el mes.`;
 
                                 } else {
                                         // Rezago mayor al 15% — crítico
@@ -5494,7 +5511,7 @@
                                                 ? Math.ceil((totalPeriodo - validadosPeriodo) / diasRestantes)
                                                 : totalPeriodo - validadosPeriodo;
                                         const imposible = necesitaPorDia > (metaHoyFinal * 2.5);
-                                        textoDetalle = `🚨 Rezago crítico: ${rezagoAcumulado} pacientes atrasados. Solo lleva ${validadosPeriodo} de ${pacientesEsperadosHastaHoy} esperados a esta altura del mes. ${imposible ? `⛔ Al ritmo actual es matemáticamente imposible cerrar el mes sin intervención.` : `Necesita ${necesitaPorDia} pac/día en los ${diasRestantes} días hábiles restantes para recuperar.`}`;
+                                        textoDetalle = `🚨 Rezago crítico: ${rezagoAcumulado} pacientes atrasados. Lleva ${gestadosPeriodo} de ${pacientesEsperadosHastaHoy} esperados. ${imposible ? `⛔ Al ritmo actual es matemáticamente imposible cerrar el mes.` : `Necesita gestionar ${necesitaPorDia} pacientes diarios en los últimos ${diasRestantes} días hábiles para lograr la meta.`}`;
                                 }
 
                                 // Calcular días de rezago real
@@ -6453,8 +6470,9 @@
                                                 return "";
                                         };
 
-                                        const batch = writeBatch(db);
+                                        let batch = writeBatch(db);
                                         let countBatch = 0;
+                                        let totalProcesados = 0;
 
                                         // Indicador de carga
                                         const btnOriginalText = e.target.labels?.[0]?.textContent || "Cargar";
@@ -6465,26 +6483,22 @@
                                                 if (!fila || fila.length < 7) continue;
 
                                                 // =========================================================
-                                                // ✅ RAMA 1: CÁNCER (NO SE TOCA: tu código original)
+                                                // ✅ RAMA 1: CÁNCER
                                                 // =========================================================
                                                 if (esCancer) {
-                                                        // 1. Extraemos los datos base por posición (columnas fijas del Excel)
-                                                        const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : ""; // B - Primer Nombre
-                                                        const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : ""; // D - Primer Apellido
-                                                        const v6 = fila[6] ? fila[6].toString().trim() : "";               // G - Identificación
+                                                        const v1 = fila[1] ? fila[1].toString().trim().toUpperCase() : "";
+                                                        const v3 = fila[3] ? fila[3].toString().trim().toUpperCase() : "";
+                                                        const v6 = fila[6] ? fila[6].toString().trim() : "";
                                                         if (!v6) continue;
 
-                                                        // 2. Buscamos el Diagnóstico (Dx)
                                                         const dxIndex = rows[0].findIndex(h => h && h.toString().toLowerCase() === 'dx');
                                                         const valorDx = dxIndex !== -1 ? fila[dxIndex] : fila[fila.length - 1];
                                                         const dxLimpio = valorDx ? valorDx.toString().trim().toUpperCase() : "SIN_DX";
 
-                                                        // 3. LLAVE ÚNICA: solo ID + Dx (sin periodo)
-                                                        const idIdent = v6.toString().trim().replace(/\D/g, ''); // solo dígitos
-                                                        const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');     // limpia para ID
+                                                        const idIdent = v6.toString().trim().replace(/\D/g, '');
+                                                        const idDx = dxLimpio.replace(/[^A-Z0-9]/g, '_');
                                                         const docId = `${idIdent}_${idDx}`;
 
-                                                        // 4. Estructura del documento (merge-friendly)
                                                         const pacienteDoc = {
                                                                 identificacion: idIdent,
                                                                 periodo_reporte: periodo,
@@ -6493,11 +6507,8 @@
                                                                 cohorte: cohorte,
                                                                 dx: idDx,
                                                                 dx_descripcion: valorDx?.toString().trim() || "Sin descripción",
-
                                                                 ultima_carga: new Date().toISOString(),
                                                                 periodo_ultima_carga: periodo,
-
-                                                                // Datos base (demográficos - se actualizan si vienen nuevos)
                                                                 datos_base: {
                                                                         VAR1_PrimerNombreUsuario: v1 || "",
                                                                         VAR2_SegundoNombreUsuario: fila[2]?.toString().trim().toUpperCase() || "NONE",
@@ -6508,116 +6519,58 @@
                                                                         VAR7_FechaNacimiento: toISO(fila[7]),
                                                                         VAR8_Sexo: fila[8]?.toString().trim().toUpperCase() || ""
                                                                 },
-
-                                                                // Datos del periodo actual (se acumulan cada mes)
                                                                 periodos: {
                                                                         [periodo]: {
                                                                                 cargado_el: new Date().toISOString(),
-                                                                                validado_el: null,
-                                                                                validador: null,
                                                                                 estado: "pendiente",
                                                                                 variables: {}
                                                                         }
                                                                 }
                                                         };
 
-                                                        // Variables del periodo actual
                                                         rows[0].forEach((header, index) => {
-                                                                if (!header) return;
-                                                                const key = header.toString().trim().replace(/\s+/g, '');
-                                                                const valorRaw = fila[index];
-                                                                const valor = (valorRaw !== undefined && valorRaw !== null) ? valorRaw.toString().trim() : "";
-
-                                                                // Base = VAR1..VAR8 con frontera (evita VAR66/VAR67 etc.)
-                                                                const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-
-                                                                if (!esDatoBase && key !== "") {
-                                                                        pacienteDoc.periodos[periodo].variables[key] = valor;
+                                                                const key = header?.toString().trim().replace(/\s+/g, '');
+                                                                if (key && !/^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key)) {
+                                                                        pacienteDoc.periodos[periodo].variables[key] = (fila[index] ?? "").toString().trim();
                                                                 }
                                                         });
 
                                                         batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
-                                                        countBatch++;
-                                                        continue; // siguiente fila
+                                                } else {
+                                                        // ✅ RAMA 2: HEMOFILIA
+                                                        const v6h = cellBy(fila, "VAR6_Identificacion");
+                                                        const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
+                                                        if (!idIdentH) continue;
+
+                                                        const docIdH = `${idIdentH}_HEMO`;
+                                                        const pacienteDocH = {
+                                                                identificacion: idIdentH,
+                                                                periodo_reporte: periodo,
+                                                                cohorte: cohorte,
+                                                                dx: "HEMO",
+                                                                ultima_carga: new Date().toISOString(),
+                                                                periodos: { [periodo]: { cargado_el: new Date().toISOString(), estado: "pendiente", variables: {} } }
+                                                        };
+
+                                                        rows[0].forEach((header, index) => {
+                                                                const key = header?.toString().trim().replace(/\s+/g, '');
+                                                                if (key) {
+                                                                        let valor = (fila[index] ?? "").toString().trim();
+                                                                        if (typeof isDateKey === "function" && isDateKey(key)) valor = toISO(fila[index]);
+                                                                        pacienteDocH.periodos[periodo].variables[key] = valor;
+                                                                }
+                                                        });
+                                                        batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
                                                 }
 
-                                                // =========================================================
-                                                // ✅ RAMA 2: HEMOFILIA (por encabezado: respeta campos)
-                                                // =========================================================
-                                                const v1h = cellBy(fila, "VAR1_PrimerNombre");
-                                                const v2h = cellBy(fila, "VAR2_SegundoNombre");
-                                                const v3h = cellBy(fila, "VAR3_PrimerApellido");
-                                                const v4h = cellBy(fila, "VAR4_SegundoApellido");
-                                                const v5h = cellBy(fila, "VAR5_TipoIdentificacion");
-                                                const v6h = cellBy(fila, "VAR6_Identificacion");
-                                                const v7h = cellBy(fila, "VAR7_FechaNacimiento");
-                                                const v8h = cellBy(fila, "VAR8_Sexo");
-
-                                                const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
-                                                if (!idIdentH) continue;
-
-                                                const docIdH = `${idIdentH}_HEMO`;
-
-                                                const nombreCompletoH = [v1h, v2h, v3h, v4h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                        || [v1h, v3h].filter(Boolean).join(" ").trim().toUpperCase()
-                                                        || idIdentH;
-
-                                                const pacienteDocH = {
-                                                        identificacion: idIdentH,
-                                                        periodo_reporte: periodo,
-                                                        tipo_identificacion: v5h || "",
-                                                        nombreCompleto: nombreCompletoH,
-                                                        cohorte: cohorte,
-                                                        dx: "HEMO",
-                                                        dx_descripcion: "Hemofilia",
-
-                                                        ultima_carga: new Date().toISOString(),
-                                                        periodo_ultima_carga: periodo,
-
-                                                        datos_base: {
-                                                                VAR1_PrimerNombre: (v1h || "").toUpperCase(),
-                                                                VAR2_SegundoNombre: (v2h || "").toUpperCase(),
-                                                                VAR3_PrimerApellido: (v3h || "").toUpperCase(),
-                                                                VAR4_SegundoApellido: (v4h || "").toUpperCase(),
-                                                                VAR5_TipoIdentificacion: v5h || "",
-                                                                VAR6_Identificacion: idIdentH,
-                                                                VAR7_FechaNacimiento: v7h || "",
-                                                                VAR8_Sexo: (v8h || "").toUpperCase()
-                                                        },
-
-                                                        periodos: {
-                                                                [periodo]: {
-                                                                        cargado_el: new Date().toISOString(),
-                                                                        validado_el: null,
-                                                                        validador: null,
-                                                                        estado: "pendiente",
-                                                                        variables: {}
-                                                                }
-                                                        }
-                                                };
-
-                                                // Variables del periodo (HEMO): por headers, sin espacios
-                                                rows[0].forEach((header, index) => {
-                                                        if (!header) return;
-                                                        const key = header.toString().trim().replace(/\s+/g, '');
-                                                        if (!key) return;
-
-                                                        const valorRaw = fila[index];
-                                                        let valor = (valorRaw !== undefined && valorRaw !== null) ? String(valorRaw).trim() : "";
-
-                                                        // Si es variable tipo fecha, forzar ISO
-                                                        if (typeof isDateKey === "function" ? isDateKey(key) : false) {
-                                                                valor = toISO(valorRaw);
-                                                        }
-
-                                                        const esDatoBase = /^(VAR1|VAR2|VAR3|VAR4|VAR5|VAR6|VAR7|VAR8)(\D|$)/.test(key);
-                                                        if (!esDatoBase) {
-                                                                pacienteDocH.periodos[periodo].variables[key] = valor;
-                                                        }
-                                                });
-
-                                                batch.set(doc(db, "pacientes_cac", docIdH), pacienteDocH, { merge: true });
                                                 countBatch++;
+                                                totalProcesados++;
+
+                                                if (countBatch >= 400) {
+                                                        await batch.commit();
+                                                        batch = writeBatch(db);
+                                                        countBatch = 0;
+                                                }
                                         }
 
                                         if (countBatch > 0) {
@@ -6626,7 +6579,7 @@
 
                                         // Restaurar botón y alertar
                                         if (e.target.labels?.[0]) e.target.labels[0].textContent = btnOriginalText;
-                                        alert(`Sincronización completa: ${countBatch} pacientes procesados correctamente.`);
+                                        alert(`Sincronización completa: ${totalProcesados} pacientes procesados correctamente.`);
                                         cargarPacientes();
 
                                 } catch (err) {
@@ -6901,4 +6854,9 @@
 
         iniciarRefreshLocks();
         refrescarLocksVisuales().catch(() => { });
+
+        // 🔥 DISPARO INICIAL: Cargar la cohorte operativa por defecto al entrar
+        setTimeout(() => {
+                if (typeof window.cargarPacientes === 'function') window.cargarPacientes();
+        }, 800);
 })();

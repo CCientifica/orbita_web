@@ -235,6 +235,13 @@
     let isAuxiliaresInitialized = false;
     const initAuxiliaresAnalytics = async () => {
         if (isAuxiliaresInitialized) return;
+        
+        let retry = 0;
+        while ((!window.firebaseInstance || !window.firebaseFirestore) && retry < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            retry++;
+        }
+
         if (!window.firebaseInstance || !window.firebaseFirestore) return;
         isAuxiliaresInitialized = true;
 
