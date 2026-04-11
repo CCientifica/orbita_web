@@ -88,7 +88,9 @@ function tableToData(sel) {
     const tds = tr.querySelectorAll('td');
     if (tds.length < 2) return;
     const label = tds[0].textContent.trim();
-    const val = tds[1].querySelector('input')?.value || tds[1].textContent.trim().split('cumple')[0].trim();
+    // Limpiamos etiquetas de estado (CUMPLE META, etc) del valor
+    const rawVal = tds[1].querySelector('input')?.value || tds[1].textContent.trim();
+    const val = rawVal.split(/cumple|meta|casi/i)[0].trim();
     data.push([label, val]);
   });
   return { head: headers, rows: data };
@@ -257,7 +259,16 @@ async function exportPDF() {
         // Subtítulo de tabla en Medio
         doc.setFontSize(11).setTextColor(colMedio[0], colMedio[1], colMedio[2]).text(titulosAnuales[i] || "Tabla de Consolidado", 10, 22);
 
-        const canvas = await html2canvas(tables[i], { scale: 2 });
+        // Optimizamos html2canvas para capturar el ancho total de la tabla
+        const canvas = await html2canvas(tables[i], { 
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff',
+          width: tables[i].scrollWidth,
+          height: tables[i].scrollHeight,
+          windowWidth: tables[i].scrollWidth + 100
+        });
         const imgData = canvas.toDataURL('image/png');
         doc.addImage(imgData, 'PNG', 10, 25, 277, 0);
       }
@@ -289,7 +300,7 @@ function exportExcel() {
     // COLORES INSTITUCIONALES
     const colorOscuro = "253D5B";
     const colorMedio = "4E6C9F";
-    const colorGris = "B6B5AF";
+    const colorGris = "BCB5AF";
 
     // --- HOJA 1: REPORTE MENSUAL (UNA TABLA TRAS OTRA) ---
     let dataMensual = [];
@@ -319,7 +330,7 @@ function exportExcel() {
         // Datos y Metas (#B6B5AF)
         data.rows.forEach(row => {
           const txt = row[0] ? row[0].toString().toLowerCase() : "";
-          const esResaltado = txt.includes("meta") || txt.includes("total");
+          const esResaltado = txt.includes("meta") || txt.includes("total") || txt.includes("presupuesto") || txt.includes("proyección");
           dataMensual.push(row.map(cell => ({
             v: cell,
             s: esResaltado ? { fill: { fgColor: { rgb: colorGris } }, font: { bold: true } } : {}
@@ -330,6 +341,8 @@ function exportExcel() {
     });
 
     const wsMensual = excelLib.utils.aoa_to_sheet(dataMensual);
+    // Ajuste de anchos para Reporte Mensual
+    wsMensual["!cols"] = [{ wch: 45 }, { wch: 15 }];
     excelLib.utils.book_append_sheet(wb, wsMensual, "REPORTE_MENSUAL");
 
     // --- HOJA 2: CONSOLIDADO ANUAL (HISTÓRICO ENERO-DICIEMBRE) ---
@@ -337,6 +350,12 @@ function exportExcel() {
     const consolidadoDiv = document.getElementById('consolidado-historico');
 
     if (consolidadoDiv) {
+      // ✅ IMPORTANTE: Si las tablas están ocultas (en otra pestaña), SheetJS no las captura bien.
+      // Forzamos visibilidad temporal si es necesario.
+      const parentTab = consolidadoDiv.closest('.tab-pane');
+      const wasHidden = parentTab && getComputedStyle(parentTab).display === 'none';
+      if (wasHidden) parentTab.style.display = 'block';
+
       const tablesAnuales = consolidadoDiv.querySelectorAll('table');
       const titulosAnuales = [
         "1. CONSOLIDADO ANUAL URGENCIAS", "2. CONSOLIDADO ANUAL HOSPITALIZACIÓN",
@@ -351,31 +370,68 @@ function exportExcel() {
         // Título bloque anual (#253D5B)
         dataAnualFinal.push([{
           v: titulosAnuales[i] || "CONSOLIDADO ANUAL",
-          s: { fill: { fgColor: { rgb: colorOscuro } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } }
+          s: { 
+            fill: { fgColor: { rgb: colorOscuro } }, 
+            font: { color: { rgb: "FFFFFF" }, bold: true }, 
+            alignment: { horizontal: "center", vertical: "center" } 
+          }
         }]);
 
-        // Extraer datos de la tabla HTML
-        const wsTemp = excelLib.utils.table_to_sheet(table);
-        const aoaTable = excelLib.utils.sheet_to_json(wsTemp, { header: 1 });
+        // Extraer datos de la tabla de forma manual para evitar problemas con celdas ocultas
+        const trs = table.querySelectorAll('tr');
+        trs.forEach((tr, rowIndex) => {
+          const cells = tr.querySelectorAll('th, td');
+          const rowData = [];
+          
+          cells.forEach(cell => {
+            // Limpiamos el texto (espacios excesivos, saltos de línea)
+            const text = cell.innerText.trim().replace(/\n/g, ' ');
+            rowData.push(text);
+          });
 
-        aoaTable.forEach((row, rowIndex) => {
-          const esEncabezado = rowIndex === 0;
-          const txt = row[0] ? row[0].toString().toLowerCase() : "";
-          const esResaltado = txt.includes("meta") || txt.includes("total") || txt.includes("presupuesto");
+          if (rowData.length === 0) return;
 
-          dataAnualFinal.push(row.map(cell => ({
-            v: cell,
-            s: esEncabezado ? { fill: { fgColor: { rgb: colorMedio } }, font: { color: { rgb: "FFFFFF" }, bold: true } } :
-              esResaltado ? { fill: { fgColor: { rgb: colorGris } }, font: { bold: true } } : {}
-          })));
+          const esEncabezado = (rowIndex === 0 && tr.parentElement.tagName === 'THEAD') || tr.style.background.includes('253D5B') || tr.innerHTML.includes('background: #253D5B');
+          const txt = rowData[0] ? rowData[0].toLowerCase() : "";
+          const esResaltado = txt.includes("meta") || txt.includes("total") || txt.includes("presupuesto") || txt.includes("proyección");
+
+          dataAnualFinal.push(rowData.map(val => {
+            let style = {};
+            if (esEncabezado) {
+              style = { 
+                fill: { fgColor: { rgb: colorMedio } }, 
+                font: { color: { rgb: "FFFFFF" }, bold: true },
+                alignment: { horizontal: "center" },
+                border: { top: {style: 'thin', color: {rgb: "FFFFFF"}}, bottom: {style: 'thin', color: {rgb: "FFFFFF"}}, left: {style: 'thin', color: {rgb: "FFFFFF"}}, right: {style: 'thin', color: {rgb: "FFFFFF"}} }
+              };
+            } else if (esResaltado) {
+              style = { 
+                fill: { fgColor: { rgb: colorGris } }, 
+                font: { bold: true },
+                border: { bottom: {style: 'thin', color: {rgb: colorOscuro}} }
+              };
+            } else {
+              style = {
+                border: { bottom: {style: 'thin', color: {rgb: "E2E8F0"}} }
+              };
+            }
+            return { v: val, s: style };
+          }));
         });
+        
         dataAnualFinal.push([]); // Espacio entre tablas
-        dataAnualFinal.push([]);
       });
+
+      // Restaurar estado original si se cambió
+      if (wasHidden) parentTab.style.display = 'none';
     }
 
     if (dataAnualFinal.length > 0) {
       const wsAnual = excelLib.utils.aoa_to_sheet(dataAnualFinal);
+      // Ajuste de anchos para Consolidado Anual (Primera columna ancha, resto estándar)
+      const colWidthsAnual = [{ wch: 35 }];
+      for(let k=0; k<20; k++) colWidthsAnual.push({ wch: 12 });
+      wsAnual["!cols"] = colWidthsAnual;
       excelLib.utils.book_append_sheet(wb, wsAnual, "CONSOLIDADO_ANUAL");
     }
 
@@ -414,10 +470,10 @@ window.addEventListener("DOMContentLoaded", () => {
   if (btnShowMeta) btnShowMeta.addEventListener("click", showForecastMeta);
 
   const btnPdf = document.getElementById('btnPdf');
-  if (btnPdf) btnPdf.addEventListener('click', exportPDF);
+  if (btnPdf) btnPdf.onclick = exportPDF;
 
   const btnXlsx = document.getElementById('btnXlsx');
-  if (btnXlsx) btnXlsx.addEventListener('click', exportExcel);
+  if (btnXlsx) btnXlsx.onclick = exportExcel;
 
   // --- Otros elementos de la interfaz ---
   const closeMeta = document.getElementById('closeMeta');
@@ -3020,7 +3076,7 @@ async function loadYearlyConsolidated(yearId) {
     // Estructura de tabla con paleta de colores institucional SIN TONOS VERDES
     let htmlUrg = `
         <div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:20px;">
-            <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+            <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
                 <thead>
                     <tr style="background: #253D5B; color: #fff;">
                         <th style="border: 1px solid #fff; padding: 6px; text-align:left;">URGENCIAS</th>
@@ -3120,7 +3176,7 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado con Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlCx = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; width:30px;"></th>
@@ -3161,7 +3217,7 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado con Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlCxEsp = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-            <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+            <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
                 <thead>
                     <tr style="background: #253D5B; color: #fff;">
                         <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CIRUGÍA POR ESPECIALIDAD</th>
@@ -3254,7 +3310,7 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado en Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlHem = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">HEMATO ONCOLOGIA</th>
@@ -3297,7 +3353,7 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado principal con Azul Oscuro (#253D5B)
     let htmlHcom = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">HEMOCOMPONENTES</th>
@@ -3329,7 +3385,7 @@ async function loadYearlyConsolidated(yearId) {
     ];
 
     let htmlEndo = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-          <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+          <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
               <thead>
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">SERVICIO ENDOSCOPIA</th>
@@ -3405,7 +3461,7 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado con Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlImg = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-        <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+        <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
             <thead>
                 <tr style="background: #253D5B; color: #fff;">
                     <th style="border: 1px solid #fff; width:30px;"></th>
@@ -3467,7 +3523,7 @@ async function loadYearlyConsolidated(yearId) {
     ];
 
     let htmlLab = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-        <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+        <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
             <thead>
                 <tr style="background: #253D5B; color: #fff;">
                     <th style="border: 1px solid #fff; width:30px;"></th>
@@ -3525,7 +3581,7 @@ async function loadYearlyConsolidated(yearId) {
 
     // Encabezado en Azul Oscuro (#253D5B) y Azul Medio (#4E6C9F)
     let htmlEst = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;">
-        <table style="width:100%; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
+        <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: Arial; font-size: 10px; text-align: center;">
             <thead>
                 <tr style="background: #253D5B; color: #fff;">
                     <th style="border: 1px solid #fff; padding: 6px; text-align:left;">ESTADÍSTICA INSTITUCIONAL</th>
