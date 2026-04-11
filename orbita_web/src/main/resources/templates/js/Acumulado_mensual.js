@@ -841,6 +841,20 @@ async function loadForecastMeta(monthId) {
     return null;
   }
 
+  // 1. INTENTO DE CARGA DESDE DOCUMENTO MENSUAL (Estructura moderna unificada)
+  try {
+    const snapMensual = await getDoc(doc(db, 'forecast', yyyy, 'unidades', monthId));
+    if (snapMensual.exists()) {
+       const mData = snapMensual.data() || {};
+       // Agregamos la meta UVR hardcodeada si no viene en el doc
+       if (!mData.uvrMeta) mData.uvrMeta = uvrMetaMensual;
+       return mData;
+    }
+  } catch(e) {
+    console.warn("No se pudo cargar meta mensual desde la ruta unificada:", e);
+  }
+
+  // Fallback a lectura por unidad (Estructura antigua/fragmentada)
   async function readUnidad(aliases) {
     for (const id of aliases) {
       try {
@@ -2961,14 +2975,26 @@ async function loadYearlyConsolidated(yearId) {
       const esEficienciaFinal = fila.label.includes("Giro") || fila.label.includes("Promedio") || fila.label.includes("Porcentaje") || fila.isPct;
       const proyAnual = esEficienciaFinal ? promMes : promMes * 12;
 
+      // ✅ CÁLCULO DE META ANUAL PARA LA COLUMNA
+      let displayMeta = 0;
+      if (fila.metaValorManualAnual) {
+        displayMeta = fila.metaValorManualAnual;
+      } else if (fila.metaKey || fila.isSumaHospUCE || fila.isSumaGlobal || fila.isSumatoriaImg || fila.isSumatoriaLab || fila.isUvr) {
+        displayMeta = metaAnualTotal;
+      } else if (metaAnualTotal > 0 && fila.isMain) {
+        displayMeta = metaAnualTotal;
+      }
+
       // ✅ CORRECCIÓN DE COLORES TOTALES Y PROYECCIÓN
       let estiloTotal = "border: 1px solid #cbd5e1; font-weight: bold; background: #f1f5f9; color: #253D5B;";
       let estiloProy = "border: 1px solid #cbd5e1; font-weight: bold; background: #B6B5AF; color: #253D5B;";
       let estiloPromPrev = "border: 1px solid #cbd5e1; background: #4E6C9F; padding: 4px; color: #ffffff; font-weight: bold;";
+      let estiloMetaCol = "border: 1px solid #cbd5e1; background: #64748b; padding: 4px; color: #ffffff; font-weight: bold;";
 
       return `<tr>${fila.tdGroup || ''}
               <td style="border: 1px solid #cbd5e1; text-align: left; padding: 4px; font-weight: bold; background:#f1f5f9; color: #253D5B;">${fila.label}</td>
               <td style="${estiloPromPrev}">${fila.isPct ? fmtDec1(promPrev) + '%' : (esEficienciaFinal ? fmtDec1(promPrev) : fmtInt(promPrev))}</td>
+              <td style="${estiloMetaCol}">${displayMeta > 0 ? (esEficienciaFinal ? fmtDec1(displayMeta) : fmtInt(displayMeta)) : "-"}</td>
               ${celdasMeses}
               <td style="${estiloTotal}">${esEficienciaFinal ? "" : fmtInt(acumuladoReal)}</td>
               <td style="${estiloTotal}">${fila.isPct ? fmtDec1(promMes) + '%' : (esEficienciaFinal ? fmtDec1(promMes) : fmtInt(promMes))}</td>
@@ -2980,10 +3006,10 @@ async function loadYearlyConsolidated(yearId) {
     const configUrg = [
       { label: "Consultas medicina general", dbKeys: ["URGENCIAS|Consultas medicina general"], isUrg: true },
       { label: "Consultas ortopedia y pediatria", dbKeys: ["URGENCIAS|Consultas ortopedia y pediatria"], isUrg: true },
-      { label: "Total pacientes de urgencias", dbKeys: ["URG|Total pacientes urgencias"], isUrg: true },
+      { label: "Total pacientes de urgencias", dbKeys: ["URG|Total pacientes urgencias"], isMain: true, isUrg: true, metaKey: 'urgenciasMeta' },
       { label: "%Pacientes atendidos en urgencias", dbKeys: ["URG|%Pacientes atendidos en urgencias"], isPct: true, isUrg: true },
       { label: "Triages no atendidos", dbKeys: ["URGENCIAS|Triages no atendidos"], isUrg: true },
-      { label: "Total triages", dbKeys: ["URG|Total triages"], isUrg: true },
+      { label: "Total triages", dbKeys: ["URG|Total triages"], isMain: true, isUrg: true, metaKey: 'urgenciasMeta' },
       { label: "Total ingresos a urgencias (triages + ortopedia)", dbKeys: ["URG|Total ingresos a urgencias (triages + ortopedia)"], isMain: true, isUrg: true, metaKey: 'urgenciasMeta' },
       { label: "Ptes trasladados a otros servicios", dbKeys: ["URGENCIAS|Ptes trasladados a otros servicios"], isUrg: true },
       { label: "Urgencias = > 24 horas", dbKeys: ["URGENCIAS|Urgencias = > 24 horas"], isUrg: true },
@@ -2999,6 +3025,7 @@ async function loadYearlyConsolidated(yearId) {
                     <tr style="background: #253D5B; color: #fff;">
                         <th style="border: 1px solid #fff; padding: 6px; text-align:left;">URGENCIAS</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                        <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                         ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                         <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3014,6 +3041,7 @@ async function loadYearlyConsolidated(yearId) {
                 <tr style="background: #253D5B; color: #fff; font-weight: bold;">
                     <td style="border: 1px solid #fff; text-align: left; padding: 5px;">Meta presupuesto</td>
                     <td style="border: 1px solid #fff; background: #4E6C9F;"></td>
+                    <td style="border: 1px solid #fff; background: #64748b;">${totalMetaUrg.toLocaleString()}</td>
                     ${months.map(m => `<td style="border: 1px solid #fff; padding: 5px;">${(metasAnuales[m]?.urgenciasMeta || 0).toLocaleString()}</td>`).join('')}
                     <td style="border: 1px solid #fff; background: #4E6C9F; padding: 5px;">${totalMetaUrg.toLocaleString()}</td>
                     <td style="border: 1px solid #fff; background: #4E6C9F; padding: 5px;">${(totalMetaUrg / 12).toLocaleString()}</td>
@@ -3024,7 +3052,7 @@ async function loadYearlyConsolidated(yearId) {
         </div>`;
 
     // --- 2. TABLA HOSPITALIZACIÓN (CORREGIDA CON CIERRE INSTITUCIONAL) ---
-    let htmlHosp = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;"><table style="width:100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10px; text-align: center;"><thead><tr style="background: #253D5B; color: #fff;"><th style="border: 1px solid #fff; padding: 6px; text-align:left;">HOSPITALIZACIÓN</th><th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}<th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th><th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th><th style="background: #B6B5AF; color:#253D5B;">PROYECCIÓN CIERRE ${yearId}</th></tr></thead><tbody>`;
+    let htmlHosp = `<div class="card full-width" style="padding:0; overflow-x:auto; border:1px solid #253D5B; margin-top:30px;"><table style="width:100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10px; text-align: center;"><thead><tr style="background: #253D5B; color: #fff;"><th style="border: 1px solid #fff; padding: 6px; text-align:left;">HOSPITALIZACIÓN</th><th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th><th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}<th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th><th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th><th style="background: #B6B5AF; color:#253D5B;">PROYECCIÓN CIERRE ${yearId}</th></tr></thead><tbody>`;
 
     htmlHosp += generarFilaHTML({ label: "EGRESOS HOSP. PUESTOS 2, 3 y 4", dbKeys: ["HOSP|EGRESOS HOSP. PUESTOS 2, 3 y 4"], isMain: true, metaKey: 'hospMetaEgresos' }, dataAnual, metasAnuales, totalMetaHosp, metaHospAcum);
     htmlHosp += generarFilaHTML({ label: "Promedio día estancia", dbKeys: ["HOSP|Promedio día estancia"] }, dataAnual, metasAnuales, 0, 0);
@@ -3033,7 +3061,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlHosp += generarFilaHTML({ label: "Dias Cama Ocupadas", dbKeys: ["HOSP|Dias Camas Ocupadas"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "Dias Cama Disponibles", dbKeys: ["HOSP|Dias Camas Disponibles"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "% OCUPACION", dbKeys: ["HOSP|% OCUPACION"], isPct: true }, dataAnual, metasAnuales, 0, 0);
-    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos hospitalizacion</td><td style="border: 1px solid #cbd5e1;"></td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt(metasAnuales[m]?.hospMetaEgresos || 0)}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaHosp)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaHosp / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
+    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos hospitalizacion</td><td style="border: 1px solid #cbd5e1;"></td><td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${fmtInt(totalMetaHosp)}</td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt(metasAnuales[m]?.hospMetaEgresos || 0)}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaHosp)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaHosp / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
 
     htmlHosp += generarFilaHTML({ label: "EGRESOS DE UCI ADULTOS", dbKeys: ["UCI|EGRESOS DE UCI ADULTOS"], isMain: true, metaKey: 'uciMetaEgresos' }, dataAnual, metasAnuales, totalMetaUCI, metaUCIAcum);
     htmlHosp += generarFilaHTML({ label: "Dias Cama Ocupadas", dbKeys: ["UCI|Dias Camas Ocupadas"] }, dataAnual, metasAnuales, 0, 0);
@@ -3042,7 +3070,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlHosp += generarFilaHTML({ label: "Promedio cama disponible", dbKeys: ["UCI|Promedio cama disponible"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "Giro Cama", dbKeys: ["UCI|Giro Camas"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "% DE OCUPACION", dbKeys: ["UCI|% DE OCUPACION"], isPct: true }, dataAnual, metasAnuales, 0, 0);
-    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos UCI</td><td style="border: 1px solid #cbd5e1;"></td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt(metasAnuales[m]?.uciMetaEgresos || 0)}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCI)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCI / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
+    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos UCI</td><td style="border: 1px solid #cbd5e1;"></td><td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${fmtInt(totalMetaUCI)}</td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt(metasAnuales[m]?.uciMetaEgresos || 0)}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCI)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCI / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
 
     htmlHosp += generarFilaHTML({ label: "EGRESOS DE UCE ADULTOS", dbKeys: ["UCE|EGRESOS DE UCE ADULTOS"], isMain: true, metaKey: 'uceMetaEgresos' }, dataAnual, metasAnuales, totalMetaUCE, metaUCEAcum);
     htmlHosp += generarFilaHTML({ label: "Dias Cama Ocupadas", dbKeys: ["UCE|Dias Camas Ocupadas"] }, dataAnual, metasAnuales, 0, 0);
@@ -3050,7 +3078,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlHosp += generarFilaHTML({ label: "Promedio cama disponible", dbKeys: ["UCE|Promedio cama disponible"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "Giro Cama", dbKeys: ["UCE|Giro Camas"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "% DE OCUPACION", dbKeys: ["UCE|% DE OCUPACION"], isPct: true }, dataAnual, metasAnuales, 0, 0);
-    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos UCE</td><td style="border: 1px solid #cbd5e1;"></td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt(metasAnuales[m]?.uceMetaEgresos || 0)}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCE)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCE / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
+    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos UCE</td><td style="border: 1px solid #cbd5e1;"></td><td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${fmtInt(totalMetaUCE)}</td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt(metasAnuales[m]?.uceMetaEgresos || 0)}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCE)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(totalMetaUCE / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
 
     const mHUCE = totalMetaHosp + totalMetaUCE;
     const mHUCEAcum = metaHospAcum + metaUCEAcum;
@@ -3060,7 +3088,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlHosp += generarFilaHTML({ label: "Promedio día estancia", dbKeys: ["INST|Promedio día estancia (Hosp+Uce)", "Promedio día estancia (Hosp+Uce)"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "Giro Cama", dbKeys: ["INST|Giro Cama (Hosp+Uce)"] }, dataAnual, metasAnuales, 0, 0);
     htmlHosp += generarFilaHTML({ label: "% DE OCUPACION", dbKeys: ["INST|% DE OCUPACIÓN (Hosp+Uce)", "% DE OCUPACIÓN (Hosp+Uce)"], isPct: true }, dataAnual, metasAnuales, 0, 0);
-    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos Hosp + UCE</td><td style="border: 1px solid #cbd5e1;"></td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt((metasAnuales[m]?.hospMetaEgresos || 0) + (metasAnuales[m]?.uceMetaEgresos || 0))}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(mHUCE)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(mHUCE / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
+    htmlHosp += `<tr style="background: #f1f5f9; color: #253D5B; font-weight: bold;"><td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta egresos Hosp + UCE</td><td style="border: 1px solid #cbd5e1;"></td><td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${fmtInt(mHUCE)}</td>${months.map(m => `<td style="border: 1px solid #cbd5e1;">${fmtInt((metasAnuales[m]?.hospMetaEgresos || 0) + (metasAnuales[m]?.uceMetaEgresos || 0))}</td>`).join('')}<td style="border: 1px solid #cbd5e1;">${fmtInt(mHUCE)}</td><td style="border: 1px solid #cbd5e1;">${fmtInt(mHUCE / 12)}</td><td style="border: 1px solid #cbd5e1;">Meta Anual</td></tr>`;
 
     const mGLOB = totalMetaHosp + totalMetaUCI + totalMetaUCE;
     const mGLOBAcum = metaHospAcum + metaUCIAcum + metaUCEAcum;
@@ -3072,7 +3100,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlHosp += generarFilaHTML({ label: "% DE OCUPACION INSTITUCIONAL", dbKeys: ["INST|% DE OCUPACIÓN INSTITUCIONAL"], isPct: true }, dataAnual, metasAnuales, 0, 0);
 
     // ✅ ÚLTIMA FILA: Ajustada al color del encabezado (#253D5B y texto blanco)
-    htmlHosp += `<tr style="background: #253D5B; color: #fff; font-weight: bold;"><td style="border: 1px solid #ffffff; text-align: left; padding: 5px;">Meta Institucional Egresos</td><td style="border: 1px solid #ffffff;"></td>${months.map(m => `<td style="border: 1px solid #ffffff;">${fmtInt((metasAnuales[m]?.hospMetaEgresos || 0) + (metasAnuales[m]?.uciMetaEgresos || 0) + (metasAnuales[m]?.uceMetaEgresos || 0))}</td>`).join('')}<td style="border: 1px solid #ffffff;">${fmtInt(mGLOB)}</td><td style="border: 1px solid #ffffff;">${fmtInt(mGLOB / 12)}</td><td style="border: 1px solid #ffffff;">Meta Anual</td></tr></tbody></table></div>`;
+    htmlHosp += `<tr style="background: #253D5B; color: #fff; font-weight: bold;"><td style="border: 1px solid #ffffff; text-align: left; padding: 5px;">Meta Institucional Egresos</td><td style="border: 1px solid #ffffff;"></td><td style="border: 1px solid #ffffff; background: #64748b;">${fmtInt(mGLOB)}</td>${months.map(m => `<td style="border: 1px solid #ffffff;">${fmtInt((metasAnuales[m]?.hospMetaEgresos || 0) + (metasAnuales[m]?.uciMetaEgresos || 0) + (metasAnuales[m]?.uceMetaEgresos || 0))}</td>`).join('')}<td style="border: 1px solid #ffffff;">${fmtInt(mGLOB)}</td><td style="border: 1px solid #ffffff;">${fmtInt(mGLOB / 12)}</td><td style="border: 1px solid #ffffff;">Meta Anual</td></tr></tbody></table></div>`;
 
     // --- 3. TABLA CIRUGÍA GENERAL (AJUSTADA CON LLAVES ADICIONALES Y COLORES INSTITUCIONALES) ---
     const configCx = [
@@ -3098,6 +3126,7 @@ async function loadYearlyConsolidated(yearId) {
                       <th style="border: 1px solid #fff; width:30px;"></th>
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CIRUGÍA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                      <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                       ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3120,6 +3149,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlCx += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
           <td colspan="2" style="border: 1px solid #fff; text-align: left; padding: 5px;">Meta Procedimientos</td>
           <td style="border: 1px solid #fff; background: #4E6C9F;"></td>
+          <td style="border: 1px solid #fff; background: #64748b;">${fmtInt(totalMetaCx)}</td>
           ${months.map(m => `<td style="border: 1px solid #fff; padding: 5px;">${fmtInt(metasAnuales[m]?.cxMetaProced || 0)}</td>`).join('')}
           <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaCx)}</td>
           <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaCx / 12)}</td>
@@ -3136,6 +3166,7 @@ async function loadYearlyConsolidated(yearId) {
                     <tr style="background: #253D5B; color: #fff;">
                         <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CIRUGÍA POR ESPECIALIDAD</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                        <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                         ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                         <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3166,6 +3197,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlCxEsp += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
             <td style="border: 1px solid #fff; text-align: left; padding: 5px;">Meta UVR</td>
             <td style="border: 1px solid #fff; background: #4E6C9F;"></td>
+            <td style="border: 1px solid #fff; background: #64748b;">${fmtInt(totalMetaUvr)}</td>
             ${months.map(m => `<td style="border: 1px solid #fff; padding: 5px;">${fmtInt(metasAnuales[m]?.uvrMeta || 0)}</td>`).join('')}
             <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaUvr)}</td>
             <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaUvr / 12)}</td>
@@ -3182,6 +3214,7 @@ async function loadYearlyConsolidated(yearId) {
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">CONSULTA EXTERNA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                      <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                       ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3199,6 +3232,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlCE += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
           <td style="border: 1px solid #fff; text-align: left; padding: 5px;">META CONSULTAS MES</td>
           <td style="border: 1px solid #fff; background: #4E6C9F;"></td>
+          <td style="border: 1px solid #fff; background: #64748b;">${fmtInt(totalMetaCE)}</td>
           ${months.map(m => `<td style="border: 1px solid #fff; padding: 5px;">${fmtInt(metasAnuales[m]?.ceMetaConsultas || 0)}</td>`).join('')}
           <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaCE)}</td>
           <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaCE / 12)}</td>
@@ -3225,6 +3259,7 @@ async function loadYearlyConsolidated(yearId) {
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">HEMATO ONCOLOGIA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                      <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                       ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3267,6 +3302,7 @@ async function loadYearlyConsolidated(yearId) {
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">HEMOCOMPONENTES</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                      <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                       ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3298,6 +3334,7 @@ async function loadYearlyConsolidated(yearId) {
                   <tr style="background: #253D5B; color: #fff;">
                       <th style="border: 1px solid #fff; padding: 6px; text-align:left;">SERVICIO ENDOSCOPIA</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                      <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                       ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                       <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                       <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3316,6 +3353,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlEndo += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
           <td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta Fibrobroncoscopia</td>
           <td style="border: 1px solid #cbd5e1; background: #4E6C9F;"></td>
+          <td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${16 * 12}</td>
           ${months.map(() => `<td style="border: 1px solid #cbd5e1; padding: 5px;">16</td>`).join('')}
           <td style="border: 1px solid #cbd5e1; background: #4E6C9F;">${16 * 12}</td>
           <td style="border: 1px solid #cbd5e1; background: #4E6C9F;">16</td>
@@ -3326,6 +3364,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlEndo += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
           <td style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta Endoscopia</td>
           <td style="border: 1px solid #cbd5e1; background: #4E6C9F;"></td>
+          <td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${130 * 12}</td>
           ${months.map(() => `<td style="border: 1px solid #cbd5e1; padding: 5px;">130</td>`).join('')}
           <td style="border: 1px solid #cbd5e1; background: #4E6C9F;">${130 * 12}</td>
           <td style="border: 1px solid #cbd5e1; background: #4E6C9F;">130</td>
@@ -3372,6 +3411,7 @@ async function loadYearlyConsolidated(yearId) {
                     <th style="border: 1px solid #fff; width:30px;"></th>
                     <th style="border: 1px solid #fff; padding: 6px; text-align:left;">IMÁGENES DIAGNÓSTICAS</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                    <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                     ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                     <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3388,6 +3428,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlImg += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
         <td colspan="2" style="border: 1px solid #fff; text-align: left; padding: 5px;">Meta Exámenes</td>
         <td style="border: 1px solid #fff; background: #4E6C9F;"></td>
+        <td style="border: 1px solid #fff; background: #64748b;">${fmtInt(totalMetaImg)}</td>
         ${months.map(m => `<td style="border: 1px solid #fff; padding: 5px;">${fmtInt(metasAnuales[m]?.imgMetaExamenes || 0)}</td>`).join('')}
         <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaImg)}</td>
         <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaImg / 12)}</td>
@@ -3432,6 +3473,7 @@ async function loadYearlyConsolidated(yearId) {
                     <th style="border: 1px solid #fff; width:30px;"></th>
                     <th style="border: 1px solid #fff; padding: 6px; text-align:left;">LABORATORIO CLÍNICO</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                    <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                     ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                     <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>
@@ -3453,6 +3495,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlLab += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
         <td colspan="2" style="border: 1px solid #cbd5e1; text-align: left; padding: 5px;">Meta Particulares</td>
         <td style="border: 1px solid #cbd5e1; background: #4E6C9F;"></td>
+        <td style="border: 1px solid #cbd5e1; background: #64748b; color: #fff;">${fmtInt(11500)}</td>
         ${months.map(m => {
       const metaM = (m === "12") ? 500 : 1000;
       return `<td style="border: 1px solid #cbd5e1; padding: 5px;">${fmtInt(metaM)}</td>`;
@@ -3466,6 +3509,7 @@ async function loadYearlyConsolidated(yearId) {
     htmlLab += `<tr style="background: #253D5B; color: #fff; font-weight: bold;">
         <td colspan="2" style="border: 1px solid #fff; text-align: left; padding: 5px;">Meta Total Pruebas (Global)</td>
         <td style="border: 1px solid #fff; background: #4E6C9F;"></td>
+        <td style="border: 1px solid #fff; background: #64748b; color: #fff;">${fmtInt(totalMetaLab)}</td>
         ${months.map(m => `<td style="border: 1px solid #fff; padding: 5px;">${fmtInt(metasAnuales[m]?.labMetaPruebas || 0)}</td>`).join('')}
         <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaLab)}</td>
         <td style="border: 1px solid #fff; background: #4E6C9F;">${fmtInt(totalMetaLab / 12)}</td>
@@ -3486,6 +3530,7 @@ async function loadYearlyConsolidated(yearId) {
                 <tr style="background: #253D5B; color: #fff;">
                     <th style="border: 1px solid #fff; padding: 6px; text-align:left;">ESTADÍSTICA INSTITUCIONAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">Promedio ${prevYear}</th>
+                    <th style="border: 1px solid #fff; background: #64748b;">META ANUAL</th>
                     ${monthLabels.map(m => `<th style="border: 1px solid #fff; padding: 6px;">${m}</th>`).join('')}
                     <th style="border: 1px solid #fff; background: #4E6C9F;">TOTAL</th>
                     <th style="border: 1px solid #fff; background: #4E6C9F;">PROM.</th>

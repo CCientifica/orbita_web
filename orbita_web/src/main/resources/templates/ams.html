@@ -199,11 +199,12 @@
                 <tr>
                   <th class="w-32">Pabellón</th>
                   <th class="w-20">Cód</th>
+                  <th class="w-24">Documento</th>
                   <th class="min-w-[200px]">Profesional</th>
                   <th class="w-16">AMS Q1</th>
                   <th class="w-16">AMS Q2</th>
-                  <th class="w-16">Hosp Q1</th>
-                  <th class="w-16">Hosp Q2</th>
+                  <th class="w-16">Hos Q1</th>
+                  <th class="w-16">Hos Q2</th>
                   <th class="w-16 text-right">AMS</th>
                   <th class="w-16 text-right">Hos.</th>
                   <th class="w-20 text-right">Adhesión</th>
@@ -214,7 +215,7 @@
               <tbody id="tbody"></tbody>
               <tfoot>
                 <tr class="bg-slate-900 text-white">
-                  <td colspan="7" class="px-4 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">
+                  <td colspan="8" class="px-4 py-4 text-[9px] font-black uppercase tracking-widest opacity-60">
                     Consolidado Matemático AMS</td>
                   <td class="px-2 text-right font-black" id="tAMS">0</td>
                   <td class="px-2 text-right font-black" id="tHOS">0</td>
@@ -383,6 +384,7 @@
         tr.innerHTML = `
                 <td><input type="text" value="${pab}" class="input-rcf text-[10px]!"></td>
                 <td><input type="text" value="${cod}" class="input-rcf text-slate-400! text-[10px]!"></td>
+                <td><input type="text" value="${dcto}" class="input-rcf text-slate-400! text-[10px]!"></td>
                 <td><input type="text" value="${nom}" class="input-rcf text-slate-800! text-[11px]!"></td>
                 <td><input type="number" value="${a1}" data-k="a1" class="input-rcf text-center font-black! text-emerald-600!"></td>
                 <td><input type="number" value="${a2}" data-k="a2" class="input-rcf text-center font-black! text-emerald-600!"></td>
@@ -407,7 +409,7 @@
         let critCount = 0;
         rows.forEach(tr => {
           const ins = tr.querySelectorAll('input');
-          const a1 = toInt(ins[3].value), a2 = toInt(ins[4].value), h1 = toInt(ins[5].value), h2 = toInt(ins[6].value);
+          const a1 = toInt(ins[4].value), a2 = toInt(ins[5].value), h1 = toInt(ins[6].value), h2 = toInt(ins[7].value);
           const ams = a1 + a2, hos = h1 + h2, tot = ams + hos, uso = tot ? ams / tot : 0;
           tr.querySelector('[data-k="ams"]').textContent = ams;
           tr.querySelector('[data-k="hos"]').textContent = hos;
@@ -471,7 +473,7 @@
       function buildAlerts(rows) {
         getEl("critGrid").innerHTML = ""; getEl("modGrid").innerHTML = ""; getEl("goodGrid").innerHTML = "";
         rows.forEach(tr => {
-          const ins = tr.querySelectorAll('input'), nom = ins[2].value, ams = toInt(tr.querySelector('[data-k="ams"]').textContent), uso = toInt(tr.querySelector('[data-k="uso"]').textContent) / 100;
+          const ins = tr.querySelectorAll('input'), nom = ins[3].value, ams = toInt(tr.querySelector('[data-k="ams"]').textContent), uso = toInt(tr.querySelector('[data-k="uso"]').textContent) / 100;
           if (!nom) return;
           const item = `<li>${nom} <span class="float-right opacity-50 font-black">${ams} APP.</span></li>`;
           if (ams < V_CRIT) getEl("critGrid").insertAdjacentHTML("beforeend", item);
@@ -482,9 +484,10 @@
       }
 
       function msg(t, type) {
-        const s = getEl("status"); s.textContent = t; s.classList.remove("hidden", "text-emerald-500", "text-rose-500");
-        s.classList.add(type === "success" ? "text-emerald-500" : "text-rose-500");
-        setTimeout(() => s.classList.add("hidden"), 3000);
+        const s = getEl("status"); if (!s) return;
+        s.textContent = t; s.style.display = "block";
+        s.className = `stat-card p-4 rounded-xl! text-center font-black text-[10px] uppercase tracking-widest border border-dashed ${type === "success" ? "text-emerald-500 border-emerald-500" : "text-rose-500 border-rose-500"}`;
+        setTimeout(() => s.style.display = "none", 4000);
       }
 
       getEl("quickPrevBtn").addEventListener("click", copyPreviousMonth);
@@ -545,7 +548,7 @@
           const ins = tr.querySelectorAll("td input");
           const ams = tr.querySelector('[data-k="ams"]').textContent;
           const uso = tr.querySelector('[data-k="uso"]').textContent;
-          return [cleanText(ins[0].value), cleanText(ins[1].value), cleanText(ins[2].value), ins[3].value, ins[4].value, ins[5].value, ins[6].value, ams, uso];
+          return [cleanText(ins[0].value), cleanText(ins[1].value), cleanText(ins[3].value), ins[4].value, ins[5].value, ins[6].value, ins[7].value, ams, uso];
         });
 
         docPdf.autoTable({
@@ -575,7 +578,7 @@
             const a1 = toInt(x.ams_q1), a2 = toInt(x.ams_q2), h1 = toInt(x.hos_q1), h2 = toInt(x.hos_q2);
             const ams = a1 + a2, hos = h1 + h2, tot = ams + hos, uso = tot ? ams / tot : 0;
             return {
-              Periodo: k.month, Pabellon: x.pabellon || "", Cod_Prof: x.cod_prof || "", Nombre: x.nombre || "",
+              Periodo: k.month, Pabellon: x.pabellon || "", Cod_Prof: x.cod_prof || "", Documento: x.doc_prof || "", Nombre: x.nombre || "",
               AMS_Q1: a1, AMS_Q2: a2, Hosp_Q1: h1, Hosp_Q2: h2, Total_AMS: ams, Total_Hosp: hos, Adhesion: (uso * 100).toFixed(1) + "%"
             };
           });
@@ -598,12 +601,13 @@
           const rows = [...getEl("tbody").querySelectorAll("tr")];
           for (const tr of rows) {
             const ins = tr.querySelectorAll('input');
-            const p = ins[0].value, cod = ins[1].value, nom = ins[2].value, a1 = toInt(ins[3].value), a2 = toInt(ins[4].value), h1 = toInt(ins[5].value), h2 = toInt(ins[6].value);
+            const p = (ins[0].value || "").trim(), cod = (ins[1].value || "").trim(), dct = (ins[2].value || "").trim(), nom = (ins[3].value || "").trim();
+            const a1 = toInt(ins[4].value), a2 = toInt(ins[5].value), h1 = toInt(ins[6].value), h2 = toInt(ins[7].value);
             if (!nom) continue;
-            const id = `M_${month}_0_${slug(pab)}_${slug(cod || nom)}`;
+            const id = `M_${month}_0_${slug(pab)}_${slug(cod || dct || nom)}`;
             const ref = doc(db, "ams_registro_periodos", id);
             batch.set(ref, {
-              tipo: "M", month, quincena: "0", pabellon: p, cod_prof: cod, nombre: nom,
+              tipo: "M", month, quincena: "0", pabellon: p, cod_prof: cod, doc_prof: dct, nombre: nom,
               ams_q1: a1, ams_q2: a2, hos_q1: h1, hos_q2: h2, total: a1 + a2 + h1 + h2, updatedAt: serverTimestamp()
             }, { merge: true });
             count++;

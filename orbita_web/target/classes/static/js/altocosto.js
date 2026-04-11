@@ -5985,19 +5985,19 @@
                         // Deduplicación por identificación
                         const patientMap = new Map();
                         docs.forEach(d => {
-                            const data = d.data() || {};
-                            const identification = String(data?.periodos?.[p]?.variables?.VAR6_Identificacion || data?.datos_base?.VAR6_Identificacion || data?.identificacion || data?.VAR6_Identificacion || d.id).trim();
-                            if (!patientMap.has(identification)) {
-                                patientMap.set(identification, d);
-                            } else if (!formatoEsCancer) {
-                                // Scoring de completitud para Hemofilia si hay duplicados
-                                const current = patientMap.get(identification);
-                                const currentData = current.data() || {};
-                                const scoreDoc = (docData) => KEYS.reduce((acc, k) => acc + (String(docData?.periodos?.[p]?.variables?.[k] || docData?.datos_base?.[k] || docData?.[k] || "").trim() !== "" ? 1 : 0), 0);
-                                if (scoreDoc(data) > scoreDoc(currentData)) {
-                                    patientMap.set(identification, d);
+                                const data = d.data() || {};
+                                const identification = String(data?.periodos?.[p]?.variables?.VAR6_Identificacion || data?.datos_base?.VAR6_Identificacion || data?.identificacion || data?.VAR6_Identificacion || d.id).trim();
+                                if (!patientMap.has(identification)) {
+                                        patientMap.set(identification, d);
+                                } else if (!formatoEsCancer) {
+                                        // Scoring de completitud para Hemofilia si hay duplicados
+                                        const current = patientMap.get(identification);
+                                        const currentData = current.data() || {};
+                                        const scoreDoc = (docData) => KEYS.reduce((acc, k) => acc + (String(docData?.periodos?.[p]?.variables?.[k] || docData?.datos_base?.[k] || docData?.[k] || "").trim() !== "" ? 1 : 0), 0);
+                                        if (scoreDoc(data) > scoreDoc(currentData)) {
+                                                patientMap.set(identification, d);
+                                        }
                                 }
-                            }
                         });
                         const uniqueDocs = Array.from(patientMap.values());
 

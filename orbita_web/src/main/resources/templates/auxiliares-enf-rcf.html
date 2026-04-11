@@ -610,7 +610,7 @@
                 docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(10);
                 docPdf.setTextColor(100, 116, 139);
                 docPdf.text('NIT 900408220 - 1', pageW - M, y + 40, { align: 'right' });
-                
+
                 y += 80;
                 docPdf.setDrawColor(226, 232, 240);
                 docPdf.setLineWidth(1);
@@ -632,15 +632,15 @@
                     const items = [...document.querySelectorAll(`#${listId} li`)].map(li => cleanText(li.textContent));
                     if (!items.length) return;
                     if (y > pageH - 100) { docPdf.addPage(); y = 60; }
-                    
+
                     // Fondo sutil para el título
                     docPdf.setFillColor(color[0], color[1], color[2], 0.1);
                     docPdf.rect(M, y - 12, maxW, 18, 'F');
-                    
+
                     docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10);
                     docPdf.setTextColor(color[0], color[1], color[2]);
                     docPdf.text(title.toUpperCase(), M + 5, y); y += 18;
-                    
+
                     docPdf.setFont('helvetica', 'normal'); docPdf.setFontSize(9);
                     docPdf.setTextColor(71, 85, 105);
                     items.forEach(t => {
@@ -691,7 +691,7 @@
                 // Footer de Resumen
                 let yf = docPdf.lastAutoTable.finalY + 30;
                 if (yf > pageH - 80) { docPdf.addPage(); yf = 60; }
-                
+
                 docPdf.setFillColor(241, 245, 249);
                 docPdf.rect(M, yf, maxW, 40, 'F');
                 docPdf.setFont('helvetica', 'bold'); docPdf.setFontSize(10);
