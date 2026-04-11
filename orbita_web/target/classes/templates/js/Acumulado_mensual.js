@@ -346,17 +346,18 @@ function exportExcel() {
     excelLib.utils.book_append_sheet(wb, wsMensual, "REPORTE_MENSUAL");
 
     // --- HOJA 2: CONSOLIDADO ANUAL (HISTÓRICO ENERO-DICIEMBRE) ---
-    let dataAnualFinal = [];
-    const consolidadoDiv = document.getElementById('consolidado-historico');
+    let dataAnualFinal = [
+      [{ 
+        v: "CONSOLIDADO HISTÓRICO ANUAL (ENERO - DICIEMBRE)", 
+        s: { font: { bold: true, size: 14, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: colorOscuro } }, alignment: { horizontal: "center" } } 
+      }],
+      []
+    ];
 
-    if (consolidadoDiv) {
-      // ✅ IMPORTANTE: Si las tablas están ocultas (en otra pestaña), SheetJS no las captura bien.
-      // Forzamos visibilidad temporal si es necesario.
-      const parentTab = consolidadoDiv.closest('.tab-pane');
-      const wasHidden = parentTab && getComputedStyle(parentTab).display === 'none';
-      if (wasHidden) parentTab.style.display = 'block';
-
-      const tablesAnuales = consolidadoDiv.querySelectorAll('table');
+    // Intentar encontrar todas las tablas históricas disponibles en el DOM
+    const allTables = document.querySelectorAll('#consolidado-historico table');
+    
+    if (allTables && allTables.length > 0) {
       const titulosAnuales = [
         "1. CONSOLIDADO ANUAL URGENCIAS", "2. CONSOLIDADO ANUAL HOSPITALIZACIÓN",
         "3. CONSOLIDADO ANUAL CIRUGÍA", "4. CONSOLIDADO ANUAL ESPECIALIDADES",
@@ -366,71 +367,79 @@ function exportExcel() {
         "11. CONSOLIDADO ANUAL ESTADÍSTICAS"
       ];
 
-      tablesAnuales.forEach((table, i) => {
-        // Título bloque anual (#253D5B)
+      allTables.forEach((table, i) => {
+        // Título de sección (#253D5B)
         dataAnualFinal.push([{
           v: titulosAnuales[i] || "CONSOLIDADO ANUAL",
-          s: { 
-            fill: { fgColor: { rgb: colorOscuro } }, 
-            font: { color: { rgb: "FFFFFF" }, bold: true }, 
-            alignment: { horizontal: "center", vertical: "center" } 
-          }
+          s: { fill: { fgColor: { rgb: colorOscuro } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center" } }
         }]);
 
-        // Extraer datos de la tabla de forma manual para evitar problemas con celdas ocultas
-        const trs = table.querySelectorAll('tr');
-        trs.forEach((tr, rowIndex) => {
-          const cells = tr.querySelectorAll('th, td');
-          const rowData = [];
-          
-          cells.forEach(cell => {
-            // Limpiamos el texto (espacios excesivos, saltos de línea)
-            const text = cell.innerText.trim().replace(/\n/g, ' ');
-            rowData.push(text);
-          });
-
-          if (rowData.length === 0) return;
-
-          const esEncabezado = (rowIndex === 0 && tr.parentElement.tagName === 'THEAD') || tr.style.background.includes('253D5B') || tr.innerHTML.includes('background: #253D5B');
-          const txt = rowData[0] ? rowData[0].toLowerCase() : "";
-          const esResaltado = txt.includes("meta") || txt.includes("total") || txt.includes("presupuesto") || txt.includes("proyección");
-
-          dataAnualFinal.push(rowData.map(val => {
-            let style = {};
-            if (esEncabezado) {
-              style = { 
-                fill: { fgColor: { rgb: colorMedio } }, 
-                font: { color: { rgb: "FFFFFF" }, bold: true },
-                alignment: { horizontal: "center" },
-                border: { top: {style: 'thin', color: {rgb: "FFFFFF"}}, bottom: {style: 'thin', color: {rgb: "FFFFFF"}}, left: {style: 'thin', color: {rgb: "FFFFFF"}}, right: {style: 'thin', color: {rgb: "FFFFFF"}} }
-              };
-            } else if (esResaltado) {
-              style = { 
-                fill: { fgColor: { rgb: colorGris } }, 
-                font: { bold: true },
-                border: { bottom: {style: 'thin', color: {rgb: colorOscuro}} }
-              };
-            } else {
-              style = {
-                border: { bottom: {style: 'thin', color: {rgb: "E2E8F0"}} }
-              };
-            }
-            return { v: val, s: style };
-          }));
-        });
+        // Scraper robusto que maneja celdas fusionadas (rowspan/colspan)
+        const tableGrid = [];
+        const rows = Array.from(table.rows);
         
-        dataAnualFinal.push([]); // Espacio entre tablas
-      });
+        rows.forEach((tr, rIdx) => {
+          if (!tableGrid[rIdx]) tableGrid[rIdx] = [];
+          let cIdx = 0;
+          
+          Array.from(tr.cells).forEach(cell => {
+            while (tableGrid[rIdx][cIdx] !== undefined) cIdx++;
+            
+            const val = cell.innerText.trim().replace(/\n/g, ' ');
+            const rs = cell.rowSpan || 1;
+            const cs = cell.colSpan || 1;
+            
+            // Determinar estilo de la celda
+            const lowerVal = val.toLowerCase();
+            const esHeader = tr.parentElement.tagName.toLowerCase() === 'thead' || rIdx === 0;
+            const esResaltado = lowerVal.includes("meta") || lowerVal.includes("total") || lowerVal.includes("proyección");
+            
+            let st = { 
+              fill: { fgColor: { rgb: "FFFFFF" } },
+              border: { 
+                top: { style: 'thin', color: { rgb: "E2E8F0" } },
+                bottom: { style: 'thin', color: { rgb: "E2E8F0" } },
+                left: { style: 'thin', color: { rgb: "E2E8F0" } },
+                right: { style: 'thin', color: { rgb: "E2E8F0" } }
+              },
+              font: { color: { rgb: "000000" }, size: 9 },
+              alignment: { vertical: "center" }
+            };
 
-      // Restaurar estado original si se cambió
-      if (wasHidden) parentTab.style.display = 'none';
+            if (esHeader) {
+              st.fill.fgColor.rgb = colorMedio;
+              st.font = { color: { rgb: "FFFFFF" }, bold: true, size: 10 };
+              st.alignment.horizontal = "center";
+            } else if (esResaltado) {
+              st.fill.fgColor.rgb = colorGris;
+              st.font.bold = true;
+            }
+
+            for (let i = 0; i < rs; i++) {
+              for (let j = 0; j < cs; j++) {
+                const trgR = rIdx + i;
+                const trgC = cIdx + j;
+                if (!tableGrid[trgR]) tableGrid[trgR] = [];
+                tableGrid[trgR][trgC] = { v: (i === 0 && j === 0) ? val : "", s: st };
+              }
+            }
+          });
+        });
+
+        tableGrid.forEach(row => dataAnualFinal.push(row));
+        dataAnualFinal.push([]); // Salto de línea entre tablas
+      });
+    } else {
+      dataAnualFinal.push([{ v: "Nota: No se encontraron tablas históricas cargadas. Por favor asegúrese de que el Consolidado Histórico sea visible en pantalla.", s: { font: { italic: true } } }]);
     }
 
     if (dataAnualFinal.length > 0) {
       const wsAnual = excelLib.utils.aoa_to_sheet(dataAnualFinal);
-      // Ajuste de anchos para Consolidado Anual (Primera columna ancha, resto estándar)
-      const colWidthsAnual = [{ wch: 35 }];
-      for(let k=0; k<20; k++) colWidthsAnual.push({ wch: 12 });
+      // Ajuste de anchos: A (Grupo, 10), B (Métrica, 45), C (Promedio, 15), D (Meta, 15), Resto (Meses, 10)
+      const colWidthsAnual = [
+        { wch: 10 }, { wch: 45 }, { wch: 15 }, { wch: 12 }
+      ];
+      for(let k=0; k<20; k++) colWidthsAnual.push({ wch: 10 });
       wsAnual["!cols"] = colWidthsAnual;
       excelLib.utils.book_append_sheet(wb, wsAnual, "CONSOLIDADO_ANUAL");
     }
