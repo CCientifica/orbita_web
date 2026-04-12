@@ -57,6 +57,19 @@ const BRAND = {
   ink: "#111827"
 };
 
+const CAP_COLLECTION = "cap";
+
+const ALIGNMENT_CAP_MAP = [
+  { key: "urgencias", label: "Urgencias", capMatch: "urgencias" },
+  { key: "hospitalizacion", label: "Hospitalización", capMatch: "hospitalizacion" },
+  { key: "uci", label: "UCI", capMatch: "uci" },
+  { key: "uce", label: "UCE", capMatch: "uce" },
+  { key: "cirugia", label: "Cirugía", capMatch: "cirugia" },
+  { key: "consultaExterna", label: "Consulta Externa", capMatch: "consulta externa" },
+  { key: "laboratorio", label: "Laboratorio", capMatch: "laboratorio" },
+  { key: "imagenes", label: "Imágenes Diagnósticas", capMatch: "imagenes diagnosticas" }
+];
+
 const KPI_PALETTE = {
   ok: { fill: [236, 253, 245], stroke: [209, 250, 229], text: [6, 95, 70], label: 'cumple meta' },
   warn: { fill: [255, 251, 235], stroke: [254, 243, 199], text: [146, 64, 14], label: 'casi' },
@@ -739,6 +752,8 @@ function title(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 let CURRENT_MONTH_ID = null;
 let LAST_AGG = null;
 let LAST_META = null;
+let LAST_CAP_ROWS = [];
+let LAST_ALIGNMENT_MODEL = [];
 let EDIT_MODE = false;
 let MANUAL_OVERRIDES = {}; // { "SECCION|variable-slug": number }
 
@@ -996,6 +1011,552 @@ async function loadForecastMeta(monthId) {
   console.log(`Mes ${monthId} → Meta UVR mensual usada: ${metas.uvrMeta}  (anual usada: ${uvrAnual})`);
 
   return metas;
+}
+
+/* -------------------- UTILIDADES DE CARGA CAP -------------------- */
+function excelDateToISO(value) {
+  if (value instanceof Date && !isNaN(value)) {
+    return value.toISOString();
+  }
+  return value ?? null;
+}
+
+function normalizeSheetAOA(aoa) {
+  return aoa.map(row =>
+    (row || []).map(cell => excelDateToISO(cell))
+  );
+}
+
+async function uploadCapSheetAsIs(file) {
+  if (!file) return;
+
+  const statusEl = document.getElementById("capUploadStatus");
+  if (statusEl) {
+    statusEl.textContent = "Cargando CAP...";
+    statusEl.style.color = "";
+  }
+
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, {
+    type: "array",
+    cellDates: true
+  });
+
+  const capSheetName =
+    workbook.SheetNames.find(n => String(n).trim().toLowerCase() === "cap") ||
+    workbook.SheetNames[0];
+
+  if (!capSheetName) {
+    throw new Error("No se encontró la hoja CAP.");
+  }
+
+  const ws = workbook.Sheets[capSheetName];
+  if (!ws) {
+    throw new Error("No se encontró la hoja CAP en el archivo.");
+  }
+
+  const aoa = XLSX.utils.sheet_to_json(ws, {
+    header: 1,
+    raw: false,
+    defval: null
+  });
+
+  const normalizedRows = normalizeSheetAOA(aoa);
+
+  const merges = (ws["!merges"] || []).map(m => ({
+    s: { r: m.s.r, c: m.s.c },
+    e: { r: m.e.r, c: m.e.c }
+  }));
+
+  const selectedYear =
+    Number(document.getElementById("month")?.value?.split("-")[0]) ||
+    new Date().getFullYear();
+
+  // 1. Documento principal: cap/{anio}
+  const metaRef = doc(db, CAP_COLLECTION, String(selectedYear));
+  await setDoc(metaRef, {
+    year: selectedYear,
+    source: "excel_cap",
+    fileName: file.name,
+    sheetName: capSheetName,
+    totalRows: normalizedRows.length,
+    totalCols: Math.max(...normalizedRows.map(r => r.length), 0),
+    merges,
+    uploadedAt: serverTimestamp()
+  }, { merge: true });
+
+  // 2. Filas: cap/{anio}/rows/{rowId}
+  for (let i = 0; i < normalizedRows.length; i++) {
+    const rowRef = doc(db, CAP_COLLECTION, String(selectedYear), "rows", String(i + 1));
+    await setDoc(rowRef, {
+      rowIndex: i + 1,
+      values: normalizedRows[i]
+    }, { merge: true });
+  }
+
+  if (statusEl) {
+    statusEl.textContent = `CAP cargado correctamente: ${file.name}`;
+    statusEl.style.color = "#16a34a";
+  }
+
+  alert("Hoja CAP cargada y guardada en base de datos.");
+}
+
+async function loadCap(year) {
+  const metaSnap = await getDoc(doc(db, "cap", String(year)));
+  const rowsSnap = await getDocs(collection(db, "cap", String(year), "rows"));
+
+  const meta = metaSnap.exists() ? metaSnap.data() : null;
+  const rows = [];
+
+  rowsSnap.forEach(d => {
+    rows.push(d.data());
+  });
+
+  rows.sort((a, b) => (a.rowIndex || 0) - (b.rowIndex || 0));
+
+  return {
+    meta,
+    rows
+  };
+}
+
+async function loadCapRows(year) {
+  const rowsRef = collection(db, "cap", String(year), "rows");
+  const snap = await getDocs(rowsRef);
+
+  const rows = [];
+  snap.forEach(docSnap => {
+    rows.push(docSnap.data());
+  });
+
+  rows.sort((a, b) => (a.rowIndex || 0) - (b.rowIndex || 0));
+  return rows.map(r => r.values || []);
+}
+
+function getNumericFromRenderedTable(tableId, textMatches) {
+  const matches = Array.isArray(textMatches) ? textMatches : [textMatches];
+
+  const rows = Array.from(document.querySelectorAll(`${tableId} tbody tr, ${tableId} tfoot tr`));
+  const row = rows.find(r => {
+    const first = (r.cells?.[0]?.textContent || "").toLowerCase().trim();
+    return matches.some(t => first.includes(String(t).toLowerCase().trim()));
+  });
+
+  if (!row || !row.cells[1]) return 0;
+
+  const inp = row.cells[1].querySelector("input");
+  const raw = inp?.value || row.cells[1].textContent || "0";
+
+  const txt = String(raw)
+    .replace(/\./g, "")
+    .replace(",", ".")
+    .replace(/[^\d.-]/g, "")
+    .trim();
+
+  const n = Number(txt);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function getLaboratorioTotalFromRenderedTable() {
+  const root = document.querySelector('#tbl-lab');
+  if (!root) return 0;
+
+  const t = root.querySelector('table');
+  if (!t) return 0;
+
+  // 1. Intentar encontrar una fila explícita de total
+  const rows = Array.from(t.querySelectorAll('tbody tr, tfoot tr'));
+  for (const tr of rows) {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length >= 2) {
+      const label = (tds[0].textContent || "").toLowerCase().trim();
+      if (label.includes('total') || label.includes('sumatoria')) {
+        const raw = tds[1].querySelector('input')?.value || tds[1].textContent || "0";
+        const txt = String(raw)
+          .replace(/\./g, "")
+          .replace(",", ".")
+          .replace(/[^\d.-]/g, "")
+          .trim();
+        const n = Number(txt);
+        return Number.isFinite(n) ? n : 0;
+      }
+    }
+  }
+
+  // 2. Si no existe fila total, usar la misma lógica especial que ya usas en tableToData('#tbl-lab')
+  const ths = t.querySelectorAll('thead th span');
+  const tds = t.querySelectorAll('tbody td');
+
+  let total = 0;
+  ths.forEach((span, i) => {
+    const label = (span.textContent || "").trim().toLowerCase();
+    const td = tds[i + 1]; // misma lógica que tu tableToData
+    if (!label || !td) return;
+
+    const raw = td.querySelector('input')?.value || td.textContent || "0";
+    const txt = String(raw)
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "")
+      .trim();
+
+    const n = Number(txt);
+    if (Number.isFinite(n)) total += n;
+  });
+
+  return total;
+}
+
+function buildRealAlignmentDataFromTables() {
+  return {
+    urgencias: getNumericFromRenderedTable('#tbl-urg', 'total'),
+    hospitalizacion: getNumericFromRenderedTable('#tbl-hosp', 'egresos'),
+    uci: getNumericFromRenderedTable('#tbl-uci', 'egresos'),
+    uce: getNumericFromRenderedTable('#tbl-uce', 'egresos'),
+    cirugia: getNumericFromRenderedTable('#tbl-cx-ing', 'total'),
+    consultaExterna: getNumericFromRenderedTable('#tbl-ce', 'total'),
+    laboratorio: getLaboratorioTotalFromRenderedTable(),
+    imagenes: getNumericFromRenderedTable('#tbl-img-tot', 'imágenes')
+  };
+}
+
+const STRATEGIC_WEIGHT = {
+  urgencias: "Alto",
+  hospitalizacion: "Alto",
+  uci: "Alto",
+  uce: "Medio",
+  cirugia: "Alto",
+  consultaExterna: "Medio",
+  laboratorio: "Alto",
+  imagenes: "Medio"
+};
+
+function classifyEstado(cumplimiento) {
+  if (cumplimiento < 80) return "Crítica";
+  if (cumplimiento < 90) return "Alta";
+  if (cumplimiento < 100) return "Media";
+  if (cumplimiento <= 110) return "Cumple";
+  return "Sobrecumple";
+}
+
+function classifyPrioridad(estado, impacto) {
+  if (estado === "Crítica" && impacto === "Alto") return "Intervención inmediata";
+  if (estado === "Crítica" && impacto === "Medio") return "Acción prioritaria";
+  if (estado === "Alta" && impacto === "Alto") return "Acción prioritaria";
+  if (estado === "Alta") return "Seguimiento directivo";
+  if (estado === "Media") return "Vigilancia";
+  if (estado === "Sobrecumple" && impacto === "Alto") return "Analizar sobreproducción";
+  return "Estable";
+}
+
+function buildStrategicAlignmentModel({ capMeta }) {
+  const realData = buildRealAlignmentDataFromTables();
+  const entries = [];
+
+  for (const item of ALIGNMENT_CAP_MAP) {
+    const real = Number(realData[item.key] || 0);
+    const meta = Number(capMeta?.[item.key]?.metaMes || 0);
+    const brecha = real - meta;
+    const cumplimiento = meta > 0 ? (real / meta) * 100 : 0;
+    const esIncumplimiento = brecha < 0;
+
+    const impacto = STRATEGIC_WEIGHT[item.key] || "Medio";
+    const estado = classifyEstado(cumplimiento);
+    const prioridad = classifyPrioridad(estado, impacto);
+
+    entries.push({
+      key: item.key,
+      linea: item.label,
+      real,
+      meta,
+      brecha,
+      cumplimiento,
+      impacto,
+      estado,
+      prioridad,
+      esIncumplimiento
+    });
+  }
+
+  const order = {
+    "Intervención inmediata": 6,
+    "Acción prioritaria": 5,
+    "Seguimiento directivo": 4,
+    "Vigilancia": 3,
+    "Analizar sobreproducción": 2,
+    "Estable": 1
+  };
+
+  return entries.sort((a, b) => (order[b.prioridad] || 0) - (order[a.prioridad] || 0));
+}
+
+function renderAlineacionEstrategica(model, monthId) {
+  const badge = document.getElementById("align-date-badge");
+  const summary = document.getElementById("align-summary-cards");
+  const alertBox = document.getElementById("align-main-alert");
+  const ranking = document.getElementById("align-ranking");
+  const matrix = document.getElementById("align-matrix");
+  const mix = document.getElementById("align-mix");
+  const insights = document.getElementById("align-insights");
+
+  if (badge) badge.textContent = monthId;
+
+  const criticas = model.filter(x => x.estado === "Crítica").length;
+  const altas = model.filter(x => x.estado === "Alta").length;
+  const alertasMax = model.filter(x => x.prioridad === "Intervención inmediata" || x.prioridad === "Acción prioritaria").length;
+  
+  const mejorCumple = [...model].sort((a, b) => b.cumplimiento - a.cumplimiento)[0];
+  const mayorBrechaNeg = model.filter(x => x.esIncumplimiento).sort((a, b) => Math.abs(b.brecha) - Math.abs(a.brecha))[0];
+
+  if (summary) {
+    summary.innerHTML = `
+      <div class="kpi-card"><span class="kpi-title">Estados Críticos</span><span class="kpi-value">${criticas}</span></div>
+      <div class="kpi-card"><span class="kpi-title">Seguimiento Alto</span><span class="kpi-value">${altas}</span></div>
+      <div class="kpi-card"><span class="kpi-title">Alertas de Acción</span><span class="kpi-value" style="color:#ef4444;">${alertasMax}</span></div>
+      <div class="kpi-card"><span class="kpi-title">Mejor Cumplimiento</span><span class="kpi-value">${mejorCumple?.linea || '--'}</span></div>
+    `;
+  }
+
+  if (alertBox) {
+    alertBox.innerHTML = mayorBrechaNeg ? `
+      <div class="alert-item">
+        <i data-lucide="siren" style="color:#ef4444;"></i>
+        <div>
+          <strong>${mayorBrechaNeg.linea} (${mayorBrechaNeg.prioridad})</strong><br>
+          Faltante: ${Math.abs(mayorBrechaNeg.brecha).toLocaleString('es-CO')} · Estado: ${mayorBrechaNeg.estado}
+        </div>
+      </div>
+    ` : `<div class="alert-item"><i data-lucide="check-circle" style="color:#10b981;"></i><div><strong>Operación Alineada</strong><br>No se detectan intervenciones inmediatas pendientes.</div></div>`;
+  }
+
+  if (ranking) {
+    ranking.innerHTML = `
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Línea</th>
+            <th>Real</th>
+            <th>Meta CAP</th>
+            <th>Brecha</th>
+            <th>% Cumpl.</th>
+            <th>Impacto</th>
+            <th>Estado</th>
+            <th>Prioridad</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${model.map(x => {
+            const estadoClass =
+              x.estado === 'Crítica' ? 'err' :
+              x.estado === 'Alta' ? 'warn' :
+              x.estado === 'Media' ? 'warn' :
+              'ok';
+
+            return `
+              <tr>
+                <td>${x.linea}</td>
+                <td>${x.real.toLocaleString('es-CO')}</td>
+                <td>${x.meta.toLocaleString('es-CO')}</td>
+                <td style="color:${x.brecha < 0 ? '#ef4444' : '#10b981'}">${x.brecha.toLocaleString('es-CO')}</td>
+                <td>${x.cumplimiento.toFixed(1)}%</td>
+                <td>${x.impacto}</td>
+                <td><span class="kpi ${estadoClass}">${x.estado}</span></td>
+                <td>${x.prioridad}</td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  if (matrix) {
+    matrix.innerHTML = `
+      <div class="perf-matrix">
+        ${model.map(x => `
+          <div class="perf-cell" style="border-left: 4px solid ${x.esIncumplimiento ? '#ef4444' : '#10b981'}">
+            <span class="p-label">${x.linea}</span>
+            <div class="p-val">${x.impacto} / ${x.estado}</div>
+            <small style="opacity:0.7;">${x.prioridad}</small>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  if (mix) {
+    mix.innerHTML = `
+      <div class="insight-box">
+        <p style="margin:0; color:var(--text-main); line-height:1.6;">
+          Análisis de Mezcla: Los excedentes en líneas de alto impacto representan un aumento en la presión asistencial 
+          pero también una oportunidad de crecimiento. Los déficits críticos requieren revisión de procesos.
+        </p>
+      </div>
+    `;
+  }
+
+  if (insights) {
+    const topNeg = model.filter(x => x.esIncumplimiento).slice(0, 2).map(x => x.linea).join(", ");
+    insights.innerHTML = `
+      <div class="insight-box">
+        <p style="margin:0; color:var(--text-main); line-height:1.7;">
+          Durante el periodo <strong>${monthId}</strong>, el enfoque debe estar en <strong>${topNeg || 'mantener la tendencia'}</strong>. 
+          La alineación muestra un balance entre cumplimiento de metas y gestión de desviaciones.
+        </p>
+      </div>
+    `;
+  }
+
+  if (typeof lucide !== "undefined") lucide.createIcons();
+}
+
+function normalizeCapText(txt) {
+  return String(txt || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toCapNumber(value) {
+  if (value == null || value === "") return 0;
+  if (typeof value === "number") return value;
+
+  const raw = String(value).trim();
+
+  // Si viene como 3,82 o 35,942 y NO tiene punto,
+  // en CAP lo interpretamos como separador de miles, no decimal.
+  if (/^\d+,\d{1,3}$/.test(raw) && !raw.includes('.')) {
+    const parts = raw.split(',');
+    const entero = parts[0];
+    const frac = parts[1];
+
+    if (frac.length === 1) return Number(entero + frac + "00");
+    if (frac.length === 2) return Number(entero + frac + "0");
+    if (frac.length === 3) return Number(entero + frac);
+  }
+
+  const txt = raw
+    .replace(/\./g, "")
+    .replace(",", ".")
+    .replace(/[^\d.-]/g, "")
+    .trim();
+
+  const n = Number(txt);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function findCapHeaderRow(capRows) {
+  return capRows.findIndex(row =>
+    row.some(cell => {
+      const txt = String(cell || "").toLowerCase();
+      // Buscamos algo que parezca una fecha (ene-26, 2026-03, etc.)
+      return /ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic/.test(txt) || 
+             (/^\d{4}-\d{2}/.test(txt)); // Formato ISO 2026-03...
+    })
+  );
+}
+
+function getCapMonthColumn(headerRow, monthId) {
+  if (!headerRow) return -1;
+  const [yyyy, mm] = monthId.split("-"); // "2026", "03"
+  
+  const monthNames = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+  const labelShort = `${monthNames[parseInt(mm)-1]}-${yyyy.slice(2)}`; // "mar-26"
+  
+  return headerRow.findIndex(cell => {
+    if (!cell) return false;
+    const txt = String(cell).toLowerCase();
+    
+    // Opción A: Match exacto (mar-26)
+    if (txt.includes(labelShort)) return true;
+    
+    // Opción B: Si viene como fecha ISO (2026-03-01...)
+    if (txt.startsWith(`${yyyy}-${mm}`)) return true;
+    
+    return false;
+  });
+}
+
+function extractStrategicCapMeta(capRows, monthId) {
+  const headerIdx = findCapHeaderRow(capRows);
+  if (headerIdx < 0) throw new Error("No se encontró encabezado mensual en CAP.");
+
+  const headerRow = capRows[headerIdx];
+  const monthCol = getCapMonthColumn(headerRow, monthId);
+  if (monthCol < 0) throw new Error(`No se encontró columna CAP para ${monthId}.`);
+
+  const metas = {};
+
+  for (const item of ALIGNMENT_CAP_MAP) {
+    const row = capRows.find(r => {
+      const c0 = normalizeCapText(r[0]);
+      const c1 = normalizeCapText(r[1]);
+      const c2 = normalizeCapText(r[2]);
+      return c0.includes(item.capMatch) || c1.includes(item.capMatch) || c2.includes(item.capMatch);
+    });
+
+    if (!row) {
+      metas[item.key] = {
+        label: item.label,
+        metaMes: 0,
+        rawLabel: ""
+      };
+      continue;
+    }
+
+    metas[item.key] = {
+      label: item.label,
+      metaMes: toCapNumber(row[monthCol]),
+      rawLabel: row[1] || row[2] || row[0] || ""
+    };
+  }
+
+  return metas;
+}
+
+async function renderCapPreview() {
+  const monthVal = document.getElementById("month")?.value;
+  if (!monthVal) { alert("Selecciona un mes para determinar el año."); return; }
+  const year = monthVal.split("-")[0];
+  
+  const capModal = document.getElementById("capModal");
+  const capContent = document.getElementById("capPreviewContent");
+  const capMetaInfo = document.getElementById("capMetaInfo");
+  
+  if (!capModal || !capContent) return;
+  
+  capModal.style.display = "flex";
+  capContent.innerHTML = '<p style="text-align:center; padding:40px; color:#64748b;">Consultando base de datos...</p>';
+  
+  try {
+    const data = await loadCap(year);
+    if (!data.meta) {
+      capContent.innerHTML = '<p style="text-align:center; padding:40px; color:#dc2626; font-weight:700;">No hay CAP cargado para el año ' + year + '</p>';
+      return;
+    }
+    
+    capMetaInfo.textContent = `Archivo: ${data.meta.fileName} | Subido: ${data.meta.uploadedAt?.toDate ? data.meta.uploadedAt.toDate().toLocaleString() : 'Recientemente'}`;
+    
+    // Construir tabla HTML
+    let html = '<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:white;">';
+    data.rows.forEach(row => {
+      html += '<tr>';
+      (row.values || []).forEach(cell => {
+        html += `<td style="border:1px solid #e2e8f0; padding:4px; min-width:80px;">${cell ?? ''}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</table>';
+    
+    capContent.innerHTML = html;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+  } catch (err) {
+    console.error(err);
+    capContent.innerHTML = `<p style="text-align:center; padding:40px; color:#dc2626;">Error al cargar vista: ${err.message}</p>`;
+  }
 }
 
 /* ----------------------------------------------------------------------- */
@@ -2447,7 +3008,8 @@ async function runLoad() {
     }
 
     // 🔴 FUENTE AUTOMÁTICA DESDE ESTADÍSTICA DIARIA (Refresco si existe detalle)
-    const [year, month0] = mval.split('-');
+    const [year, mmRaw] = mval.split('-');
+    const month0 = parseInt(mmRaw) - 1; 
     const dias = await fetchDailyDocs(year, month0);
     if (dias.length > 0) {
       LAST_AGG = reduceDailyToAgg(dias); // Base refrescada desde Firestore diario
@@ -2459,6 +3021,20 @@ async function runLoad() {
 
     // ✅ PINTAR TODO: base diaria (LAST_AGG) + capa manual (MANUAL_OVERRIDES) + metas
     paintAll(LAST_AGG, LAST_META);
+    
+    // 🎯 CARGA DE ALINEACIÓN ESTRATÉGICA (BASADA EN CAP)
+    try {
+      const capRows = await loadCapRows(year);
+      LAST_CAP_ROWS = capRows;
+
+      const capMeta = extractStrategicCapMeta(capRows, mval);
+      LAST_ALIGNMENT_MODEL = buildStrategicAlignmentModel({ capMeta });
+
+      renderAlineacionEstrategica(LAST_ALIGNMENT_MODEL, mval);
+    } catch (err) {
+      console.error("Error en Alineación Estratégica:", err);
+    }
+
     if (typeof runInteligencia === 'function') runInteligencia(year, month0, LAST_AGG, LAST_META);
 
     const statusEl = document.getElementById("status");
@@ -2716,6 +3292,45 @@ window.addEventListener("DOMContentLoaded", () => {
   setupBtn('btnShowMeta', showForecastMeta);
   setupBtn('btnPdf', exportPDF);
   setupBtn('btnXlsx', exportExcel);
+
+  const btnUploadCap = document.getElementById("btnUploadCap");
+  const inputCapExcel = document.getElementById("inputCapExcel");
+
+  if (btnUploadCap && inputCapExcel) {
+    btnUploadCap.addEventListener("click", () => {
+      inputCapExcel.click();
+    });
+
+    inputCapExcel.addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      btnUploadCap.disabled = true;
+      const oldText = btnUploadCap.textContent;
+      btnUploadCap.textContent = "Subiendo CAP...";
+
+      try {
+        await uploadCapSheetAsIs(file);
+      } catch (err) {
+        console.error(err);
+        const statusEl = document.getElementById("capUploadStatus");
+        if (statusEl) {
+          statusEl.textContent = `Error al cargar CAP: ${err.message}`;
+          statusEl.style.color = "#dc2626";
+        }
+        alert("Error al cargar la hoja CAP.");
+      } finally {
+        btnUploadCap.disabled = false;
+        btnUploadCap.textContent = oldText;
+        inputCapExcel.value = "";
+      }
+    });
+  }
+
+  const btnPreviewCap = document.getElementById("btnPreviewCap");
+  if (btnPreviewCap) {
+    btnPreviewCap.addEventListener("click", renderCapPreview);
+  }
 
   // 3. Listener para cambios manuales
   const toggleEdit = document.getElementById("toggleEdit");

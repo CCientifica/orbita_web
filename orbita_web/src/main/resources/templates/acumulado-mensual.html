@@ -926,12 +926,18 @@
             <!-- Navegación por Pestañas Clásica/Moderna (SOLO VISTA EJECUTIVA) -->
             <div class="mb-4 fade-in">
                 <div class="nav-pills-modern" id="mainTabs">
-                    <button class="nav-btn active" data-target="tab-dash"><i data-lucide="bar-chart-2"></i> Tendencias
-                        Anuales</button>
-                    <button class="nav-btn" data-target="tab-intel"><i data-lucide="zap"></i> Inteligencia del
-                        Periodo</button>
-                    <button class="nav-btn" data-target="tab-hist"><i data-lucide="database"></i> Consolidado
-                        Histórico</button>
+                    <button class="nav-btn active" data-target="tab-dash">
+                        <i data-lucide="bar-chart-2"></i> Tendencias Anuales
+                    </button>
+                    <button class="nav-btn" data-target="tab-intel">
+                        <i data-lucide="zap"></i> Inteligencia del Periodo
+                    </button>
+                    <button class="nav-btn" data-target="tab-align">
+                        <i data-lucide="crosshair"></i> Alineación Estratégica
+                    </button>
+                    <button class="nav-btn" data-target="tab-hist">
+                        <i data-lucide="database"></i> Consolidado Histórico
+                    </button>
                 </div>
             </div>
 
@@ -944,6 +950,64 @@
                         <p style="color:var(--text-muted); font-size:0.9rem; margin-top:-10px; margin-bottom:20px;">
                             Evolución interanual del periodo en curso respecto a las proyecciones y metas trazadas.</p>
                         <div id="dashboard-grafico" class="charts-grid w-100"></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="tab-align">
+                    <div class="fade-in">
+                        <div class="executive-callout">
+                            <div style="max-width: 850px; position: relative; z-index: 2;">
+                                <h2
+                                    style="font-size: 2rem; font-weight: 900; margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
+                                    <i data-lucide="crosshair" style="width:40px; height:40px; color:#818cf8;"></i>
+                                    Alineación Estratégica
+                                </h2>
+                                <p style="font-size: 1.1rem; opacity: 0.9; margin: 0; line-height: 1.6;">
+                                    Contraste ejecutivo entre la ejecución real del periodo, la meta institucional del
+                                    CAP
+                                    y la relevancia gerencial de cada línea operativa.
+                                </p>
+                            </div>
+
+                            <div id="align-date-badge"
+                                style="position: absolute; bottom: 2rem; right: 2rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 8px 20px; border-radius: 12px; font-weight: 800; border: 1px solid rgba(255,255,255,0.2);">
+                                --
+                            </div>
+                        </div>
+
+                        <div class="modern-grid" style="grid-template-columns: 2fr 1fr;">
+                            <div class="modern-card">
+                                <h3><i data-lucide="alert-triangle"></i> RESUMEN EJECUTIVO DE DESALINEACIÓN</h3>
+                                <div id="align-summary-cards" class="kpi-row"></div>
+                            </div>
+
+                            <div class="modern-card">
+                                <h3><i data-lucide="flag"></i> ALERTA GERENCIAL PRINCIPAL</h3>
+                                <div id="align-main-alert"></div>
+                            </div>
+                        </div>
+
+                        <div class="modern-grid" style="grid-template-columns: 1.4fr 1fr;">
+                            <div class="modern-card">
+                                <h3><i data-lucide="list-ordered"></i> RANKING DE DESALINEACIÓN</h3>
+                                <div id="align-ranking"></div>
+                            </div>
+
+                            <div class="modern-card">
+                                <h3><i data-lucide="layout-grid"></i> MATRIZ IMPACTO × DESVIACIÓN</h3>
+                                <div id="align-matrix"></div>
+                            </div>
+                        </div>
+
+                        <div class="modern-card full-width">
+                            <h3><i data-lucide="stethoscope"></i> LECTURA DE MEZCLA OPERATIVA</h3>
+                            <div id="align-mix"></div>
+                        </div>
+
+                        <div class="modern-card full-width">
+                            <h3><i data-lucide="file-text"></i> LECTURA EJECUTIVA DEL PERIODO</h3>
+                            <div id="align-insights"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1060,6 +1124,17 @@
                             </h3>
                             <p style="margin:4px 0 0 0; font-size:0.8rem; color:var(--text-muted);">Edición manual,
                                 consolidación de indicadores y proyecciones del mes.</p>
+                            
+                            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+                                <button id="btnUploadCap" class="btn-modern-dash">Subir CAP</button>
+                                <button id="btnPreviewCap" class="btn btn-ghost" style="padding: 6px 14px; font-size: 0.85rem; border-radius: 8px; display:flex; align-items:center; gap:6px;">
+                                    <i data-lucide="eye" style="width:14px;"></i> Ver CAP
+                                </button>
+                                <input type="file" id="inputCapExcel" accept=".xlsx,.xls" style="display:none;">
+                                <span id="capUploadStatus" style="font-size:0.82rem; color:var(--text-muted); font-weight:700;">
+                                  Sin CAP cargado
+                                </span>
+                            </div>
                         </div>
 
                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -1509,6 +1584,30 @@
                 </button>
                 <button onclick="document.getElementById('aiModal').classList.remove('is-open')" class="btn-modern-dash"
                     style="background:#f1f5f9; border:none; color:#475569;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Previsualización CAP -->
+    <div id="capModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1200; align-items:center; justify-content:center; padding:20px; backdrop-filter: blur(4px);">
+        <div
+            style="background:white; padding:30px; border-radius:24px; max-width:1400px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; max-height:95vh; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #f1f5f9; padding-bottom:15px;">
+                <div>
+                    <h3 style="margin:0; font-weight:800; color:#1e293b;">Previsualización de Hoja CAP</h3>
+                    <p id="capMetaInfo" style="margin:4px 0 0 0; font-size:0.8rem; color:#64748b;">Información cargada en base de datos</p>
+                </div>
+                <button onclick="document.getElementById('capModal').style.display='none'"
+                    style="background:none; border:none; cursor:pointer; color:#94a3b8;"><i data-lucide="x" style="width:24px;"></i></button>
+            </div>
+            
+            <div id="capPreviewContent" style="flex:1; overflow:auto; padding:10px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; font-family: 'Outfit', sans-serif;">
+                <p style="text-align:center; padding:40px; color:#64748b;">Cargando datos del CAP...</p>
+            </div>
+            
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="document.getElementById('capModal').style.display='none'" class="btn-modern-dash">Cerrar</button>
             </div>
         </div>
     </div>
