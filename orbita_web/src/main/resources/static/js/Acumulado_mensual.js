@@ -756,6 +756,8 @@ let LAST_CAP_ROWS = [];
 let LAST_ALIGNMENT_MODEL = [];
 let EDIT_MODE = false;
 let MANUAL_OVERRIDES = {}; // { "SECCION|variable-slug": number }
+let GLOBAL_YEARLY_DATASET = null;
+let GLOBAL_YEARLY_LABELS = [];
 
 // === Helpers SOLO para meses numéricos ===
 // mm viene como "09", "3", etc.
@@ -1192,8 +1194,10 @@ function getLaboratorioTotalFromRenderedTable() {
   let total = 0;
   ths.forEach((span, i) => {
     const label = (span.textContent || "").trim().toLowerCase();
-    const td = tds[i + 1]; // misma lógica que tu tableToData
-    if (!label || !td) return;
+    if (!label || label.includes('total')) return; // Evitar sumar la columna de TOTAL ya dividida
+
+    const td = tds[i + 1]; 
+    if (!td) return;
 
     const raw = td.querySelector('input')?.value || td.textContent || "0";
     const txt = String(raw)
@@ -1206,17 +1210,17 @@ function getLaboratorioTotalFromRenderedTable() {
     if (Number.isFinite(n)) total += n;
   });
 
-  // ✅ REGLA DE EMERGENCIA: Aplicamos la misma regla de división por 2 para el tablero de alineación
-  return Math.round(total / 2);
+  // ✅ REGLA ACTUALIZADA: Se elimina la división por 2 a solicitud del usuario. El valor real es el doble.
+  return Math.round(total);
 }
 
 function buildRealAlignmentDataFromTables() {
   return {
-    urgencias: getNumericFromRenderedTable('#tbl-urg', 'total'),
+    urgencias: getNumericFromRenderedTable('#tbl-urg', 'triages + ortopedia'),
     hospitalizacion: getNumericFromRenderedTable('#tbl-hosp', 'egresos'),
     uci: getNumericFromRenderedTable('#tbl-uci', 'egresos'),
     uce: getNumericFromRenderedTable('#tbl-uce', 'egresos'),
-    cirugia: getNumericFromRenderedTable('#tbl-cx-ing', 'total'),
+    cirugia: getNumericFromRenderedTable('#tbl-cx-ing', 'procedimientos (ingresos)'),
     consultaExterna: getNumericFromRenderedTable('#tbl-ce', 'total'),
     laboratorio: getLaboratorioTotalFromRenderedTable(),
     imagenes: getNumericFromRenderedTable('#tbl-img-tot', 'imágenes')
@@ -1233,6 +1237,8 @@ const STRATEGIC_WEIGHT = {
   laboratorio: "Alto",
   imagenes: "Medio"
 };
+
+const STRATEGIC_WEIGHT_VAL = { "Alto": 3, "Medio": 2, "Bajo": 1 };
 
 function classifyEstado(cumplimiento) {
   if (cumplimiento < 80) return "Crítica";
@@ -1267,6 +1273,25 @@ function buildStrategicAlignmentModel({ capMeta }) {
     const estado = classifyEstado(cumplimiento);
     const prioridad = classifyPrioridad(estado, impacto);
 
+    // --- Métrica Avanzada: Análisis de Tendencia y Promedio (usando GLOBAL_YEARLY_DATASET) ---
+    let mesAnterior = 0, promHist = 0, variacionMes = 0;
+    if (GLOBAL_YEARLY_DATASET) {
+      const activeIdx = (Number(document.getElementById("month")?.value?.split('-')[1]) || 1) - 1;
+      // Mapeo dinámico de llaves locales a las del dataset de gráficas
+      const dsKeyMap = { 
+        urgencias: "triages", hospitalizacion: "hosp", uci: "uci", uce: "uce", 
+        cirugia: "procs", consultaExterna: "ce", laboratorio: "laboratorio", imagenes: "img" 
+      };
+      const dsKey = dsKeyMap[item.key];
+      if (dsKey && GLOBAL_YEARLY_DATASET[dsKey]) {
+        const history = GLOBAL_YEARLY_DATASET[dsKey].real || [];
+        mesAnterior = activeIdx > 0 ? history[activeIdx - 1] : 0;
+        const validMonths = history.filter((v, idx) => v > 0 && idx <= activeIdx);
+        promHist = validMonths.length > 0 ? validMonths.reduce((a,b)=>a+b,0) / validMonths.length : real;
+        variacionMes = mesAnterior > 0 ? ((real / mesAnterior) - 1) * 100 : 0;
+      }
+    }
+
     entries.push({
       key: item.key,
       linea: item.label,
@@ -1277,9 +1302,19 @@ function buildStrategicAlignmentModel({ capMeta }) {
       impacto,
       estado,
       prioridad,
-      esIncumplimiento
+      esIncumplimiento,
+      mesAnterior,
+      promHist,
+      variacionMes,
+      pesoVal: STRATEGIC_WEIGHT_VAL[impacto] || 1
     });
   }
+
+  // --- Métrica Avanzada: Impacto en el Cierre (Weighted Deviation) ---
+  const totalWeight = entries.reduce((s, e) => s + e.pesoVal, 0);
+  entries.forEach(e => {
+    e.scoreImpacto = (e.brecha / (e.meta || 1)) * (e.pesoVal / totalWeight) * 100;
+  });
 
   const order = {
     "Intervención inmediata": 6,
@@ -1388,24 +1423,88 @@ function renderAlineacionEstrategica(model, monthId) {
   }
 
   if (mix) {
-    mix.innerHTML = `
-      <div class="insight-box">
-        <p style="margin:0; color:var(--text-main); line-height:1.6;">
-          Análisis de Mezcla: Los excedentes en líneas de alto impacto representan un aumento en la presión asistencial 
-          pero también una oportunidad de crecimiento. Los déficits críticos requieren revisión de procesos.
+    const frenos = model.filter(x => x.esIncumplimiento).sort((a,b) => a.brecha - b.brecha);
+    const sosten = model.filter(x => !x.esIncumplimiento).sort((a,b) => b.brecha - a.brecha);
+    
+    let htmlFrenos = frenos.map(x => `
+      <div style="margin-bottom:10px; padding:12px; border-radius:8px; border-left:5px solid #ef4444; background:#fef2f2; border:1px solid #fee2e2; border-left-width:5px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; color:#b91c1c; font-size:0.9rem;">${x.linea} (FRENO)</span>
+          <span style="font-weight:900; color:#ef4444;">-${Math.abs(x.brecha).toLocaleString('es-CO')} serv.</span>
+        </div>
+        <p style="margin:5px 0 0 0; font-size:0.8rem; color:#7f1d1d;">
+          Esta línea es la que más está <b>restando</b> tracción al cumplimiento global. Representa una alerta de tipo: <strong>${x.prioridad}</strong>.
         </p>
+      </div>
+    `).join('');
+
+    let htmlSosten = sosten.map(x => `
+      <div style="margin-bottom:10px; padding:12px; border-radius:8px; border-left:5px solid #10b981; background:#f0fdf4; border:1px solid #dcfce7; border-left-width:5px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:800; color:#166534; font-size:0.9rem;">${x.linea} (SOSTÉN)</span>
+          <span style="font-weight:900; color:#10b981;">+${x.brecha.toLocaleString('es-CO')} serv.</span>
+        </div>
+        <p style="margin:5px 0 0 0; font-size:0.8rem; color:#14532d;">
+          Esta línea está <b>impulsando</b> el cierre y compensando el déficit de otras áreas. Operación estable.
+        </p>
+      </div>
+    `).join('');
+
+    mix.innerHTML = `
+      <div class="insight-box" style="background:#fff; border-top: 4px solid var(--pri);">
+        <p style="margin:0 0 15px 0; font-size:1rem; font-weight:800; color:var(--pri-dark);">
+          DIAGNÓSTICO DIRECTIVO: IMPACTO EN EL RESULTADO
+        </p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+          <div>
+            <h5 style="margin:0 0 10px 0; font-size:0.75rem; color:#ef4444; letter-spacing:1px; text-transform:uppercase;">🚫 Servicios que frenan el cumplimiento</h5>
+            ${htmlFrenos || '<p style="font-size:0.8rem; color:var(--text-muted);">No se detectan líneas con brecha negativa.</p>'}
+          </div>
+          <div>
+            <h5 style="margin:0 0 10px 0; font-size:0.75rem; color:#10b981; letter-spacing:1px; text-transform:uppercase;">🚀 Servicios que sostienen el resultado</h5>
+            ${htmlSosten || '<p style="font-size:0.8rem; color:var(--text-muted);">No hay líneas operando por encima de la meta.</p>'}
+          </div>
+        </div>
+        <div style="margin-top:20px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; font-size:0.85rem;">
+          <strong>Acción Sugerida:</strong> El foco directivo debe estar en los servicios marcados como <b>FRENO</b> para recuperar la brecha de ${frenos.length} líneas críticas.
+        </div>
       </div>
     `;
   }
 
   if (insights) {
-    const topNeg = model.filter(x => x.esIncumplimiento).slice(0, 2).map(x => x.linea).join(", ");
+    const topSostiene = [...model].sort((a,b) => b.scoreImpacto - a.scoreImpacto)[0];
+    const topFrena = [...model].sort((a,b) => a.scoreImpacto - b.scoreImpacto)[0];
+    const cumplaEngañoso = model.filter(x => x.cumplimiento >= 100 && x.variacionMes < -10);
+
     insights.innerHTML = `
-      <div class="insight-box">
-        <p style="margin:0; color:var(--text-main); line-height:1.7;">
-          Durante el periodo <strong>${monthId}</strong>, el enfoque debe estar en <strong>${topNeg || 'mantener la tendencia'}</strong>. 
-          La alineación muestra un balance entre cumplimiento de metas y gestión de desviaciones.
-        </p>
+      <div class="insight-box" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div style="border-right: 1px solid #e2e8f0; padding-right:20px;">
+          <h4 style="margin:0 0 10px 0; font-size:0.85rem; color:var(--pri-dark);">ANÁLISIS DE TRACCIÓN</h4>
+          <p style="font-size:0.85rem; margin-bottom:8px;">
+            <strong>Línea de Sostén:</strong> ${topSostiene.linea} con un aporte de impacto positivo del 
+            <span style="color:#10b981; font-weight:800;">+${topSostiene.scoreImpacto.toFixed(1)}%</span> sobre el CAP.
+          </p>
+          <p style="font-size:0.85rem;">
+            <strong>Línea de Freno:</strong> ${topFrena.linea} reduce la tracción operativa en un 
+            <span style="color:#ef4444; font-weight:800;">${topFrena.scoreImpacto.toFixed(1)}%</span> respecto a la meta.
+          </p>
+        </div>
+        <div>
+          <h4 style="margin:0 0 10px 0; font-size:0.85rem; color:var(--pri-dark);">COMPORTAMIENTO GERENCIAL</h4>
+          ${cumplaEngañoso.length > 0 ? `
+            <p style="font-size:0.85rem; color:#f59e0b; font-weight:600;">⚠️ Cumplimiento con Riesgo de Tendencia:</p>
+            <ul style="font-size:0.8rem; margin:5px 0; padding-left:15px;">
+              ${cumplaEngañoso.map(x => `<li>${x.linea}: Logra meta pero cae un ${Math.abs(x.variacionMes).toFixed(1)}% vs mes anterior.</li>`).join('')}
+            </ul>
+          ` : '<p style="font-size:0.85rem; color:#10b981;">No se detectan cumplimientos engañosos por caída de tendencia.</p>'}
+          
+          <p style="font-size:0.85rem; margin-top:10px; border-top:1px solid #f1f5f9; pt:8px;">
+            <strong>Compensación:</strong> ${topSostiene.scoreImpacto > Math.abs(topFrena.scoreImpacto) ? 
+              `El excedente de ${topSostiene.linea} logra compensar el déficit de ${topFrena.linea}.` :
+              `El déficit de ${topFrena.linea} supera la capacidad de compensación de las líneas positivas.`}
+          </p>
+        </div>
       </div>
     `;
   }
@@ -2678,7 +2777,7 @@ function paintAll(agg, meta) {
         : `<span class="mono">${fmtInt(item.value)}</span>`}
                 </td>
             `).join('')}
-            <td data-label="TOTAL" style="background: #f8fafc; font-weight: bold; color: var(--pri-dark); font-family: monospace;">${fmtInt(Math.round(sumaTotalLab / 2))}</td>
+            <td data-label="TOTAL" style="background: #f8fafc; font-weight: bold; color: var(--pri-dark); font-family: monospace;">${fmtInt(Math.round(sumaTotalLab))}</td>
           </tr>
         </tbody>
       </table>
@@ -3371,6 +3470,7 @@ async function loadYearlyCharts(yearId) {
     ce: { real: Array(12).fill(0), meta: Array(12).fill(0) },
     endo: { real: Array(12).fill(0), meta: Array(12).fill(0) },
     img: { real: Array(12).fill(0), meta: Array(12).fill(0) },
+    laboratorio: { real: Array(12).fill(0), meta: Array(12).fill(0) },
     efectivas: { real: Array(12).fill(0), meta: Array(12).fill(75) }
   };
 
@@ -3403,7 +3503,7 @@ async function loadYearlyCharts(yearId) {
         const ov = resSnap.data().overrides || resSnap.data().agg || {};
 
         // --- MAPEO DE DATOS REALES (Sincronizado con etiquetas de identificación adecuada) ---
-        dataSet.triages.real[i] = getValChart(ov, "URG", "Total triages");
+        dataSet.triages.real[i] = getValChart(ov, "URG", "Total ingresos a urgencias (triages + ortopedia)");
         dataSet.mg.real[i] = getValChart(ov, "URGENCIAS", "Consultas medicina general");
 
         // Etiquetas de Cirugía sincronizadas con el nuevo guardado
@@ -3419,6 +3519,13 @@ async function loadYearlyCharts(yearId) {
         dataSet.ce.real[i] = getValChart(ov, "CE", "TOTAL");
         dataSet.endo.real[i] = getValChart(ov, "ENDO", "TOTAL");
         dataSet.img.real[i] = getValChart(ov, "IMG-TOT", "Imágenes (Total)");
+        
+        // Laboratorio: Valor total sin divisiones
+        let labTotal = 0;
+        LAB_HOSP_KEYS.forEach(k => labTotal += getValChart(ov, "LAB", k));
+        labTotal += getValChart(ov, "LAB", "Muestras particulares");
+        dataSet.laboratorio.real[i] = Math.round(labTotal);
+
         dataSet.efectivas.real[i] = getValChart(ov, "EST", "% Atenciones efectivas");
       }
 
@@ -3432,11 +3539,22 @@ async function loadYearlyCharts(yearId) {
         dataSet.uce.meta[i] = m.uceMetaEgresos || 0;
         dataSet.ce.meta[i] = m.ceMetaConsultas || 0;
         dataSet.img.meta[i] = m.imgMetaExamenes || 0;
+        dataSet.laboratorio.meta[i] = m.labMetaTotal || 0;
       }
     } catch (err) { console.warn(`Error mes ${mPad}:`, err); }
   });
 
   await Promise.all(promises);
+  GLOBAL_YEARLY_DATASET = dataSet;
+  GLOBAL_YEARLY_LABELS = labels;
+
+  // Una vez cargados los datos históricos, refrescar el modelo de alineación para incluir tendencias
+  if (CURRENT_MONTH_ID && LAST_META) {
+    const metaMes = extractStrategicCapMeta(LAST_CAP_ROWS, CURRENT_MONTH_ID);
+    LAST_ALIGNMENT_MODEL = buildStrategicAlignmentModel({ capMeta: metaMes });
+    renderAlineacionEstrategica(LAST_ALIGNMENT_MODEL, CURRENT_MONTH_ID);
+  }
+
   if (document.getElementById("dashboard-grafico")) renderCharts(dataSet, labels);
 }
 /* -------------------- FUNCIÓN PARA DIBUJAR GRÁFICAS (Real vs Meta) -------------------- */
@@ -3643,8 +3761,8 @@ async function loadYearlyConsolidated(yearId) {
           const keysLab = ["LAB|INSTITUCIONAL", "LAB|Microbiologia", "LAB|PRIME", "LAB|SUESCUN", "LAB|COLCAN", "LAB|ANTIOQUIA", "LAB|CENTRO DE REFERENCIA", "LAB|LIME", "LAB|SYNLAB", "LAB|ICMT", "LAB|CIB", "LAB|UNILAB", "LAB|Muestras particulares"];
           let sumaMesPrev = 0;
           keysLab.forEach(k => sumaMesPrev += (parseFloat(mesSet[k]) || 0));
-          // ✅ REGLA DE PARIDAD: Aplicamos división entre 2 por seguridad histórica en Lab
-          sumaPrev += (sumaMesPrev / 2);
+          // ✅ REGLA ACTUALIZADA: Se elimina la división histórica
+          sumaPrev += sumaMesPrev;
           mesesPrev++;
         } else {
           for (let key of fila.dbKeys) {
@@ -3670,8 +3788,8 @@ async function loadYearlyConsolidated(yearId) {
           const keysLab = ["LAB|INSTITUCIONAL", "LAB|Microbiologia", "LAB|PRIME", "LAB|SUESCUN", "LAB|COLCAN", "LAB|ANTIOQUIA", "LAB|CENTRO DE REFERENCIA", "LAB|LIME", "LAB|SYNLAB", "LAB|ICMT", "LAB|CIB", "LAB|UNILAB", "LAB|Muestras particulares"];
           let sumaMes = 0;
           keysLab.forEach(k => sumaMes += (parseFloat(mesSet[k]) || 0));
-          // ✅ REGLA DE PARIDAD OBLIGATORIA: División por 2 para corregir duplicidad reportada
-          val = sumaMes / 2;
+          // ✅ REGLA ACTUALIZADA: Se elimina la división por 2 solicitada
+          val = sumaMes;
         } else {
           for (let key of fila.dbKeys) {
             const v = mesSet[key] || mesSet[`URG|${key}`] || mesSet[`URGENCIAS|${key}`] || mesSet[`CIRUGIA_ING|${key}`] || mesSet[`CIRUGIA_EGR|${key}`] || mesSet[`CX-ESP|${key}`] || mesSet[`CE|${key}`] || mesSet[`HEM|${key}`] || mesSet[`HOSP|${key}`] || mesSet[`UCI|${key}`] || mesSet[`UCE|${key}`] || mesSet[`INST|${key}`] || mesSet[`HEMO_ONCO|${key}`] || mesSet[`HEMOCOMPONENTES|${key}`] || mesSet[`ENDO|${key}`] || mesSet[`IMG|${key}`] || mesSet[`IMG-HOS|${key}`] || mesSet[`IMG-AMB|${key}`] || mesSet[`IMG-TOT|${key}`] || mesSet[`LAB|${key}`] || mesSet[`EST|${key}`];
