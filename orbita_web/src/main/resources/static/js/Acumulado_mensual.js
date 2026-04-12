@@ -1138,26 +1138,27 @@ async function loadCapRows(year) {
 
 function getNumericFromRenderedTable(tableId, textMatches) {
   const matches = Array.isArray(textMatches) ? textMatches : [textMatches];
+  const t = document.querySelector(tableId);
+  if (!t) return 0;
 
-  const rows = Array.from(document.querySelectorAll(`${tableId} tbody tr, ${tableId} tfoot tr`));
+  const rows = Array.from(t.querySelectorAll('tbody tr, tfoot tr'));
   const row = rows.find(r => {
-    const first = (r.cells?.[0]?.textContent || "").toLowerCase().trim();
-    return matches.some(t => first.includes(String(t).toLowerCase().trim()));
+    const first = (r.cells?.[0]?.textContent || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return matches.some(t => first.includes(String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim()));
   });
 
-  if (!row || !row.cells[1]) return 0;
+  if (!row) return 0;
 
-  const inp = row.cells[1].querySelector("input");
-  const raw = inp?.value || row.cells[1].textContent || "0";
+  // Buscar el valor numérico recorriendo las celdas de derecha a izquierda (el Real siempre es el último/penúltimo)
+  for (let i = row.cells.length - 1; i >= 1; i--) {
+    const cell = row.cells[i];
+    const raw = cell.querySelector("input")?.value || cell.textContent || "";
+    const txt = String(raw).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "").trim();
+    const n = Number(txt);
+    if (txt !== "" && Number.isFinite(n) && n !== 0) return n;
+  }
 
-  const txt = String(raw)
-    .replace(/\./g, "")
-    .replace(",", ".")
-    .replace(/[^\d.-]/g, "")
-    .trim();
-
-  const n = Number(txt);
-  return Number.isFinite(n) ? n : 0;
+  return 0;
 }
 
 function getLaboratorioTotalFromRenderedTable() {
@@ -1215,6 +1216,11 @@ function getLaboratorioTotalFromRenderedTable() {
 }
 
 function buildRealAlignmentDataFromTables() {
+  const sumImg = 
+    getNumericFromRenderedTable('#tbl-img-tot', 'Imágenes (Total)') +
+    getNumericFromRenderedTable('#tbl-img-tot', 'Pacientes (Total)') +
+    getNumericFromRenderedTable('#tbl-img-tot', 'Procedimientos guiados (Total)');
+
   return {
     urgencias: getNumericFromRenderedTable('#tbl-urg', 'triages + ortopedia'),
     hospitalizacion: getNumericFromRenderedTable('#tbl-hosp', 'egresos'),
@@ -1223,7 +1229,7 @@ function buildRealAlignmentDataFromTables() {
     cirugia: getNumericFromRenderedTable('#tbl-cx-ing', 'procedimientos (ingresos)'),
     consultaExterna: getNumericFromRenderedTable('#tbl-ce', 'total'),
     laboratorio: getLaboratorioTotalFromRenderedTable(),
-    imagenes: getNumericFromRenderedTable('#tbl-img-tot', 'imágenes')
+    imagenes: sumImg
   };
 }
 
@@ -1310,10 +1316,13 @@ function buildStrategicAlignmentModel({ capMeta }) {
     });
   }
 
-  // --- Métrica Avanzada: Impacto en el Cierre (Weighted Deviation) ---
   const totalWeight = entries.reduce((s, e) => s + e.pesoVal, 0);
   entries.forEach(e => {
     e.scoreImpacto = (e.brecha / (e.meta || 1)) * (e.pesoVal / totalWeight) * 100;
+    
+    // Cálculos de variación MoM y Histórica
+    e.varMoM = e.mesAnterior > 0 ? ((e.real - e.mesAnterior) / e.mesAnterior) * 100 : 0;
+    e.varHist = e.promHist > 0 ? ((e.real - e.promHist) / e.promHist) * 100 : 0;
   });
 
   const order = {
@@ -1346,12 +1355,45 @@ function renderAlineacionEstrategica(model, monthId) {
   const mejorCumple = [...model].sort((a, b) => b.cumplimiento - a.cumplimiento)[0];
   const mayorBrechaNeg = model.filter(x => x.esIncumplimiento).sort((a, b) => Math.abs(b.brecha) - Math.abs(a.brecha))[0];
 
+  if (badge) badge.textContent = monthId;
+  
+  // --- CARDS PARA LA DIRECTORA MÉDICA (BALANCE SIMPLE) ---
   if (summary) {
     summary.innerHTML = `
       <div class="kpi-card"><span class="kpi-title">Estados Críticos</span><span class="kpi-value">${criticas}</span></div>
       <div class="kpi-card"><span class="kpi-title">Seguimiento Alto</span><span class="kpi-value">${altas}</span></div>
       <div class="kpi-card"><span class="kpi-title">Alertas de Acción</span><span class="kpi-value" style="color:#ef4444;">${alertasMax}</span></div>
       <div class="kpi-card"><span class="kpi-title">Mejor Cumplimiento</span><span class="kpi-value">${mejorCumple?.linea || '--'}</span></div>
+    `;
+  }
+
+  // --- GUÍA DE INTERPRETACIÓN ESTRATÉGICA (PROTOCOLO NEUTRAL) ---
+  const mainExplanation = document.getElementById("align-intel-explanation");
+  if (mainExplanation) {
+    mainExplanation.innerHTML = `
+      <div style="margin-bottom:24px; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; border-left: 8px solid var(--pri); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+        <h4 style="margin:0 0 10px 0; color:var(--pri-dark); font-size:1.1rem; display:flex; align-items:center; gap:10px; text-transform:uppercase; letter-spacing:0.5px;">
+          <i data-lucide="info" style="width:20px; height:20px; color:var(--pri);"></i>
+          Guía de Interpretación Estratégica
+        </h4>
+        <p style="margin:0 0 15px 0; font-size:0.85rem; color:var(--text-muted); font-style:italic;">
+          Protocolo estandarizado para la revisión ágil de desviaciones operativas y toma de decisiones.
+        </p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
+          <div style="background:white; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+            <strong style="color:var(--pri); display:block; margin-bottom:5px; font-size:0.85rem;">1. Detección de Alertas</strong>
+            <p style="margin:0; font-size:0.8rem; color:var(--text-main); line-height:1.4;">Identifique el número de <strong>Alertas de Acción</strong> en el panel superior. Indica la cantidad de servicios con desviaciones críticas que requieren intervención inmediata.</p>
+          </div>
+          <div style="background:white; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+            <strong style="color:var(--pri); display:block; margin-bottom:5px; font-size:0.85rem;">2. Análisis de Brecha</strong>
+            <p style="margin:0; font-size:0.8rem; color:var(--text-main); line-height:1.4;">En el <strong>Ranking</strong>, la columna "Brecha" refleja <strong>la diferencia</strong> neta entre el volumen real y la meta CAP. Un valor negativo indica producción pendiente, mientras uno positivo indica excedente operativo.</p>
+          </div>
+          <div style="background:white; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+            <strong style="color:var(--pri); display:block; margin-bottom:5px; font-size:0.85rem;">3. Evaluación de Compensación</strong>
+            <p style="margin:0; font-size:0.8rem; color:var(--text-main); line-height:1.4;">El <strong>Diagnóstico de Atribución</strong> diferencia los servicios que frenan el resultado institucional de aquellos que están compensando el déficit activamente.</p>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -1369,15 +1411,27 @@ function renderAlineacionEstrategica(model, monthId) {
 
   if (ranking) {
     ranking.innerHTML = `
+      <div style="margin-bottom:15px; padding:12px; background:#f8fafc; border-left:5px solid var(--pri); border-radius:8px; font-size:0.85rem; color:var(--text-main);">
+        <p style="margin:0 0 8px 0;"><strong>ANÁLISIS ESTRATÉGICO:</strong> Las líneas al inicio de la tabla (Críticas) son el origen del déficit institucional.</p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; font-size:0.75rem;">
+          <div style="background:white; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+            <strong style="color:#ef4444;">ALERTA:</strong> Si la <strong>Brecha</strong> es negativa y la <strong>Tendencia</strong> baja (↓), se requiere intervención en procesos asistenciales de inmediato.
+          </div>
+          <div style="background:white; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+            <strong style="color:#10b981;">OPORTUNIDAD:</strong> Si hay <strong>Brecha</strong> negativa pero la <strong>Tendencia</strong> es alta (↑), el servicio está en fase de recuperación operativa.
+          </div>
+        </div>
+      </div>
       <table class="table">
         <thead>
           <tr>
             <th>Línea</th>
             <th>Real</th>
             <th>Meta CAP</th>
-            <th>Brecha</th>
+            <th>Brecha (La diferencia)</th>
             <th>% Cumpl.</th>
-            <th>Impacto</th>
+            <th>Tendencia</th>
+            <th>vs Hist.</th>
             <th>Estado</th>
             <th>Prioridad</th>
           </tr>
@@ -1389,17 +1443,22 @@ function renderAlineacionEstrategica(model, monthId) {
           x.estado === 'Alta' ? 'warn' :
             x.estado === 'Media' ? 'warn' :
               'ok';
-
+      
+      const momIcon = x.varMoM > 0 ? '↑' : (x.varMoM < 0 ? '↓' : '→');
+      const momColor = x.varMoM > 0 ? '#10b981' : (x.varMoM < 0 ? '#ef4444' : '#64748b');
+      const histColor = x.varHist > 0 ? '#10b981' : (x.varHist < 0 ? '#ef4444' : '#64748b');
+      
       return `
               <tr>
-                <td>${x.linea}</td>
+                <td style="font-weight:700;">${x.linea}</td>
                 <td>${x.real.toLocaleString('es-CO')}</td>
                 <td>${x.meta.toLocaleString('es-CO')}</td>
-                <td style="color:${x.brecha < 0 ? '#ef4444' : '#10b981'}">${x.brecha.toLocaleString('es-CO')}</td>
-                <td>${x.cumplimiento.toFixed(1)}%</td>
-                <td>${x.impacto}</td>
+                <td style="color:${x.brecha < 0 ? '#ef4444' : '#10b981'}; font-weight:700;">${x.brecha.toLocaleString('es-CO')}</td>
+                <td style="font-weight:700;">${x.cumplimiento.toFixed(1)}%</td>
+                <td style="color:${momColor}; font-weight:700;">${momIcon} ${Math.abs(x.varMoM).toFixed(1)}%</td>
+                <td style="color:${histColor}; opacity:0.8;">${x.varHist > 0 ? '+' : ''}${x.varHist.toFixed(1)}%</td>
                 <td><span class="kpi ${estadoClass}">${x.estado}</span></td>
-                <td>${x.prioridad}</td>
+                <td style="font-size:0.75rem;">${x.prioridad}</td>
               </tr>
             `;
     }).join('')}
@@ -1453,12 +1512,12 @@ function renderAlineacionEstrategica(model, monthId) {
     mix.innerHTML = `
       <div class="insight-box" style="background:#fff; border-top: 4px solid var(--pri);">
         <p style="margin:0 0 15px 0; font-size:1rem; font-weight:800; color:var(--pri-dark);">
-          DIAGNÓSTICO DIRECTIVO: IMPACTO EN EL RESULTADO
+          DIAGNÓSTICO DE ATRIBUCIÓN Y DINÁMICA OPERATIVA
         </p>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
           <div>
             <h5 style="margin:0 0 10px 0; font-size:0.75rem; color:#ef4444; letter-spacing:1px; text-transform:uppercase;">🚫 Servicios que frenan el cumplimiento</h5>
-            ${htmlFrenos || '<p style="font-size:0.8rem; color:var(--text-muted);">No se detectan líneas con brecha negativa.</p>'}
+            ${htmlFrenos || '<p style="font-size:0.8rem; color:var(--text-muted);">No se detectan líneas con Diferencia negativa.</p>'}
           </div>
           <div>
             <h5 style="margin:0 0 10px 0; font-size:0.75rem; color:#10b981; letter-spacing:1px; text-transform:uppercase;">🚀 Servicios que sostienen el resultado</h5>
@@ -1466,44 +1525,58 @@ function renderAlineacionEstrategica(model, monthId) {
           </div>
         </div>
         <div style="margin-top:20px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; font-size:0.85rem;">
-          <strong>Acción Sugerida:</strong> El foco directivo debe estar en los servicios marcados como <b>FRENO</b> para recuperar la brecha de ${frenos.length} líneas críticas.
+          <strong>Acción Sugerida:</strong> El foco directivo debe estar en los servicios marcados como <b>FRENO</b> para recuperar la Diferencia de ${frenos.length} líneas críticas.
         </div>
       </div>
     `;
   }
 
   if (insights) {
-    const topSostiene = [...model].sort((a,b) => b.scoreImpacto - a.scoreImpacto)[0];
-    const topFrena = [...model].sort((a,b) => a.scoreImpacto - b.scoreImpacto)[0];
-    const cumplaEngañoso = model.filter(x => x.cumplimiento >= 100 && x.variacionMes < -10);
+    const totalReal = model.reduce((s, x) => s + x.real, 0);
+    const totalMeta = model.reduce((s, x) => s + x.meta, 0);
+    const totalCumple = ((totalReal / (totalMeta || 1)) * 100).toFixed(1);
+    
+    // Segmentación
+    const asistenciales = model.filter(x => ['Hospitalización', 'UCI', 'Urgencias', 'Cirugía', 'UCE'].includes(x.linea));
+    const apoyo = model.filter(x => ['Laboratorio', 'Imágenes Diagnósticas', 'Consulta Externa'].includes(x.linea));
+    
+    const criticas = model.filter(x => x.esIncumplimiento).sort((a,b) => Math.abs(b.brecha) - Math.abs(a.brecha));
+    const motores = model.filter(x => !x.esIncumplimiento && x.cumplimiento > 105).sort((a,b) => b.brecha - a.brecha);
+    const malasTendencias = model.filter(x => x.varMoM < -5 && x.esIncumplimiento);
 
     insights.innerHTML = `
-      <div class="insight-box" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-        <div style="border-right: 1px solid #e2e8f0; padding-right:20px;">
-          <h4 style="margin:0 0 10px 0; font-size:0.85rem; color:var(--pri-dark);">ANÁLISIS DE TRACCIÓN</h4>
-          <p style="font-size:0.85rem; margin-bottom:8px;">
-            <strong>Línea de Sostén:</strong> ${topSostiene.linea} con un aporte de impacto positivo del 
-            <span style="color:#10b981; font-weight:800;">+${topSostiene.scoreImpacto.toFixed(1)}%</span> sobre el CAP.
-          </p>
-          <p style="font-size:0.85rem;">
-            <strong>Línea de Freno:</strong> ${topFrena.linea} reduce la tracción operativa en un 
-            <span style="color:#ef4444; font-weight:800;">${topFrena.scoreImpacto.toFixed(1)}%</span> respecto a la meta.
+      <div style="line-height:1.7; color:var(--text-main); font-size:0.95rem; background:#fff; padding:20px; border-radius:12px; border:1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <div style="margin-bottom:20px; border-bottom:2px solid #f1f5f9; padding-bottom:15px;">
+          <h4 style="margin:0 0 10px 0; color:var(--pri-dark); font-size:1rem; text-transform:uppercase; letter-spacing:1px;">1. BALANCE INSTITUCIONAL</h4>
+          <p style="margin:0;">
+            Durante el mes de <b>${monthId}</b>, la institución ejecutó un volumen de <b>${totalReal.toLocaleString('es-CO')}</b> servicios frente a una meta CAP de <b>${totalMeta.toLocaleString('es-CO')}</b>, alcanzando un cumplimiento global del <strong>${totalCumple}%</strong>. 
+            ${totalCumple >= 100 ? '<span style="color:#10b981; font-weight:700;">El periodo cierra con superávit operativo.</span>' : `Se registra un déficit consolidado de <b>${Math.abs(totalReal - totalMeta).toLocaleString('es-CO')}</b> servicios pendientes.`}
           </p>
         </div>
-        <div>
-          <h4 style="margin:0 0 10px 0; font-size:0.85rem; color:var(--pri-dark);">COMPORTAMIENTO GERENCIAL</h4>
-          ${cumplaEngañoso.length > 0 ? `
-            <p style="font-size:0.85rem; color:#f59e0b; font-weight:600;">⚠️ Cumplimiento con Riesgo de Tendencia:</p>
-            <ul style="font-size:0.8rem; margin:5px 0; padding-left:15px;">
-              ${cumplaEngañoso.map(x => `<li>${x.linea}: Logra meta pero cae un ${Math.abs(x.variacionMes).toFixed(1)}% vs mes anterior.</li>`).join('')}
-            </ul>
-          ` : '<p style="font-size:0.85rem; color:#10b981;">No se detectan cumplimientos engañosos por caída de tendencia.</p>'}
-          
-          <p style="font-size:0.85rem; margin-top:10px; border-top:1px solid #f1f5f9; pt:8px;">
-            <strong>Compensación:</strong> ${topSostiene.scoreImpacto > Math.abs(topFrena.scoreImpacto) ? 
-              `El excedente de ${topSostiene.linea} logra compensar el déficit de ${topFrena.linea}.` :
-              `El déficit de ${topFrena.linea} supera la capacidad de compensación de las líneas positivas.`}
+        
+        <div style="margin-bottom:20px;">
+          <h4 style="margin:0 0 10px 0; color:var(--pri-dark); font-size:0.9rem;">2. DESEMPEÑO POR SEGMENTO OPERATIVO</h4>
+          <p style="margin:0 0 10px 0;">
+            • <b>Bloque Asistencial:</b> El comportamiento está liderado por <b>${asistenciales.sort((a,b)=>b.cumplimiento - a.cumplimiento)[0]?.linea || 'N/A'}</b> (${asistenciales.sort((a,b)=>b.cumplimiento - a.cumplimiento)[0]?.cumplimiento.toFixed(1)}%). 
           </p>
+          <p style="margin:0;">
+            • <b>Apoyo y Diagnóstico:</b> Se observa una ${apoyo.every(x=>x.cumplimiento >= 95) ? 'tracción positiva' : 'desviación controlada'}, destacando a <b>${apoyo.sort((a,b)=>b.cumplimiento - a.cumplimiento)[0]?.linea}</b> como principal motor de este segmento.
+          </p>
+        </div>
+
+        <div style="margin-bottom:20px; background:#f8fafc; padding:15px; border-radius:10px; border-left:4px solid var(--pri);">
+          <h4 style="margin:0 0 10px 0; color:var(--pri-dark); font-size:0.9rem;">3. DINÁMICA DE COMPENSACIÓN</h4>
+          <p style="margin:0;">
+            La Diferencia más crítica se localiza en <b>${criticas[0]?.linea || 'Ninguno'}</b> con un faltante de ${Math.abs(criticas[0]?.brecha || 0).toLocaleString('es-CO')} servicios. 
+            Esta desviación está siendo compensada activamente por el sobrecumplimiento en <b>${motores.map(x=>x.linea).join(', ') || 'ninguna línea adicional'}</b>, que aportan un volumen extra de ${motores.reduce((s,x)=>s+x.brecha,0).toLocaleString('es-CO')} servicios para sostener el balance final.
+          </p>
+        </div>
+
+        <div style="padding:15px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; border-left:4px solid #ef4444;">
+          <h4 style="margin:0 0 10px 0; color:#dc2626; font-size:0.9rem; font-weight:800;">4. RIESGOS ESTRATÉGICOS Y TENDENCIA</h4>
+          ${malasTendencias.length > 0 
+            ? `Se identifica un riesgo de <b>Debilitamiento de Tendencia</b> en <b>${malasTendencias.map(x=>x.linea).join(', ')}</b>. Estos servicios, además del incumplimiento, muestran una caída mayor al 5% respecto al mes previo, lo que indica un deterioro progresivo de la capacidad instalada.` 
+            : 'No se identifican servicios con indicadores de alerta simultánea en cumplimiento y tendencia MoM.'}
         </div>
       </div>
     `;
