@@ -273,7 +273,7 @@ async function exportPDF() {
         doc.setFontSize(11).setTextColor(colMedio[0], colMedio[1], colMedio[2]).text(titulosAnuales[i] || "Tabla de Consolidado", 10, 22);
 
         // Optimizamos html2canvas para capturar el ancho total de la tabla
-        const canvas = await html2canvas(tables[i], { 
+        const canvas = await html2canvas(tables[i], {
           scale: 2,
           useCORS: true,
           logging: false,
@@ -360,16 +360,16 @@ function exportExcel() {
 
     // --- HOJA 2: CONSOLIDADO ANUAL (HISTÓRICO ENERO-DICIEMBRE) ---
     let dataAnualFinal = [
-      [{ 
-        v: "CONSOLIDADO HISTÓRICO ANUAL (ENERO - DICIEMBRE)", 
-        s: { font: { bold: true, size: 14, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: colorOscuro } }, alignment: { horizontal: "center" } } 
+      [{
+        v: "CONSOLIDADO HISTÓRICO ANUAL (ENERO - DICIEMBRE)",
+        s: { font: { bold: true, size: 14, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: colorOscuro } }, alignment: { horizontal: "center" } }
       }],
       []
     ];
 
     // Intentar encontrar todas las tablas históricas disponibles en el DOM
     const allTables = document.querySelectorAll('#consolidado-historico table');
-    
+
     if (allTables && allTables.length > 0) {
       const titulosAnuales = [
         "1. CONSOLIDADO ANUAL URGENCIAS", "2. CONSOLIDADO ANUAL HOSPITALIZACIÓN",
@@ -390,26 +390,26 @@ function exportExcel() {
         // Scraper robusto que maneja celdas fusionadas (rowspan/colspan)
         const tableGrid = [];
         const rows = Array.from(table.rows);
-        
+
         rows.forEach((tr, rIdx) => {
           if (!tableGrid[rIdx]) tableGrid[rIdx] = [];
           let cIdx = 0;
-          
+
           Array.from(tr.cells).forEach(cell => {
             while (tableGrid[rIdx][cIdx] !== undefined) cIdx++;
-            
+
             const val = cell.innerText.trim().replace(/\n/g, ' ');
             const rs = cell.rowSpan || 1;
             const cs = cell.colSpan || 1;
-            
+
             // Determinar estilo de la celda
             const lowerVal = val.toLowerCase();
             const esHeader = tr.parentElement.tagName.toLowerCase() === 'thead' || rIdx === 0;
             const esResaltado = lowerVal.includes("meta") || lowerVal.includes("total") || lowerVal.includes("proyección");
-            
-            let st = { 
+
+            let st = {
               fill: { fgColor: { rgb: "FFFFFF" } },
-              border: { 
+              border: {
                 top: { style: 'thin', color: { rgb: "E2E8F0" } },
                 bottom: { style: 'thin', color: { rgb: "E2E8F0" } },
                 left: { style: 'thin', color: { rgb: "E2E8F0" } },
@@ -452,7 +452,7 @@ function exportExcel() {
       const colWidthsAnual = [
         { wch: 10 }, { wch: 45 }, { wch: 15 }, { wch: 12 }
       ];
-      for(let k=0; k<20; k++) colWidthsAnual.push({ wch: 10 });
+      for (let k = 0; k < 20; k++) colWidthsAnual.push({ wch: 10 });
       wsAnual["!cols"] = colWidthsAnual;
       excelLib.utils.book_append_sheet(wb, wsAnual, "CONSOLIDADO_ANUAL");
     }
@@ -964,12 +964,12 @@ async function loadForecastMeta(monthId) {
   try {
     const snapMensual = await getDoc(doc(db, 'forecast', yyyy, 'unidades', monthId));
     if (snapMensual.exists()) {
-       const mData = snapMensual.data() || {};
-       // Agregamos la meta UVR hardcodeada si no viene en el doc
-       if (!mData.uvrMeta) mData.uvrMeta = uvrMetaMensual;
-       return mData;
+      const mData = snapMensual.data() || {};
+      // Agregamos la meta UVR hardcodeada si no viene en el doc
+      if (!mData.uvrMeta) mData.uvrMeta = uvrMetaMensual;
+      return mData;
     }
-  } catch(e) {
+  } catch (e) {
     console.warn("No se pudo cargar meta mensual desde la ruta unificada:", e);
   }
 
@@ -1198,7 +1198,8 @@ function getLaboratorioTotalFromRenderedTable() {
           .replace(/[^\d.-]/g, "")
           .trim();
         const n = Number(txt);
-        return Number.isFinite(n) ? n : 0;
+        // ✅ NOTA: El total en la tabla ya viene dividido entre 2 por paintAll, lo devolvemos tal cual
+        return Number.isFinite(n) ? Math.round(n) : 0;
       }
     }
   }
@@ -1224,7 +1225,8 @@ function getLaboratorioTotalFromRenderedTable() {
     if (Number.isFinite(n)) total += n;
   });
 
-  return total;
+  // ✅ REGLA DE EMERGENCIA: Aplicamos la misma regla de división por 2 para el tablero de alineación
+  return Math.round(total / 2);
 }
 
 function buildRealAlignmentDataFromTables() {
@@ -1324,7 +1326,7 @@ function renderAlineacionEstrategica(model, monthId) {
   const criticas = model.filter(x => x.estado === "Crítica").length;
   const altas = model.filter(x => x.estado === "Alta").length;
   const alertasMax = model.filter(x => x.prioridad === "Intervención inmediata" || x.prioridad === "Acción prioritaria").length;
-  
+
   const mejorCumple = [...model].sort((a, b) => b.cumplimiento - a.cumplimiento)[0];
   const mayorBrechaNeg = model.filter(x => x.esIncumplimiento).sort((a, b) => Math.abs(b.brecha) - Math.abs(a.brecha))[0];
 
@@ -1366,13 +1368,13 @@ function renderAlineacionEstrategica(model, monthId) {
         </thead>
         <tbody>
           ${model.map(x => {
-            const estadoClass =
-              x.estado === 'Crítica' ? 'err' :
-              x.estado === 'Alta' ? 'warn' :
-              x.estado === 'Media' ? 'warn' :
+      const estadoClass =
+        x.estado === 'Crítica' ? 'err' :
+          x.estado === 'Alta' ? 'warn' :
+            x.estado === 'Media' ? 'warn' :
               'ok';
 
-            return `
+      return `
               <tr>
                 <td>${x.linea}</td>
                 <td>${x.real.toLocaleString('es-CO')}</td>
@@ -1384,7 +1386,7 @@ function renderAlineacionEstrategica(model, monthId) {
                 <td>${x.prioridad}</td>
               </tr>
             `;
-          }).join('')}
+    }).join('')}
         </tbody>
       </table>
     `;
@@ -1471,8 +1473,8 @@ function findCapHeaderRow(capRows) {
     row.some(cell => {
       const txt = String(cell || "").toLowerCase();
       // Buscamos algo que parezca una fecha (ene-26, 2026-03, etc.)
-      return /ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic/.test(txt) || 
-             (/^\d{4}-\d{2}/.test(txt)); // Formato ISO 2026-03...
+      return /ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic/.test(txt) ||
+        (/^\d{4}-\d{2}/.test(txt)); // Formato ISO 2026-03...
     })
   );
 }
@@ -1480,20 +1482,20 @@ function findCapHeaderRow(capRows) {
 function getCapMonthColumn(headerRow, monthId) {
   if (!headerRow) return -1;
   const [yyyy, mm] = monthId.split("-"); // "2026", "03"
-  
-  const monthNames = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-  const labelShort = `${monthNames[parseInt(mm)-1]}-${yyyy.slice(2)}`; // "mar-26"
-  
+
+  const monthNames = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  const labelShort = `${monthNames[parseInt(mm) - 1]}-${yyyy.slice(2)}`; // "mar-26"
+
   return headerRow.findIndex(cell => {
     if (!cell) return false;
     const txt = String(cell).toLowerCase();
-    
+
     // Opción A: Match exacto (mar-26)
     if (txt.includes(labelShort)) return true;
-    
+
     // Opción B: Si viene como fecha ISO (2026-03-01...)
     if (txt.startsWith(`${yyyy}-${mm}`)) return true;
-    
+
     return false;
   });
 }
@@ -1539,25 +1541,25 @@ async function renderCapPreview() {
   const monthVal = document.getElementById("month")?.value;
   if (!monthVal) { alert("Selecciona un mes para determinar el año."); return; }
   const year = monthVal.split("-")[0];
-  
+
   const capModal = document.getElementById("capModal");
   const capContent = document.getElementById("capPreviewContent");
   const capMetaInfo = document.getElementById("capMetaInfo");
-  
+
   if (!capModal || !capContent) return;
-  
+
   capModal.style.display = "flex";
   capContent.innerHTML = '<p style="text-align:center; padding:40px; color:#64748b;">Consultando base de datos...</p>';
-  
+
   try {
     const data = await loadCap(year);
     if (!data.meta) {
       capContent.innerHTML = '<p style="text-align:center; padding:40px; color:#dc2626; font-weight:700;">No hay CAP cargado para el año ' + year + '</p>';
       return;
     }
-    
+
     capMetaInfo.textContent = `Archivo: ${data.meta.fileName} | Subido: ${data.meta.uploadedAt?.toDate ? data.meta.uploadedAt.toDate().toLocaleString() : 'Recientemente'}`;
-    
+
     // Construir tabla HTML
     let html = '<table style="width:100%; border-collapse:collapse; font-size:0.8rem; background:white;">';
     data.rows.forEach(row => {
@@ -1568,10 +1570,10 @@ async function renderCapPreview() {
       html += '</tr>';
     });
     html += '</table>';
-    
+
     capContent.innerHTML = html;
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    
+
   } catch (err) {
     console.error(err);
     capContent.innerHTML = `<p style="text-align:center; padding:40px; color:#dc2626;">Error al cargar vista: ${err.message}</p>`;
@@ -2676,7 +2678,7 @@ function paintAll(agg, meta) {
         : `<span class="mono">${fmtInt(item.value)}</span>`}
                 </td>
             `).join('')}
-            <td data-label="TOTAL" style="background: #f8fafc; font-weight: bold; color: var(--pri-dark); font-family: monospace;">${fmtInt(sumaTotalLab)}</td>
+            <td data-label="TOTAL" style="background: #f8fafc; font-weight: bold; color: var(--pri-dark); font-family: monospace;">${fmtInt(Math.round(sumaTotalLab / 2))}</td>
           </tr>
         </tbody>
       </table>
@@ -3000,7 +3002,7 @@ async function runLoad() {
 
     // 🔴 FUENTE AUTOMÁTICA DESDE ESTADÍSTICA DIARIA (Refresco si existe detalle)
     const [year, mmRaw] = mval.split('-');
-    const month0 = parseInt(mmRaw) - 1; 
+    const month0 = parseInt(mmRaw) - 1;
     const dias = await fetchDailyDocs(year, month0);
     if (dias.length > 0) {
       LAST_AGG = reduceDailyToAgg(dias); // Base refrescada desde Firestore diario
@@ -3012,7 +3014,7 @@ async function runLoad() {
 
     // ✅ PINTAR TODO: base diaria (LAST_AGG) + capa manual (MANUAL_OVERRIDES) + metas
     paintAll(LAST_AGG, LAST_META);
-    
+
     // 🎯 CARGA DE ALINEACIÓN ESTRATÉGICA (BASADA EN CAP)
     try {
       const capRows = await loadCapRows(year);
@@ -3588,7 +3590,8 @@ async function loadYearlyConsolidated(yearId) {
           const keysLab = ["LAB|INSTITUCIONAL", "LAB|Microbiologia", "LAB|PRIME", "LAB|SUESCUN", "LAB|COLCAN", "LAB|ANTIOQUIA", "LAB|CENTRO DE REFERENCIA", "LAB|LIME", "LAB|SYNLAB", "LAB|ICMT", "LAB|CIB", "LAB|UNILAB", "LAB|Muestras particulares"];
           let sumaMesPrev = 0;
           keysLab.forEach(k => sumaMesPrev += (parseFloat(mesSet[k]) || 0));
-          sumaPrev += sumaMesPrev;
+          // ✅ REGLA DE PARIDAD: Aplicamos división entre 2 por seguridad histórica en Lab
+          sumaPrev += (sumaMesPrev / 2);
           mesesPrev++;
         } else {
           for (let key of fila.dbKeys) {
@@ -3612,7 +3615,13 @@ async function loadYearlyConsolidated(yearId) {
           val = v1 + v2 + v3;
         } else if (fila.isSumatoriaLab) {
           const keysLab = ["LAB|INSTITUCIONAL", "LAB|Microbiologia", "LAB|PRIME", "LAB|SUESCUN", "LAB|COLCAN", "LAB|ANTIOQUIA", "LAB|CENTRO DE REFERENCIA", "LAB|LIME", "LAB|SYNLAB", "LAB|ICMT", "LAB|CIB", "LAB|UNILAB", "LAB|Muestras particulares"];
-          keysLab.forEach(k => val += (parseFloat(mesSet[k]) || 0));
+          let sumaLabMes = 0;
+          keysLab.forEach(k => {
+            const v = mesSet[k];
+            if (v !== undefined) sumaLabMes += (parseFloat(v) || 0);
+          });
+          // ✅ REGLA DE PARIDAD OBLIGATORIA: División por 2 para corregir duplicidad reportada
+          val = Math.round(sumaLabMes / 2);
         } else {
           for (let key of fila.dbKeys) {
             const v = mesSet[key] || mesSet[`URG|${key}`] || mesSet[`URGENCIAS|${key}`] || mesSet[`CIRUGIA_ING|${key}`] || mesSet[`CIRUGIA_EGR|${key}`] || mesSet[`CX-ESP|${key}`] || mesSet[`CE|${key}`] || mesSet[`HEM|${key}`] || mesSet[`HOSP|${key}`] || mesSet[`UCI|${key}`] || mesSet[`UCE|${key}`] || mesSet[`INST|${key}`] || mesSet[`HEMO_ONCO|${key}`] || mesSet[`HEMOCOMPONENTES|${key}`] || mesSet[`ENDO|${key}`] || mesSet[`IMG|${key}`] || mesSet[`IMG-HOS|${key}`] || mesSet[`IMG-AMB|${key}`] || mesSet[`IMG-TOT|${key}`] || mesSet[`LAB|${key}`] || mesSet[`EST|${key}`];
@@ -4331,7 +4340,8 @@ async function runInteligencia(year, month0, agg, meta) {
         else if (data.lab && data.lab.hosp && data.lab.hosp[labelNoPrefix]) sumLab += Number(data.lab.hosp[labelNoPrefix]);
         else if (k === "LAB|Muestras particulares" && data.lab && data.lab.part) sumLab += Number(data.lab.part.muestras);
       });
-      return sumLab;
+      // ✅ REGLA OBLIGATORIA: Siempre aplicamos la regla de división por 2 para el motor de alineación/ranking
+      return Math.round(sumLab / 2);
     }
 
     // SUMATORIA ESPECIAL: CONSULTA EXTERNA
