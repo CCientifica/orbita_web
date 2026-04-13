@@ -47,7 +47,10 @@ const ALIGNMENT_CAP_MAP = [
   { key: "cirugia", label: "Cirugía", capMatch: "cirugia" },
   { key: "consultaExterna", label: "Consulta Externa", capMatch: "consulta externa" },
   { key: "laboratorio", label: "Laboratorio", capMatch: "laboratorio" },
-  { key: "imagenes", label: "Imágenes Diagnósticas", capMatch: "imagenes diagnosticas" }
+  { key: "imagenes", label: "Imágenes Diagnósticas (Total)", capMatch: "imagenes diagnosticas" },
+  { key: "imagenesTac", label: "· Tomografías (TAC)", capMatch: "Cantidad de TAC'S mes" },
+  { key: "imagenesRx", label: "· Rayos X", capMatch: "Cantidad de rayos X mes" },
+  { key: "imagenesEco", label: "· Ecografías", capMatch: "Cantidad de Ecografias mes" }
 ];
 
 const KPI_PALETTE = {
@@ -1180,6 +1183,34 @@ function getNumericFromRenderedTable(tableId, textMatches) {
   return 0;
 }
 
+function getSumNumericFromRenderedTable(tableId, textMatches) {
+  const matches = Array.isArray(textMatches) ? textMatches : [textMatches];
+  const t = document.querySelector(tableId);
+  if (!t) return 0;
+
+  const rows = Array.from(t.querySelectorAll('tbody tr, tfoot tr'));
+  let total = 0;
+
+  const targetRows = rows.filter(r => {
+    const first = (r.cells?.[0]?.textContent || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return matches.some(t => first === String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim());
+  });
+
+  for (const row of targetRows) {
+    for (let i = row.cells.length - 1; i >= 1; i--) {
+      const cell = row.cells[i];
+      const raw = cell.querySelector("input")?.value || cell.textContent || "";
+      const txt = String(raw).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "").trim();
+      const n = Number(txt);
+      if (txt !== "" && Number.isFinite(n) && n !== 0) {
+        total += n;
+        break; // Pasamos a la siguiente fila una vez encontrado el real de esta
+      }
+    }
+  }
+  return total;
+}
+
 function getLaboratorioTotalFromRenderedTable() {
   const root = document.querySelector('#tbl-lab');
   if (!root) return 0;
@@ -1248,7 +1279,10 @@ function buildRealAlignmentDataFromTables() {
     cirugia: getNumericFromRenderedTable('#tbl-cx-ing', 'procedimientos (ingresos)'),
     consultaExterna: getNumericFromRenderedTable('#tbl-ce', 'total'),
     laboratorio: getLaboratorioTotalFromRenderedTable(),
-    imagenes: sumImg
+    imagenes: sumImg,
+    imagenesTac: getSumNumericFromRenderedTable('#tbl-img-tot', 'Tomografías'),
+    imagenesRx: getSumNumericFromRenderedTable('#tbl-img-tot', 'Rayos X'),
+    imagenesEco: getSumNumericFromRenderedTable('#tbl-img-tot', 'Ecografías')
   };
 }
 
@@ -1260,7 +1294,10 @@ const STRATEGIC_WEIGHT = {
   cirugia: "Alto",
   consultaExterna: "Medio",
   laboratorio: "Alto",
-  imagenes: "Medio"
+  imagenes: "Medio",
+  imagenesTac: "Alto",
+  imagenesRx: "Alto",
+  imagenesEco: "Medio"
 };
 
 const STRATEGIC_WEIGHT_VAL = { "Alto": 3, "Medio": 2, "Bajo": 1 };

@@ -6577,18 +6577,38 @@
                                                         batch.set(doc(db, "pacientes_cac", docId), pacienteDoc, { merge: true });
                                                 } else {
                                                         // ✅ RAMA 2: HEMOFILIA
+                                                        const v1h = cellBy(fila, "VAR1_PrimerNombre");
+                                                        const v3h = cellBy(fila, "VAR3_PrimerApellido");
                                                         const v6h = cellBy(fila, "VAR6_Identificacion");
                                                         const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
+                                                        
                                                         if (!idIdentH) continue;
 
                                                         const docIdH = `${idIdentH}_HEMO`;
                                                         const pacienteDocH = {
                                                                 identificacion: idIdentH,
+                                                                nombreCompleto: `${v1h} ${v3h}`.trim().toUpperCase(),
                                                                 periodo_reporte: periodo,
                                                                 cohorte: cohorte,
                                                                 dx: "HEMO",
                                                                 ultima_carga: new Date().toISOString(),
-                                                                periodos: { [periodo]: { cargado_el: new Date().toISOString(), estado: "pendiente", variables: {} } }
+                                                                datos_base: {
+                                                                        VAR1_PrimerNombre: v1h,
+                                                                        VAR2_SegundoNombre: cellBy(fila, "VAR2_SegundoNombre") || "NONE",
+                                                                        VAR3_PrimerApellido: v3h,
+                                                                        VAR4_SegundoApellido: cellBy(fila, "VAR4_SegundoApellido") || "NOAP",
+                                                                        VAR5_TipoIdentificacion: cellBy(fila, "VAR5_TipoIdentificacion"),
+                                                                        VAR6_Identificacion: idIdentH,
+                                                                        VAR7_FechaNacimiento: toISO(cellBy(fila, "VAR7_FechaNacimiento")),
+                                                                        VAR8_Sexo: (cellBy(fila, "VAR8_Sexo") || "").toUpperCase()
+                                                                },
+                                                                periodos: { 
+                                                                    [periodo]: { 
+                                                                        cargado_el: new Date().toISOString(), 
+                                                                        estado: "pendiente", 
+                                                                        variables: {} 
+                                                                    } 
+                                                                }
                                                         };
 
                                                         rows[0].forEach((header, index) => {
