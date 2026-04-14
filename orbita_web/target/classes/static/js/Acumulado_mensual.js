@@ -1326,7 +1326,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
       const candidateRows = rows.map(r => {
         const rowAllValues = Object.values(r.values || {});
         const rowValsClean = rowAllValues.map(v => clean(v));
-        
+
         let belongs = false;
         if (isRx && rowValsClean.some(v => v.includes("rayo") || v.includes("rx"))) belongs = true;
         if (isEco && rowValsClean.some(v => v.includes("eco") || v.includes("ecogra"))) belongs = true;
@@ -1341,7 +1341,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
           .map(v => String(v || "").replace(/\./g, "").replace(",", "."))
           .filter(v => v !== "" && !isNaN(parseFloat(v)))
           .map(v => ({ val: v, num: parseFloat(v) }));
-        
+
         const sumMonths = nums.reduce((acc, curr) => acc + curr.num, 0);
         return { row: r, nums, sumMonths, penalty };
       }).filter(x => x && x.nums.length >= 1);
@@ -1353,11 +1353,11 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
       if (bestMatch) {
         const n = bestMatch.nums;
         if (isSubImg) {
-           if (n.length === 1) meta = n[0].num; 
-           else if (n.length >= 12) meta = n[n.length - (13 - monthNum)]?.num || n[monthNum - 1]?.num || 0;
-           else meta = n[n.length - 1]?.num || 0;
+          if (n.length === 1) meta = n[0].num;
+          else if (n.length >= 12) meta = n[n.length - (13 - monthNum)]?.num || n[monthNum - 1]?.num || 0;
+          else meta = n[n.length - 1]?.num || 0;
         } else if (meta === 0) {
-           meta = n[n.length >= 12 ? monthNum - 1 : n.length - 1]?.num || 0;
+          meta = n[n.length >= 12 ? monthNum - 1 : n.length - 1]?.num || 0;
         }
       }
     }

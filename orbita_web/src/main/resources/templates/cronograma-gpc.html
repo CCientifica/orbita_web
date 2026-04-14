@@ -11,234 +11,817 @@
 
         <main class="main-content">
             <style>
-                /* ====== PREMIUM GLASS & ADVANCED AESTHETICS: CRONOGRAMA ====== */
                 :root {
-                    --cr-pri: #0f172a; --cr-accent: #0ea5e9;
-                    --cr-glass: rgba(255, 255, 255, 0.7);
-                    --cr-border: rgba(255, 255, 255, 0.3);
-                    --cr-shadow: 0 25px 60px rgba(0,0,0,0.08);
-                    --cr-radius: 28px;
+                    --pri: #0ea5e9;
+                    --card-border: #e5e7eb;
+                    --muted: #6b7280;
                 }
 
-                .cr-page-wrap { padding: 1.5rem; max-width: 1700px; margin: 0 auto; }
-
-                .cr-header {
-                    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-                    padding: 3rem 4rem; border-radius: var(--cr-radius);
-                    box-shadow: 0 30px 70px -15px rgba(15, 23, 42, 0.4);
-                    margin-bottom: 2rem; color: white; position: relative; overflow: hidden;
+                /* === FULL WIDTH OVERRIDES === */
+                .card.full-bleed {
+                    width: 100%;
+                    border-radius: 18px;
+                    background: #fff;
+                    border: 1px solid var(--card-border);
+                    box-shadow: 0 16px 40px rgba(31, 41, 55, .10);
                 }
 
-                .cr-dashboard {
-                    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                    gap: 1.5rem; margin-bottom: 2rem; animation: slideUp 0.8s ease;
-                }
-                .cr-stat-card {
-                    background: var(--cr-glass); backdrop-filter: blur(20px);
-                    border-radius: 20px; border: 1px solid var(--cr-border);
-                    padding: 1.5rem; display: flex; align-items: center; gap: 1.2rem;
-                    box-shadow: var(--cr-shadow);
-                }
-                .cr-stat-icon {
-                    width: 50px; height: 50px; border-radius: 14px;
-                    display: flex; align-items: center; justify-content: center;
-                    font-size: 1.2rem; color: white;
+                .card .card-hd {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 18px 20px;
+                    border-bottom: 1px solid var(--card-border);
                 }
 
-                .cr-main-card {
-                    background: var(--cr-glass); backdrop-filter: blur(25px);
-                    border-radius: var(--cr-radius); border: 1px solid var(--cr-border);
-                    box-shadow: var(--cr-shadow); overflow: hidden;
+                .card .card-bd {
+                    padding: 18px 20px;
                 }
 
-                /* Tab Navigation */
-                .cr-tabs-strip {
-                    background: rgba(248, 250, 252, 0.7); padding: 1.25rem 2.5rem;
-                    border-bottom: 1px solid rgba(0,0,0,0.05);
-                    display: flex; justify-content: space-between; align-items: center;
-                }
-                .cr-tabs { display: flex; gap: 10px; }
-                .cr-tab {
-                    padding: 0.8rem 1.8rem; border-radius: 15px; font-weight: 800; font-size: 0.75rem;
-                    color: #64748b; cursor: pointer; transition: 0.3s; background: white;
-                    border: 1px solid #e2e8f0; text-transform: uppercase;
-                }
-                .cr-tab.active { background: #0f172a; color: white; border-color: #0f172a; box-shadow: 0 10px 20px rgba(15,23,42,0.1); }
-
-                /* Premium Table */
-                .cr-table-wrap { padding: 1.5rem; overflow-x: auto; max-height: 700px; }
-                .cr-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; min-width: 1300px; }
-                .cr-table th {
-                    padding: 1rem; font-size: 0.65rem; font-weight: 950; color: #94a3b8;
-                    text-transform: uppercase; letter-spacing: 0.15em; text-align: left;
-                }
-                .cr-table td {
-                    background: white; padding: 1.2rem 1rem; vertical-align: middle;
-                    border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;
-                }
-                .cr-table tr td:first-child { border-radius: 18px 0 0 18px; border-left: 1px solid #f1f5f9; }
-                .cr-table tr td:last-child { border-radius: 0 18px 18px 0; border-right: 1px solid #f1f5f9; }
-
-                .cr-input {
-                    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px;
-                    padding: 0.6rem 1rem; font-weight: 700; font-size: 0.85rem; width: 100%;
-                }
-                .cr-badge { padding: 0.5rem 1rem; border-radius: 99px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
-                .cr-btn { 
-                    padding: 0.8rem 1.8rem; border-radius: 16px; font-weight: 800; cursor: pointer; 
-                    border: none; display: flex; align-items: center; gap: 8px;
+                .tabs {
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
                 }
 
-                @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                .tab {
+                    appearance: none;
+                    border: 1px solid var(--card-border);
+                    background: #fff;
+                    padding: 10px 14px;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                }
+
+                .tab[aria-selected="true"] {
+                    border-color: var(--pri);
+                    background: #0f172a;
+                    color: white;
+                }
+
+                .panel {
+                    display: none;
+                }
+
+                .panel.active {
+                    display: block;
+                }
+
+                .toolbar {
+                    display: flex;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                    align-items: center;
+                }
+
+                select,
+                input[type="date"],
+                input[type="number"],
+                input[type="text"],
+                textarea {
+                    border: 1px solid var(--card-border);
+                    border-radius: 10px;
+                    padding: 8px 10px;
+                    background: #fff;
+                    font-size: 14px;
+                }
+
+                /* Tabla Grid */
+                .grid {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                }
+
+                .grid th,
+                .grid td {
+                    border-bottom: 1px solid var(--card-border);
+                    padding: 10px 8px;
+                    text-align: left;
+                    vertical-align: top;
+                    background: #fff;
+                }
+
+                .grid th {
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: #f8fafc;
+                    font-weight: 800;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    color: #64748b;
+                }
+
+                .grid td input,
+                .grid td select,
+                .grid td textarea {
+                    width: 100%;
+                    border: 1px solid var(--card-border);
+                    border-radius: 8px;
+                    padding: 6px 8px;
+                }
+
+                .badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    border-radius: 999px;
+                    padding: 4px 10px;
+                    font-weight: 700;
+                    font-size: 11px;
+                }
+
+                .b-alta {
+                    background: #fee2e2;
+                    color: #991b1b;
+                }
+
+                .b-media {
+                    background: #ffedd5;
+                    color: #9a3412;
+                }
+
+                .b-baja {
+                    background: #dcfce7;
+                    color: #166534;
+                }
+
+                .b-info {
+                    background: #e0f2fe;
+                    color: #075985;
+                }
+
+                .b-critica {
+                    background: #fca5a5;
+                    color: #7f1d1d;
+                }
+
+                .b-muy-alta {
+                    background: #fecaca;
+                    color: #991b1b;
+                }
+
+                .b-media-alta {
+                    background: #fde68a;
+                    color: #92400e;
+                }
+
+                .b-muy-baja {
+                    background: #ccfbf1;
+                    color: #115e59;
+                }
+
+                .btn {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+                    border: 1px solid var(--card-border);
+                    background: #fff;
+                    border-radius: 12px;
+                    padding: 8px 14px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    font-size: 13px;
+                }
+
+                .btn-primary {
+                    background: #0f172a;
+                    color: white;
+                    border-color: #0f172a;
+                }
+
+                .btn-success {
+                    background: #16a34a;
+                    color: white;
+                    border-color: #16a34a;
+                }
+
+                .btn-danger {
+                    background: #dc2626;
+                    color: white;
+                    border-color: #dc2626;
+                }
+
+                .btn-evid {
+                    background: #111827;
+                    color: white;
+                }
+
+                .btn:hover {
+                    filter: brightness(1.1);
+                }
+
+                .btn-success:hover {
+                    background: #15803d;
+                    border-color: #15803d;
+                }
+
+                .actions-row {
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                    justify-content: flex-end;
+                }
+
+                .row-compact {
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+
+                .row-compact:hover {
+                    background: #f0f9ff !important;
+                }
+
+                .crono-card-view td {
+                    padding: 12px 8px !important;
+                }
+
+                .crono-tema-wrap {
+                    font-weight: 800;
+                    color: #0f172a;
+                    max-width: 300px;
+                    white-space: normal;
+                }
+
+                .crono-filter-bar {
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                    background: #f8fafc;
+                    padding: 12px;
+                    border-radius: 12px;
+                    margin-bottom: 1rem;
+                    border: 1px solid #e2e8f0;
+                }
+
+                /* MODAL SYSTEM REFACTOR */
+                .modal-backdrop {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(15, 23, 42, 0.75);
+                    backdrop-filter: blur(8px);
+                    display: none;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 99999;
+                }
+
+                .modal-card {
+                    width: min(1100px, 95vw);
+                    max-height: 90vh;
+                    background: #fff;
+                    border-radius: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
+                }
+
+                .modal-hd {
+                    padding: 1.5rem;
+                    background: #0f172a;
+                    color: white;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .modal-bd {
+                    padding: 2rem;
+                    overflow-y: auto;
+                    flex: 1;
+                }
+
+                .modal-ft {
+                    padding: 1.5rem;
+                    border-top: 1px solid #e2e8f0;
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 12px;
+                }
+
+                .profs-pane {
+                    display: grid;
+                    grid-template-columns: 1.2fr 1.5fr;
+                    gap: 2rem;
+                }
+
+                .profs-list {
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 1rem;
+                    height: 350px;
+                    overflow-y: auto;
+                }
+
+                .sigpad {
+                    border: 2px dashed #e2e8f0;
+                    border-radius: 12px;
+                    padding: 1rem;
+                    background: #f8fafc;
+                }
+
+                .sigpad canvas {
+                    width: 100%;
+                    height: 140px;
+                    background: white;
+                    border-radius: 8px;
+                    cursor: crosshair;
+                }
+
+                /* PDF */
+                #tplPDF {
+                    position: absolute;
+                    left: -9999px;
+                    visibility: hidden;
+                }
+
+                .paperA4 {
+                    box-sizing: border-box;
+                    font-family: Arial;
+                    padding: 20px;
+                    width: 794px;
+                    background: white;
+                }
+
+                .paperA4.land {
+                    width: 1123px;
+                }
+
+                .paperA4 table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                .paperA4 th,
+                .paperA4 td {
+                    border: 1px solid #111;
+                    padding: 6px;
+                    font-size: 11px;
+                }
+
+                .month-sep .month-title {
+                    background: #f1f5f9;
+                    font-weight: 900;
+                    padding: 10px;
+                    border-top: 2px solid #cbd5e1;
+                }
             </style>
 
-            <div class="cr-page-wrap">
-                <header class="cr-header">
-                    <h1>Gestión del Cronograma Institucional</h1>
-                    <p>Planificación científica, identificación de brechas y cumplimiento de metas CTC.</p>
+            <div class="pa-page-wrap">
+                <header class="cr-header"
+                    style="background: linear-gradient(135deg, #0f172a 0%, #334155 100%); padding: 3rem; border-radius: 24px; color: white; margin-bottom: 2rem;">
+                    <h1 style="font-weight: 900; margin: 0;">Cronograma GPC y Protocolos</h1>
+                    <p style="opacity: 0.8;">Identificación, comparación epidemiológica y plan anual de actualización.
+                    </p>
                 </header>
 
-                <!-- EVIDENCE MODAL (SOCIALIZACIÓN) -->
-                <div id="evidModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; backdrop-filter:blur(10px); align-items:center; justify-content:center;">
-                    <div style="background:white; width:min(900px, 95vw); border-radius:24px; padding:2.5rem; box-shadow:0 30px 60px rgba(0,0,0,0.2); position:relative;">
-                        <button onclick="qs('#evidModal').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-                        <h2 id="evidTitle" style="font-weight:900; color:#0f172a; margin:0;">Evidencia de Socialización</h2>
-                        <p id="evidDocRef" style="color:#64748b; font-weight:700; margin-bottom:2rem;"></p>
-                        
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:2rem;">
-                            <div>
-                                <label style="display:block; font-size:0.7rem; font-weight:900; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">Fecha Socialización</label>
-                                <input type="date" id="evidFecha" class="cr-input">
+                <section class="card full-bleed">
+                    <div class="card-hd">
+                        <div class="toolbar">
+                            <label class="fw-bold small">AÑO
+                                <select id="anioSel" style="width: 100px;"></select>
+                            </label>
+                            <label class="fw-bold small">CAPACIDAD/MES
+                                <input id="capacidadMes" type="number" min="1" value="30" style="width: 80px;">
+                            </label>
+                        </div>
+                        <div class="tabs">
+                            <button class="tab" data-tab="ident" aria-selected="true">1) Identificación</button>
+                            <button class="tab" data-tab="perfil">2) Perfil</button>
+                            <button class="tab" data-tab="crono">3) Cronograma</button>
+                            <button class="tab" data-tab="actu">4) Seguimiento</button>
+                        </div>
+                    </div>
+
+                    <div class="card-bd">
+                        <!-- Panel 1: Identificación -->
+                        <div id="panel-ident" class="panel active">
+                            <div class="d-flex justify-content-between mb-3 align-items-center">
+                                <span class="text-muted small">Inventario global de GPC/Protocolos.</span>
+                                <div class="actions-row">
+                                    <input id="fileIdent" type="file" accept=".xlsx,.xls" hidden>
+                                    <button id="btnAddIdent" class="btn">+ Fila</button>
+                                    <button id="btnImportIdent" class="btn">Importar</button>
+                                    <button id="btnExportIdent" class="btn">Exportar</button>
+                                    <button id="btnSaveIdent" class="btn btn-primary" onclick="saveBatch('gpc_identificacion', state.inventario)">Guardar</button>
+                                </div>
                             </div>
-                            <div>
-                                <label style="display:block; font-size:0.7rem; font-weight:900; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">Facilitador / Responsable</label>
-                                <input type="text" id="evidFac" class="cr-input" placeholder="Nombre completo">
+                            <div class="table-wrap"
+                                style="max-height: 500px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                <table class="grid" id="tblIdent">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 120px;">Código</th>
+                                            <th style="min-width: 400px;">Nombre</th>
+                                            <th>Vence</th>
+                                            <th class="center">Ajuste</th>
+                                            <th class="center">Descarte</th>
+                                            <th style="min-width: 160px;">Responsable</th>
+                                            <th class="center">Semáforo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <div style="border:2px dashed #e2e8f0; border-radius:20px; padding:1rem; margin-bottom:2rem; text-align:center;">
-                            <label style="display:block; font-size:0.7rem; font-weight:900; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">Firma Digital del Colaborador</label>
-                            <canvas id="sigCanvas" style="width:100%; height:150px; background:#f8fafc; border-radius:12px; cursor:crosshair;"></canvas>
-                            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-                                <button class="cr-btn cr-btn-out" style="padding:0.4rem 1rem; font-size:0.7rem;" id="sigClear">Limpiar</button>
-                                <button class="cr-btn cr-btn-pri" style="padding:0.4rem 1rem; font-size:0.7rem;" id="sigSave">Cargar Firma</button>
+                        <!-- Panel 2: Perfil -->
+                        <div id="panel-perfil" class="panel">
+                            <div class="d-flex justify-content-between mb-3 align-items-center">
+                                <span class="text-muted small">Cruce con perfil epidemiológico institucional.</span>
+                                <div class="actions-row">
+                                    <input id="filePerfil" type="file" accept=".xlsx,.xls" hidden>
+                                    <button id="btnAddDiag" class="btn">+ Diag</button>
+                                    <button id="btnImportPerfil" class="btn">Importar</button>
+                                    <button id="btnCalcular" class="btn btn-primary" onclick="cruzarDatos()">Cruzar Datos</button>
+                                    <button id="btnSavePerfil" class="btn btn-primary" onclick="saveBatch('gpc_perfil_anual', state.perfil)">Guardar</button>
+                                </div>
+                            </div>
+                            <div class="table-wrap"
+                                style="max-height: 500px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                <table class="grid" id="tblPerfil">
+                                    <thead>
+                                        <tr>
+                                            <th>Diagnóstico</th>
+                                            <th class="num">Freq.</th>
+                                            <th>Servicio</th>
+                                            <th>Doc. Vinculado</th>
+                                            <th>Acción</th>
+                                            <th>Prioridad</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <div style="display:flex; justify-content:flex-end; gap:15px;">
-                            <button class="cr-btn cr-btn-out" onclick="qs('#evidModal').style.display='none'">Cancelar</button>
-                            <button class="cr-btn cr-btn-pri" id="btnGenPDF">Generar Acta PDF</button>
+                        <!-- Panel 3: Cronograma -->
+                        <div id="panel-crono" class="panel">
+                            <div class="crono-filter-bar">
+                                <label class="small fw-bold m-0">Filtrar por Mes:</label>
+                                <select id="filtroMesCrono" style="width:150px" onchange="renderCrono()">
+                                    <option value="all">-- Todos los meses --</option>
+                                    <option value="0">Enero</option>
+                                    <option value="1">Febrero</option>
+                                    <option value="2">Marzo</option>
+                                    <option value="3">Abril</option>
+                                    <option value="4">Mayo</option>
+                                    <option value="5">Junio</option>
+                                    <option value="6">Julio</option>
+                                    <option value="7">Agosto</option>
+                                    <option value="8">Septiembre</option>
+                                    <option value="9">Octubre</option>
+                                    <option value="10">Noviembre</option>
+                                    <option value="11">Diciembre</option>
+                                </select>
+                                <div class="ms-auto d-flex gap-2">
+                                    <button id="btnGenerar" class="btn btn-sm btn-primary" onclick="generarCronograma()">Generar Plan</button>
+                                    <button id="btnGuardarCrono" class="btn btn-sm btn-primary" onclick="saveCrono()">Guardar Todo</button>
+                                    <button id="btnClearCrono" class="btn btn-sm btn-danger">Limpiar Todo</button>
+                                </div>
+                            </div>
+                            <div class="table-wrap"
+                                style="max-height: 550px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                <table class="grid crono-card-view" id="tblCrono">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:80px">Código</th>
+                                            <th style="min-width:350px">Diagnóstico / Tema</th>
+                                            <th style="width:140px">Vence / Semáforo</th>
+                                            <th style="width:120px">Mes Probable</th>
+                                            <th style="width:100px">Prioridad</th>
+                                            <th style="width:100px">Entrega</th>
+                                            <th style="width:40px" class="center">OK</th>
+                                            <th style="width:90px" class="center">% Mensual</th>
+                                            <th style="width:90px" class="center">% Global</th>
+                                            <th style="width:120px">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Panel 4: Seguimiento -->
+                        <div id="panel-actu" class="panel">
+                            <div class="d-flex justify-content-between mb-3 align-items-center">
+                                <span class="text-muted small">Evidencias, socialización y actas.</span>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <select id="filtroMesSeg" class="btn btn-ghost" style="border:1px solid #ddd"
+                                        onchange="renderActu()">
+                                        <option value="all">Todos los Meses</option>
+                                        <option value="0">Enero</option>
+                                        <option value="1">Febrero</option>
+                                        <option value="2">Marzo</option>
+                                        <option value="3">Abril</option>
+                                        <option value="4">Mayo</option>
+                                        <option value="5">Junio</option>
+                                        <option value="6">Julio</option>
+                                        <option value="7">Agosto</option>
+                                        <option value="8">Septiembre</option>
+                                        <option value="9">Octubre</option>
+                                        <option value="10">Noviembre</option>
+                                        <option value="11">Diciembre</option>
+                                    </select>
+                                    <button class="btn btn-success" onclick="saveSeguimiento()">💾 Guardar Seguimiento</button>
+                                </div>
+                            </div>
+                            <div class="table-wrap"
+                                style="max-height: 550px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
+                                <table class="grid" id="tblActu">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:120px">Código</th>
+                                            <th style="min-width:400px">Documento / Tema</th>
+                                            <th style="width:140px">F. Entrega Plan</th>
+                                            <th style="width:140px">Estado Gestión</th>
+                                            <th style="width:80px">Acta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- MODAL EVIDENCIAS -->
+            <div id="evidModal" class="modal-backdrop">
+                <div class="modal-card">
+                    <div class="modal-hd">
+                        <div>
+                            <h2 id="evidTitle" style="margin:0; font-weight:900;">Evidencia de Socialización</h2>
+                            <p id="evidDocRef" style="margin:0; font-size:13px; opacity:0.7;"></p>
+                        </div>
+                        <button id="evidClose"
+                            style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                    </div>
+                    <div class="modal-bd">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="small fw-bold">Tipo de Acta</label>
+                                <select id="evidTipo" class="w-100" onchange="toggleEvidFields()">
+                                    <option value="social">Capacitación / Socialización</option>
+                                    <option value="impl">Implementación y Despliegue</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small fw-bold">Fecha</label>
+                                <input type="date" id="evidFecha" class="w-100">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small fw-bold">Tema / Documento</label>
+                                <input type="text" id="evidTema" class="w-100" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="small fw-bold">Facilitador</label>
+                                <input type="text" id="evidFac" class="w-100" placeholder="Nombre facilitador">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small fw-bold">Responsable</label>
+                                <input type="text" id="evidResp" class="w-100" placeholder="Responsable área">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small fw-bold">Horario</label>
+                                <input type="text" id="evidHora" class="w-100" placeholder="Ej: 7-8 AM">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="small fw-bold">Duración</label>
+                                <input type="text" id="evidDur" class="w-100" placeholder="Ej: 1 HORA">
+                            </div>
+
+                            <div class="col-md-6 impl-only" style="display:none">
+                                <label class="small fw-bold">Versión Doc.</label>
+                                <input type="text" id="evidVersion" class="w-100" placeholder="Ej: 002">
+                            </div>
+                            <div class="col-md-6 impl-only" style="display:none">
+                                <label class="small fw-bold">Vigencia</label>
+                                <input type="text" id="evidVigencia" class="w-100" placeholder="VIGENTE / OBSOLETO">
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="small fw-bold mb-2 d-block">Servicios Impactados (Seleccionar para generar
+                                reportes)</label>
+                            <div id="evidServicios" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="profs-pane">
+                                <div class="profs-list">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <h6 class="m-0 fw-bold">Profesionales</h6>
+                                        <button id="btnImportProfs" class="btn btn-sm">Importar</button>
+                                        <input type="file" id="fileProfs" hidden>
+                                    </div>
+                                    <input type="text" id="filtroEsp" class="w-100 mb-2" placeholder="Filtrar...">
+                                    <div id="profsCatList"></div>
+                                </div>
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="m-0 fw-bold">Asistentes / firmantes</h6>
+                                        <button class="btn btn-sm btn-primary" onclick="agregarProfManual()">+ Agregar Manual</button>
+                                    </div>
+                                    <div
+                                        style="max-height: 250px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                        <table class="table table-sm table-bordered m-0" id="profsSelTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Firma</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                    <div id="sigPadWrap" class="sigpad mt-3" style="display:none">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span id="sigFor" class="small fw-bold"></span>
+                                            <canvas id="sigCanvas"></canvas>
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <div class="d-flex gap-2">
+                                                    <button id="sigClear" class="btn btn-sm">Limpiar</button>
+                                                    <button class="btn btn-sm"
+                                                        onclick="qs('#fileSigImg').click()">Cargar Imagen</button>
+                                                    <input type="file" id="fileSigImg" accept="image/*" hidden>
+                                                </div>
+                                                <button id="sigSave" class="btn btn-primary btn-sm">Guardar Firma</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-ft">
+                            <button id="evidGenPDF" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Generar Acta</button>
+                            <button id="evidSaveClose" class="btn btn-primary">Aceptar</button>
+                            <button id="evidCancel" class="btn">Cancelar</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="cr-dashboard">
-                    <div class="cr-stat-card">
-                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #0ea5e9, #2563eb);"><i class="fas fa-tasks"></i></div>
-                        <div class="cr-stat-info">
-                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Ejecución Plan</h4>
-                            <div id="statEjecucion" style="font-size:1.5rem; font-weight:900;">0%</div>
+            <!-- MODAL EDICION CRONOGRAMA -->
+            <div id="cronoEditModal" class="modal-backdrop">
+                <div class="modal-card" style="width: min(600px, 95vw);">
+                    <div class="modal-hd">
+                        <h2 style="margin:0; font-weight:900;">Editar Ítem del Plan</h2>
+                        <button id="cronoEditClose"
+                            style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                    </div>
+                    <div class="modal-bd">
+                        <div class="row g-3" id="cronoEditForm">
+                            <div class="col-12">
+                                <label class="small fw-bold">Diagnóstico - Tema</label>
+                                <textarea id="ce-tema" class="w-100" rows="3"></textarea>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Fecha de Vencimiento</label>
+                                <input type="date" id="ce-vencimiento" class="w-100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Código</label>
+                                <input type="text" id="ce-codigo" class="w-100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Acción</label>
+                                <select id="ce-accion" class="w-100">
+                                    <option value="Crear">Crear</option>
+                                    <option value="Actualizar">Actualizar</option>
+                                    <option value="Mantener">Mantener</option>
+                                    <option value="Adoptar">Adoptar</option>
+                                    <option value="Adaptar">Adaptar</option>
+                                    <option value="Cambiar a protocolo">Cambiar a protocolo</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Mes Probable</label>
+                                <select id="ce-mes" class="w-100">
+                                    <option value="0">Enero</option>
+                                    <option value="1">Febrero</option>
+                                    <option value="2">Marzo</option>
+                                    <option value="3">Abril</option>
+                                    <option value="4">Mayo</option>
+                                    <option value="5">Junio</option>
+                                    <option value="6">Julio</option>
+                                    <option value="7">Agosto</option>
+                                    <option value="8">Septiembre</option>
+                                    <option value="9">Octubre</option>
+                                    <option value="10">Noviembre</option>
+                                    <option value="11">Diciembre</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Prioridad</label>
+                                <select id="ce-prior" class="w-100">
+                                    <option value="Critica">Critica</option>
+                                    <option value="Alta">Alta</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Baja">Baja</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">F. Inicio</label>
+                                <input type="date" id="ce-fchInicio" class="w-100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">F. Entrega</label>
+                                <input type="date" id="ce-fchFin" class="w-100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Estado del Proceso</label>
+                                <select id="ce-status" class="w-100">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Entregada">Entregada</option>
+                                    <option value="Socializada">Socializada</option>
+                                </select>
+                            </div>
+                            <div class="col-12 text-center py-3" style="background:#f1f5f9; border-radius:8px;">
+                                <label class="fw-bold" style="font-size:16px;">
+                                    <input type="checkbox" id="ce-ok"
+                                        style="transform:scale(1.5); margin-right:10px;">
+                                    ¿Documento Entregado / Finalizado?
+                                </label>
+                                <div class="small text-muted mt-1">Esto automatiza el cumplimiento al 100%.</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="cr-stat-card">
-                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div class="cr-stat-info">
-                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Doc. Vencidos</h4>
-                            <div id="statVencidos" style="font-size:1.5rem; font-weight:900;">0</div>
-                        </div>
-                    </div>
-                    <div class="cr-stat-card">
-                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c);"><i class="fas fa-search-plus"></i></div>
-                        <div class="cr-stat-info">
-                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Brechas (Nuevos)</h4>
-                            <div id="statBrechas" style="font-size:1.5rem; font-weight:900;">0</div>
-                        </div>
-                    </div>
-                    <div class="cr-stat-card">
-                        <div class="cr-stat-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-check-circle"></i></div>
-                        <div class="cr-stat-info">
-                            <h4 style="font-size:0.65rem; color:#64748b; font-weight:900; margin:0; text-transform:uppercase;">Cumplimiento Mes</h4>
-                            <div id="statMes" style="font-size:1.5rem; font-weight:900;">0%</div>
-                        </div>
+                    <div class="modal-ft">
+                        <button id="ce-btnDelete" class="btn btn-danger" style="margin-right:auto">Eliminar Actividad</button>
+                        <button id="cronoEditSave" class="btn btn-primary">Aplicar Cambios</button>
+                        <button id="cronoEditCancel" class="btn">Cancelar</button>
                     </div>
                 </div>
+            </div>
 
-                <div class="cr-main-card">
-                    <div class="cr-tabs-strip">
-                        <div class="cr-tabs">
-                            <div class="cr-tab active" data-tab="inventario">01. Inventario</div>
-                            <div class="cr-tab" data-tab="perfil">02. Perfil</div>
-                            <div class="cr-tab" data-tab="plan">03. Cronograma</div>
-                            <div class="cr-tab" data-tab="seguimiento">04. Seguimiento</div>
+            <!-- MODAL EDICION SEGUIMIENTO -->
+            <div id="segEditModal" class="modal-backdrop">
+                <div class="modal-card" style="width: min(700px, 95vw);">
+                    <div class="modal-hd">
+                        <h2 style="margin:0; font-weight:900;">Gestión de Ciclo de Vida del Documento</h2>
+                        <button id="segEditClose"
+                            style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                    </div>
+                    <div class="modal-bd">
+                        <div class="card p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                            <div id="se-tema-display" class="fw-bold h6 mb-1" style="color:#0f172a"></div>
+                            <div id="se-codigo-display" class="small text-muted"></div>
                         </div>
-                        <div style="display:flex; gap:15px; align-items:center;">
-                            <div id="panelActions"></div>
-                            <select id="yearSelect" class="cr-input" style="width:100px; padding:0.4rem; font-weight:900;"></select>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="small fw-bold">Fecha Envío a Calidad</label>
+                                <input type="date" id="se-fchEnvio" class="w-100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Fecha Retorno de Calidad</label>
+                                <input type="date" id="se-fchRetorno" class="w-100" onchange="autoCalcVigencia()">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Nueva Vigencia Documento</label>
+                                <input type="date" id="se-nvaVigencia" class="w-100">
+                            </div>
+                            <div class="col-6">
+                                <label class="small fw-bold">Fecha Socialización</label>
+                                <input type="date" id="se-fechaSoc" class="w-100">
+                            </div>
+                            <div class="col-12" id="se-wrap-descarte" style="display:none">
+                                <div class="card p-3" style="background:#fff1f2; border:1px solid #fda4af;">
+                                    <label class="small fw-bold text-danger">Justificación de Descarte / Actualización Previa</label>
+                                    <textarea id="se-motivo" class="w-100 mb-2" rows="2"
+                                        placeholder="Explique por qué se descarta del cronograma..."></textarea>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="small fw-bold">Nuevo Código (si aplica)</label>
+                                            <input type="text" id="se-nuevoCodigo" class="w-100">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="small fw-bold">Nuevo Nombre (si aplica)</label>
+                                            <input type="text" id="se-nuevoNombre" class="w-100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12" id="se-wrap-normal">
+                                <label class="small fw-bold">Observaciones / Comprobante de Envío (Opcional)</label>
+                                <textarea id="se-obs" class="w-100" rows="2"
+                                    placeholder="Notas sobre el proceso de calidad..."></textarea>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="cr-table-wrap">
-                        <div id="panel-inventario" class="cr-panel active">
-                            <table class="cr-table" id="tblInvent">
-                                <thead>
-                                    <tr>
-                                        <th style="width:150px">Código</th>
-                                        <th>Guía / Protocolo</th>
-                                        <th style="width:180px">Últ. Versión</th>
-                                        <th style="width:100px">Vence En</th>
-                                        <th style="width:80px">Ajuste</th>
-                                        <th style="width:140px">Responsable</th>
-                                        <th style="width:150px">Prioridad</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-
-                        <div id="panel-perfil" class="cr-panel" style="display:none">
-                            <table class="cr-table" id="tblPerfil">
-                                <thead>
-                                    <tr>
-                                        <th>Diagnóstico / Patología</th>
-                                        <th style="width:150px">Frecuencia</th>
-                                        <th style="width:250px">Documento Vinculado</th>
-                                        <th style="width:150px">Acción</th>
-                                        <th style="width:150px">Sugerencia</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-
-                        <div id="panel-plan" class="cr-panel" style="display:none">
-                            <table class="cr-table" id="tblPlan">
-                                <thead>
-                                    <tr>
-                                        <th style="width:140px">Mes</th>
-                                        <th>Tema de Entrega</th>
-                                        <th style="width:180px">Fecha Plan</th>
-                                        <th style="width:140px">Acción</th>
-                                        <th style="width:150px">Prioridad</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-
-                        <div id="panel-seguimiento" class="cr-panel" style="display:none">
-                            <table class="cr-table" id="tblSeg">
-                                <thead>
-                                    <tr>
-                                        <th>Guía / Documento</th>
-                                        <th style="width:180px">Socialización</th>
-                                        <th style="width:180px">Estado</th>
-                                        <th style="width:120px">Avance</th>
-                                        <th style="width:180px">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
+                    <div class="modal-ft">
+                        <button id="segEditSave" class="btn btn-primary">Guardar Cambios</button>
+                        <button id="segEditCancel" class="btn">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -248,377 +831,839 @@
 
     <div th:replace="~{layout :: scripts}"></div>
 
+    <!-- Librerías Externas -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
     <script type="module" th:inline="javascript">
         /*<![CDATA[*/
-        const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        window.MONTHS = MONTHS; // Hacer global
         const qs = s => document.querySelector(s);
         const qsa = s => Array.from(document.querySelectorAll(s));
-        
-        const state = { 
-            anio: new Date().getFullYear(), 
-            inventario: [], 
-            perfil: [], 
-            plan: [], 
-            seg: [] 
+
+        // Estado centralizado
+        const state = {
+            anio: new Date().getFullYear(),
+            inventario: [],
+            perfil: [],
+            plan: [],
+            actu: [],
+            profs: [],
+            deletedCronoIds: [] // Para persistencia de borrados
         };
 
-        /* ================== DASHBOARD INTELLIGENCE ================== */
-        function updateDashboard() {
-            const totalScheduled = state.plan.length;
-            const completed = state.seg.filter(s => s.status === 'Finalizado' || s.socialized).length;
-            
-            const executionPct = totalScheduled ? Math.round((completed / totalScheduled) * 100) : 0;
-            qs('#statEjecucion').textContent = `${executionPct}%`;
+        // --- Inicialización ---
+        async function initModule() {
+            const { db, auth } = window.firebaseInstance || {};
+            if (!db) { setTimeout(initModule, 300); return; }
 
-            const today = new Date();
-            const vencidos = state.inventario.filter(i => {
-                if(!i.fchProx) return false;
-                return new Date(i.fchProx) < today;
-            });
-            qs('#statVencidos').textContent = vencidos.length;
+            // Funciones ya expuestas al final del módulo
 
-            const brechas = state.perfil.filter(p => !p.codigoDoc || p.accion === 'Redactar').length;
-            qs('#statBrechas').textContent = brechas;
 
-            // Cumplimiento Mes Actual
-            const currentMonth = today.getMonth();
-            const mesPlan = state.plan.filter(p => p.mes === currentMonth);
-            const mesDone = state.seg.filter(s => {
-                const p = state.plan.find(pl => (pl.codigo === s.codigo || pl.tema === s.tema));
-                return p && p.mes === currentMonth && (s.status === 'Finalizado' || s.socialized);
-            });
-            const mesPct = mesPlan.length ? Math.round((mesDone.length / mesPlan.length) * 100) : 0;
-            qs('#statMes').textContent = `${mesPct}%`;
-        }
-
-        /* ================== NAVIGATION & UI ================== */
-        function initTabs() {
-            qsa('.cr-tab').forEach(btn => {
-                btn.onclick = () => {
-                    qsa('.cr-tab').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    qsa('.cr-panel').forEach(p => p.style.display = 'none');
-                    qs(`#panel-${btn.dataset.tab}`).style.display = 'block';
-                    renderActions(btn.dataset.tab);
-                };
-            });
-            
-            const yr = qs('#yearSelect');
-            if(yr) {
-                const CUR = new Date().getFullYear();
-                yr.innerHTML = '';
-                [CUR-1, CUR, CUR+1, CUR+2].forEach(y => {
-                    const opt = document.createElement('option');
-                    opt.value = y; opt.textContent = y;
-                    if(y === state.anio) opt.selected = true;
-                    yr.appendChild(opt);
+            // Configurar Select de Año
+            const yr = qs('#anioSel');
+            if (yr && !yr.options.length) {
+                const cur = new Date().getFullYear();
+                [cur - 1, cur, cur + 1, cur + 2].forEach(y => {
+                    const o = document.createElement('option');
+                    o.value = o.textContent = y;
+                    if (y === state.anio) o.selected = true;
+                    yr.appendChild(o);
                 });
-                yr.onchange = () => {
-                    state.anio = parseInt(yr.value);
-                    loadFromDB();
-                };
+                yr.onchange = () => { state.anio = +yr.value; loadFromDB(); };
             }
-        }
 
-        function renderActions(tab) {
-            const box = qs('#panelActions'); if(!box) return; box.innerHTML = '';
-            const addBtn = (icon, text, cls, fn) => {
-                const b = document.createElement('button'); b.className = `cr-btn ${cls}`;
-                b.innerHTML = `<i class="${icon}"></i> <span>${text}</span>`; b.onclick = fn;
-                box.appendChild(b);
+            // Tabs
+            qsa('.tab').forEach(t => t.onclick = () => {
+                qsa('.tab').forEach(x => x.setAttribute('aria-selected', 'false'));
+                t.setAttribute('aria-selected', 'true');
+                qsa('.panel').forEach(p => p.classList.remove('active'));
+                qs(`#panel-${t.dataset.tab}`).classList.add('active');
+            });
+
+            // Eventos de botones
+            qs('#btnAddIdent').onclick = () => { state.inventario.unshift({ codigo: '', nombre: '', fchUlt: '', prior: 'Media', ajuste: false }); renderIdent(); };
+            qs('#btnSaveIdent').onclick = () => saveBatch('gpc_identificacion', state.inventario);
+            qs('#btnImportIdent').onclick = () => qs('#fileIdent').click();
+            qs('#fileIdent').onchange = e => importXL(e, 'inventario');
+
+            qs('#btnAddDiag').onclick = () => { state.perfil.unshift({ diag: '', freq: 0, svc: '', docVinculado: '', accion: 'Redactar', prior: 'Media' }); renderPerfil(); };
+            qs('#btnSavePerfil').onclick = () => saveBatch('gpc_perfil_anual', state.perfil);
+            qs('#btnImportPerfil').onclick = () => qs('#filePerfil').click();
+            qs('#filePerfil').onchange = e => importXL(e, 'perfil');
+
+            qs('#btnCalcular').onclick = cruzarDatos;
+            qs('#btnGenerar').onclick = generarCronograma;
+            qs('#btnGuardarCrono').onclick = saveCrono;
+            qs('#btnClearCrono').onclick = async () => {
+                if (confirm("¿Borrar todo el plan de la base de datos?")) {
+                    state.deletedCronoIds.push(...state.plan.map(x => x.id).filter(Boolean));
+                    state.plan = [];
+                    await saveCrono();
+                }
             };
+            qs('#filtroMesCrono').onchange = renderCrono;
 
-            if(tab === 'inventario') {
-                addBtn('fas fa-plus', 'Nuevo', 'cr-btn-out', () => { state.inventario.unshift({codigo:'', nombre:'', prior:'Baja'}); renderInvent(); });
-                addBtn('fas fa-save', 'Sincronizar', 'cr-btn-pri', () => saveBatch('gpc_identificacion', state.inventario));
-            } else if(tab === 'perfil') {
-                addBtn('fas fa-magic', 'Cruzar Datos', 'cr-btn-out', calculateGaps);
-                addBtn('fas fa-save', 'Guardar Perfil', 'cr-btn-pri', () => saveBatch('gpc_perfil_anual', state.perfil));
-            } else if(tab === 'plan') {
-                addBtn('fas fa-calendar-check', 'Generar 30/Mes', 'cr-btn-out', generateInstitutionalCrono);
-                addBtn('fas fa-save', 'Guardar Plan', 'cr-btn-pri', () => saveBatch('gpc_cronograma_anual', state.plan));
-            } else if(tab === 'seguimiento') {
-                addBtn('fas fa-sync', 'Cargar del Plan', 'cr-btn-out', syncPlanToSeg);
-                addBtn('fas fa-save', 'Guardar Avances', 'cr-btn-pri', () => saveBatch('gpc_seguimiento', state.seg));
-            }
-        }
+            // Modal Edicion Crono
+            qs('#cronoEditClose').onclick = qs('#cronoEditCancel').onclick = () => qs('#cronoEditModal').style.display = 'none';
+            qs('#cronoEditSave').onclick = applyCronoEdit;
 
-        /* ================== CORE CLINICAL LOGIC ================== */
-        function calculateGaps() {
-            // Lógica de cruce: Empareja diagnósticos con documentos existentes
-            state.perfil.forEach(p => {
-                const match = state.inventario.find(i => 
-                    (i.codigo && i.codigo === p.codigoDoc) || 
-                    (i.nombre && p.diag && i.nombre.toLowerCase().includes(p.diag.toLowerCase()))
-                );
-                if(match) {
-                    p.codigoDoc = match.codigo;
-                    p.docVinculado = match.nombre;
-                    p.accion = (new Date(match.fchProx) < new Date()) ? 'Actualizar' : 'Mantener';
-                } else {
-                    p.accion = 'Redactar';
-                    p.sugerencia = 'BRECHA IDENTIFICADA';
-                }
-            });
-            renderPerfil();
-            alert('Cruce de información completado.');
-        }
+            qs('#segEditClose').onclick = qs('#segEditCancel').onclick = () => qs('#segEditModal').style.display = 'none';
 
-        function generateInstitutionalCrono() {
-            if(!state.inventario.length) return alert('Primero carga el inventario.');
+            // Modales Evidencia
+            qs('#evidClose').onclick = qs('#evidCancel').onclick = () => qs('#evidModal').style.display = 'none';
+            qs('#btnImportProfs').onclick = () => qs('#fileProfs').click();
+            qs('#fileProfs').onchange = e => importXL(e, 'profs');
+            qs('#evidGenPDF').onclick = () => { if (currentActuIdx >= 0) genEvidenciasPDF(); };
             
-            const toUpdate = state.inventario.filter(i => {
-                const urg = (new Date(i.fchProx) < new Date()) || i.ajuste;
-                return urg;
-            });
-
-            const brechas = state.perfil.filter(p => p.accion === 'Redactar');
-            const universe = [...toUpdate.map(i => ({...i, tipo:'ACT'})), ...brechas.map(b => ({...b, tema:b.diag, tipo:'NEW'}))];
-            
-            // Regla: 30 al mes, priorizando Altas
-            universe.sort((a,b) => {
-                const prio = {Alta:3, Media:2, Baja:1};
-                return prio[b.prior || 'Media'] - prio[a.prior || 'Media'];
-            });
-
-            const newPlan = [];
-            let currentMonth = 0;
-            let countInMonth = 0;
-
-            universe.forEach(it => {
-                if(countInMonth >= 30) { currentMonth++; countInMonth = 0; }
-                if(currentMonth > 11) return;
-
-                newPlan.push({
-                    anio: state.anio,
-                    codigo: it.codigo || 'NEW',
-                    tema: it.nombre || it.diag,
-                    mes: currentMonth,
-                    accion: it.tipo === 'ACT' ? 'Actualizar' : 'Crear',
-                    prioridad: it.prior || 'Media',
-                    fchPlan: `${state.anio}-${String(currentMonth+1).padStart(2,'0')}-15`
-                });
-                countInMonth++;
-            });
-
-            state.plan = newPlan;
-            renderPlan();
-            alert(`Cronograma generado: ${newPlan.length} actividades distribuidas.`);
+            await loadFromDB();
         }
 
-        function syncPlanToSeg() {
-            const currentSegIds = new Set(state.seg.map(s => s.codigo || s.tema));
-            state.plan.forEach(p => {
-                const key = p.codigo || p.tema;
-                if(!currentSegIds.has(key)) {
-                    state.seg.push({
-                        ...p, status: 'Pendiente', socialized: false, progress: 0
-                    });
-                }
-            });
-            renderSeg();
+        function toggleEvidFields() {
+            const isImpl = qs('#evidTipo').value === 'impl';
+            qsa('.impl-only').forEach(el => el.style.display = isImpl ? 'block' : 'none');
         }
 
-        /* ================== RENDERING & RULES ================== */
-        const addYears = (f, y) => {
-            if(!f) return '';
-            const d = new Date(f); d.setFullYear(d.getFullYear() + y);
-            return d.toISOString().slice(0,10);
-        };
-        const getVigencia = (c) => String(c).toUpperCase().startsWith('GPC') ? 5 : 3;
 
-        function renderInvent() {
-            const tbody = qs('#tblInvent tbody'); tbody.innerHTML = '';
-            state.inventario.forEach((r, i) => {
-                const tr = document.createElement('tr');
-                const prox = r.fchProx || addYears(r.fchUlt, getVigencia(r.codigo));
-                const isOverdue = prox && new Date(prox) < new Date();
-
-                tr.innerHTML = `
-                    <td style="font-family:monospace; font-weight:bold;"><input value="${r.codigo||''}" class="cr-input" data-idx="${i}" data-key="codigo"></td>
-                    <td><input value="${r.nombre||''}" class="cr-input" data-idx="${i}" data-key="nombre" style="font-weight:900;"></td>
-                    <td><input type="date" value="${r.fchUlt||''}" class="cr-input" data-idx="${i}" data-key="fchUlt"></td>
-                    <td><span class="cr-badge ${isOverdue ? 'prior-Alta' : 'prior-Baja'}" style="color:white;">${prox || '—'}</span></td>
-                    <td class="text-center"><input type="checkbox" ${r.ajuste?'checked':''} data-idx="${i}" data-key="ajuste"></td>
-                    <td><input value="${r.resp||''}" class="cr-input" data-idx="${i}" data-key="resp"></td>
-                    <td><select class="cr-input" data-idx="${i}" data-key="prior">
-                        <option value="Alta" ${r.prior==='Alta'?'selected':''}>Alta</option>
-                        <option value="Media" ${r.prior==='Media'?'selected':''}>Media</option>
-                        <option value="Baja" ${r.prior==='Baja'?'selected':''}>Baja</option>
-                    </select></td>
-                `;
-                tr.querySelectorAll('input, select').forEach(el => {
-                    el.onchange = () => {
-                        const val = el.type === 'checkbox' ? el.checked : el.value;
-                        state.inventario[i][el.dataset.key] = val;
-                        if(el.dataset.key === 'fchUlt' || el.dataset.key === 'codigo') {
-                            state.inventario[i].fchProx = addYears(state.inventario[i].fchUlt, getVigencia(state.inventario[i].codigo));
-                        }
-                        renderInvent();
-                    };
-                });
-                tbody.appendChild(tr);
-            });
-            updateDashboard();
-        }
-
-        /* ================== EVIDENCE & PDF ================== */
-        let sigPath = null;
-        function openEvidenciaModal(idx) {
-            const r = state.seg[idx];
-            qs('#evidDocRef').textContent = `${r.codigo || ''} — ${r.tema || ''}`;
-            qs('#evidModal').style.display = 'flex';
-            qs('#btnGenPDF').onclick = () => generatePDF(idx);
-            initSignature();
-        }
-
-        function initSignature() {
-            const cnv = qs('#sigCanvas'); const ctx = cnv.getContext('2d');
-            let painting = false;
-            cnv.onmousedown = (e) => { painting = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
-            cnv.onmousemove = (e) => { if(painting) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
-            window.onmouseup = () => painting = false;
-            qs('#sigClear').onclick = () => ctx.clearRect(0, 0, cnv.width, cnv.height);
-            qs('#sigSave').onclick = () => { sigPath = cnv.toDataURL(); alert('Firma cargada correctamente.'); };
-        }
-
-        async function generatePDF(idx) {
-            const r = state.seg[idx];
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-            
-            pdf.setFontSize(22); pdf.text("Acta de Socialización CTC", 20, 30);
-            pdf.setFontSize(12);
-            pdf.text(`Documento: ${r.tema}`, 20, 50);
-            pdf.text(`Fecha: ${qs('#evidFecha').value || 'S/F'}`, 20, 60);
-            pdf.text(`Facilitador: ${qs('#evidFac').value || 'S/R'}`, 20, 70);
-            
-            if(sigPath) { pdf.addImage(sigPath, 'PNG', 20, 100, 50, 20); pdf.text("Firma del Colaborador", 20, 125); }
-            
-            pdf.save(`Acta_CTC_${slug(r.tema)}.pdf`);
-            alert('PDF generado con éxito.');
-        }
-
-        function renderSeg() {
-            const tbody = qs('#tblSeg tbody'); tbody.innerHTML = '';
-            state.seg.forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:800;">${r.tema || ''}</td>
-                    <td><select class="cr-input" data-idx="${i}" data-key="socialized">
-                        <option value="false" ${!r.socialized?'selected':''}>No Socializado</option>
-                        <option value="true" ${r.socialized?'selected':''}>Socializado</option>
-                    </select></td>
-                    <td><select class="cr-input" data-idx="${i}" data-key="status">
-                        <option value="Pendiente" ${r.status==='Pendiente'?'selected':''}>Pendiente</option>
-                        <option value="En Proceso" ${r.status==='En Proceso'?'selected':''}>En Proceso</option>
-                        <option value="Finalizado" ${r.status==='Finalizado'?'selected':''}>Finalizado</option>
-                    </select></td>
-                    <td><div style="font-weight:900; color:${r.status==='Finalizado'?'#10b981':'#ef4444'}">${r.status==='Finalizado'?'100%':'0%'}</div></td>
-                    <td><button class="cr-btn cr-btn-pri" style="padding:0.4rem 0.8rem; font-size:0.75rem;"><i class="fas fa-file-pdf"></i> Evidencia</button></td>
-                `;
-                tr.querySelector('.cr-btn-pri').onclick = () => openEvidenciaModal(i);
-                tr.querySelectorAll('select').forEach(sel => {
-                    sel.onchange = () => {
-                        state.seg[i][sel.dataset.key] = sel.value === 'true' ? true : (sel.value === 'false' ? false : sel.value);
-                        renderSeg();
-                    };
-                });
-                tbody.appendChild(tr);
-            });
-            updateDashboard();
-        }
-
-        /* ================== RENDERING PERFIL & PLAN ================== */
-        function renderPerfil() {
-            const tbody = qs('#tblPerfil tbody'); tbody.innerHTML = '';
-            state.perfil.forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:800;"><input value="${r.diag || ''}" class="cr-input" data-key="diag" data-idx="${i}"></td>
-                    <td><input type="number" value="${r.freq || 0}" class="cr-input" data-key="freq" data-idx="${i}"></td>
-                    <td><input value="${r.docVinculado||''}" class="cr-input" data-idx="${i}" data-key="docVinculado"></td>
-                    <td><span class="cr-badge prior-Media" style="color:white;">${r.accion || '—'}</span></td>
-                    <td style="color:#64748b; font-size:0.75rem; font-weight:bold;">${r.sugerencia || ''}</td>
-                `;
-                tr.querySelectorAll('input').forEach(inp => {
-                    inp.onchange = () => { 
-                        state.perfil[i][inp.dataset.key] = inp.value; 
-                        renderPerfil(); 
-                    };
-                });
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderPlan() {
-            const tbody = qs('#tblPlan tbody'); tbody.innerHTML = '';
-            state.plan.sort((a,b)=>a.mes - b.mes).forEach((r, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight:900; color:#0ea5e9;">${MONTHS[r.mes] || 'S/P'}</td>
-                    <td style="font-weight:800;">${r.tema || ''}</td>
-                    <td><input type="date" value="${r.fchPlan||''}" class="cr-input" data-key="fchPlan" data-idx="${i}"></td>
-                    <td><span style="font-weight:700;">${r.accion || ''}</span></td>
-                    <td><div style="display:flex; align-items:center; gap:8px;"><div class="prior-point prior-${r.prioridad || 'Media'}"></div> ${r.prioridad || 'Media'}</div></td>
-                `;
-                tr.querySelector('input').onchange = (e) => { state.plan[i].fchPlan = e.target.value; };
-                tbody.appendChild(tr);
-            });
-        }
-
-        /* ================== FIREBASE & MODULE INIT ================== */
-        async function saveBatch(coll, data) {
-            const { db } = window.firebaseInstance || {};
-            const { doc, writeBatch, serverTimestamp } = window.firebaseFirestore || {};
-            if(!db) return;
-            const batch = writeBatch(db);
-            data.forEach(r => {
-                const id = r.id || r.codigo || `${state.anio}_${slug(r.tema || r.diag || Math.random().toString())}`;
-                batch.set(doc(db, coll, id), { ...r, updatedAt: serverTimestamp() }, { merge: true });
-            });
-            await batch.commit();
-            alert('¡Sincronización exitosa!');
-        }
-
+        // --- Datos ---
         async function loadFromDB() {
             const { db } = window.firebaseInstance || {};
             const { collection, getDocs, query, where } = window.firebaseFirestore || {};
-            if(!db) return;
+            if (!db) return;
+
             try {
-                const snapInv = await getDocs(collection(db, 'gpc_identificacion'));
-                state.inventario = snapInv.docs.map(d => d.data());
-                
-                const snapPerf = await getDocs(query(collection(db, 'gpc_perfil_anual'), where('anio', '==', state.anio)));
-                state.perfil = snapPerf.docs.map(d => d.data());
-                
-                const snapPlan = await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', Number(state.anio))));
-                state.plan = snapPlan.docs.map(d => d.data());
-                
-                const snapSeg = await getDocs(collection(db, 'gpc_seguimiento'));
-                state.seg = snapSeg.docs.map(d => d.data()).filter(s => Number(s.anio) === Number(state.anio));
-                
+                const s1 = await getDocs(collection(db, 'gpc_identificacion'));
+                state.inventario = s1.docs.map(d => ({ ...d.data(), id: d.id }));
+
+                const s2 = await getDocs(query(collection(db, 'gpc_perfil_anual'), where('anio', '==', state.anio)));
+                state.perfil = s2.docs.map(d => ({ ...d.data(), id: d.id }));
+
+                const s3 = await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)));
+                state.plan = s3.docs.map(d => {
+                    const data = d.data();
+                    return {
+                        ...data,
+                        id: d.id,
+                        vencimiento: data.vencimiento || data.fchProx || data.fchVenc || '',
+                        fecha: data.fecha || data.fchFin || data.fecha_entrega || '',
+                        tema: data.tema || data.nombre || data.diagnostico || 'S/N',
+                        codigo: data.codigo || data.docId || ''
+                    };
+                });
+
+                const s4 = await getDocs(query(collection(db, 'gpc_seguimiento'), where('anio', '==', state.anio)));
+                state.actu = s4.docs.map(d => ({ ...d.data(), id: d.id }));
+
+                const s5 = await getDocs(collection(db, 'gpc_profesionales'));
+                state.profs = s5.docs.map(d => d.data());
+
+                // Catch-up sincronización automática
+                sincroPlanSeg(true);
                 renderAll();
-            } catch(e) { console.error(e); }
+                renderActu();
+            } catch (e) { console.error(e); }
         }
 
-        function renderAll() {
-            renderInvent(); renderPerfil(); renderPlan(); renderSeg();
-            renderActions(qs('.cr-tab.active').dataset.tab);
-        }
-
-        const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-        async function initModule() {
+        async function saveBatch(coll, data) {
             const { db } = window.firebaseInstance || {};
-            if(!db) { setTimeout(initModule, 300); return; }
-            initTabs(); await loadFromDB();
+            const { writeBatch, doc, serverTimestamp } = window.firebaseFirestore || {};
+            if (!db) return;
+            const batch = writeBatch(db);
+            data.forEach(r => {
+                const id = r.id || r.codigo || `${state.anio}_${slug(r.tema || r.diag)}_${Math.random().toString(36).slice(2, 5)}`;
+                batch.set(doc(db, coll, id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+            });
+            await batch.commit();
+            alert("✓ Cambios guardados en la nube.");
         }
 
+        function importXL(e, mod) {
+            const file = e.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = evt => {
+                const data = new Uint8Array(evt.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(ws);
+                if (mod === 'inventario') {
+                    state.inventario = json.map(row => ({
+                        codigo: row.Codigo || row.codigo || '',
+                        nombre: row.Nombre || row.nombre || '',
+                        fchUlt: row.Ultima || row.ultima || '',
+                        prior: row.Prioridad || 'Media',
+                        ajuste: false
+                    }));
+                    renderIdent();
+                } else if (mod === 'perfil') {
+                    state.perfil = json.map(row => ({
+                        diag: row.Diagnostico || '',
+                        freq: +(row.Frecuencia || 0),
+                        svc: row.Servicio || '',
+                        docVinculado: '',
+                        accion: 'Redactar',
+                        prior: 'Media'
+                    }));
+                    renderPerfil();
+                } else if (mod === 'profs') {
+                    state.profs = json.map(row => ({
+                        cedula: String(row.Cedula || row.cedula || ''),
+                        nombre: row.Nombre || row.nombre || '',
+                        especialidad: row.Especialidad || row.especialidad || ''
+                    }));
+                    saveBatch('gpc_profesionales', state.profs);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- Renderizado ---
+        function renderAll() {
+            renderIdent();
+            renderPerfil();
+            renderCrono();
+            renderActu();
+        }
+
+        function renderIdent() {
+            const tb = qs('#tblIdent tbody'); tb.innerHTML = '';
+            state.inventario.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                const vig = getVigencia(r.codigo);
+                const venc = r.fchProx || addYears(r.fchUlt, vig);
+                const sem = getSemforo(venc);
+                tr.innerHTML = `
+                    <td><input value="${r.codigo || ''}" onchange="updateRow('inventario',${i},'codigo',this.value)"></td>
+                    <td><input value="${r.nombre || ''}" onchange="updateRow('inventario',${i},'nombre',this.value)" style="font-weight:800"></td>
+                    <td><input type="date" value="${r.fchUlt || ''}" onchange="updateRow('inventario',${i},'fchUlt',this.value)"></td>
+                    <td class="center"><input type="checkbox" ${r.ajuste ? 'checked' : ''} onchange="updateRow('inventario',${i},'ajuste',this.checked)"></td>
+                    <td class="center"><input type="checkbox" ${r.descarte ? 'checked' : ''} onchange="updateRow('inventario',${i},'descarte',this.checked)"></td>
+                    <td><input value="${r.resp || ''}" onchange="updateRow('inventario',${i},'resp',this.value)"></td>
+                    <td class="center"><span class="badge ${sem.cls}">${sem.txt}</span></td>
+                `;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderPerfil() {
+            const tb = qs('#tblPerfil tbody'); tb.innerHTML = '';
+            state.perfil.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input value="${r.diag || ''}" onchange="updateRow('perfil',${i},'diag',this.value)"></td>
+                    <td class="num"><input type="number" value="${r.freq || 0}" onchange="updateRow('perfil',${i},'freq',+this.value)"></td>
+                    <td><input value="${r.svc || ''}" onchange="updateRow('perfil',${i},'svc',this.value)"></td>
+                    <td><input value="${r.docVinculado || ''}" onchange="updateRow('perfil',${i},'docVinculado',this.value)"></td>
+                    <td><select onchange="updateRow('perfil',${i},'accion',this.value)">
+                        <option value="Crear" ${r.accion === 'Crear' ? 'selected' : ''}>Crear</option>
+                        <option value="Actualizar" ${r.accion === 'Actualizar' ? 'selected' : ''}>Actualizar</option>
+                        <option value="Mantener" ${r.accion === 'Mantener' ? 'selected' : ''}>Mantener</option>
+                        <option value="Adoptar" ${r.accion === 'Adoptar' ? 'selected' : ''}>Adoptar</option>
+                        <option value="Adaptar" ${r.accion === 'Adaptar' ? 'selected' : ''}>Adaptar</option>
+                        <option value="Cambiar a protocolo" ${r.accion === 'Cambiar a protocolo' ? 'selected' : ''}>Cambiar a protocolo</option>
+                    </select></td>
+                    <td><select onchange="updateRow('perfil',${i},'prior',this.value)">
+                        <option value="Critica" ${r.prior === 'Critica' ? 'selected' : ''}>Critica</option>
+                        <option value="Alta" ${r.prior === 'Alta' ? 'selected' : ''}>Alta</option>
+                        <option value="Media" ${r.prior === 'Media' ? 'selected' : ''}>Media</option>
+                    </select></td>
+                `;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderCrono() {
+            const tb = qs('#tblCrono tbody'); tb.innerHTML = '';
+            const filtroMes = qs('#filtroMesCrono').value;
+
+            // Cálculos de cumplimiento (Global y Mensual)
+            const planificados = state.plan.filter(x => x.accion !== 'Mantener');
+            const globalTotal = planificados.length;
+            const globalDone = planificados.filter(x => x.entregado).length;
+            const pctGlobal = globalTotal ? Math.round((globalDone / globalTotal) * 100) : 0;
+
+            const pctMes = Array.from({ length: 12 }, (_, m) => {
+                const mesPlan = planificados.filter(x => x.mes == m);
+                if (!mesPlan.length) return 0;
+                const mesDone = mesPlan.filter(x => x.entregado).length;
+                return Math.round((mesDone / mesPlan.length) * 100);
+            });
+
+            let filtered = [...state.plan];
+            if (filtroMes !== 'all') filtered = filtered.filter(x => x.mes == filtroMes);
+
+            filtered.sort((a, b) => {
+                const mesA = a.mes ?? 0;
+                const mesB = b.mes ?? 0;
+                if (mesA !== mesB) return mesA - mesB;
+                const fA = a.fecha || a.fchFin || a.fecha_entrega || '';
+                const fB = b.fecha || b.fchFin || b.fecha_entrega || '';
+                return fA.localeCompare(fB);
+            });
+
+            filtered.forEach((r) => {
+                const tr = document.createElement('tr');
+                tr.className = 'row-compact';
+                const fVenc = r.vencimiento || r.fchProx || r.fchVenc || '';
+                const fEntrega = r.fecha || r.fchFin || r.fecha_entrega || '';
+                const sem = getSemforo(fVenc);
+
+                const cumpleMes = pctMes[r.mes] || 0;
+
+                tr.innerHTML = `
+                    <td class="small text-muted">${r.codigo || r.docId || '—'}</td>
+                    <td>
+                        <div class="crono-tema-wrap">
+                            ${r.tema || r.nombre || r.diagnostico || 'S/N'}
+                        </div>
+                    </td>
+                    <td class="center"><span class="badge ${sem.cls}">${sem.txt}</span></td>
+                    <td>${MONTHS[r.mes] || '—'}</td>
+                    <td class="center"><span class="badge ${getPrioCls(r.prioridad || r.prior)}">${r.prioridad || r.prior || 'Media'}</span></td>
+                    <td class="small text-muted">${fEntrega || '—'}</td>
+                    <td class="center">${r.entregado ? '✅' : '⏳'}</td>
+                    <td class="center fw-bold" style="color: #0ea5e9; background: #f0f9ff;">${cumpleMes}%</td>
+                    <td class="center fw-bold" style="color: #6366f1; background: #f5f3ff;">${pctGlobal}%</td>
+                    <td><span class="badge ${r.status === 'Socializada' ? 'b-baja' : r.status === 'Entregada' ? 'b-info' : 'b-media'}">
+                        ${r.status || 'Pendiente'}
+                    </span></td>
+                `;
+                tr.onclick = (e) => {
+                    console.log("Fila Crono Click:", r.tema);
+                    abrirEdicionCrono(state.plan.indexOf(r));
+                };
+                tb.appendChild(tr);
+            });
+
+            // Resumen Global
+            if (state.plan.length > 0) {
+                const trG = document.createElement('tr');
+                trG.style.background = '#0f172a'; trG.style.color = 'white';
+                trG.innerHTML = `
+                    <td colspan="8" class="text-end fw-bold py-3">META CUMPLIDA DEL AÑO:</td>
+                    <td class="center fw-bold" style="color:#4ade80; font-size:16px;">${pctGlobal}%</td>
+                    <td colspan="2"></td>
+                `;
+                tb.appendChild(trG);
+            }
+        }
+
+        let editCronoIdx = -1;
+        function abrirEdicionCrono(idx) {
+            console.log("Abrir Crono:", idx);
+            if (idx === -1) return;
+            editCronoIdx = idx;
+            const r = state.plan[idx];
+            qs('#ce-tema').value = r.tema || '';
+            qs('#ce-vencimiento').value = r.vencimiento || '';
+            qs('#ce-codigo').value = r.codigo || '';
+            qs('#ce-accion').value = r.accion || 'Actualizar';
+            qs('#ce-mes').value = r.mes || 0;
+            qs('#ce-prior').value = r.prioridad || 'Media';
+            qs('#ce-fchInicio').value = r.fchInicio || '';
+            qs('#ce-fchFin').value = r.fecha || '';
+            qs('#ce-status').value = r.status || 'Pendiente';
+            qs('#ce-ok').checked = !!r.entregado;
+
+            qs('#ce-btnDelete').onclick = () => {
+                if (confirm('¿Eliminar esta actividad del cronograma?')) {
+                    eliminarCrono(idx);
+                    qs('#cronoEditModal').style.display = 'none';
+                }
+            };
+
+            qs('#cronoEditModal').style.display = 'flex';
+        }
+
+        function applyCronoEdit() {
+            if (editCronoIdx < 0) return;
+            const r = state.plan[editCronoIdx];
+            r.tema = qs('#ce-tema').value;
+            r.vencimiento = qs('#ce-vencimiento').value;
+            r.codigo = qs('#ce-codigo').value;
+            r.accion = qs('#ce-accion').value;
+            r.mes = +qs('#ce-mes').value;
+            r.prioridad = qs('#ce-prior').value;
+            r.fchInicio = qs('#ce-fchInicio').value;
+            r.fecha = qs('#ce-fchFin').value;
+
+            // Lógica de estado y checkbox sincronizada
+            const manualStatus = qs('#ce-status').value;
+            const isOk = qs('#ce-ok').checked;
+
+            if (isOk) {
+                r.status = (manualStatus === 'Pendiente') ? 'Entregada' : manualStatus;
+                r.entregado = true;
+            } else {
+                r.status = manualStatus;
+                r.entregado = (manualStatus !== 'Pendiente');
+            }
+
+            r.cumplimiento = r.entregado ? 100 : 0;
+
+            qs('#cronoEditModal').style.display = 'none';
+            sincroPlanSeg(true);
+            renderCrono();
+        }
+
+        function eliminarCrono(idx) {
+            const item = state.plan[idx];
+            if (item.id) state.deletedCronoIds.push(item.id);
+
+            // Mover al seguimiento como "Descartado" para trazabilidad
+            state.actu.push({
+                tema: item.tema,
+                codigo: item.codigo,
+                fchEntrega: '--',
+                mesAct: item.mes,
+                anio: state.anio,
+                statusManual: 'Descartado',
+                justificacion: `Descartado desde Cronograma: ${item.tema}`,
+                status: 'Descartado'
+            });
+            sincroPlanSeg(true);
+            state.plan.splice(idx, 1);
+            renderCrono();
+            renderActu();
+            alert("El ítem se ha movido al Repositorio de Seguimiento como 'Descartado' para su justificación.");
+        }
+
+        async function saveCrono() {
+            const { db } = window.firebaseInstance || {};
+            const { writeBatch, doc, deleteDoc, serverTimestamp } = window.firebaseFirestore || {};
+            if (!db) return;
+
+            const batch = writeBatch(db);
+
+            // Procesar borrados
+            state.deletedCronoIds.forEach(id => {
+                batch.delete(doc(db, 'gpc_cronograma_anual', id));
+            });
+
+            // Procesar guardado/actualización
+            state.plan.forEach(r => {
+                const id = r.id || `${state.anio}_${slug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
+                batch.set(doc(db, 'gpc_cronograma_anual', id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+            });
+
+            // Persistir Seguimiento
+            state.actu.forEach(r => {
+                const id = r.id || `seg_${state.anio}_${slug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
+                batch.set(doc(db, 'gpc_seguimiento', id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+            });
+
+            await batch.commit();
+            state.deletedCronoIds = [];
+            alert("✓ Cronograma actualizado y guardado.");
+        }
+
+        async function saveSeguimiento() {
+            const { db } = window.firebaseInstance || {};
+            const { writeBatch, doc, serverTimestamp } = window.firebaseFirestore || {};
+            if (!db) return;
+
+            const batch = writeBatch(db);
+            state.actu.forEach(r => {
+                const id = r.id || `seg_${state.anio}_${slug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
+                batch.set(doc(db, 'gpc_seguimiento', id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+            });
+
+            await batch.commit();
+            alert("✓ Repositorio de seguimiento guardado correctamente.");
+        }
+
+        function renderActu() {
+            const tb = qs('#tblActu tbody'); tb.innerHTML = '';
+            const filtro = qs('#filtroMesSeg').value;
+
+            let filtered = [...state.actu];
+            if (filtro !== 'all') filtered = filtered.filter(x => x.mesAct == filtro);
+
+            filtered.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.style.cursor = 'pointer';
+
+                // Determinar estado de gestión
+                let statusTxt = 'En Elaboración';
+                let statusCls = 'b-media';
+
+                if (r.statusManual === 'Descartado') {
+                    statusTxt = 'Descartado'; statusCls = 'b-critica';
+                } else {
+                    if (r.fchEnvio) { statusTxt = 'En Calidad'; statusCls = 'b-info'; }
+                    if (r.fchRetorno) { statusTxt = 'Aprobado'; statusCls = 'b-info'; }
+                    if (r.fechaSoc) { statusTxt = 'Socializado'; statusCls = 'b-muy-baja'; }
+                }
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight:800">${r.codigo || 'S/C'}</div>
+                    </td>
+                    <td>
+                        <div class="fw-bold">${r.tema}</div>
+                    </td>
+                    <td class="center text-muted small">${r.fchEntrega || '—'}</td>
+                    <td class="center"><span class="badge ${statusCls}">${statusTxt}</span></td>
+                    <td class="center" onclick="event.stopPropagation()">
+                        <button class="btn btn-sm btn-evid" onclick="window.abrirEvidencia(${state.actu.indexOf(r)})">📑</button>
+                    </td>
+                `;
+                tr.onclick = () => {
+                   console.log("Fila Seg Click:", r.tema);
+                   abrirEdicionSeg(state.actu.indexOf(r));
+                };
+                tb.appendChild(tr);
+            });
+        }
+
+        let editSegIdx = -1;
+        function abrirEdicionSeg(idx) {
+            console.log("Abrir Seg:", idx);
+            if (idx === -1) return;
+            editSegIdx = idx;
+            const r = state.actu[idx];
+            qs('#se-tema-display').textContent = r.tema;
+            qs('#se-codigo-display').textContent = r.codigo || 'Sin Código';
+
+            qs('#se-fchEnvio').value = r.fchEnvio || '';
+            qs('#se-fchRetorno').value = r.fchRetorno || '';
+            qs('#se-nvaVigencia').value = r.nuevaVigencia || '';
+            qs('#se-fechaSoc').value = r.fechaSoc || '';
+            qs('#se-obs').value = r.obs || '';
+            qs('#se-motivo').value = r.motivo || '';
+            qs('#se-nuevoCodigo').value = r.nuevaCodigo || '';
+            qs('#se-nuevoNombre').value = r.nuevaNombre || '';
+
+            if (r.statusManual === 'Descartado') {
+                qs('#se-wrap-descarte').style.display = 'block';
+                qs('#se-wrap-normal').style.display = 'none';
+            } else {
+                qs('#se-wrap-descarte').style.display = 'none';
+                qs('#se-wrap-normal').style.display = 'block';
+            }
+
+            qs('#segEditModal').style.display = 'flex';
+        }
+
+        window.autoCalcVigencia = function autoCalcVigencia() {
+            const ret = qs('#se-fchRetorno').value;
+            if (!ret) return;
+            const r = state.actu[editSegIdx];
+            const vigAnios = getVigencia(r.codigo);
+            const nva = addYears(ret, vigAnios);
+            qs('#se-nvaVigencia').value = nva;
+        }
+
+        function segEditSave() {
+            if (editSegIdx < 0) return;
+            const r = state.actu[editSegIdx];
+            r.fchEnvio = qs('#se-fchEnvio').value;
+            r.fchRetorno = qs('#se-fchRetorno').value;
+            r.nuevaVigencia = qs('#se-nvaVigencia').value;
+            r.fechaSoc = qs('#se-fechaSoc').value;
+            r.observaciones = qs('#se-obs').value;
+
+            if (r.statusManual === 'Descartado') {
+                r.motivo = qs('#se-motivo').value;
+                r.nuevoCodigo = qs('#se-nuevoCodigo').value;
+                r.nuevoNombre = qs('#se-nuevoNombre').value;
+            }
+
+            qs('#segEditModal').style.display = 'none';
+            renderActu();
+        }
+        qs('#segEditSave').onclick = segEditSave;
+        qs('#segEditCancel').onclick = () => qs('#segEditModal').style.display = 'none';
+
+        // --- Logica de Negocio ---
+        function cruzarDatos() {
+            state.perfil.forEach(p => {
+                const m = state.inventario.find(i => (i.codigo && i.codigo === p.docId) || (i.nombre && p.diag && i.nombre.toLowerCase().includes(p.diag.toLowerCase())));
+                if (m) {
+                    p.docVinculado = m.nombre; p.docId = m.codigo;
+                    p.accion = (getSemforo(m.fchProx || addYears(m.fchUlt, getVigencia(m.codigo))).urg) ? 'Actualizar' : 'Mantener';
+                }
+                else { p.accion = 'Redactar'; p.prior = p.freq > 100 ? 'Critica' : 'Alta'; }
+            });
+            renderPerfil();
+            alert("✓ Perfil contrastado con inventario.");
+        }
+
+        function generarCronograma() {
+            const cap = +qs('#capacidadMes').value || 30;
+            const pool = [];
+            state.inventario.filter(i => !i.descarte).forEach(i => {
+                const fVenc = i.fchProx || addYears(i.fchUlt, getVigencia(i.codigo));
+                const s = getSemforo(fVenc);
+                if (s.urg || i.ajuste) pool.push({ tema: i.nombre, codigo: i.codigo, prior: i.prior || 'Alta', accion: 'Actualizar', score: (s.urg ? 100 : 50), vencimiento: fVenc });
+            });
+            state.perfil.filter(p => p.accion !== 'Mantener').forEach(p => {
+                pool.push({ tema: p.diag, codigo: p.docId || 'NUEVO', prior: p.prior || 'Media', accion: p.accion, score: (p.prior === 'Critica' ? 90 : 40), vencimiento: null });
+            });
+
+            pool.sort((a, b) => b.score - a.score);
+            const plan = [];
+            let m = 0; let count = 0;
+            pool.forEach(it => {
+                if (count >= cap) { m++; count = 0; }
+                if (m > 11) return;
+                const workingDays = getWorkingDays(state.anio, m);
+                const day = (workingDays && workingDays.length > 0)
+                    ? workingDays[count % workingDays.length]
+                    : `${state.anio}-${String(m + 1).padStart(2, '0')}-15`; // Fallback al día 15
+                plan.push({ tema: it.tema, codigo: it.codigo, mes: m, fecha: day, prior: it.prior, accion: it.accion, vencimiento: it.vencimiento, status: 'Pendiente' });
+                count++;
+            });
+            state.plan = plan;
+            renderCrono();
+            alert(`✓ Plan generado: ${plan.length} items distribuidos.`);
+        }
+
+        function sincroPlanSeg(silent = false) {
+            let count = 0;
+            state.plan.forEach(p => {
+                if (p.entregado) {
+                    // Buscar coincidencia exacta por código o tema
+                    let a = state.actu.find(x => (x.codigo && x.codigo === p.codigo) || (x.tema === p.tema));
+
+                    if (!a) {
+                        // Crear nuevo record en seguimiento
+                        state.actu.push({
+                            tema: p.tema,
+                            codigo: p.codigo,
+                            fchEntrega: p.fecha || '',
+                            mesAct: p.mes,
+                            anio: state.anio,
+                            fchEnvio: '',
+                            fchRetorno: '',
+                            nuevaVigencia: '',
+                            fechaSoc: '',
+                            status: 'En Elaboración'
+                        });
+                        count++;
+                    } else {
+                        // Actualizar datos base si cambiaron en el plan
+                        a.tema = p.tema;
+                        a.codigo = p.codigo;
+                        a.mesAct = p.mes;
+                        a.fchEntrega = p.fecha || a.fchEntrega;
+                    }
+                }
+            });
+            renderActu();
+            if (!silent) {
+                if (count > 0) alert(`✓ Se han sincronizado ${count} documentos nuevos.`);
+                else alert("Todo está sincronizado correctamente.");
+            }
+        }
+
+        // --- Utilidades ---
+        function updateRow(mod, idx, key, val) { state[mod][idx][key] = val; }
+        function addYears(f, y) { if (!f) return null; const d = new Date(f); d.setFullYear(d.getFullYear() + y); return d.toISOString().split('T')[0]; }
+        function getVigencia(c) { return String(c).startsWith('GPC') ? 5 : 3; }
+        function getSemforo(v) {
+            if (!v) return { cls: 'b-info', txt: 'PENDIENTE', urg: false };
+            const d = new Date(v); const now = new Date();
+            const diff = (d - now) / (1000 * 60 * 60 * 24 * 30.4);
+            if (diff < 0) return { cls: 'b-critica', txt: 'VENCIDO', urg: true };
+            if (diff < 6) return { cls: 'b-muy-alta', txt: 'URGENTE', urg: true };
+            if (diff < 12) return { cls: 'b-media-alta', txt: 'POR VENCER', urg: true };
+            return { cls: 'b-muy-baja', txt: 'VIGENTE', urg: false };
+        }
+        function getPrioCls(p) { const m = { Critica: 'b-critica', Alta: 'b-alta', Media: 'b-media', Baja: 'b-baja' }; return m[p] || 'b-info'; }
+        function getWorkingDays(y, m) {
+            const res = []; const d = new Date(y, m, 1);
+            while (d.getMonth() === m) {
+                if (d.getDay() === 3 || d.getDay() === 4) res.push(d.toISOString().split('T')[0]);
+                d.setDate(d.getDate() + 1);
+            }
+            return res;
+        }
+        function slug(t) { return String(t).toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]/g, ''); }
+
+        // --- Evidencias & Modal ---
+        let currentActuIdx = -1;
+        function abrirEvidencia(idx) {
+            currentActuIdx = idx;
+            const r = state.actu[idx];
+            qs('#evidDocRef').textContent = r.tema;
+            qs('#evidTema').value = r.tema;
+            qs('#evidFecha').value = r.fechaSoc || r.fchEntrega || '';
+            qs('#evidModal').style.display = 'flex';
+            renderServicios();
+            renderProfsCat();
+            renderProfsSel();
+            toggleEvidFields();
+        }
+
+        const SERVICIOS = ["URGENCIAS", "UCI ADULTOS", "HOSPITALIZACIÓN", "CIRUGÍA", "PEDIATRÍA", "CONSULTA EXTERNA"];
+        function renderServicios() {
+            const box = qs('#evidServicios'); box.innerHTML = '';
+            SERVICIOS.forEach(s => {
+                const b = document.createElement('button'); b.className = 'btn btn-sm';
+                b.textContent = s; b.onclick = () => b.classList.toggle('btn-primary');
+                box.appendChild(b);
+            });
+        }
+
+        function renderProfsCat() {
+            const list = qs('#profsCatList'); list.innerHTML = '';
+            const query = qs('#filtroEsp').value.toLowerCase();
+            state.profs.filter(p => !query || p.especialidad.toLowerCase().includes(query) || p.nombre.toLowerCase().includes(query)).slice(0, 10).forEach(p => {
+                const d = document.createElement('div'); d.className = 'p-2 mb-1 border rounded d-flex justify-content-between align-items-center';
+                d.innerHTML = `<div><b>${p.nombre}</b><br><small>${p.especialidad}</small></div> <button class="btn btn-sm" onclick="seleccionarProf('${p.cedula}')">+</button>`;
+                list.appendChild(d);
+            });
+            qs('#filtroEsp').oninput = renderProfsCat;
+        }
+
+        function seleccionarProf(ced) {
+            const p = state.profs.find(x => x.cedula === ced);
+            if (!state.actu[currentActuIdx].firmantes) state.actu[currentActuIdx].firmantes = [];
+            if (!state.actu[currentActuIdx].firmantes.find(x => x.cedula === ced)) {
+                state.actu[currentActuIdx].firmantes.push({ ...p, firma: null });
+                renderProfsSel();
+            }
+        }
+
+        function agregarProfManual() {
+            if (!state.actu[currentActuIdx].firmantes) state.actu[currentActuIdx].firmantes = [];
+            const newProf = {
+                cedula: 'M-' + Math.random().toString(36).slice(2, 7),
+                nombre: 'Nuevo Profesional',
+                especialidad: 'General',
+                firma: null
+            };
+            state.actu[currentActuIdx].firmantes.push(newProf);
+            renderProfsSel();
+        }
+
+        function renderProfsSel() {
+            const r = state.actu[currentActuIdx];
+            const tb = qs('#profsSelTable tbody'); tb.innerHTML = '';
+            if (!r.firmantes) return;
+            r.firmantes.forEach((f, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="text" class="w-100 border-0 bg-transparent" value="${f.nombre}" onchange="state.actu[currentActuIdx].firmantes[${i}].nombre = this.value">
+                        <br><small><input type="text" class="w-100 border-0 bg-transparent text-muted" value="${f.especialidad}" onchange="state.actu[currentActuIdx].firmantes[${i}].especialidad = this.value"></small>
+                    </td>
+                    <td class="center" style="vertical-align:middle">
+                        ${f.firma ? `<img src="${f.firma}" class="sig-thumb" style="max-height:40px">` : `<button class="btn btn-sm btn-outline-primary" onclick="abrirSig(${i})">Firmar</button>`}
+                    </td>
+                    <td class="center" style="vertical-align:middle">
+                        <button class="btn btn-sm text-danger" onclick="state.actu[currentActuIdx].firmantes.splice(${i}, 1); renderProfsSel()">×</button>
+                    </td>
+                `;
+                tb.appendChild(tr);
+            });
+        }
+
+        let currentFirmIdx = -1;
+        function abrirSig(idx) {
+            currentFirmIdx = idx;
+            qs('#sigPadWrap').style.display = 'block';
+            qs('#sigFor').textContent = `Firma: ${state.actu[currentActuIdx].firmantes[idx].nombre}`;
+            const cnv = qs('#sigCanvas'); const ctx = cnv.getContext('2d');
+            ctx.clearRect(0, 0, cnv.width, cnv.height);
+            let painting = false;
+            cnv.onmousedown = (e) => { painting = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
+            cnv.onmousemove = (e) => { if (painting) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
+            window.onmouseup = () => painting = false;
+            qs('#sigClear').onclick = () => ctx.clearRect(0, 0, cnv.width, cnv.height);
+            qs('#sigSave').onclick = () => {
+                state.actu[currentActuIdx].firmantes[currentFirmIdx].firma = cnv.toDataURL();
+                qs('#sigPadWrap').style.display = 'none';
+                renderProfsSel();
+            };
+
+            qs('#fileSigImg').onchange = e => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = evt => {
+                    state.actu[currentActuIdx].firmantes[currentFirmIdx].firma = evt.target.result;
+                    qs('#sigPadWrap').style.display = 'none';
+                    renderProfsSel();
+                };
+                reader.readAsDataURL(file);
+            };
+        }
+
+        async function genEvidenciasPDF() {
+            const r = state.actu[currentActuIdx];
+            const { jsPDF } = window.jspdf;
+            const tipo = qs('#evidTipo').value;
+            const svcs = qsa('#evidServicios .btn-primary').map(b => b.textContent);
+
+            if (svcs.length === 0) { alert("Por favor seleccione al menos un servicio."); return; }
+
+            for (const svc of svcs) {
+                const pdf = new jsPDF(tipo === 'impl' ? 'p' : 'l', 'mm', 'a4');
+                const title = tipo === 'impl' ? "HOJA DE IMPLEMENTACIÓN Y DESPLIEGUE" : "FICHA TÉCNICA DE CAPACITACIÓN / SOCIALIZACIÓN";
+
+                pdf.setFontSize(16); pdf.text(title, pdf.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+                pdf.setFontSize(10);
+
+                let y = 35;
+                pdf.text(`Documento: ${r.tema}`, 20, y); y += 6;
+                pdf.text(`Servicio: ${svc}`, 20, y); y += 6;
+                pdf.text(`Fecha: ${qs('#evidFecha').value}`, 20, y); y += 6;
+                pdf.text(`Facilitador: ${qs('#evidFac').value}`, 20, y); y += 6;
+                pdf.text(`Responsable Area: ${qs('#evidResp').value}`, 20, y); y += 6;
+                pdf.text(`Horario: ${qs('#evidHora').value}`, 120, y - 6);
+                pdf.text(`Duración: ${qs('#evidDur').value}`, 120, y);
+
+                if (tipo === 'impl') {
+                    pdf.text(`Versión: ${qs('#evidVersion').value}`, 20, y + 6);
+                    pdf.text(`Vigencia: ${qs('#evidVigencia').value}`, 120, y + 6);
+                    y += 12;
+                }
+
+                y += 10;
+                pdf.text("Asistentes y Firmas:", 20, y); y += 8;
+                pdf.line(20, y, pdf.internal.pageSize.getWidth() - 20, y); y += 8;
+
+                if (r.firmantes) {
+                    r.firmantes.forEach(f => {
+                        pdf.text(`${f.nombre} - ${f.especialidad}`, 25, y);
+                        if (f.firma) pdf.addImage(f.firma, 'PNG', pdf.internal.pageSize.getWidth() - 60, y - 5, 30, 10);
+                        y += 10;
+                        if (y > pdf.internal.pageSize.getHeight() - 20) { pdf.addPage(); y = 20; }
+                    });
+                }
+                pdf.save(`${tipo}_${slug(r.tema)}_${slug(svc)}.pdf`);
+            }
+        }
+
+        // Exponer para HTML (Nivel Superior)
+        window.abrirEdicionCrono = abrirEdicionCrono;
+        window.eliminarCrono = eliminarCrono;
+        window.abrirEvidencia = abrirEvidencia;
+        window.seleccionarProf = seleccionarProf;
+        window.abrirSig = abrirSig;
+        window.sincroPlanSeg = sincroPlanSeg;
+        window.saveSeguimiento = saveSeguimiento;
+        window.renderActu = renderActu;
+        window.autoCalcVigencia = autoCalcVigencia;
+        window.segEditSave = segEditSave;
+        window.abrirEdicionSeg = abrirEdicionSeg;
+        window.agregarProfManual = agregarProfManual;
+        window.toggleEvidFields = toggleEvidFields;
+        window.renderIdent = renderIdent;
+        window.renderPerfil = renderPerfil;
+        window.renderCrono = renderCrono;
+        window.saveCrono = saveCrono;
+        window.updateRow = updateRow;
+
+        window.saveBatch = saveBatch;
+        window.importXL = importXL;
+        window.cruzarDatos = cruzarDatos;
+        window.generarCronograma = generarCronograma;
+        window.initModule = initModule;
+
+        // Inicializar directamente (los módulos se ejecutan diferidos por defecto)
         initModule();
         /*]]>*/
     </script>

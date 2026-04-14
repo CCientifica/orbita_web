@@ -1249,7 +1249,7 @@ function getLaboratorioTotalFromRenderedTable() {
     const label = (span.textContent || "").trim().toLowerCase();
     if (!label || label.includes('total')) return; // Evitar sumar la columna de TOTAL ya dividida
 
-    const td = tds[i + 1]; 
+    const td = tds[i + 1];
     if (!td) return;
 
     const raw = td.querySelector('input')?.value || td.textContent || "0";
@@ -1268,7 +1268,7 @@ function getLaboratorioTotalFromRenderedTable() {
 }
 
 function buildRealAlignmentDataFromTables() {
-  const sumImg = 
+  const sumImg =
     getNumericFromRenderedTable('#tbl-img-tot', 'Imágenes (Total)') +
     getNumericFromRenderedTable('#tbl-img-tot', 'Pacientes (Total)') +
     getNumericFromRenderedTable('#tbl-img-tot', 'Procedimientos guiados (Total)');
@@ -1337,7 +1337,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
 
       const clean = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[´'"]/g, "").trim();
       const monthNum = Number(document.getElementById("month")?.value?.split('-')[1]) || 1;
-      
+
       const isRx = item.key === "imagenesRx";
       const isEco = item.key === "imagenesEco";
       const isTac = item.key === "imagenesTac";
@@ -1345,7 +1345,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
       const candidateRows = rows.map(r => {
         const rowAllValues = Object.values(r.values || {});
         const rowValsClean = rowAllValues.map(v => clean(v));
-        
+
         let belongs = false;
         if (isRx && rowValsClean.some(v => v.includes("rayo") || v.includes("rx"))) belongs = true;
         if (isEco && rowValsClean.some(v => v.includes("eco") || v.includes("ecogra"))) belongs = true;
@@ -1360,7 +1360,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
           .map(v => String(v || "").replace(/\./g, "").replace(",", "."))
           .filter(v => v !== "" && !isNaN(parseFloat(v)))
           .map(v => ({ val: v, num: parseFloat(v) }));
-        
+
         const sumMonths = nums.reduce((acc, curr) => acc + curr.num, 0);
         return { row: r, nums, sumMonths, penalty };
       }).filter(x => x && x.nums.length >= 1);
@@ -1372,11 +1372,11 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
       if (bestMatch) {
         const n = bestMatch.nums;
         if (isSubImg) {
-           if (n.length === 1) meta = n[0].num; 
-           else if (n.length >= 12) meta = n[n.length - (13 - monthNum)]?.num || n[monthNum - 1]?.num || 0;
-           else meta = n[n.length - 1]?.num || 0;
+          if (n.length === 1) meta = n[0].num;
+          else if (n.length >= 12) meta = n[n.length - (13 - monthNum)]?.num || n[monthNum - 1]?.num || 0;
+          else meta = n[n.length - 1]?.num || 0;
         } else if (meta === 0) {
-           meta = n[n.length >= 12 ? monthNum - 1 : n.length - 1]?.num || 0;
+          meta = n[n.length >= 12 ? monthNum - 1 : n.length - 1]?.num || 0;
         }
       }
     }
@@ -1393,8 +1393,8 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
     let mesAnterior = 0, promHist = 0, variacionMes = 0;
     if (GLOBAL_YEARLY_DATASET) {
       const activeIdx = (Number(document.getElementById("month")?.value?.split('-')[1]) || 1) - 1;
-      const dsKeyMap = { 
-        urgencias: "triages", hospitalizacion: "hosp", uci: "uci", uce: "uce", 
+      const dsKeyMap = {
+        urgencias: "triages", hospitalizacion: "hosp", uci: "uci", uce: "uce",
         cirugia: "procs", consultaExterna: "ce", laboratorio: "laboratorio", imagenes: "img",
         imagenesTac: "tac", imagenesRx: "rx", imagenesEco: "eco"
       };
@@ -1403,7 +1403,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
         const history = GLOBAL_YEARLY_DATASET[dsKey].real || [];
         mesAnterior = activeIdx > 0 ? history[activeIdx - 1] : 0;
         const validMonths = history.filter((v, idx) => v > 0 && idx <= activeIdx);
-        promHist = validMonths.length > 0 ? validMonths.reduce((a,b)=>a+b,0) / validMonths.length : real;
+        promHist = validMonths.length > 0 ? validMonths.reduce((a, b) => a + b, 0) / validMonths.length : real;
         variacionMes = mesAnterior > 0 ? ((real / mesAnterior) - 1) * 100 : 0;
       }
     }
@@ -1429,7 +1429,7 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
   const totalWeight = entries.reduce((s, e) => s + e.pesoVal, 0);
   entries.forEach(e => {
     e.scoreImpacto = (e.brecha / (e.meta || 1)) * (e.pesoVal / totalWeight) * 100;
-    
+
     // Cálculos de variación MoM y Histórica
     e.varMoM = e.mesAnterior > 0 ? ((e.real - e.mesAnterior) / e.mesAnterior) * 100 : 0;
     e.varHist = e.promHist > 0 ? ((e.real - e.promHist) / e.promHist) * 100 : 0;
@@ -1466,7 +1466,7 @@ function renderAlineacionEstrategica(model, monthId) {
   const mayorBrechaNeg = model.filter(x => x.esIncumplimiento).sort((a, b) => Math.abs(b.brecha) - Math.abs(a.brecha))[0];
 
   if (badge) badge.textContent = monthId;
-  
+
   // --- CARDS PARA LA DIRECTORA MÉDICA (BALANCE SIMPLE) ---
   const sumFaltan = model.filter(x => x.brecha < 0).reduce((s, x) => s + x.brecha, 0);
   const sumSobran = model.filter(x => x.brecha > 0).reduce((s, x) => s + x.brecha, 0);
@@ -1557,11 +1557,11 @@ function renderAlineacionEstrategica(model, monthId) {
           x.estado === 'Alta' ? 'warn' :
             x.estado === 'Media' ? 'warn' :
               'ok';
-      
+
       const momIcon = x.varMoM > 0 ? '↑' : (x.varMoM < 0 ? '↓' : '→');
       const momColor = x.varMoM > 0 ? '#10b981' : (x.varMoM < 0 ? '#ef4444' : '#64748b');
       const histColor = x.varHist > 0 ? '#10b981' : (x.varHist < 0 ? '#ef4444' : '#64748b');
-      
+
       return `
               <tr>
                 <td style="font-weight:700;">${x.linea}</td>
@@ -1596,9 +1596,9 @@ function renderAlineacionEstrategica(model, monthId) {
   }
 
   if (mix) {
-    const frenos = model.filter(x => x.esIncumplimiento).sort((a,b) => a.brecha - b.brecha);
-    const sosten = model.filter(x => !x.esIncumplimiento).sort((a,b) => b.brecha - a.brecha);
-    
+    const frenos = model.filter(x => x.esIncumplimiento).sort((a, b) => a.brecha - b.brecha);
+    const sosten = model.filter(x => !x.esIncumplimiento).sort((a, b) => b.brecha - a.brecha);
+
     let htmlFrenos = frenos.map(x => `
       <div style="margin-bottom:10px; padding:12px; border-radius:8px; border-left:5px solid #ef4444; background:#fef2f2; border:1px solid #fee2e2; border-left-width:5px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1649,13 +1649,13 @@ function renderAlineacionEstrategica(model, monthId) {
     const totalReal = model.reduce((s, x) => s + x.real, 0);
     const totalMeta = model.reduce((s, x) => s + x.meta, 0);
     const totalCumple = ((totalReal / (totalMeta || 1)) * 100).toFixed(1);
-    
+
     // Segmentación
     const asistenciales = model.filter(x => ['Hospitalización', 'UCI', 'Urgencias', 'Cirugía', 'UCE'].includes(x.linea));
     const apoyo = model.filter(x => ['Laboratorio', 'Imágenes Diagnósticas', 'Consulta Externa'].includes(x.linea));
-    
-    const criticas = model.filter(x => x.esIncumplimiento).sort((a,b) => Math.abs(b.brecha) - Math.abs(a.brecha));
-    const motores = model.filter(x => !x.esIncumplimiento && x.cumplimiento > 105).sort((a,b) => b.brecha - a.brecha);
+
+    const criticas = model.filter(x => x.esIncumplimiento).sort((a, b) => Math.abs(b.brecha) - Math.abs(a.brecha));
+    const motores = model.filter(x => !x.esIncumplimiento && x.cumplimiento > 105).sort((a, b) => b.brecha - a.brecha);
     const malasTendencias = model.filter(x => x.varMoM < -5 && x.esIncumplimiento);
 
     insights.innerHTML = `
@@ -1671,10 +1671,10 @@ function renderAlineacionEstrategica(model, monthId) {
         <div style="margin-bottom:20px;">
           <h4 style="margin:0 0 10px 0; color:var(--pri-dark); font-size:0.9rem;">2. DESEMPEÑO POR SEGMENTO OPERATIVO</h4>
           <p style="margin:0 0 10px 0;">
-            • <b>Bloque Asistencial:</b> El comportamiento está liderado por <b>${asistenciales.sort((a,b)=>b.cumplimiento - a.cumplimiento)[0]?.linea || 'N/A'}</b> (${asistenciales.sort((a,b)=>b.cumplimiento - a.cumplimiento)[0]?.cumplimiento.toFixed(1)}%). 
+            • <b>Bloque Asistencial:</b> El comportamiento está liderado por <b>${asistenciales.sort((a, b) => b.cumplimiento - a.cumplimiento)[0]?.linea || 'N/A'}</b> (${asistenciales.sort((a, b) => b.cumplimiento - a.cumplimiento)[0]?.cumplimiento.toFixed(1)}%). 
           </p>
           <p style="margin:0;">
-            • <b>Apoyo y Diagnóstico:</b> Se observa una ${apoyo.every(x=>x.cumplimiento >= 95) ? 'tracción positiva' : 'desviación controlada'}, destacando a <b>${apoyo.sort((a,b)=>b.cumplimiento - a.cumplimiento)[0]?.linea}</b> como principal motor de este segmento.
+            • <b>Apoyo y Diagnóstico:</b> Se observa una ${apoyo.every(x => x.cumplimiento >= 95) ? 'tracción positiva' : 'desviación controlada'}, destacando a <b>${apoyo.sort((a, b) => b.cumplimiento - a.cumplimiento)[0]?.linea}</b> como principal motor de este segmento.
           </p>
         </div>
 
@@ -1682,15 +1682,15 @@ function renderAlineacionEstrategica(model, monthId) {
           <h4 style="margin:0 0 10px 0; color:var(--pri-dark); font-size:0.9rem;">3. DINÁMOCIA DE COMPENSACIÓN</h4>
           <p style="margin:0;">
             La Diferencia más crítica se localiza en <b>${criticas[0]?.linea || 'Ninguno'}</b> con un faltante de ${Math.abs(criticas[0]?.brecha || 0).toLocaleString('es-CO')} servicios. 
-            Esta desviación está siendo compensada activamente por el sobrecumplimiento en <b>${motores.map(x=>x.linea).join(', ') || 'ninguna línea adicional'}</b>, que aportan un volumen extra de ${motores.reduce((s,x)=>s+x.brecha,0).toLocaleString('es-CO')} servicios para sostener el balance final.
+            Esta desviación está siendo compensada activamente por el sobrecumplimiento en <b>${motores.map(x => x.linea).join(', ') || 'ninguna línea adicional'}</b>, que aportan un volumen extra de ${motores.reduce((s, x) => s + x.brecha, 0).toLocaleString('es-CO')} servicios para sostener el balance final.
           </p>
         </div>
 
         <div style="padding:15px; background:#fef2f2; border:1px solid #fecaca; border-radius:10px; border-left:4px solid #ef4444;">
           <h4 style="margin:0 0 10px 0; color:#dc2626; font-size:0.9rem; font-weight:800;">4. RIESGOS ESTRATÉGICOS Y TENDENCIA</h4>
-          ${malasTendencias.length > 0 
-            ? `Se identifica un riesgo de <b>Debilitamiento de Tendencia</b> en <b>${malasTendencias.map(x=>x.linea).join(', ')}</b>. Estos servicios, además del incumplimiento, muestran una caída mayor al 5% respecto al mes previo, lo que indica un deterioro progresivo de la capacidad instalada.` 
-            : 'No se identifican servicios con indicadores de alerta simultánea en cumplimiento y tendencia MoM.'}
+          ${malasTendencias.length > 0
+        ? `Se identifica un riesgo de <b>Debilitamiento de Tendencia</b> en <b>${malasTendencias.map(x => x.linea).join(', ')}</b>. Estos servicios, además del incumplimiento, muestran una caída mayor al 5% respecto al mes previo, lo que indica un deterioro progresivo de la capacidad instalada.`
+        : 'No se identifican servicios con indicadores de alerta simultánea en cumplimiento y tendencia MoM.'}
         </div>
       </div>
     `;
@@ -3616,7 +3616,7 @@ async function loadYearlyCharts(yearId) {
       rx: ["rayo", "rx", "placa"],
       eco: ["ecogra", "eco"]
     };
-    
+
     let targetRoots = [];
     const labClean = lab.toLowerCase();
     if (labClean.includes("tac") || labClean.includes("tomograf")) targetRoots = roots.tac;
@@ -3629,11 +3629,11 @@ async function loadYearlyCharts(yearId) {
       const kClean = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       if (targetRoots.some(r => kClean.includes(r)) && !kClean.includes("equi")) {
         const val = typeof ov[k] === 'object' ? Object.values(ov[k])[0] : ov[k];
-        const num = parseFloat(String(val).replace(/\./g,'').replace(',','.'));
+        const num = parseFloat(String(val).replace(/\./g, '').replace(',', '.'));
         if (!isNaN(num) && num > 0) candidates.push(num);
       }
     }
-    
+
     // Si es una sub-línea de imágenes, elegimos el valor que parezca producción (>50)
     if (targetRoots.length > 0 && (targetRoots === roots.tac || targetRoots === roots.rx || targetRoots === roots.eco)) {
       const prodValue = candidates.find(n => n > 50);
@@ -3668,7 +3668,7 @@ async function loadYearlyCharts(yearId) {
         dataSet.ce.real[i] = getValChart(ov, "CE", "TOTAL");
         dataSet.endo.real[i] = getValChart(ov, "ENDO", "TOTAL");
         dataSet.img.real[i] = getValChart(ov, "IMG-TOT", "Imágenes (Total)");
-        
+
         // Laboratorio: Valor total sin divisiones
         let labTotal = 0;
         LAB_HOSP_KEYS.forEach(k => labTotal += getValChart(ov, "LAB", k));
