@@ -18,6 +18,42 @@
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
 
+        // =========================================================
+        // 🛠️ HELPERS GLOBALES (Normalización y Clasificación)
+        // =========================================================
+        window.norm = (s) => String(s ?? "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        window.esPacienteIncidente = function(p) {
+                if (!p) return true;
+                const isRealValue = (v) => {
+                        if (v === null || v === undefined) return false;
+                        return String(v).trim() !== '';
+                };
+                const isKeyClinica = (key) => {
+                        const m = key.match(/^VAR(\d+)/i);
+                        return m && parseInt(m[1]) >= 17;
+                };
+                const base = p.datos_base || {};
+                const combinedKeys = [...Object.keys(p), ...Object.keys(base)];
+                for (const k of combinedKeys) {
+                        if (isKeyClinica(k)) {
+                                const val = p[k] ?? base[k];
+                                if (isRealValue(val)) return false; 
+                        }
+                }
+                if (p.periodos) {
+                        for (const pKey in p.periodos) {
+                                const vars = p.periodos[pKey]?.variables || {};
+                                for (const vKey in vars) {
+                                        if (isKeyClinica(vKey)) {
+                                                if (isRealValue(vars[vKey])) return false;
+                                        }
+                                }
+                        }
+                }
+                return true; 
+        };
+
         // 🎨 SISTEMA DE ESTILOS PREMIUM PARA AYUDAS Y TOOLTIPS
         if (!document.getElementById('altocosto-ui-styles')) {
                 const style = document.createElement('style');
@@ -4672,7 +4708,6 @@
 
                 const $setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
                 const $setWidth = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = pct + "%"; };
-                const norm = (s) => String(s ?? "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 // ─── FESTIVOS COLOMBIA 2024-2027 (Ley Emiliani incluida) ───────────────
                 const FESTIVOS_CO = new Set([
@@ -4791,48 +4826,7 @@
                         String(ahora.getMonth() + 1).padStart(2, "0") + "-" +
                         String(ahora.getDate()).padStart(2, "0");
 
-                // =========================================================
-                // 🔄 CLASIFICACIÓN DE INCIDENTES Y PREVALENTES (Regla Clínica)
-                // =========================================================
-                function esPacienteIncidente(p) {
-                        if (!p) return true;
 
-                        // Un dato se considera presente si no es null, undefined, vacío o solo espacios. 
-                        const isRealValue = (v) => {
-                                if (v === null || v === undefined) return false;
-                                return String(v).trim() !== '';
-                        };
-
-                        const isKeyClinica = (key) => {
-                                const m = key.match(/^VAR(\d+)/i);
-                                return m && parseInt(m[1]) >= 17;
-                        };
-
-                        // 1. Revisar Datos Base y Raíz del documento
-                        const base = p.datos_base || {};
-                        const combinedKeys = [...Object.keys(p), ...Object.keys(base)];
-
-                        for (const k of combinedKeys) {
-                                if (isKeyClinica(k)) {
-                                        const val = p[k] ?? base[k];
-                                        if (isRealValue(val)) return false; // ANTIGUO (Cualquier dato clínico >= 17)
-                                }
-                        }
-
-                        // 2. Revisar TODOS los Periodos (Barrido Histórico)
-                        if (p.periodos) {
-                                for (const pKey in p.periodos) {
-                                        const vars = p.periodos[pKey]?.variables || {};
-                                        for (const vKey in vars) {
-                                                if (isKeyClinica(vKey)) {
-                                                        if (isRealValue(vars[vKey])) return false; // ANTIGUO (Cualquier dato clínico >= 17 en historia)
-                                                }
-                                        }
-                                }
-                        }
-
-                        return true; // Es NUEVO (Solo datos demográficos < 17 o campos vacíos)
-                }
 
                 window.__pacientesClasificados = [];
                 window.__filtroTipo = 'todos';

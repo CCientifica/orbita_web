@@ -604,11 +604,33 @@
             const p = (ins[0].value || "").trim(), cod = (ins[1].value || "").trim(), dct = (ins[2].value || "").trim(), nom = (ins[3].value || "").trim();
             const a1 = toInt(ins[4].value), a2 = toInt(ins[5].value), h1 = toInt(ins[6].value), h2 = toInt(ins[7].value);
             if (!nom) continue;
+            
+            const amsTotal = a1 + a2;
+            const hosTotal = h1 + h2;
+            const granTotal = amsTotal + hosTotal;
+            const usoAms = granTotal > 0 ? (amsTotal / granTotal) * 100 : 0;
+
             const id = `M_${month}_0_${slug(pab)}_${slug(cod || dct || nom)}`;
             const ref = doc(db, "ams_registro_periodos", id);
+            
             batch.set(ref, {
-              tipo: "M", month, quincena: "0", pabellon: p, cod_prof: cod, doc_prof: dct, nombre: nom,
-              ams_q1: a1, ams_q2: a2, hos_q1: h1, hos_q2: h2, total: a1 + a2 + h1 + h2, updatedAt: serverTimestamp()
+              tipo: "M", 
+              month, 
+              quincena: "0", 
+              pabellon: p, 
+              app: "AMS", // 🟢 Requerido por reglas
+              cod_prof: cod, 
+              doc_prof: dct, 
+              nombre: nom,
+              ams: amsTotal,       // 🟢 Requerido por reglas
+              hosvital: hosTotal,  // 🟢 Requerido por reglas
+              ams_q1: a1, 
+              ams_q2: a2, 
+              hos_q1: h1, 
+              hos_q2: h2, 
+              total: granTotal,    // 🟢 Debe ser ams + hosvital
+              uso_ams: usoAms,     // 🟢 Validado en reglas
+              updatedAt: serverTimestamp()
             }, { merge: true });
             count++;
           }

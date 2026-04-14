@@ -47,8 +47,8 @@ const ALIGNMENT_CAP_MAP = [
   { key: "cirugia", label: "Cirugía", capMatch: "cirugia" },
   { key: "consultaExterna", label: "Consulta Externa", capMatch: "consulta externa" },
   { key: "laboratorio", label: "Laboratorio", capMatch: "laboratorio" },
-  { key: "imagenes", label: "Imágenes Diagnósticas (Total)", capMatch: "imagenes diagnosticas" },
-  { key: "imagenesTac", label: "· Tomografías (TAC)", capMatch: "Cantidad de TAC'S mes" },
+  { key: "imagenes", label: "Imágenes Diagnósticas (Total)", capMatch: "estudios imagenes" },
+  { key: "imagenesTac", label: "· Tomografías (TAC)", capMatch: "tomograf" },
   { key: "imagenesRx", label: "· Rayos X", capMatch: "Cantidad de rayos X mes" },
   { key: "imagenesEco", label: "· Ecografías", capMatch: "Cantidad de Ecografias mes" }
 ];
@@ -1193,7 +1193,9 @@ function getSumNumericFromRenderedTable(tableId, textMatches) {
 
   const targetRows = rows.filter(r => {
     const first = (r.cells?.[0]?.textContent || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    return matches.some(t => first === String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim());
+    const search = String(matches[0]).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    // Usamos .includes para ser más robustos frente a espacios o prefijos/sufijos
+    return first.includes(search);
   });
 
   for (const row of targetRows) {
@@ -1320,13 +1322,65 @@ function classifyPrioridad(estado, impacto) {
   return "Estable";
 }
 
-function buildStrategicAlignmentModel({ capMeta }) {
+function buildStrategicAlignmentModel({ capMeta, capRows }) {
   const realData = buildRealAlignmentDataFromTables();
   const entries = [];
+  const rows = capRows || [];
 
   for (const item of ALIGNMENT_CAP_MAP) {
-    const real = Number(realData[item.key] || 0);
-    const meta = Number(capMeta?.[item.key]?.metaMes || 0);
+    let real = Number(realData[item.key] || 0);
+    let meta = Number(capMeta?.[item.key]?.metaMes || 0);
+
+    // BÚSQUEDA DINÁMICA DE META EN FILAS DEL CAP (Firebase)
+    if (rows.length > 0 && item.capMatch) {
+      if (["imagenesRx", "imagenesEco"].includes(item.key)) meta = 0;
+
+      const clean = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[´'"]/g, "").trim();
+      const monthNum = Number(document.getElementById("month")?.value?.split('-')[1]) || 1;
+      
+      const isRx = item.key === "imagenesRx";
+      const isEco = item.key === "imagenesEco";
+      const isTac = item.key === "imagenesTac";
+
+      const candidateRows = rows.map(r => {
+        const rowAllValues = Object.values(r.values || {});
+        const rowValsClean = rowAllValues.map(v => clean(v));
+        
+        let belongs = false;
+        if (isRx && rowValsClean.some(v => v.includes("rayo") || v.includes("rx"))) belongs = true;
+        if (isEco && rowValsClean.some(v => v.includes("eco") || v.includes("ecogra"))) belongs = true;
+        if (isTac && rowValsClean.some(v => v.includes("tac") || v.includes("tomograf"))) belongs = true;
+
+        if (!belongs) return null;
+
+        let penalty = rowValsClean.some(v => v.includes("equi") || v.includes("dispo") || v.includes("tecnic")) ? -1000 : 0;
+
+        // Extraemos todos los números disponibles en la fila
+        const nums = rowAllValues
+          .map(v => String(v || "").replace(/\./g, "").replace(",", "."))
+          .filter(v => v !== "" && !isNaN(parseFloat(v)))
+          .map(v => ({ val: v, num: parseFloat(v) }));
+        
+        const sumMonths = nums.reduce((acc, curr) => acc + curr.num, 0);
+        return { row: r, nums, sumMonths, penalty };
+      }).filter(x => x && x.nums.length >= 1);
+
+      const isSubImg = ["imagenesTac", "imagenesRx", "imagenesEco"].includes(item.key);
+      const finalists = isSubImg ? candidateRows.filter(c => c.sumMonths > 10) : candidateRows;
+
+      const bestMatch = finalists.sort((a, b) => (b.penalty - a.penalty) || (b.sumMonths - a.sumMonths))[0];
+      if (bestMatch) {
+        const n = bestMatch.nums;
+        if (isSubImg) {
+           if (n.length === 1) meta = n[0].num; 
+           else if (n.length >= 12) meta = n[n.length - (13 - monthNum)]?.num || n[monthNum - 1]?.num || 0;
+           else meta = n[n.length - 1]?.num || 0;
+        } else if (meta === 0) {
+           meta = n[n.length >= 12 ? monthNum - 1 : n.length - 1]?.num || 0;
+        }
+      }
+    }
+
     const brecha = real - meta;
     const cumplimiento = meta > 0 ? (real / meta) * 100 : 0;
     const esIncumplimiento = brecha < 0;
@@ -1341,7 +1395,8 @@ function buildStrategicAlignmentModel({ capMeta }) {
       const activeIdx = (Number(document.getElementById("month")?.value?.split('-')[1]) || 1) - 1;
       const dsKeyMap = { 
         urgencias: "triages", hospitalizacion: "hosp", uci: "uci", uce: "uce", 
-        cirugia: "procs", consultaExterna: "ce", laboratorio: "laboratorio", imagenes: "img" 
+        cirugia: "procs", consultaExterna: "ce", laboratorio: "laboratorio", imagenes: "img",
+        imagenesTac: "tac", imagenesRx: "rx", imagenesEco: "eco"
       };
       const dsKey = dsKeyMap[item.key];
       if (dsKey && GLOBAL_YEARLY_DATASET[dsKey]) {
@@ -1718,7 +1773,10 @@ function extractStrategicCapMeta(capRows, monthId) {
 
   const headerRow = capRows[headerIdx];
   const monthCol = getCapMonthColumn(headerRow, monthId);
-  if (monthCol < 0) throw new Error(`No se encontró columna CAP para ${monthId}.`);
+  if (monthCol < 0) {
+    console.warn(`No se encontró columna CAP para ${monthId}. Se usará búsqueda dinámica.`);
+    return {};
+  }
 
   const metas = {};
 
@@ -3233,7 +3291,7 @@ async function runLoad() {
       LAST_CAP_ROWS = capRows;
 
       const capMeta = extractStrategicCapMeta(capRows, mval);
-      LAST_ALIGNMENT_MODEL = buildStrategicAlignmentModel({ capMeta });
+      LAST_ALIGNMENT_MODEL = buildStrategicAlignmentModel({ capMeta, capRows });
 
       renderAlineacionEstrategica(LAST_ALIGNMENT_MODEL, mval);
     } catch (err) {
@@ -3531,26 +3589,57 @@ async function loadYearlyCharts(yearId) {
     endo: { real: Array(12).fill(0), meta: Array(12).fill(0) },
     img: { real: Array(12).fill(0), meta: Array(12).fill(0) },
     laboratorio: { real: Array(12).fill(0), meta: Array(12).fill(0) },
-    efectivas: { real: Array(12).fill(0), meta: Array(12).fill(75) }
+    efectivas: { real: Array(12).fill(0), meta: Array(12).fill(75) },
+    tac: { real: Array(12).fill(0), meta: Array(12).fill(0) },
+    rx: { real: Array(12).fill(0), meta: Array(12).fill(0) },
+    eco: { real: Array(12).fill(0), meta: Array(12).fill(0) }
   };
 
   // Función de lectura para gráficas: Limpia puntos de miles y maneja prefijos
   const getValChart = (ov, sec, lab) => {
     if (!ov) return 0;
+    const v = (valRaw) => {
+      if (typeof valRaw === 'string') {
+        const isDecimal = lab.toLowerCase().includes('%') || lab.toLowerCase().includes('promedio');
+        return isDecimal ? (parseFloat(valRaw.replace(/\./g, '').replace(',', '.')) || 0) : (parseInt(valRaw.replace(/\./g, '').replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0);
+      }
+      return Number(valRaw) || 0;
+    };
+    // 1. Intento por llave exacta
     const fullKey = `${sec.toUpperCase()}|${lab}`;
-    // Prioriza la llave con prefijo exacto, luego busca la etiqueta sola
-    let valRaw = ov[fullKey] !== undefined ? ov[fullKey] : (ov[lab] !== undefined ? ov[lab] : 0);
+    if (ov[fullKey] !== undefined) return v(ov[fullKey]);
+    if (ov[lab] !== undefined) return v(ov[lab]);
 
-    if (typeof valRaw === 'string') {
-      const isDecimal = lab.toLowerCase().includes('%') || lab.toLowerCase().includes('promedio') || lab.toLowerCase().includes('giro');
-      if (!isDecimal) {
-        // Para números enteros (UVR, Triages, etc), eliminamos cualquier residuo de formato
-        return parseInt(valRaw.replace(/\./g, '').replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0;
-      } else {
-        return parseFloat(valRaw.replace(/\./g, '').replace(',', '.')) || 0;
+    // 2. Búsqueda arqueológica (Búsqueda atómica por palabras clave)
+    const roots = {
+      tac: ["tac", "tomograf"],
+      rx: ["rayo", "rx", "placa"],
+      eco: ["ecogra", "eco"]
+    };
+    
+    let targetRoots = [];
+    const labClean = lab.toLowerCase();
+    if (labClean.includes("tac") || labClean.includes("tomograf")) targetRoots = roots.tac;
+    else if (labClean.includes("rayo") || labClean.includes("rx")) targetRoots = roots.rx;
+    else if (labClean.includes("ecogra") || labClean.includes("eco")) targetRoots = roots.eco;
+    else targetRoots = [lab.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, 10)];
+
+    let candidates = [];
+    for (const k in ov) {
+      const kClean = k.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (targetRoots.some(r => kClean.includes(r)) && !kClean.includes("equi")) {
+        const val = typeof ov[k] === 'object' ? Object.values(ov[k])[0] : ov[k];
+        const num = parseFloat(String(val).replace(/\./g,'').replace(',','.'));
+        if (!isNaN(num) && num > 0) candidates.push(num);
       }
     }
-    return Number(valRaw) || 0;
+    
+    // Si es una sub-línea de imágenes, elegimos el valor que parezca producción (>50)
+    if (targetRoots.length > 0 && (targetRoots === roots.tac || targetRoots === roots.rx || targetRoots === roots.eco)) {
+      const prodValue = candidates.find(n => n > 50);
+      if (prodValue) return prodValue;
+    }
+    return candidates.length > 0 ? candidates[0] : 0;
   };
 
   const promises = months.map(async (mPad, i) => {
@@ -3587,6 +3676,11 @@ async function loadYearlyCharts(yearId) {
         dataSet.laboratorio.real[i] = Math.round(labTotal);
 
         dataSet.efectivas.real[i] = getValChart(ov, "EST", "% Atenciones efectivas");
+
+        // Sub-líneas de Imágenes
+        dataSet.tac.real[i] = getValChart(ov, "IMG_HOSP", "Tomografías (TAC)") + getValChart(ov, "IMG_AMB", "Tomografías (TAC)");
+        dataSet.rx.real[i] = getValChart(ov, "IMG_HOSP", "Rayos X") + getValChart(ov, "IMG_AMB", "Rayos X");
+        dataSet.eco.real[i] = getValChart(ov, "IMG_HOSP", "Ecografías") + getValChart(ov, "IMG_AMB", "Ecografías");
       }
 
       const m = await loadForecastMeta(monthId);
@@ -3611,7 +3705,7 @@ async function loadYearlyCharts(yearId) {
   // Una vez cargados los datos históricos, refrescar el modelo de alineación para incluir tendencias
   if (CURRENT_MONTH_ID && LAST_META) {
     const metaMes = extractStrategicCapMeta(LAST_CAP_ROWS, CURRENT_MONTH_ID);
-    LAST_ALIGNMENT_MODEL = buildStrategicAlignmentModel({ capMeta: metaMes });
+    LAST_ALIGNMENT_MODEL = buildStrategicAlignmentModel({ capMeta: metaMes, capRows: LAST_CAP_ROWS });
     renderAlineacionEstrategica(LAST_ALIGNMENT_MODEL, CURRENT_MONTH_ID);
   }
 
