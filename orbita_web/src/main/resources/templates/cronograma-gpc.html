@@ -450,31 +450,28 @@
                                 <input id="capacidadMes" type="number" min="1" value="30" style="width: 80px;">
                             </label>
                             <div class="row g-4 mt-2">
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <div class="chart-card">
                                         <div class="chart-title">Obsolescencia (Puntos Críticos)</div>
-                                        <div style="height: 220px;"><canvas id="chartAging"></canvas></div>
+                                        <div style="height: 250px;"><canvas id="chartAging"></canvas></div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="chart-card">
                                         <div class="chart-title">Proyección de Vencimientos (Próximos 12 meses)</div>
-                                        <div style="height: 220px;"><canvas id="chartFuture"></canvas></div>
+                                        <div style="height: 250px;"><canvas id="chartFuture"></canvas></div>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <div class="chart-card">
                                         <div class="chart-title">Carga por Prioridad</div>
-                                        <div style="height: 220px;"><canvas id="chartWorkload"></canvas></div>
+                                        <div style="height: 250px;"><canvas id="chartWorkload"></canvas></div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="row g-4 mt-2">
-                                <div class="col-12">
+                                <div class="col-md-6">
                                     <div class="chart-card">
                                         <div class="chart-title">Actualizaciones Realizadas por Año</div>
-                                        <div style="height: 220px;"><canvas id="chartActuAnio"></canvas></div>
+                                        <div style="height: 250px;"><canvas id="chartActuAnio"></canvas></div>
                                     </div>
                                 </div>
                             </div>
@@ -1929,11 +1926,14 @@
             const fMes = qs('#filtroMesRepo')?.value || 'all';
             const query = qs('#busquedaRepo')?.value?.toLowerCase() || '';
 
-            // Identificar duplicados por código o nombre (solo sobre el pool total)
-            const countMap = {};
+            // Detectar duplicados: mapa separado por CÓDIGO y por NOMBRE para máxima cobertura
+            const codeCountMap = {};
+            const nameCountMap = {};
             state.repo.forEach(r => {
-                const key = (r.codigo || r.nombre || '').trim().toLowerCase();
-                if (key) countMap[key] = (countMap[key] || 0) + 1;
+                const ck = (r.codigo || '').trim().toLowerCase();
+                const nk = (r.nombre || '').trim().toLowerCase();
+                if (ck) codeCountMap[ck] = (codeCountMap[ck] || 0) + 1;
+                if (nk) nameCountMap[nk] = (nameCountMap[nk] || 0) + 1;
             });
 
             const filtered = state.repo.filter(r => {
@@ -1962,17 +1962,25 @@
                 const globalIdx = state.repo.indexOf(r);
                 const tr = document.createElement('tr');
                 const sem = getSemforo(r.proximaAct);
-                let statusBadge = `<span class="badge ${sem.cls}">${sem.txt}</span>`;
-                
+                let statusBadge;
+
                 if (r.status === 'Descartado') {
-                    statusBadge = `<span class="badge text-white" style="background:#ef4444">OBSOLETO</span>`;
+                    const esDescarte = (r.motivo || '').toLowerCase().includes('descarte') || r.motivo === 'Descartado';
+                    statusBadge = esDescarte
+                        ? `<span class="badge text-white" style="background:#f97316">DESCARTADO</span>`
+                        : `<span class="badge text-white" style="background:#ef4444">OBSOLETO</span>`;
                 } else if (r.status === 'Inexistente') {
                     statusBadge = `<span class="badge text-white" style="background:#64748b">INEXISTENTE</span>`;
+                } else if (sem.txt === 'VENCIDO') {
+                    statusBadge = `<div class="d-flex align-items-center gap-1 flex-wrap"><span class="badge ${sem.cls}">${sem.txt}</span><select class="border-0 rounded" style="font-size:10px;padding:2px 6px;background:#fff1f2;color:#991b1b;cursor:pointer;" onchange="reclasificarRepo(${globalIdx},this.value)" title="Reclasificar documento vencido"><option value="">&#8627; Reclasificar...</option><option value="obsoleto">&#8594; OBSOLETO</option><option value="descartado">&#8594; DESCARTADO</option></select></div>`;
+                } else {
+                    statusBadge = `<span class="badge ${sem.cls}">${sem.txt}</span>`;
                 }
 
-                const key = (r.codigo || r.nombre || '').trim().toLowerCase();
-                const isDup = key && countMap[key] > 1;
-                if (isDup) tr.style.background = '#fffaf0'; 
+                const ck = (r.codigo || '').trim().toLowerCase();
+                const nk = (r.nombre || '').trim().toLowerCase();
+                const isDup = (ck && codeCountMap[ck] > 1) || (nk && nameCountMap[nk] > 1);
+                if (isDup) tr.style.background = '#fffaf0';
 
                 tr.innerHTML = `
                     <td><input value="${r.codigo || ''}" class="w-100 border-0 bg-transparent fw-bold" onchange="updateRow('repo',${globalIdx},'codigo',this.value)"></td>
@@ -1992,11 +2000,40 @@
                     <td><input type="date" value="${r.ultimaAct || ''}" class="w-100 border-0 bg-transparent" onchange="updateRepoFecha(${globalIdx}, this.value)"></td>
                     <td class="fw-bold">${r.proximaAct || '—'}</td>
                     <td class="center">${statusBadge}</td>
-                    <td class="center"><button class="btn btn-sm text-danger" onclick="state.repo.splice(${globalIdx},1); renderRepo()">×</button></td>
+                    <td class="center"><button class="btn btn-sm text-danger" onclick="deleteRepoItem(${globalIdx})" title="Eliminar y borrar de base de datos">🗑</button></td>
                 `;
                 tb.appendChild(tr);
             });
         }
+
+        // --- Eliminar item del repositorio (también en Firestore) ---
+        async function deleteRepoItem(idx) {
+            const item = state.repo[idx];
+            const nombre = item.nombre || 'este documento';
+            if (!confirm(`¿Eliminar "${nombre}" del repositorio?\n\nEsta acción también lo borrará de la base de datos.`)) return;
+            if (item.id) {
+                try {
+                    const { db } = window.firebaseInstance || {};
+                    const { doc, deleteDoc } = window.firebaseFirestore || {};
+                    if (db && deleteDoc) await deleteDoc(doc(db, 'gpc_repositorio_maestro', item.id));
+                } catch(e) { console.warn('No se pudo borrar de BD:', e); }
+            }
+            state.repo.splice(idx, 1);
+            renderRepo();
+        }
+        window.deleteRepoItem = deleteRepoItem;
+
+        // --- Reclasificar documento VENCIDO como OBSOLETO o DESCARTADO ---
+        function reclasificarRepo(idx, tipo) {
+            if (!tipo) return;
+            const item = state.repo[idx];
+            if (!confirm(`¿Reclasificar "${item.nombre || 'documento'}" como ${tipo.toUpperCase()}?`)) return;
+            item.status = 'Descartado';
+            item.motivo = tipo === 'obsoleto' ? 'Obsolescencia' : 'Descarte manual';
+            item.proximaAct = '';
+            renderRepo();
+        }
+        window.reclasificarRepo = reclasificarRepo;
 
         function updateRepoTipo(idx, val) {
             state.repo[idx].tipo = val;
