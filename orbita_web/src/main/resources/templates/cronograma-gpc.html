@@ -12,8 +12,10 @@
         <main class="main-content">
             <style>
                 :root {
-                    --pri: #0ea5e9;
-                    --card-border: #e5e7eb;
+                    --pri: #253d5b;
+                    --sec: #4e6c9f;
+                    --ter: #bcb5af;
+                    --card-border: #bcb5af;
                     --muted: #6b7280;
                 }
 
@@ -194,6 +196,9 @@
                     background: #0f172a;
                     color: white;
                     border-color: #0f172a;
+                    background: var(--pri);
+                    color: white;
+                    border-color: var(--pri);
                 }
 
                 .btn-success {
@@ -208,8 +213,14 @@
                     border-color: #dc2626;
                 }
 
+                .btn-info {
+                    background: var(--sec);
+                    color: white;
+                    border-color: var(--sec);
+                }
+
                 .btn-evid {
-                    background: #111827;
+                    background: var(--pri);
                     color: white;
                 }
 
@@ -313,10 +324,10 @@
                     content: ''; position: absolute; top: -20%; right: -10%; width: 120px; height: 120px;
                     background: rgba(255,255,255,0.15); border-radius: 50%;
                 }
-                .sc-1 { background: linear-gradient(135deg, #6366f1, #4338ca); }
-                .sc-2 { background: linear-gradient(135deg, #10b981, #059669); }
+                .sc-1 { background: linear-gradient(135deg, var(--pri), var(--sec)); }
+                .sc-2 { background: linear-gradient(135deg, var(--sec), #6b89c0); }
                 .sc-3 { background: linear-gradient(135deg, #f43f5e, #e11d48); }
-                .sc-4 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+                .sc-4 { background: linear-gradient(135deg, var(--ter), #948b84); }
                 
                 .stat-val { font-size: 2.2rem; font-weight: 900; line-height: 1; margin-bottom: 0.5rem; }
                 .stat-lbl { font-size: 0.85rem; font-weight: 600; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -334,7 +345,7 @@
                     display: flex; align-items: center; gap: 8px;
                 }
                 .chart-title::before {
-                    content: ''; width: 4px; height: 16px; background: #6366f1; border-radius: 4px;
+                    content: ''; width: 4px; height: 16px; background: var(--pri); border-radius: 4px;
                 }
 
                 .pa-page-wrap { padding: 1rem; }
@@ -459,17 +470,26 @@
                                 </div>
                             </div>
 
+                            <div class="row g-4 mt-2">
+                                <div class="col-12">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Actualizaciones Realizadas por Año</div>
+                                        <div style="height: 220px;"><canvas id="chartActuAnio"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row g-4 mt-2" id="dash-insights">
                                 <!-- Se llena vía JS -->
                             </div>
                         </div>
                         <div class="tabs">
-                            <button class="tab" data-tab="dash" aria-selected="true">0) Dashboard</button>
-                            <button class="tab" data-tab="ident">1) Identificación</button>
-                            <button class="tab" data-tab="perfil">2) Perfil</button>
-                            <button class="tab" data-tab="crono">3) Cronograma</button>
-                            <button class="tab" data-tab="actu">4) Seguimiento</button>
-                            <button class="tab" data-tab="repo">5) Repositorio Maestro</button>
+                            <button class="tab" data-tab="dash" aria-selected="true">Dashboard</button>
+                            <button class="tab" data-tab="ident">Identificación</button>
+                            <button class="tab" data-tab="perfil">Perfil</button>
+                            <button class="tab" data-tab="crono">Cronograma</button>
+                            <button class="tab" data-tab="actu">Seguimiento</button>
+                            <button class="tab" data-tab="repo">Repositorio Maestro</button>
                         </div>
                     </div>
 
@@ -591,14 +611,16 @@
                                     <option value="5">Junio</option>
                                     <option value="6">Julio</option>
                                     <option value="7">Agosto</option>
-                                    <option value="8">Septiembre</option>
+<option value="8">Septiembre</option>
                                     <option value="9">Octubre</option>
                                     <option value="10">Noviembre</option>
                                     <option value="11">Diciembre</option>
                                 </select>
                                 <div class="ms-auto d-flex gap-2">
+                                    <button id="btnAddCrono" class="btn btn-sm">+ Tema</button>
                                     <button id="btnGenerar" class="btn btn-sm btn-primary" onclick="generarCronograma()">Generar Plan</button>
                                     <button id="btnGuardarCrono" class="btn btn-sm btn-primary" onclick="saveCrono()">Guardar Todo</button>
+                                    <button id="btnExportCrono" class="btn btn-sm" onclick="exportCrono()">Exportar Excel</button>
                                     <button id="btnClearCrono" class="btn btn-sm btn-danger">Limpiar Todo</button>
                                 </div>
                             </div>
@@ -645,7 +667,16 @@
                                         <option value="10">Noviembre</option>
                                         <option value="11">Diciembre</option>
                                     </select>
-                                    <button class="btn btn-success" onclick="saveSeguimiento()">💾 Guardar Seguimiento</button>
+                                    <select id="filtroStatusSeg" class="btn btn-ghost" style="border:1px solid #ddd"
+                                        onchange="renderActu()">
+                                        <option value="all">Ver Todos los Estados</option>
+                                        <option value="elab">🛠️ En Elaboración</option>
+                                        <option value="calidad"> En Calidad</option>
+                                        <option value="aprob"> Aprobado</option>
+                                        <option value="soc">👥 Socializado</option>
+                                        <option value="desc">Error: Descartado</option>
+                                    </select>
+                                    <button class="btn btn-success" onclick="saveSeguimiento()">Guardar Seguimiento</button>
                                 </div>
                             </div>
                             <div class="table-wrap"
@@ -673,12 +704,51 @@
                                    <div class="badge b-muy-baja ms-2">Auto-Cálculo: GPC (5a) / Prot. (3a)</div>
                                </div>
                                <div class="d-flex gap-2">
+                                   <button class="btn btn-sm btn-info" onclick="importFromInventario()">Importar Inventario</button>
                                    <button class="btn btn-sm" onclick="addRepoRow()">+ Agregar Documento</button>
-                                   <button class="btn btn-sm btn-primary" onclick="sincroRepo()">🔄 Sincronizar desde Seguimiento</button>
-                                   <button class="btn btn-sm" onclick="exportRepo()">📤 Exportar Repositorio</button>
-                                   <button class="btn btn-sm btn-primary" onclick="saveBatch('gpc_repositorio_maestro', state.repo)">💾 Guardar Maestro</button>
+                                    <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5" onclick="addRepoDescarte()">+ Descarte</button>
+                                   <button class="btn btn-sm btn-primary" onclick="sincroRepo()">Sincronizar</button>
+                                   <button class="btn btn-sm" onclick="exportRepo()">Exportar Excel</button>
+                                   <button class="btn btn-sm btn-primary" onclick="saveBatch('gpc_repositorio_maestro', state.repo)">Guardar Maestro</button>
                                </div>
                            </div>
+
+                           <div class="d-flex gap-3 mb-2 p-2" style="background: #f1f5f9; border-radius: 8px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <label class="small fw-bold mb-0">ESTADO:</label>
+                                    <select id="filtroSemaforoRepo" class="btn btn-sm btn-ghost bg-white border" onchange="renderRepo()" style="width: 140px;">
+                                        <option value="all">Ver Todos</option>
+                                        <option value="VENCIDO">Vencidos</option>
+                                        <option value="CRITICO">Criticos</option>
+                                        <option value="PROXIMO">Por Vencer</option>
+                                        <option value="VIGENTE">Vigentes</option>
+                                                                             <option value="DESCARTE">Descartes</option>
+                                         <option value="INEXISTENTE">Inexistentes</option>
+                                     </select>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <label class="small fw-bold mb-0">MES VENCIMIENTO:</label>
+                                    <select id="filtroMesRepo" class="btn btn-sm btn-ghost bg-white border" onchange="renderRepo()" style="width: 140px;">
+                                        <option value="all">Todos los Meses</option>
+                                        <option value="0">Enero</option>
+                                        <option value="1">Febrero</option>
+                                        <option value="2">Marzo</option>
+                                        <option value="3">Abril</option>
+                                        <option value="4">Mayo</option>
+                                        <option value="5">Junio</option>
+                                        <option value="6">Julio</option>
+                                        <option value="7">Agosto</option>
+                                        <option value="8">Septiembre</option>
+                                        <option value="9">Octubre</option>
+                                        <option value="10">Noviembre</option>
+                                        <option value="11">Diciembre</option>
+                                    </select>
+                                </div>
+                                <div class="ms-auto d-flex align-items-center gap-2">
+                                    <input type="text" id="busquedaRepo" class="btn btn-sm btn-ghost bg-white border" placeholder="Buscar por nombre o código..." oninput="renderRepo()" style="width: 300px; text-align: left;">
+                                </div>
+                           </div>
+
                            <div class="table-wrap" style="max-height: 600px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
                                <table class="grid" id="tblRepo">
                                    <thead>
@@ -694,11 +764,10 @@
                                    </thead>
                                    <tbody></tbody>
                                </table>
-                           </div>
+                            </div>
                         </div>
                     </div>
                 </section>
-            </div>
 
             <!-- MODAL EVIDENCIAS -->
             <div id="evidModal" class="modal-backdrop">
@@ -920,9 +989,22 @@
                             style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
                     </div>
                     <div class="modal-bd">
-                        <div class="card p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0;">
-                            <div id="se-tema-display" class="fw-bold h6 mb-1" style="color:#0f172a"></div>
-                            <div id="se-codigo-display" class="small text-muted"></div>
+                        <div class="card p-3 mb-3" style="background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-7">
+                                    <div id="se-tema-display" class="fw-bold mb-1" style="color:#0f172a; font-size:1.1rem"></div>
+                                    <div id="se-codigo-display" class="small text-muted"></div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="small fw-bold d-block mb-1">Estado de Gestión:</label>
+                                    <select id="se-statusSelection" class="btn btn-sm btn-ghost w-100 border bg-white" onchange="toggleSegMode()">
+                                        <option value="Normal">En Proceso / Vigente</option>
+                                        <option value="Actualizado">✨ Ya Actualizado (Migrar Versión)</option>
+                                        <option value="Descartado"> Descartado por Obsoleto</option>
+                                        <option value="Inexistente"> Documento Inexistente</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row g-3">
@@ -966,14 +1048,18 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal-ft">
-                        <button id="segEditSave" class="btn btn-primary">Guardar Cambios</button>
-                        <button id="segEditCancel" class="btn">Cancelar</button>
+                    <div class="modal-ft d-flex justify-content-between">
+                        <button id="segEditDelete" class="btn btn-danger" onclick="segEditDelete()">🗑️ Borrar Definitivamente</button>
+                        <div class="d-flex gap-2">
+                           <button id="segEditSave" class="btn btn-primary" onclick="segEditSave()">Guardar Cambios</button>
+                           <button id="segEditCancel" class="btn">Cancelar</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
         <footer th:replace="~{layout :: footer}"></footer>
+    </div>
     </div>
 
     <div th:replace="~{layout :: scripts}"></div>
@@ -990,6 +1076,7 @@
         window.MONTHS = MONTHS; // Hacer global
         const qs = s => document.querySelector(s);
         const qsa = s => Array.from(document.querySelectorAll(s));
+        const gpcCharts = {}; // Instancias de charts
 
         // Estado centralizado
         const state = {
@@ -998,9 +1085,11 @@
             perfil: [],
             plan: [],
             actu: [],
+            repo: [], 
             profs: [],
-            deletedCronoIds: [] // Para persistencia de borrados
+            deletedCronoIds: [] 
         };
+        window.state = state; // Hacer global para que los onclick del HTML lo vean
 
         // --- Inicialización ---
         async function initModule() {
@@ -1029,12 +1118,21 @@
                 t.setAttribute('aria-selected', 'true');
                 qsa('.panel').forEach(p => p.classList.remove('active'));
                 qs(`#panel-${t.dataset.tab}`).classList.add('active');
+
+                // Refrescar datos según la pestaña activa
+                if (t.dataset.tab === 'actu') renderActu();
+                if (t.dataset.tab === 'crono') renderCrono();
+                if (t.dataset.tab === 'dash') renderDash();
+                if (t.dataset.tab === 'repo') renderRepo();
+                if (t.dataset.tab === 'ident') renderIdent();
+                if (t.dataset.tab === 'perfil') renderPerfil();
             });
 
             // Eventos de botones
             qs('#btnAddIdent').onclick = () => { state.inventario.unshift({ codigo: '', nombre: '', fchUlt: '', prior: 'Media', ajuste: false }); renderIdent(); };
             qs('#btnSaveIdent').onclick = () => saveBatch('gpc_identificacion', state.inventario);
             qs('#btnImportIdent').onclick = () => qs('#fileIdent').click();
+            qs('#btnExportIdent').onclick = exportIdent;
             qs('#fileIdent').onchange = e => importXL(e, 'inventario');
 
             qs('#btnAddDiag').onclick = () => { state.perfil.unshift({ diag: '', freq: 0, svc: '', docVinculado: '', accion: 'Redactar', prior: 'Media' }); renderPerfil(); };
@@ -1045,6 +1143,23 @@
             qs('#btnCalcular').onclick = cruzarDatos;
             qs('#btnGenerar').onclick = generarCronograma;
             qs('#btnGuardarCrono').onclick = saveCrono;
+            qs('#btnAddCrono').onclick = () => {
+                const nuevoItem = {
+                    tema: 'Nuevo Documento',
+                    codigo: '',
+                    mes: new Date().getMonth(),
+                    accion: 'Actualizar',
+                    prioridad: 'Media',
+                    prior: 'Media',
+                    entregado: false,
+                    fecha: '',
+                    anio: state.anio
+                };
+                state.plan.unshift(nuevoItem);
+                renderCrono();
+                // Abrir modal de edición sobre el primer item
+                abrirEdicionCrono(0);
+            };
             qs('#btnClearCrono').onclick = async () => {
                 if (confirm("¿Borrar todo el plan de la base de datos?")) {
                     state.deletedCronoIds.push(...state.plan.map(x => x.id).filter(Boolean));
@@ -1121,15 +1236,40 @@
 
         async function saveBatch(coll, data) {
             const { db } = window.firebaseInstance || {};
-            const { writeBatch, doc, serverTimestamp } = window.firebaseFirestore || {};
+            const { writeBatch, doc, collection, getDocs } = window.firebaseFirestore || {};
+            const { serverTimestamp } = window.firebaseFirestore || {};
             if (!db) return;
-            const batch = writeBatch(db);
-            data.forEach(r => {
-                const id = r.id || r.codigo || `${state.anio}_${slug(r.tema || r.diag)}_${Math.random().toString(36).slice(2, 5)}`;
-                batch.set(doc(db, coll, id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
-            });
-            await batch.commit();
-            alert("✓ Cambios guardados en la nube.");
+
+            try {
+                const batch = writeBatch(db);
+                
+                // 1. Obtener IDs actuales en DB para este año
+                const snap = await getDocs(collection(db, coll));
+                const dbIds = [];
+                snap.forEach(ds => {
+                    if (ds.data().anio === state.anio) dbIds.push(ds.id);
+                });
+
+                // 2. Preparar guardado y rastrear activos
+                const activeIds = new Set();
+                data.forEach(r => {
+                    const id = r.id || r.codigo || `${state.anio}_${normalizeSlug(r.tema || r.diag || r.nombre)}_${Math.random().toString(36).slice(2, 5)}`;
+                    r.id = id;
+                    activeIds.add(id);
+                    batch.set(doc(db, coll, id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
+                });
+
+                // 3. Borrar los que ya no están
+                dbIds.forEach(id => {
+                    if (!activeIds.has(id)) batch.delete(doc(db, coll, id));
+                });
+
+                await batch.commit();
+                alert("Sincronización completa: Se han guardado los cambios y eliminado los registros obsoletos.");
+            } catch (e) {
+                console.error("Error saveBatch:", e);
+                alert("Error: Error al persistir: " + e.message);
+            }
         }
 
         function importXL(e, mod) {
@@ -1241,7 +1381,7 @@
             const pctMes = Array.from({ length: 12 }, (_, m) => {
                 const mesPlan = planificados.filter(x => x.mes == m);
                 if (!mesPlan.length) return 0;
-                const mesDone = mesPlan.filter(x => x.entregado).length;
+                const mesDone = mesPlan.filter(x => x.mes == m && x.entregado).length;
                 return Math.round((mesDone / mesPlan.length) * 100);
             });
 
@@ -1277,7 +1417,7 @@
                     <td>${MONTHS[r.mes] || '—'}</td>
                     <td class="center"><span class="badge ${getPrioCls(r.prioridad || r.prior)}">${r.prioridad || r.prior || 'Media'}</span></td>
                     <td class="small text-muted">${fEntrega || '—'}</td>
-                    <td class="center">${r.entregado ? '✅' : '⏳'}</td>
+                    <td class="center">${r.entregado ? '' : ''}</td>
                     <td class="center fw-bold" style="color: #0ea5e9; background: #f0f9ff;">${cumpleMes}%</td>
                     <td class="center fw-bold" style="color: #6366f1; background: #f5f3ff;">${pctGlobal}%</td>
                     <td><span class="badge ${r.status === 'Socializada' ? 'b-baja' : r.status === 'Entregada' ? 'b-info' : 'b-media'}">
@@ -1366,17 +1506,26 @@
             const item = state.plan[idx];
             if (item.id) state.deletedCronoIds.push(item.id);
 
-            // Mover al seguimiento como "Descartado" para trazabilidad
-            state.actu.push({
-                tema: item.tema,
-                codigo: item.codigo,
-                fchEntrega: '--',
-                mesAct: item.mes,
-                anio: state.anio,
-                statusManual: 'Descartado',
-                justificacion: `Descartado desde Cronograma: ${item.tema}`,
-                status: 'Descartado'
-            });
+            // Verificar si ya existe en seguimiento para no duplicar el descarte
+            let a = state.actu.find(x => (x.codigo && x.codigo === item.codigo) || (x.tema === item.tema));
+            
+            if (a) {
+                // Si ya existe, lo marcamos como descartado en lugar de crear uno nuevo
+                a.statusManual = 'Descartado';
+                a.justificacion = `Descartado desde Cronograma: ${item.tema}`;
+            } else {
+                state.actu.push({
+                    tema: item.tema,
+                    codigo: item.codigo,
+                    fchEntrega: '--',
+                    mesAct: item.mes,
+                    anio: state.anio,
+                    statusManual: 'Descartado',
+                    justificacion: `Descartado desde Cronograma: ${item.tema}`,
+                    status: 'Descartado'
+                });
+            }
+            
             sincroPlanSeg(true);
             state.plan.splice(idx, 1);
             renderCrono();
@@ -1410,45 +1559,105 @@
 
             await batch.commit();
             state.deletedCronoIds = [];
-            alert("✓ Cronograma actualizado y guardado.");
+            alert("Cronograma actualizado y guardado.");
         }
 
         async function saveSeguimiento() {
             const { db } = window.firebaseInstance || {};
-            const { writeBatch, doc, serverTimestamp } = window.firebaseFirestore || {};
+            const { writeBatch, doc, deleteDoc, serverTimestamp } = window.firebaseFirestore || {};
             if (!db) return;
 
             const batch = writeBatch(db);
+
+            // Eliminar duplicados físicos identificados
+            if (state.pendingSegDeletes && state.pendingSegDeletes.length > 0) {
+                state.pendingSegDeletes.forEach(id => {
+                    batch.delete(doc(db, 'gpc_seguimiento', id));
+                });
+            }
+
             state.actu.forEach(r => {
-                const id = r.id || `seg_${state.anio}_${slug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
+                const id = r.id || `seg_${state.anio}_${normalizeSlug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
                 batch.set(doc(db, 'gpc_seguimiento', id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
             });
 
             await batch.commit();
-            alert("✓ Repositorio de seguimiento guardado correctamente.");
+            state.pendingSegDeletes = [];
+            alert("Repositorio de seguimiento guardado y depurado.");
+        }
+
+        function deduplicateActu() {
+            const seen = {};
+            const cleaned = [];
+            const toDelete = [];
+            state.actu.forEach(it => {
+                const key = (it.codigo || it.tema || '').trim().toLowerCase();
+                if (!seen[key]) {
+                    seen[key] = it;
+                    cleaned.push(it);
+                } else {
+                    const existing = seen[key];
+                    const exScore = (existing.fechaSoc ? 4 : 0) + (existing.fchRetorno ? 3 : 0) + (existing.fchEnvio ? 2 : 0) + (existing.statusManual !== 'Descartado' ? 1 : 0);
+                    const curScore = (it.fechaSoc ? 4 : 0) + (it.fchRetorno ? 3 : 0) + (it.fchEnvio ? 2 : 0) + (it.statusManual !== 'Descartado' ? 1 : 0);
+                    
+                    if (curScore > exScore) {
+                        if (existing.id) toDelete.push(existing.id);
+                        const idx = cleaned.indexOf(existing);
+                        cleaned[idx] = it;
+                        seen[key] = it;
+                    } else {
+                        if (it.id) toDelete.push(it.id);
+                    }
+                }
+            });
+            state.actu = cleaned;
+            state.pendingSegDeletes = [...new Set([...(state.pendingSegDeletes || []), ...toDelete])];
         }
 
         function renderActu() {
+            deduplicateActu(); // Limpiar antes de mostrar
             const tb = qs('#tblActu tbody'); tb.innerHTML = '';
             const filtro = qs('#filtroMesSeg').value;
+            const filtroSt = qs('#filtroStatusSeg').value;
 
             let filtered = [...state.actu];
-            if (filtro !== 'all') filtered = filtered.filter(x => x.mesAct == filtro);
+            if (filtro !== 'all') {
+                filtered = filtered.filter(x => {
+                    const mesValue = (x.mesAct !== undefined) ? x.mesAct : (x.mes !== undefined ? x.mes : -1);
+                    return String(mesValue) === String(filtro);
+                });
+            }
+
+            if (filtroSt !== 'all') {
+                filtered = filtered.filter(x => {
+                    let st = 'elab';
+                    if (x.statusManual === 'Descartado') st = 'desc';
+                    else if (x.statusManual === 'Actualizado' || x.fechaSoc) st = 'soc';
+                    else if (x.fchRetorno) st = 'aprob';
+                    else if (x.fchEnvio) st = 'calidad';
+                    return st === filtroSt;
+                });
+            }
 
             filtered.forEach((r, i) => {
                 const tr = document.createElement('tr');
                 tr.style.cursor = 'pointer';
 
-                // Determinar estado de gestión
+                // Determinar estado de gestión para visualización
                 let statusTxt = 'En Elaboración';
                 let statusCls = 'b-media';
 
                 if (r.statusManual === 'Descartado') {
                     statusTxt = 'Descartado'; statusCls = 'b-critica';
-                } else {
-                    if (r.fchEnvio) { statusTxt = 'En Calidad'; statusCls = 'b-info'; }
-                    if (r.fchRetorno) { statusTxt = 'Aprobado'; statusCls = 'b-info'; }
-                    if (r.fechaSoc) { statusTxt = 'Socializado'; statusCls = 'b-muy-baja'; }
+                } else if (r.statusManual === 'Inexistente') {
+                    statusTxt = 'Inexistente'; statusCls = 'b-baja';
+                } else if (r.statusManual === 'Actualizado' || r.fechaSoc) {
+                    statusTxt = (r.statusManual === 'Actualizado') ? 'Ya Actualizado' : 'Socializado'; 
+                    statusCls = 'b-muy-baja';
+                } else if (r.fchRetorno) {
+                    statusTxt = 'Aprobado'; statusCls = 'b-info';
+                } else if (r.fchEnvio) {
+                    statusTxt = 'En Calidad'; statusCls = 'b-info';
                 }
 
                 tr.innerHTML = `
@@ -1485,20 +1694,26 @@
             qs('#se-fchRetorno').value = r.fchRetorno || '';
             qs('#se-nvaVigencia').value = r.nuevaVigencia || '';
             qs('#se-fechaSoc').value = r.fechaSoc || '';
-            qs('#se-obs').value = r.obs || '';
+            qs('#se-obs').value = r.observaciones || '';
             qs('#se-motivo').value = r.motivo || '';
-            qs('#se-nuevoCodigo').value = r.nuevaCodigo || '';
-            qs('#se-nuevoNombre').value = r.nuevaNombre || '';
+            qs('#se-nuevoCodigo').value = r.nuevoCodigo || '';
+            qs('#se-nuevoNombre').value = r.nuevoNombre || '';
 
-            if (r.statusManual === 'Descartado') {
+            qs('#se-statusSelection').value = r.statusManual || 'Normal';
+            toggleSegMode();
+
+            qs('#segEditModal').style.display = 'flex';
+        }
+
+        window.toggleSegMode = function toggleSegMode() {
+            const val = qs('#se-statusSelection').value;
+            if (val !== 'Normal') {
                 qs('#se-wrap-descarte').style.display = 'block';
                 qs('#se-wrap-normal').style.display = 'none';
             } else {
                 qs('#se-wrap-descarte').style.display = 'none';
                 qs('#se-wrap-normal').style.display = 'block';
             }
-
-            qs('#segEditModal').style.display = 'flex';
         }
 
         window.autoCalcVigencia = function autoCalcVigencia() {
@@ -1510,24 +1725,93 @@
             qs('#se-nvaVigencia').value = nva;
         }
 
-        function segEditSave() {
+        window.segEditSave = function segEditSave() {
             if (editSegIdx < 0) return;
             const r = state.actu[editSegIdx];
+            r.statusManual = qs('#se-statusSelection').value;
             r.fchEnvio = qs('#se-fchEnvio').value;
             r.fchRetorno = qs('#se-fchRetorno').value;
             r.nuevaVigencia = qs('#se-nvaVigencia').value;
             r.fechaSoc = qs('#se-fechaSoc').value;
             r.observaciones = qs('#se-obs').value;
+            r.motivo = qs('#se-motivo').value;
+            r.nuevoCodigo = qs('#se-nuevoCodigo').value;
+            r.nuevoNombre = qs('#se-nuevoNombre').value;
 
-            if (r.statusManual === 'Descartado') {
-                r.motivo = qs('#se-motivo').value;
-                r.nuevoCodigo = qs('#se-nuevoCodigo').value;
-                r.nuevoNombre = qs('#se-nuevoNombre').value;
-            }
-
+            saveBatch('gpc_seguimiento', state.actu);
+            
+            // Sincronizar SOLO el item actual al repositorio maestro para evitar duplicados masivos
+            sincroRepoItem(editSegIdx);
+            
             qs('#segEditModal').style.display = 'none';
             renderActu();
         }
+
+        window.sincroRepoItem = function sincroRepoItem(idx) {
+            if (idx < 0) return;
+            const seg = state.actu[idx];
+            if (!state.repo) state.repo = [];
+
+            // Solo sincronizamos si hay actividad real o estatus especial
+            if (seg.fchRetorno || seg.fechaSoc || seg.statusManual || seg.fchEntrega) {
+                let targetCodigo = seg.codigo;
+                let targetNombre = seg.tema;
+
+                if ((seg.statusManual === 'Descartado' || seg.statusManual === 'Actualizado') && seg.nuevoCodigo) {
+                    targetCodigo = seg.nuevoCodigo;
+                    targetNombre = seg.nuevoNombre || seg.tema;
+                }
+
+                // Buscar de forma ultra-específica
+                let r = state.repo.find(x => 
+                    (x.codigo && x.codigo === targetCodigo && x.nombre === targetNombre) || 
+                    (!x.codigo && x.nombre === targetNombre)
+                );
+
+                if (!r) {
+                    // Permitir creación si es Actualizado, Socializado, Descartado o Inexistente
+                    if (seg.statusManual === 'Actualizado' || seg.fechaSoc || seg.statusManual === 'Descartado' || seg.statusManual === 'Inexistente') {
+                        const tipo = targetCodigo && targetCodigo.includes('E-GTC-D') ? 'Anual' : (targetCodigo && targetCodigo.startsWith('GPC') ? 'GPC' : 'Protocolo');
+                        r = {
+                            codigo: targetCodigo || '',
+                            nombre: targetNombre,
+                            tipo: tipo,
+                            ultimaAct: seg.fchRetorno || seg.fechaSoc || new Date().toISOString().split('T')[0],
+                            status: seg.statusManual === 'Inexistente' ? 'Inexistente' : (seg.statusManual === 'Descartado' ? 'Descartado' : 'Vigente')
+                        };
+                        const años = tipo === 'Anual' ? 1 : (tipo === 'GPC' ? 5 : 3);
+                        r.proximaAct = r.status === 'Descartado' || r.status === 'Inexistente' ? '' : (seg.nuevaVigencia || addYears(r.ultimaAct, años));
+                        state.repo.push(r);
+                    }
+                } else {
+                    // Actualizar existente respetando el descarte
+                    if (seg.statusManual === 'Inexistente') {
+                        r.status = 'Inexistente';
+                        r.proximaAct = '';
+                    } else {
+                        r.nombre = targetNombre;
+                        const nf = seg.fchRetorno || seg.fechaSoc || seg.nuevaVigencia;
+                        if (nf && nf > (r.ultimaAct || '')) r.ultimaAct = nf;
+                        if (seg.nuevaVigencia) r.proximaAct = seg.nuevaVigencia;
+                        else recalcRepoItem(state.repo.indexOf(r));
+                        r.status = (seg.statusManual === 'Descartado') ? 'Descartado' : 'Vigente';
+                        if (r.status === 'Descartado') r.proximaAct = '';
+                    }
+                }
+                renderRepo();
+            }
+        }
+
+        window.segEditDelete = function segEditDelete() {
+            if (editSegIdx < 0) return;
+            if (!confirm('🚨 ¿Está COMPLETAMENTE SEGURO de borrar este registro del cronograma de seguimiento? \n\nEsta acción es irreversible y se eliminará tanto de esta vista como de la base de datos.')) return;
+            
+            state.actu.splice(editSegIdx, 1);
+            saveBatch('gpc_seguimiento', state.actu);
+            qs('#segEditModal').style.display = 'none';
+            renderActu();
+        }
+
         qs('#segEditSave').onclick = segEditSave;
         qs('#segEditCancel').onclick = () => qs('#segEditModal').style.display = 'none';
 
@@ -1542,7 +1826,7 @@
                 else { p.accion = 'Redactar'; p.prior = p.freq > 100 ? 'Critica' : 'Alta'; }
             });
             renderPerfil();
-            alert("✓ Perfil contrastado con inventario.");
+            alert("Perfil contrastado con inventario.");
         }
 
         function generarCronograma() {
@@ -1595,7 +1879,7 @@
             }
 
             renderCrono();
-            alert(`✓ Plan generado: ${plan.length} items distribuidos.`);
+            alert(`Plan generado: ${plan.length} items distribuidos.`);
         }
 
         function sincroPlanSeg(silent = false) {
@@ -1631,7 +1915,7 @@
             });
             renderActu();
             if (!silent) {
-                if (count > 0) alert(`✓ Se han sincronizado ${count} documentos nuevos.`);
+                if (count > 0) alert(`Se han sincronizado ${count} documentos nuevos.`);
                 else alert("Todo está sincronizado correctamente.");
             }
         }
@@ -1641,23 +1925,74 @@
             const tb = qs('#tblRepo tbody'); tb.innerHTML = '';
             if(!state.repo) state.repo = [];
 
-            state.repo.forEach((r, i) => {
+            const fSem = qs('#filtroSemaforoRepo')?.value || 'all';
+            const fMes = qs('#filtroMesRepo')?.value || 'all';
+            const query = qs('#busquedaRepo')?.value?.toLowerCase() || '';
+
+            // Identificar duplicados por código o nombre (solo sobre el pool total)
+            const countMap = {};
+            state.repo.forEach(r => {
+                const key = (r.codigo || r.nombre || '').trim().toLowerCase();
+                if (key) countMap[key] = (countMap[key] || 0) + 1;
+            });
+
+            const filtered = state.repo.filter(r => {
+                const sem = getSemforo(r.proximaAct);
+                
+                // Los estados explícitos (Descartado, Inexistente) tienen prioridad sobre el semáforo de fecha
+                let estadoEfectivo;
+                if (r.status === 'Descartado') estadoEfectivo = 'DESCARTE';
+                else if (r.status === 'Inexistente') estadoEfectivo = 'INEXISTENTE';
+                else estadoEfectivo = sem.txt;
+
+                const passSem = fSem === 'all' || estadoEfectivo === fSem;
+                
+                let passMes = true;
+                if (fMes !== 'all' && r.proximaAct) {
+                    const month = new Date(r.proximaAct + 'T00:00:00').getMonth();
+                    passMes = String(month) === String(fMes);
+                }
+
+                const passQuery = !query || (r.nombre && r.nombre.toLowerCase().includes(query)) || (r.codigo && r.codigo.toLowerCase().includes(query));
+                
+                return passSem && passMes && passQuery;
+            });
+
+            filtered.forEach((r, i) => {
+                const globalIdx = state.repo.indexOf(r);
                 const tr = document.createElement('tr');
                 const sem = getSemforo(r.proximaAct);
+                let statusBadge = `<span class="badge ${sem.cls}">${sem.txt}</span>`;
+                
+                if (r.status === 'Descartado') {
+                    statusBadge = `<span class="badge text-white" style="background:#ef4444">OBSOLETO</span>`;
+                } else if (r.status === 'Inexistente') {
+                    statusBadge = `<span class="badge text-white" style="background:#64748b">INEXISTENTE</span>`;
+                }
+
+                const key = (r.codigo || r.nombre || '').trim().toLowerCase();
+                const isDup = key && countMap[key] > 1;
+                if (isDup) tr.style.background = '#fffaf0'; 
+
                 tr.innerHTML = `
-                    <td><input value="${r.codigo || ''}" class="w-100 border-0 bg-transparent fw-bold" onchange="updateRow('repo',${i},'codigo',this.value)"></td>
-                    <td><input value="${r.nombre || ''}" class="w-100 border-0 bg-transparent" style="font-weight:600" onchange="updateRow('repo',${i},'nombre',this.value)"></td>
+                    <td><input value="${r.codigo || ''}" class="w-100 border-0 bg-transparent fw-bold" onchange="updateRow('repo',${globalIdx},'codigo',this.value)"></td>
                     <td>
-                        <select class="w-100 border-0 bg-transparent" onchange="updateRepoTipo(${i}, this.value)">
+                        <div class="d-flex align-items-center gap-2">
+                            <input value="${r.nombre || ''}" class="w-100 border-0 bg-transparent" style="font-weight:600" onchange="updateRow('repo',${globalIdx},'nombre',this.value)">
+                            ${isDup ? '<span class="badge" style="background:#fef2f2; color:#dc2626; border:1px solid #fee2e2; font-size:9px; white-space:nowrap;"> DUPLICADO?</span>' : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <select class="w-100 border-0 bg-transparent" onchange="updateRepoTipo(${globalIdx}, this.value)">
                             <option value="GPC" ${r.tipo==='GPC'?'selected':''}>GPC (5 años)</option>
                             <option value="Protocolo" ${r.tipo==='Protocolo'?'selected':''}>Protocolo/Inst (3 años)</option>
                             <option value="Anual" ${r.tipo==='Anual'?'selected':''}>Anual (1 año)</option>
                         </select>
                     </td>
-                    <td><input type="date" value="${r.ultimaAct || ''}" class="w-100 border-0 bg-transparent" onchange="updateRepoFecha(${i}, this.value)"></td>
+                    <td><input type="date" value="${r.ultimaAct || ''}" class="w-100 border-0 bg-transparent" onchange="updateRepoFecha(${globalIdx}, this.value)"></td>
                     <td class="fw-bold">${r.proximaAct || '—'}</td>
-                    <td class="center"><span class="badge ${sem.cls}">${sem.txt}</span></td>
-                    <td class="center"><button class="btn btn-sm text-danger" onclick="state.repo.splice(${i},1); renderRepo()">×</button></td>
+                    <td class="center">${statusBadge}</td>
+                    <td class="center"><button class="btn btn-sm text-danger" onclick="state.repo.splice(${globalIdx},1); renderRepo()">×</button></td>
                 `;
                 tb.appendChild(tr);
             });
@@ -1667,6 +2002,164 @@
             state.repo[idx].tipo = val;
             recalcRepoItem(idx);
             renderRepo();
+        }
+
+        function exportIdent() {
+            if (!state.inventario.length) { alert('No hay datos de identificación para exportar.'); return; }
+
+            const hdr = `background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;`;
+            const cel = `border: 1px solid #b6b5af; padding: 8px; font-family: Arial, sans-serif;`;
+            const celC = cel + `text-align:center;`;
+
+            const getSem = (fch) => {
+                if (!fch) return 'Sin fecha';
+                const dias = (new Date(fch) - new Date()) / 86400000;
+                if (dias < 0) return 'Vencido';
+                if (dias < 90) return 'Crítico';
+                if (dias < 180) return 'En riesgo';
+                return 'Vigente';
+            };
+
+            let rows = state.inventario.map(r => {
+                const vig = r.fchProx || (r.fchUlt ? addYears(r.fchUlt, getVigencia(r.codigo)) : '');
+                const sem = getSem(vig);
+                return `<tr>
+                    <td style="${cel}">${r.codigo || ''}</td>
+                    <td style="${cel}">${r.nombre || ''}</td>
+                    <td style="${celC}">${r.fchUlt || ''}</td>
+                    <td style="${celC}">${vig || ''}</td>
+                    <td style="${celC}">${r.resp || ''}</td>
+                    <td style="${celC}">${r.ajuste ? 'Sí' : 'No'}</td>
+                    <td style="${celC}">${r.descarte ? 'Sí' : 'No'}</td>
+                    <td style="${celC}">${sem}</td>
+                </tr>`;
+            }).join('');
+
+            const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"></head>
+                <body>
+                <h2 style="font-family:Arial;color:#253d5b;">Inventario de Identificación GPC/Protocolos — Año ${state.anio}</h2>
+                <table style="border-collapse:collapse;font-family:Arial;">
+                  <thead><tr>
+                    <th style="${hdr}">Código</th>
+                    <th style="${hdr}">Nombre del Documento</th>
+                    <th style="${hdr}">Última Actualización</th>
+                    <th style="${hdr}">Próxima Actualización</th>
+                    <th style="${hdr}">Responsable</th>
+                    <th style="${hdr}">Ajuste</th>
+                    <th style="${hdr}">Descarte</th>
+                    <th style="${hdr}">Estado Semáforo</th>
+                  </tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
+
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Identificacion_GPC_${state.anio}.xls`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportCrono() {
+            if (!state.plan.length) { alert('No hay cronograma para exportar.'); return; }
+
+            // Cálculos de cumplimiento para el reporte
+            const planificados = state.plan.filter(x => x.accion !== 'Mantener');
+            const globalTotal = planificados.length;
+            const globalDone = planificados.filter(x => x.entregado).length;
+            const pctGlobal = globalTotal ? Math.round((globalDone / globalTotal) * 100) : 0;
+
+            const pctMesMap = Array.from({ length: 12 }, (_, m) => {
+                const mesPlan = planificados.filter(x => x.mes == m);
+                if (!mesPlan.length) return 0;
+                const mesDone = mesPlan.filter(x => x.mes == m && x.entregado).length;
+                return Math.round((mesDone / mesPlan.length) * 100);
+            });
+
+            const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+            // Helper para cumplimiento temporal
+            const getOnTimeStatus = (row) => {
+                const st = String(row.status || '').toLowerCase();
+                const fits = st === 'entregada' || st === 'socializada' || row.entregado;
+                if (fits) return { text: 'A tiempo', cls: '#dcfce7' };
+                if (!row.fecha) return { text: 'En curso', cls: '#ffffff' };
+                const dHoy = new Date();
+                const dFin = new Date(row.fecha + 'T00:00:00');
+                const diffDays = Math.floor((dHoy - dFin) / (1000 * 60 * 60 * 24));
+                if (diffDays > 0) return { text: `Atrasada ${diffDays} d`, cls: '#fee2e2' };
+                if (diffDays >= -7 && diffDays <= 0) return { text: 'Próx. a vencer', cls: '#ffedd5' };
+                return { text: 'En curso', cls: '#ffffff' };
+            };
+
+            let tablaHTML = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"></head>
+                <body>
+                <h2 style="font-family: Arial, sans-serif; color: #253d5b;">Cronograma de GPC y Protocolos - Año ${state.anio}</h2>
+                <table style="border-collapse: collapse; font-family: Arial, sans-serif;">
+                  <thead>
+                    <tr>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Código</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Diagnóstico - Tema</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Vence el</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Estado vigencia</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Acción</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Mes probable de ejecución</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Prioridad</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Fecha de inicio</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Fecha de entrega (plan)</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Cumplimiento (plan)</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Entregado</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">% de cumplimiento</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">% de cumplimiento mensual</th>
+                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Estado Actual</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+            `;
+
+            state.plan.forEach((x, index) => {
+                const sem = getSemforo(x.vencimiento);
+                const ot  = getOnTimeStatus(x); 
+                let bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
+                const pMes = x.mes != null ? pctMesMap[x.mes] : 0;
+
+                tablaHTML += `
+                  <tr style="background-color: ${bgColor};">
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.codigo || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.tema || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.vencimiento || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${sem.txt || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; color: #4e6c9f; font-weight: bold;">${x.accion || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; font-weight: bold;">${x.mes != null ? MONTHS[x.mes] : ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.prioridad || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.fchInicio || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.fecha || ''}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; background-color: ${ot.cls}; font-weight: bold;">${ot.text}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; text-align: center;">${x.entregado ? 'Sí' : 'No'}</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; text-align: right;">${pctGlobal}%</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; text-align: right;">${pMes}%</td>
+                    <td style="border: 1px solid #b6b5af; padding: 8px; color: #253d5b; font-weight: bold;">${x.status || ''}</td>
+                  </tr>
+                `;
+            });
+
+            tablaHTML += `</tbody></table></body></html>`;
+
+            const blob = new Blob([tablaHTML], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Cronograma_GPC_Protocolos_${state.anio}.xls`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function updateRepoFecha(idx, val) {
@@ -1686,56 +2179,106 @@
             r.proximaAct = addYears(r.ultimaAct, años);
         }
 
-        function sincroRepo() {
+        window.sincroRepo = function sincroRepo(silent = false) {
             let count = 0;
+            if(!state.repo) state.repo = [];
+
             state.actu.forEach(seg => {
-                // Si está aprobado o socializado, es candidato al maestro
-                const isFinal = seg.fchRetorno || seg.fechaSoc || seg.status === 'Aprobado' || seg.status === 'Socializado';
-                if (isFinal) {
-                    let r = state.repo.find(x => x.codigo === seg.codigo && seg.codigo);
+                // Sincronizamos si hay actividad o si necesitamos asegurar que el estatus sea correcto
+                if (seg.fchRetorno || seg.fechaSoc || seg.statusManual || seg.fchEntrega) {
+                    
+                    let targetCodigo = seg.codigo;
+                    let targetNombre = seg.tema;
+
+                    // Si es descarte/actualizado y hay nueva versión, el target es la nueva versión
+                    if ((seg.statusManual === 'Descartado' || seg.statusManual === 'Actualizado') && seg.nuevoCodigo) {
+                        targetCodigo = seg.nuevoCodigo;
+                        targetNombre = seg.nuevoNombre || seg.tema;
+                    }
+
+                    // Buscar en el repositorio por CÓDIGO Y NOMBRE para evitar colisiones en protocolos que comparten código
+                    let r = state.repo.find(x => 
+                        (x.codigo && x.codigo === targetCodigo && x.nombre === targetNombre) || 
+                        (!x.codigo && x.nombre === targetNombre)
+                    );
+                    
                     if (!r) {
-                        const tipo = seg.codigo && seg.codigo.includes('E-GTC-D') ? 'Anual' : (seg.codigo && seg.codigo.startsWith('GPC') ? 'GPC' : 'Protocolo');
+                        const tipo = targetCodigo && targetCodigo.includes('E-GTC-D') ? 'Anual' : (targetCodigo && targetCodigo.startsWith('GPC') ? 'GPC' : 'Protocolo');
                         r = {
-                            codigo: seg.codigo || '',
-                            nombre: seg.tema,
+                            codigo: targetCodigo || '',
+                            nombre: targetNombre,
                             tipo: tipo,
                             ultimaAct: seg.fchRetorno || seg.fechaSoc || new Date().toISOString().split('T')[0],
-                            status: 'Vigente'
+                            status: seg.statusManual === 'Inexistente' ? 'Inexistente' : (seg.statusManual === 'Descartado' ? 'Descartado' : 'Vigente')
                         };
                         const años = tipo === 'Anual' ? 1 : (tipo === 'GPC' ? 5 : 3);
-                        r.proximaAct = addYears(r.ultimaAct, años);
+                        r.proximaAct = r.status === 'Descartado' ? '' : (seg.nuevaVigencia || addYears(r.ultimaAct, años));
                         state.repo.push(r);
                         count++;
                     } else {
-                        // Actualizar fecha si la del seguimiento es más reciente
-                        const nuevaFecha = seg.fchRetorno || seg.fechaSoc;
-                        if (nuevaFecha && nuevaFecha > (r.ultimaAct || '')) {
-                            r.ultimaAct = nuevaFecha;
-                            const años = r.tipo === 'GPC' ? 5 : 3;
-                            r.proximaAct = addYears(r.ultimaAct, años);
-                            count++;
+                        // Actualizar existente
+                        if (seg.statusManual === 'Inexistente') {
+                             r.status = 'Inexistente';
+                        } else {
+                             r.nombre = targetNombre;
+                             const nf = seg.fchRetorno || seg.fechaSoc || seg.nuevaVigencia; // Si es 'Actualizado', a veces solo queremos la vigencia
+                             if (nf && nf > (r.ultimaAct || '')) r.ultimaAct = nf;
+                             if (seg.nuevaVigencia) r.proximaAct = seg.nuevaVigencia;
+                             else recalcRepoItem(state.repo.indexOf(r));
+                             
+                             r.status = (seg.statusManual === 'Descartado') ? 'Descartado' : 'Vigente';
+                             
+                             // Si es descartado, NO debe tener fecha de vencimiento futura
+                             if (r.status === 'Descartado') r.proximaAct = '';
                         }
+                        count++;
                     }
                 }
             });
             renderRepo();
-            alert(`✓ Repositorio Maestro actualizado: ${count} cambios detectados.`);
+            if (!silent) alert(`Sincronización completa: ${count} documentos impactados en el Maestro.`);
         }
 
         function exportRepo() {
             if (!state.repo.length) return alert("No hay datos para exportar.");
-            const data = state.repo.map(r => ({
-                Codigo: r.codigo,
-                Nombre: r.nombre,
-                Tipo: r.tipo,
-                Ultima_Actualizacion: r.ultimaAct,
-                Proxima_Actualizacion: r.proximaAct,
-                Estado: getSemforo(r.proximaAct).txt
-            }));
+            const data = state.repo.map(r => {
+                // Determinar estado visible: priorizar status explícito antes del semáforo por fecha
+                let estadoExcel;
+                if (r.status === 'Descartado') estadoExcel = 'DESCARTE';
+                else if (r.status === 'Inexistente') estadoExcel = 'INEXISTENTE';
+                else estadoExcel = getSemforo(r.proximaAct).txt;
+                return {
+                    Codigo: r.codigo || '',
+                    Nombre: r.nombre || '',
+                    Tipo: r.tipo || '',
+                    Ultima_Actualizacion: r.ultimaAct || '',
+                    Proxima_Actualizacion: r.proximaAct || '',
+                    Estado: estadoExcel,
+                    Motivo_Descarte: r.motivo || ''
+                };
+            });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Repositorio Maestro");
             XLSX.writeFile(wb, `Repositorio_Maestro_GPC_${new Date().getFullYear()}.xlsx`);
+        }
+
+        function addRepoDescarte() {
+            if(!state.repo) state.repo = [];
+            const nombre = prompt('Nombre del documento descartado:');
+            if (!nombre) return;
+            const codigo = prompt('Código del documento (si aplica):') || '';
+            const motivo = prompt('Motivo del descarte:') || 'Obsolescencia';
+            state.repo.unshift({
+                codigo: codigo,
+                nombre: nombre,
+                tipo: codigo.startsWith('GPC') ? 'GPC' : 'Protocolo',
+                ultimaAct: new Date().toISOString().split('T')[0],
+                proximaAct: '',
+                status: 'Descartado',
+                motivo: motivo
+            });
+            renderRepo();
         }
 
         function addRepoRow() {
@@ -1748,6 +2291,32 @@
                 proximaAct: '',
                 status: 'Vigente'
             });
+            renderRepo();
+        }
+
+        function importFromInventario() {
+            if(!state.inventario || state.inventario.length === 0) {
+                alert("No hay documentos en el inventario para importar.");
+                return;
+            }
+            if(!confirm(`Se importarán los documentos del inventario global al maestro. ¿Desea continuar?`)) return;
+
+            const repoCodes = new Set(state.repo.map(r => r.codigo).filter(Boolean));
+            let count = 0;
+            state.inventario.forEach(i => {
+                if(!repoCodes.has(i.codigo)) {
+                    state.repo.push({
+                        codigo: i.codigo || '',
+                        nombre: i.nombre || '',
+                        tipo: i.codigo && i.codigo.startsWith('GPC') ? 'GPC' : 'Protocolo',
+                        ultimaAct: i.fchUlt || '',
+                        proximaAct: i.fchProx || '',
+                        status: 'Vigente'
+                    });
+                    count++;
+                }
+            });
+            alert(`Se han añadido ${count} documentos nuevos al maestro.`);
             renderRepo();
         }
 
@@ -1776,7 +2345,6 @@
             }
             return res;
         }
-        function slug(t) { return String(t).toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]/g, ''); }
 
         // --- Evidencias & Modal ---
         let currentActuIdx = -1;
@@ -1887,50 +2455,422 @@
             };
         }
 
+        function normalizeSlug(str) {
+            return String(str || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+        }
+
+        const LOGO_CLINICA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAl8AAADECAYAAAChgUS0AAAQAElFTkSuQmCC";
+
         async function genEvidenciasPDF() {
-            const r = state.actu[currentActuIdx];
-            const { jsPDF } = window.jspdf;
-            const tipo = qs('#evidTipo').value;
-            const svcs = qsa('#evidServicios .btn-primary').map(b => b.textContent);
+            const idx = state._evid?.idx ?? currentActuIdx;
+            if (idx == null || idx < 0) {
+                alert('No se encontró el registro de seguimiento.');
+                return;
+            }
 
-            if (svcs.length === 0) { alert("Por favor seleccione al menos un servicio."); return; }
+            const r = state.actu[idx];
+            const tipo = qs('#evidTipo').value; // 'social' | 'impl'
+            const fecha = qs('#evidFecha').value || '';
+            const tema = qs('#evidTema').value || r.tema || '';
+            const fac = qs('#evidFac').value || '';
+            const resp = qs('#evidResp').value || '';
+            const hora = qs('#evidHora').value || '';
+            const dur = qs('#evidDur').value || '';
+            const version = (qs('#evidVersion')?.value || r.version || '').trim();
+            const vigencia = (qs('#evidVigencia')?.value || r.vigencia || '').trim();
 
-            for (const svc of svcs) {
-                const pdf = new jsPDF(tipo === 'impl' ? 'p' : 'l', 'mm', 'a4');
-                const title = tipo === 'impl' ? "HOJA DE IMPLEMENTACIÓN Y DESPLIEGUE" : "FICHA TÉCNICA DE CAPACITACIÓN / SOCIALIZACIÓN";
+            const svcs = getServiciosSeleccionados();
+            if (!svcs.length) {
+                alert('Marca al menos un servicio.');
+                return;
+            }
 
-                pdf.setFontSize(16); pdf.text(title, pdf.internal.pageSize.getWidth() / 2, 20, { align: "center" });
-                pdf.setFontSize(10);
+            const rows = getFirmantesSeleccionados();
 
-                let y = 35;
-                pdf.text(`Documento: ${r.tema}`, 20, y); y += 6;
-                pdf.text(`Servicio: ${svc}`, 20, y); y += 6;
-                pdf.text(`Fecha: ${qs('#evidFecha').value}`, 20, y); y += 6;
-                pdf.text(`Facilitador: ${qs('#evidFac').value}`, 20, y); y += 6;
-                pdf.text(`Responsable Area: ${qs('#evidResp').value}`, 20, y); y += 6;
-                pdf.text(`Horario: ${qs('#evidHora').value}`, 120, y - 6);
-                pdf.text(`Duración: ${qs('#evidDur').value}`, 120, y);
+            for (const servicio of svcs) {
+                const pdf = new window.jspdf.jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
 
                 if (tipo === 'impl') {
-                    pdf.text(`Versión: ${qs('#evidVersion').value}`, 20, y + 6);
-                    pdf.text(`Vigencia: ${qs('#evidVigencia').value}`, 120, y + 6);
-                    y += 12;
-                }
-
-                y += 10;
-                pdf.text("Asistentes y Firmas:", 20, y); y += 8;
-                pdf.line(20, y, pdf.internal.pageSize.getWidth() - 20, y); y += 8;
-
-                if (r.firmantes) {
-                    r.firmantes.forEach(f => {
-                        pdf.text(`${f.nombre} - ${f.especialidad}`, 25, y);
-                        if (f.firma) pdf.addImage(f.firma, 'PNG', pdf.internal.pageSize.getWidth() - 60, y - 5, 30, 10);
-                        y += 10;
-                        if (y > pdf.internal.pageSize.getHeight() - 20) { pdf.addPage(); y = 20; }
+                    drawImplementacionPDF(pdf, {
+                        codigo: r.codigo || '',
+                        tema,
+                        servicio,
+                        fecha,
+                        version,
+                        vigencia,
+                        rows
                     });
+                    pdf.save(`Implementacion_Despliegue_${normalizeSlug(tema)}_${normalizeSlug(servicio)}.pdf`);
+                } else {
+                    drawSocializacionPDF(pdf, {
+                        tema,
+                        fecha,
+                        facilitador: fac,
+                        responsable: resp,
+                        horario: hora,
+                        duracion: dur,
+                        rows
+                    });
+                    pdf.save(`Ficha_Capacitacion_${normalizeSlug(tema)}_${normalizeSlug(servicio)}.pdf`);
                 }
-                pdf.save(`${tipo}_${slug(r.tema)}_${slug(svc)}.pdf`);
             }
+        }
+
+        function getServiciosSeleccionados() {
+            const box = qs('#evidServicios');
+            if (!box) return [];
+
+            const checks = [...box.querySelectorAll('input[type="checkbox"]:checked')];
+            if (checks.length) return checks.map(x => x.value || x.dataset.value || x.parentElement?.textContent?.trim()).filter(Boolean);
+
+            const btns = [...box.querySelectorAll('.btn-primary')];
+            if (btns.length) return btns.map(b => b.textContent.trim()).filter(Boolean);
+
+            return [];
+        }
+
+        function getFirmantesSeleccionados() {
+            const tbody = qs('#profsSelTable tbody');
+            if (!tbody) return [];
+
+            return [...tbody.children].map(tr => {
+                const img = tr.querySelector('.sig-thumb');
+                const firma = img?.src || tr.dataset.firma || '';
+
+                const cedula = tr.children?.[0]?.textContent?.trim() || tr.dataset.ced || '';
+                const nombre = tr.children?.[1]?.textContent?.trim() || tr.dataset.nombre || '';
+                const cargo = tr.dataset.cargoEsp
+                    || tr.dataset.cargo
+                    || tr.children?.[2]?.textContent?.trim()
+                    || tr.dataset.especialidad
+                    || '';
+
+                return { cedula, nombre, cargo, firma };
+            });
+        }
+
+        function drawImplementacionPDF(pdf, data) {
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+
+            const m = 12;
+            const footerY = pageH - 6;
+            const usableW = pageW - (m * 2);
+
+            const topY = m;
+            const headH = 25;
+            const splitX = m + 45;
+            const metaY = topY + 18;
+            const metaColW = usableW / 4;
+
+            pdf.setDrawColor(0);
+            pdf.setTextColor(0);
+            pdf.setLineWidth(0.3);
+
+            // Encabezado principal
+            pdf.rect(m, topY, usableW, headH);
+            pdf.line(splitX, topY, splitX, topY + headH);
+            pdf.line(m, metaY, m + usableW, metaY);
+
+            pdf.line(m + metaColW, metaY, m + metaColW, topY + headH);
+            pdf.line(m + 2 * metaColW, metaY, m + 2 * metaColW, topY + headH);
+            pdf.line(m + 3 * metaColW, metaY, m + 3 * metaColW, topY + headH);
+
+            // Logo
+            if (typeof LOGO_CLINICA !== 'undefined' && LOGO_CLINICA) {
+                try {
+                    pdf.addImage(LOGO_CLINICA, 'PNG', m + 4, topY + 2.5, 32, 11);
+                } catch (_) {}
+            }
+
+            // Título
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(9.5);
+            pdf.text('HOJA DE IMPLEMENTACIÓN Y DESPLIEGUE', splitX + ((m + usableW - splitX) / 2), topY + 10, { align: 'center' });
+
+            // Meta
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('FECHA:', m + 8, metaY + 4.5);
+            pdf.text('VERSIÓN:', m + metaColW + 8, metaY + 4.5);
+            pdf.text('CÓDIGO:', m + 2 * metaColW + 8, metaY + 4.5);
+            pdf.text('PÁGINA:', m + 3 * metaColW + 8, metaY + 4.5);
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(formatFechaCabecera(data.fecha) || 'octubre 2025', m + 21, metaY + 4.5);
+            pdf.text(data.version || '003', m + metaColW + 28, metaY + 4.5);
+            pdf.text('E-GC-F-005', m + 2 * metaColW + 22, metaY + 4.5);
+            pdf.text('1 / 1', m + 3 * metaColW + 24, metaY + 4.5);
+
+            // Datos documento
+            let y = topY + headH + 4;
+            const labelW = 48;
+            const valueW = usableW - labelW;
+            const rowH = 6;
+
+            const detalle = [
+                ['Nombre del documento', data.tema || ''],
+                ['Código', data.codigo || ''],
+                ['Versión', data.version || ''],
+                ['Vigencia', data.vigencia || ''],
+                ['Servicio', data.servicio || '']
+            ];
+
+            detalle.forEach(([lab, val]) => {
+                pdf.rect(m, y, labelW, rowH);
+                pdf.rect(m + labelW, y, valueW, rowH);
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(7.5);
+                pdf.text(lab, m + 2, y + 4);
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.text(String(val || ''), m + labelW + 2, y + 4);
+
+                y += rowH;
+            });
+
+            y += 2;
+
+            // Tabla principal
+            const c1 = 68;
+            const c2 = 40;
+            const c3 = 30;
+            const c4 = usableW - c1 - c2 - c3;
+            const headRowH = 10;
+
+            pdf.rect(m, y, c1, headRowH);
+            pdf.rect(m + c1, y, c2, headRowH);
+            pdf.rect(m + c1 + c2, y, c3, headRowH);
+            pdf.rect(m + c1 + c2 + c3, y, c4, headRowH);
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(7);
+            pdf.text('Nombre del colaborador', m + c1 / 2, y + 5.5, { align: 'center' });
+            pdf.text('Cargo', m + c1 + c2 / 2, y + 5.5, { align: 'center' });
+            pdf.text(['Fecha', 'Implementación'], m + c1 + c2 + c3 / 2, y + 4.1, { align: 'center' });
+            pdf.text('Firma', m + c1 + c2 + c3 + c4 / 2, y + 5.5, { align: 'center' });
+
+            y += headRowH;
+
+            const bodyH = 6;
+            const maxBottom = footerY - 8;
+            const rows = data.rows || [];
+            let i = 0;
+
+            while (y + bodyH <= maxBottom) {
+                const f = rows[i];
+
+                pdf.rect(m, y, c1, bodyH);
+                pdf.rect(m + c1, y, c2, bodyH);
+                pdf.rect(m + c1 + c2, y, c3, bodyH);
+                pdf.rect(m + c1 + c2 + c3, y, c4, bodyH);
+
+                if (f) {
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(7);
+
+                    safeText(pdf, String(f.nombre || ''), m + 2, y + 4, c1 - 4);
+                    safeText(pdf, String(f.cargo || ''), m + c1 + 2, y + 4, c2 - 4);
+                    safeText(pdf, data.fecha || '', m + c1 + c2 + 2, y + 4, c3 - 4);
+
+                    if (f.firma) {
+                        try {
+                            pdf.addImage(f.firma, 'PNG', m + c1 + c2 + c3 + 2, y + 0.8, c4 - 4, 4.2);
+                        } catch (_) {}
+                    }
+                }
+
+                y += bodyH;
+                i++;
+            }
+
+            // Pie
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.text('Gestión de calidad', m + 2, footerY);
+            pdf.text('Página 1 de 1', pageW - m - 22, footerY);
+        }
+
+        function drawSocializacionPDF(pdf, data) {
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+
+            const m = 14;
+            const footerY = pageH - 6;
+            const usableW = pageW - (m * 2);
+
+            const topY = m;
+            const headH = 24;
+            const splitX = m + 40;
+            const metaY = topY + 15;
+            const metaColW = usableW / 4;
+
+            pdf.setDrawColor(0);
+            pdf.setTextColor(0);
+            pdf.setLineWidth(0.3);
+
+            // Encabezado
+            pdf.rect(m, topY, usableW, headH);
+            pdf.line(splitX, topY, splitX, topY + headH);
+            pdf.line(m, metaY, m + usableW, metaY);
+
+            pdf.line(m + metaColW, metaY, m + metaColW, topY + headH);
+            pdf.line(m + 2 * metaColW, metaY, m + 2 * metaColW, topY + headH);
+            pdf.line(m + 3 * metaColW, metaY, m + 3 * metaColW, topY + headH);
+
+            if (typeof LOGO_CLINICA !== 'undefined' && LOGO_CLINICA) {
+                try {
+                    pdf.addImage(LOGO_CLINICA, 'PNG', m + 4, topY + 3, 26, 9);
+                } catch (_) {}
+            }
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(8.5);
+            pdf.text(
+                'FICHA TÉCNICA DE LA REUNIÓN, COMITÉ, CAPACITACIÓN O GRUPO PRIMARIO',
+                splitX + ((m + usableW - splitX) / 2),
+                topY + 10,
+                { align: 'center', maxWidth: usableW - 50 }
+            );
+
+            pdf.setFontSize(7);
+            pdf.text('FECHA:', m + 10, metaY + 4.5);
+            pdf.text('VERSIÓN:', m + metaColW + 8, metaY + 4.5);
+            pdf.text('CÓDIGO:', m + metaColW * 2 + 8, metaY + 4.5);
+            pdf.text('PÁGINA:', m + metaColW * 3 + 8, metaY + 4.5);
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(formatFechaCabecera(data.fecha) || 'junio 2025', m + 22, metaY + 4.5);
+            pdf.text('003', m + metaColW + 28, metaY + 4.5);
+            pdf.text('E-GC-F-001', m + metaColW * 2 + 22, metaY + 4.5);
+            pdf.text('1 / 1', m + metaColW * 3 + 24, metaY + 4.5);
+
+            // Bloque superior
+            let y = topY + headH + 5;
+            const labelW = 28;
+            const rowH = 6;
+
+            const rowsHead = [
+                ['Fecha', data.fecha || ''],
+                ['Tema', data.tema || ''],
+                ['Facilitador', data.facilitador || ''],
+                ['Responsable', data.responsable || '']
+            ];
+
+            rowsHead.forEach(([lab, val]) => {
+                pdf.rect(m, y, labelW, rowH);
+                pdf.rect(m + labelW, y, usableW - labelW, rowH);
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(7.5);
+                pdf.text(lab, m + 2, y + 4);
+
+                pdf.setFont('helvetica', 'normal');
+                safeText(pdf, String(val || ''), m + labelW + 2, y + 4, usableW - labelW - 4);
+
+                y += rowH;
+            });
+
+            const horarioW = 72;
+            const durLblW = 22;
+            const durValW = usableW - labelW - horarioW - durLblW;
+
+            pdf.rect(m, y, labelW, rowH);
+            pdf.rect(m + labelW, y, horarioW, rowH);
+            pdf.rect(m + labelW + horarioW, y, durLblW, rowH);
+            pdf.rect(m + labelW + horarioW + durLblW, y, durValW, rowH);
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Horario', m + 2, y + 4);
+            pdf.text('Duración', m + labelW + horarioW + durLblW / 2, y + 4, { align: 'center' });
+
+            pdf.setFont('helvetica', 'normal');
+            safeText(pdf, data.horario || '', m + labelW + 2, y + 4, horarioW - 4);
+            safeText(pdf, data.duracion || '', m + labelW + horarioW + durLblW + 2, y + 4, durValW - 4);
+
+            y += rowH + 2;
+
+            // Tabla firmantes
+            const c1 = 28;
+            const c2 = 68;
+            const c3 = 44;
+            const c4 = usableW - c1 - c2 - c3;
+            const headRowH = 7;
+
+            pdf.rect(m, y, c1, headRowH);
+            pdf.rect(m + c1, y, c2, headRowH);
+            pdf.rect(m + c1 + c2, y, c3, headRowH);
+            pdf.rect(m + c1 + c2 + c3, y, c4, headRowH);
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(7);
+            pdf.text('Cedula', m + c1 / 2, y + 4.5, { align: 'center' });
+            pdf.text('Nombres y apellidos', m + c1 + c2 / 2, y + 4.5, { align: 'center' });
+            pdf.text('Cargo', m + c1 + c2 + c3 / 2, y + 4.5, { align: 'center' });
+            pdf.text('Firma', m + c1 + c2 + c3 + c4 / 2, y + 4.5, { align: 'center' });
+
+            y += headRowH;
+
+            const bodyH = 6;
+            const maxBottom = footerY - 8;
+            const rows = data.rows || [];
+            let i = 0;
+
+            while (y + bodyH <= maxBottom) {
+                const f = rows[i];
+
+                pdf.rect(m, y, c1, bodyH);
+                pdf.rect(m + c1, y, c2, bodyH);
+                pdf.rect(m + c1 + c2, y, c3, bodyH);
+                pdf.rect(m + c1 + c2 + c3, y, c4, bodyH);
+
+                if (f) {
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(7);
+
+                    safeText(pdf, String(f.cedula || ''), m + 2, y + 4, c1 - 4);
+                    safeText(pdf, String(f.nombre || ''), m + c1 + 2, y + 4, c2 - 4);
+                    safeText(pdf, String(f.cargo || ''), m + c1 + c2 + 2, y + 4, c3 - 4);
+
+                    if (f.firma) {
+                        try {
+                            pdf.addImage(f.firma, 'PNG', m + c1 + c2 + c3 + 2, y + 0.8, c4 - 4, 4.2);
+                        } catch (_) {}
+                    }
+                }
+
+                y += bodyH;
+                i++;
+            }
+
+            // Pie
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.text('Gestión de calidad', m + 2, footerY);
+            pdf.text('Página 1 de 1', pageW - m - 22, footerY);
+        }
+
+        function safeText(pdf, text, x, y, maxWidth) {
+            const lines = pdf.splitTextToSize(String(text || ''), maxWidth);
+            if (!lines.length) return;
+            pdf.text(lines[0], x, y);
+        }
+
+        function formatFechaCabecera(fechaStr) {
+            if (!fechaStr) return '';
+            const d = new Date(fechaStr + 'T00:00:00');
+            return d.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
         }
 
         // Exponer para HTML (Nivel Superior)
@@ -1958,9 +2898,9 @@
         window.updateRepoTipo = updateRepoTipo;
         window.updateRepoFecha = updateRepoFecha;
         window.addRepoRow = addRepoRow;
+        window.importFromInventario = importFromInventario;
         window.renderDash = renderDash;
 
-        let charts = {};
 
         function renderDash() {
             if (!state.plan || !state.actu || !state.repo || !state.inventario) return;
@@ -2006,7 +2946,7 @@
                 labels: ['Vigente', 'Vencido', 'Pendiente/Gris'],
                 datasets: [{
                     data: [rVig, rVen, rPor],
-                    backgroundColor: ['#10b981', '#f43f5e', '#94a3b8'],
+                    backgroundColor: ['#10b981', '#f43f5e', '#bcb5af'],
                     borderWidth: 0,
                     hoverOffset: 10
                 }]
@@ -2024,7 +2964,7 @@
                 labels: Object.keys(statesSeg),
                 datasets: [{
                     data: Object.values(statesSeg),
-                    backgroundColor: ['#94a3b8', '#6366f1', '#8b5cf6', '#10b981'],
+                    backgroundColor: ['#bcb5af', '#4e6c9f', '#253d5b', '#10b981'],
                     borderWidth: 2,
                     borderColor: '#fff'
                 }]
@@ -2043,7 +2983,7 @@
                 labels: MONTHS.map(m => m.slice(0,3)),
                 datasets: [
                     { label: 'Meta', data: mesPlan, backgroundColor: '#f1f5f9', borderRadius: 5 },
-                    { label: 'Realizado', data: mesDone, backgroundColor: '#6366f1', borderRadius: 5 }
+                    { label: 'Realizado', data: mesDone, backgroundColor: '#253d5b', borderRadius: 5 }
                 ]
             }, { 
                 scales: { 
@@ -2073,7 +3013,7 @@
                 datasets: [{ 
                     label: 'Documentos', 
                     data: Object.values(aging), 
-                    backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#f43f5e'],
+                    backgroundColor: ['#10b981', '#4e6c9f', '#f59e0b', '#f43f5e'],
                     borderRadius: 8
                 }]
             }, { indexAxis: 'y', plugins: { legend: { display: false } } });
@@ -2099,8 +3039,8 @@
                 datasets: [{
                     label: 'Vencimientos Previstos',
                     data: futureExp,
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderColor: '#253d5b',
+                    backgroundColor: 'rgba(37, 61, 91, 0.1)',
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
@@ -2122,13 +3062,42 @@
                 datasets: [{
                     label: 'Distribución',
                     data: Object.values(prioMap),
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: '#6366f1',
-                    pointBackgroundColor: '#6366f1'
+                    backgroundColor: 'rgba(78, 108, 159, 0.2)',
+                    borderColor: '#4e6c9f',
+                    pointBackgroundColor: '#253d5b'
                 }]
             }, { scales: { r: { ticks: { display: false }, min: 0 } } });
 
-            // 4. Insights dinámicos y Salud Documental
+            // 4. Actualizaciones por Año (Histograma histórico)
+            const actuByYear = {};
+            allDocs.forEach(r => {
+                if (!r.ultimaAct) return;
+                const yr = String(r.ultimaAct).slice(0, 4);
+                if (!yr || yr.length !== 4 || isNaN(yr)) return;
+                actuByYear[yr] = (actuByYear[yr] || 0) + 1;
+            });
+            // Ordenar años
+            const yrLabels = Object.keys(actuByYear).sort();
+            const yrData = yrLabels.map(y => actuByYear[y]);
+            const yrColors = yrLabels.map(y => +y === state.anio ? '#253d5b' : '#4e6c9f');
+
+            updateChart('chartActuAnio', 'bar', {
+                labels: yrLabels,
+                datasets: [{
+                    label: 'Documentos actualizados',
+                    data: yrData,
+                    backgroundColor: yrColors,
+                    borderRadius: 8
+                }]
+            }, {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            });
+
+            // 5. Insights dinámicos y Salud Documental
             const insightsBox = qs('#dash-insights');
             insightsBox.innerHTML = '';
             
@@ -2148,21 +3117,21 @@
             insightsBox.innerHTML = `
                 <div class="col-md-4">
                     <div class="chart-card d-flex flex-column align-items-center text-center p-4">
-                        <div class="stat-lbl mb-2 text-muted">🩺 Índice de Salud Documental</div>
+                        <div class="stat-lbl mb-2 text-muted">Índice de Salud Documental</div>
                         <div class="stat-val ${healthClass}" style="font-size: 3rem;">${healthIdx}%</div>
                         <p class="small text-muted mb-0">${saludDocs} de ${totalDocs} documentos están actualizados (< 3 años).</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="chart-card d-flex flex-column align-items-center text-center p-4">
-                        <div class="stat-lbl mb-2 text-muted">📉 Deuda Histórica Acumulada</div>
+                        <div class="stat-lbl mb-2 text-muted">Deuda Histórica Acumulada</div>
                         <div class="stat-val text-danger" style="font-size: 3rem;">${deudaHisto}</div>
                         <p class="small text-muted mb-0">Documentos que exceden los 5 años de antigüedad y requieren revisión inmediata.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="chart-card d-flex flex-column align-items-center text-center p-4">
-                        <div class="stat-lbl mb-2 text-muted">⚡ Presión Operativa Inminente</div>
+                        <div class="stat-lbl mb-2 text-muted">Presión Operativa Inminente</div>
                         <div class="stat-val text-primary" style="font-size: 3rem;">${presionOp}</div>
                         <p class="small text-muted mb-0">Vencimientos previstos para los próximos 90 días naturales.</p>
                     </div>
@@ -2181,7 +3150,7 @@
                 insightsBox.innerHTML += `
                     <div class="col-12 mt-3">
                         <div class="alert alert-danger d-flex align-items-center gap-3" style="border-radius:15px; background:#fff1f2; border:1px solid #fda4af">
-                            <div style="font-size:1.5rem">⚠️</div>
+                            <div style="font-size:1.5rem"></div>
                             <div>
                                 <h6 class="mb-0 fw-bold" style="color:#9f1239">DIAGNÓSTICO: Riesgo Máximo de Obsolescencia</h6>
                                 <p class="mb-0 small text-muted">El documento <b>${docRiesgo.nombre} (${docRiesgo.codigo})</b> es el más antiguo del sistema (última revisión en ${docRiesgo.ultimaAct}). Su vigencia científica ha expirado.</p>
@@ -2193,9 +3162,9 @@
         }
 
         function updateChart(id, type, data, options = {}) {
-            if (charts[id]) charts[id].destroy();
+            if (gpcCharts[id]) gpcCharts[id].destroy();
             const ctx = qs(`#${id}`).getContext('2d');
-            charts[id] = new Chart(ctx, {
+            gpcCharts[id] = new Chart(ctx, {
                 type,
                 data,
                 options: {
