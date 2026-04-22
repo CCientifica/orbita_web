@@ -449,36 +449,7 @@
                             <label class="fw-bold small">CAPACIDAD/MES
                                 <input id="capacidadMes" type="number" min="1" value="30" style="width: 80px;">
                             </label>
-                            <div class="row g-4 mt-2">
-                                <div class="col-md-6">
-                                    <div class="chart-card">
-                                        <div class="chart-title">Obsolescencia (Puntos Críticos)</div>
-                                        <div style="height: 250px;"><canvas id="chartAging"></canvas></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="chart-card">
-                                        <div class="chart-title">Proyección de Vencimientos (Próximos 12 meses)</div>
-                                        <div style="height: 250px;"><canvas id="chartFuture"></canvas></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="chart-card">
-                                        <div class="chart-title">Carga por Prioridad</div>
-                                        <div style="height: 250px;"><canvas id="chartWorkload"></canvas></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="chart-card">
-                                        <div class="chart-title">Actualizaciones Realizadas por Año</div>
-                                        <div style="height: 250px;"><canvas id="chartActuAnio"></canvas></div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="row g-4 mt-2" id="dash-insights">
-                                <!-- Se llena vía JS -->
-                            </div>
                         </div>
                         <div class="tabs">
                             <button class="tab" data-tab="dash" aria-selected="true">Dashboard</button>
@@ -531,6 +502,38 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Gráficas analíticas (solo visibles en Dashboard) -->
+                            <div class="row g-4 mt-4">
+                                <div class="col-md-6">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Obsolescencia (Puntos Críticos)</div>
+                                        <div style="height: 250px;"><canvas id="chartAging"></canvas></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Proyección de Vencimientos (Próximos 12 meses)</div>
+                                        <div style="height: 250px;"><canvas id="chartFuture"></canvas></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Carga por Prioridad</div>
+                                        <div style="height: 250px;"><canvas id="chartWorkload"></canvas></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Actualizaciones Realizadas por Año</div>
+                                        <div style="height: 250px;"><canvas id="chartActuAnio"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-4 mt-2" id="dash-insights">
+                                <!-- Se llena vía JS -->
+                            </div>
                         </div>
 
                         <!-- Panel 1: Identificación -->
@@ -572,6 +575,7 @@
                                     <input id="filePerfil" type="file" accept=".xlsx,.xls" hidden>
                                     <button id="btnAddDiag" class="btn">+ Diag</button>
                                     <button id="btnImportPerfil" class="btn">Importar</button>
+                                    <button id="btnExportPerfil" class="btn" onclick="exportPerfil()">Exportar Excel</button>
                                     <button id="btnCalcular" class="btn btn-primary" onclick="cruzarDatos()">Cruzar Datos</button>
                                     <button id="btnSavePerfil" class="btn btn-primary" onclick="saveBatch('gpc_perfil_anual', state.perfil)">Guardar</button>
                                 </div>
@@ -673,6 +677,7 @@
                                         <option value="soc">👥 Socializado</option>
                                         <option value="desc">Error: Descartado</option>
                                     </select>
+                                    <button class="btn btn-sm" onclick="exportActu()">Exportar Excel</button>
                                     <button class="btn btn-success" onclick="saveSeguimiento()">Guardar Seguimiento</button>
                                 </div>
                             </div>
@@ -1199,7 +1204,8 @@
                 const s1 = await getDocs(collection(db, 'gpc_identificacion'));
                 state.inventario = s1.docs.map(d => ({ ...d.data(), id: d.id }));
 
-                const s2 = await getDocs(query(collection(db, 'gpc_perfil_anual'), where('anio', '==', state.anio)));
+                // El perfil epidemiológico es dato institucional permanente: se carga sin filtro de año
+                const s2 = await getDocs(collection(db, 'gpc_perfil_anual'));
                 state.perfil = s2.docs.map(d => ({ ...d.data(), id: d.id }));
 
                 const s3 = await getDocs(query(collection(db, 'gpc_cronograma_anual'), where('anio', '==', state.anio)));
@@ -1544,13 +1550,13 @@
 
             // Procesar guardado/actualización
             state.plan.forEach(r => {
-                const id = r.id || `${state.anio}_${slug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
+                const id = r.id || `${state.anio}_${normalizeSlug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
                 batch.set(doc(db, 'gpc_cronograma_anual', id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
             });
 
             // Persistir Seguimiento
             state.actu.forEach(r => {
-                const id = r.id || `seg_${state.anio}_${slug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
+                const id = r.id || `seg_${state.anio}_${normalizeSlug(r.tema)}_${Math.random().toString(36).slice(2, 5)}`;
                 batch.set(doc(db, 'gpc_seguimiento', id), { ...r, anio: state.anio, updatedAt: serverTimestamp() }, { merge: true });
             });
 
@@ -1965,10 +1971,17 @@
                 let statusBadge;
 
                 if (r.status === 'Descartado') {
-                    const esDescarte = (r.motivo || '').toLowerCase().includes('descarte') || r.motivo === 'Descartado';
-                    statusBadge = esDescarte
-                        ? `<span class="badge text-white" style="background:#f97316">DESCARTADO</span>`
-                        : `<span class="badge text-white" style="background:#ef4444">OBSOLETO</span>`;
+                    const mot = (r.motivo || 'Descarte').toLowerCase();
+                    const isObs = mot.includes('obsol');
+                    statusBadge = `
+                        <select class="border-0 rounded fw-bold text-white px-2" 
+                                style="background:${isObs ? '#ef4444' : '#f97316'}; font-size:11px; cursor:pointer;"
+                                onchange="reclasificarRepo(${globalIdx}, this.value)">
+                            <option value="descartado" ${!isObs ? 'selected' : ''}>DESCARTADO</option>
+                            <option value="obsoleto" ${isObs ? 'selected' : ''}>OBSOLETO</option>
+                            <option value="vigente" title="Restaurar a vigente">RESTAURAR VIGENTE</option>
+                        </select>
+                    `;
                 } else if (r.status === 'Inexistente') {
                     statusBadge = `<span class="badge text-white" style="background:#64748b">INEXISTENTE</span>`;
                 } else if (sem.txt === 'VENCIDO') {
@@ -2023,14 +2036,24 @@
         }
         window.deleteRepoItem = deleteRepoItem;
 
-        // --- Reclasificar documento VENCIDO como OBSOLETO o DESCARTADO ---
+        // --- Reclasificar documento VENCIDO o Cambiar Estado de Descarte ---
         function reclasificarRepo(idx, tipo) {
             if (!tipo) return;
             const item = state.repo[idx];
-            if (!confirm(`¿Reclasificar "${item.nombre || 'documento'}" como ${tipo.toUpperCase()}?`)) return;
-            item.status = 'Descartado';
-            item.motivo = tipo === 'obsoleto' ? 'Obsolescencia' : 'Descarte manual';
-            item.proximaAct = '';
+            if (tipo === 'vigente') {
+                if (!confirm(`¿Restaurar "${item.nombre || 'documento'}" a estado VIGENTE?`)) { renderRepo(); return; }
+                item.status = 'Vigente';
+                item.motivo = '';
+                recalcRepoItem(idx);
+            } else {
+                // Si ya estaba descartado no pedimos confirmación de nuevo si es solo cambio de tipo
+                if (item.status !== 'Descartado') {
+                    if (!confirm(`¿Reclasificar "${item.nombre || 'documento'}" como ${tipo.toUpperCase()}?`)) { renderRepo(); return; }
+                }
+                item.status = 'Descartado';
+                item.motivo = tipo === 'obsoleto' ? 'Obsolescencia' : 'Descarte manual';
+                item.proximaAct = '';
+            }
             renderRepo();
         }
         window.reclasificarRepo = reclasificarRepo;
@@ -2041,72 +2064,94 @@
             renderRepo();
         }
 
-        function exportIdent() {
-            if (!state.inventario.length) { alert('No hay datos de identificación para exportar.'); return; }
-
-            const hdr = `background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;`;
-            const cel = `border: 1px solid #b6b5af; padding: 8px; font-family: Arial, sans-serif;`;
-            const celC = cel + `text-align:center;`;
-
-            const getSem = (fch) => {
-                if (!fch) return 'Sin fecha';
-                const dias = (new Date(fch) - new Date()) / 86400000;
-                if (dias < 0) return 'Vencido';
-                if (dias < 90) return 'Crítico';
-                if (dias < 180) return 'En riesgo';
-                return 'Vigente';
-            };
-
-            let rows = state.inventario.map(r => {
-                const vig = r.fchProx || (r.fchUlt ? addYears(r.fchUlt, getVigencia(r.codigo)) : '');
-                const sem = getSem(vig);
-                return `<tr>
-                    <td style="${cel}">${r.codigo || ''}</td>
-                    <td style="${cel}">${r.nombre || ''}</td>
-                    <td style="${celC}">${r.fchUlt || ''}</td>
-                    <td style="${celC}">${vig || ''}</td>
-                    <td style="${celC}">${r.resp || ''}</td>
-                    <td style="${celC}">${r.ajuste ? 'Sí' : 'No'}</td>
-                    <td style="${celC}">${r.descarte ? 'Sí' : 'No'}</td>
-                    <td style="${celC}">${sem}</td>
-                </tr>`;
-            }).join('');
-
-            const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" 
-                xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><meta charset="UTF-8"></head>
-                <body>
-                <h2 style="font-family:Arial;color:#253d5b;">Inventario de Identificación GPC/Protocolos — Año ${state.anio}</h2>
-                <table style="border-collapse:collapse;font-family:Arial;">
-                  <thead><tr>
-                    <th style="${hdr}">Código</th>
-                    <th style="${hdr}">Nombre del Documento</th>
-                    <th style="${hdr}">Última Actualización</th>
-                    <th style="${hdr}">Próxima Actualización</th>
-                    <th style="${hdr}">Responsable</th>
-                    <th style="${hdr}">Ajuste</th>
-                    <th style="${hdr}">Descarte</th>
-                    <th style="${hdr}">Estado Semáforo</th>
-                  </tr></thead>
-                  <tbody>${rows}</tbody>
-                </table>
-                </body></html>`;
-
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        // --- Exportación Excel Consolidada ---
+        function downloadExcel(html, fileName) {
+            // Se agrega el BOM (\ufeff) para que Excel detecte correctamente el UTF-8
+            const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Identificacion_GPC_${state.anio}.xls`;
+            a.download = fileName + "_" + state.anio + ".xls";
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
+        const HDR_STYLE = `background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;`;
+        const CEL_STYLE = `border: 1px solid #b6b5af; padding: 8px; font-family: Arial, sans-serif;`;
+        const CEL_C_STYLE = CEL_STYLE + `text-align:center;`;
+
+        function exportIdent() {
+            if (!state.inventario.length) { alert('No hay datos de identificación para exportar.'); return; }
+            const getSem = (fch) => {
+                const s = getSemforo(fch);
+                return s.txt;
+            };
+            let rows = state.inventario.map(r => {
+                const vig = r.fchProx || (r.fchUlt ? addYears(r.fchUlt, getVigencia(r.codigo)) : '');
+                return `<tr>
+                    <td style="${CEL_STYLE}">${r.codigo || ''}</td>
+                    <td style="${CEL_STYLE}">${r.nombre || ''}</td>
+                    <td style="${CEL_C_STYLE}">${r.fchUlt || ''}</td>
+                    <td style="${CEL_C_STYLE}">${vig || ''}</td>
+                    <td style="${CEL_C_STYLE}">${r.resp || ''}</td>
+                    <td style="${CEL_C_STYLE}">${r.ajuste ? 'Sí' : 'No'}</td>
+                    <td style="${CEL_C_STYLE}">${r.descarte ? 'Sí' : 'No'}</td>
+                    <td style="${CEL_C_STYLE}">${getSem(vig)}</td>
+                </tr>`;
+            }).join('');
+
+            const html = `<html><head><meta charset="UTF-8"></head><body>
+                <h2 style="font-family:Arial;color:#253d5b;">Inventario de Identificación GPC/Protocolos — Año ${state.anio}</h2>
+                <table style="border-collapse:collapse;font-family:Arial;">
+                  <thead><tr>
+                    <th style="${HDR_STYLE}">Código</th>
+                    <th style="${HDR_STYLE}">Nombre del Documento</th>
+                    <th style="${HDR_STYLE}">Última Actualización</th>
+                    <th style="${HDR_STYLE}">Próxima Actualización</th>
+                    <th style="${HDR_STYLE}">Responsable</th>
+                    <th style="${HDR_STYLE}">Ajuste</th>
+                    <th style="${HDR_STYLE}">Descarte</th>
+                    <th style="${HDR_STYLE}">Estado Semáforo</th>
+                  </tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
+            downloadExcel(html, "Identificacion_GPC");
+        }
+
+        function exportPerfil() {
+            if (!state.perfil.length) { alert('No hay datos de perfil para exportar.'); return; }
+            let rows = state.perfil.map(r => `<tr>
+                <td style="${CEL_STYLE}">${r.diagnostico || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.frecuencia || 0}</td>
+                <td style="${CEL_STYLE}">${r.servicio || ''}</td>
+                <td style="${CEL_STYLE}">${r.vinc_tema || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.accion || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.prioridad || ''}</td>
+            </tr>`).join('');
+
+            const html = `<html><head><meta charset="UTF-8"></head><body>
+                <h2 style="font-family:Arial;color:#253d5b;">Perfil Epidemiológico y Cruce GPC — Año ${state.anio}</h2>
+                <table style="border-collapse:collapse;font-family:Arial;">
+                  <thead><tr>
+                    <th style="${HDR_STYLE}">Diagnóstico</th>
+                    <th style="${HDR_STYLE}">Frecuencia</th>
+                    <th style="${HDR_STYLE}">Servicio</th>
+                    <th style="${HDR_STYLE}">Doc. Vinculado</th>
+                    <th style="${HDR_STYLE}">Acción</th>
+                    <th style="${HDR_STYLE}">Prioridad</th>
+                  </tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
+            downloadExcel(html, "Perfil_Epidemiologico");
+        }
+
         function exportCrono() {
             if (!state.plan.length) { alert('No hay cronograma para exportar.'); return; }
-
-            // Cálculos de cumplimiento para el reporte
+            
             const planificados = state.plan.filter(x => x.accion !== 'Mantener');
             const globalTotal = planificados.length;
             const globalDone = planificados.filter(x => x.entregado).length;
@@ -2119,13 +2164,9 @@
                 return Math.round((mesDone / mesPlan.length) * 100);
             });
 
-            const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-            // Helper para cumplimiento temporal
             const getOnTimeStatus = (row) => {
                 const st = String(row.status || '').toLowerCase();
-                const fits = st === 'entregada' || st === 'socializada' || row.entregado;
-                if (fits) return { text: 'A tiempo', cls: '#dcfce7' };
+                if (st === 'entregada' || st === 'socializada' || row.entregado) return { text: 'A tiempo', cls: '#dcfce7' };
                 if (!row.fecha) return { text: 'En curso', cls: '#ffffff' };
                 const dHoy = new Date();
                 const dFin = new Date(row.fecha + 'T00:00:00');
@@ -2135,68 +2176,81 @@
                 return { text: 'En curso', cls: '#ffffff' };
             };
 
-            let tablaHTML = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><meta charset="UTF-8"></head>
-                <body>
-                <h2 style="font-family: Arial, sans-serif; color: #253d5b;">Cronograma de GPC y Protocolos - Año ${state.anio}</h2>
-                <table style="border-collapse: collapse; font-family: Arial, sans-serif;">
-                  <thead>
-                    <tr>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Código</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Diagnóstico - Tema</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Vence el</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Estado vigencia</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Acción</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Mes probable de ejecución</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Prioridad</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Fecha de inicio</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Fecha de entrega (plan)</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Cumplimiento (plan)</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Entregado</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">% de cumplimiento</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">% de cumplimiento mensual</th>
-                      <th style="background-color: #253d5b; color: #ffffff; border: 1px solid #b6b5af; padding: 10px; font-weight: bold;">Estado Actual</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-            `;
-
-            state.plan.forEach((x, index) => {
+            let rows = state.plan.map(x => {
                 const sem = getSemforo(x.vencimiento);
-                const ot  = getOnTimeStatus(x); 
-                let bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
+                const ot = getOnTimeStatus(x); 
                 const pMes = x.mes != null ? pctMesMap[x.mes] : 0;
+                return `<tr>
+                    <td style="${CEL_STYLE}">${x.codigo || ''}</td>
+                    <td style="${CEL_STYLE}">${x.tema || ''}</td>
+                    <td style="${CEL_C_STYLE}">${x.vencimiento || ''}</td>
+                    <td style="${CEL_C_STYLE}">${sem.txt || ''}</td>
+                    <td style="${CEL_C_STYLE}; font-weight:bold;">${x.accion || ''}</td>
+                    <td style="${CEL_C_STYLE}">${x.mes != null ? MONTHS[x.mes] : ''}</td>
+                    <td style="${CEL_C_STYLE}">${x.prioridad || ''}</td>
+                    <td style="${CEL_C_STYLE}">${x.fchInicio || ''}</td>
+                    <td style="${CEL_C_STYLE}">${x.fecha || ''}</td>
+                    <td style="${CEL_C_STYLE}; background-color: ${ot.cls}">${ot.text}</td>
+                    <td style="${CEL_C_STYLE}">${x.entregado ? 'Sí' : 'No'}</td>
+                    <td style="${CEL_C_STYLE}">${pctGlobal}%</td>
+                    <td style="${CEL_C_STYLE}">${pMes}%</td>
+                    <td style="${CEL_C_STYLE}">${x.status || ''}</td>
+                </tr>`;
+            }).join('');
 
-                tablaHTML += `
-                  <tr style="background-color: ${bgColor};">
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.codigo || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.tema || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.vencimiento || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${sem.txt || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; color: #4e6c9f; font-weight: bold;">${x.accion || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; font-weight: bold;">${x.mes != null ? MONTHS[x.mes] : ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.prioridad || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.fchInicio || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px;">${x.fecha || ''}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; background-color: ${ot.cls}; font-weight: bold;">${ot.text}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; text-align: center;">${x.entregado ? 'Sí' : 'No'}</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; text-align: right;">${pctGlobal}%</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; text-align: right;">${pMes}%</td>
-                    <td style="border: 1px solid #b6b5af; padding: 8px; color: #253d5b; font-weight: bold;">${x.status || ''}</td>
-                  </tr>
-                `;
-            });
+            const html = `<html><head><meta charset="UTF-8"></head><body>
+                <h2 style="font-family:Arial;color:#253d5b;">Cronograma Anual de GPC — Año ${state.anio}</h2>
+                <table style="border-collapse:collapse;font-family:Arial;">
+                  <thead><tr>
+                    <th style="${HDR_STYLE}">Código</th>
+                    <th style="${HDR_STYLE}">Tema</th>
+                    <th style="${HDR_STYLE}">Vence</th>
+                    <th style="${HDR_STYLE}">Semáforo</th>
+                    <th style="${HDR_STYLE}">Acción</th>
+                    <th style="${HDR_STYLE}">Mes</th>
+                    <th style="${HDR_STYLE}">Prioridad</th>
+                    <th style="${HDR_STYLE}">F. Inicio</th>
+                    <th style="${HDR_STYLE}">F. Entrega</th>
+                    <th style="${HDR_STYLE}">Cumplimiento</th>
+                    <th style="${HDR_STYLE}">Entregado</th>
+                    <th style="${HDR_STYLE}">% Global</th>
+                    <th style="${HDR_STYLE}">% Mensual</th>
+                    <th style="${HDR_STYLE}">Estado</th>
+                  </tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
+            downloadExcel(html, "Cronograma_GPC");
+        }
 
-            tablaHTML += `</tbody></table></body></html>`;
+        function exportActu() {
+            if (!state.actu.length) { alert('No hay datos de seguimiento para exportar.'); return; }
+            let rows = state.actu.map(r => `<tr>
+                <td style="${CEL_STYLE}">${r.codigo || ''}</td>
+                <td style="${CEL_STYLE}">${r.tema || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.fchEntrega || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.statusManual || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.fchRetorno ? 'SÍ' : 'NO'}</td>
+                <td style="${CEL_C_STYLE}">${r.fechaSoc || ''}</td>
+                <td style="${CEL_C_STYLE}">${r.version || ''}</td>
+            </tr>`).join('');
 
-            const blob = new Blob([tablaHTML], { type: 'application/vnd.ms-excel' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Cronograma_GPC_Protocolos_${state.anio}.xls`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const html = `<html><head><meta charset="UTF-8"></head><body>
+                <h2 style="font-family:Arial;color:#253d5b;">Seguimiento y Socialización — Año ${state.anio}</h2>
+                <table style="border-collapse:collapse;font-family:Arial;">
+                  <thead><tr>
+                    <th style="${HDR_STYLE}">Código</th>
+                    <th style="${HDR_STYLE}">Tema</th>
+                    <th style="${HDR_STYLE}">F. Entrega Plan</th>
+                    <th style="${HDR_STYLE}">Estado Actual</th>
+                    <th style="${HDR_STYLE}">Aprobado</th>
+                    <th style="${HDR_STYLE}">Socializado</th>
+                    <th style="${HDR_STYLE}">Versión</th>
+                  </tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
+            downloadExcel(html, "Seguimiento_GPC");
         }
 
         function updateRepoFecha(idx, val) {
@@ -2278,42 +2332,52 @@
 
         function exportRepo() {
             if (!state.repo.length) return alert("No hay datos para exportar.");
-            const data = state.repo.map(r => {
-                // Determinar estado visible: priorizar status explícito antes del semáforo por fecha
+            
+            let rows = state.repo.map(r => {
                 let estadoExcel;
                 if (r.status === 'Descartado') estadoExcel = 'DESCARTE';
                 else if (r.status === 'Inexistente') estadoExcel = 'INEXISTENTE';
                 else estadoExcel = getSemforo(r.proximaAct).txt;
-                return {
-                    Codigo: r.codigo || '',
-                    Nombre: r.nombre || '',
-                    Tipo: r.tipo || '',
-                    Ultima_Actualizacion: r.ultimaAct || '',
-                    Proxima_Actualizacion: r.proximaAct || '',
-                    Estado: estadoExcel,
-                    Motivo_Descarte: r.motivo || ''
-                };
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Repositorio Maestro");
-            XLSX.writeFile(wb, `Repositorio_Maestro_GPC_${new Date().getFullYear()}.xlsx`);
+
+                return `<tr>
+                    <td style="${CEL_STYLE}">${r.codigo || ''}</td>
+                    <td style="${CEL_STYLE}">${r.nombre || ''}</td>
+                    <td style="${CEL_C_STYLE}">${r.tipo || ''}</td>
+                    <td style="${CEL_C_STYLE}">${r.ultimaAct || ''}</td>
+                    <td style="${CEL_C_STYLE}">${r.proximaAct || ''}</td>
+                    <td style="${CEL_C_STYLE}">${estadoExcel}</td>
+                    <td style="${CEL_STYLE}">${r.motivo || ''}</td>
+                </tr>`;
+            }).join('');
+
+            const html = `<html><head><meta charset="UTF-8"></head><body>
+                <h2 style="font-family:Arial;color:#253d5b;">Repositorio Maestro GPC y Protocolos — ${new Date().getFullYear()}</h2>
+                <table style="border-collapse:collapse;font-family:Arial;">
+                  <thead><tr>
+                    <th style="${HDR_STYLE}">Código</th>
+                    <th style="${HDR_STYLE}">Nombre</th>
+                    <th style="${HDR_STYLE}">Tipo</th>
+                    <th style="${HDR_STYLE}">Última Act</th>
+                    <th style="${HDR_STYLE}">Próxima Act</th>
+                    <th style="${HDR_STYLE}">Estado</th>
+                    <th style="${HDR_STYLE}">Motivo Descarte</th>
+                  </tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+                </body></html>`;
+            downloadExcel(html, "Repositorio_Maestro");
         }
 
         function addRepoDescarte() {
             if(!state.repo) state.repo = [];
-            const nombre = prompt('Nombre del documento descartado:');
-            if (!nombre) return;
-            const codigo = prompt('Código del documento (si aplica):') || '';
-            const motivo = prompt('Motivo del descarte:') || 'Obsolescencia';
             state.repo.unshift({
-                codigo: codigo,
-                nombre: nombre,
-                tipo: codigo.startsWith('GPC') ? 'GPC' : 'Protocolo',
+                codigo: '',
+                nombre: '',
+                tipo: 'Protocolo',
                 ultimaAct: new Date().toISOString().split('T')[0],
                 proximaAct: '',
                 status: 'Descartado',
-                motivo: motivo
+                motivo: 'Descarte'
             });
             renderRepo();
         }
@@ -2502,7 +2566,7 @@
                 .replace(/^_|_$/g, '');
         }
 
-        const LOGO_CLINICA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAl8AAADECAYAAAChgUS0AAAQAElFTkSuQmCC";
+        const LOGO_CLINICA = "/assets/Logo_Clinica.png";
 
         async function genEvidenciasPDF() {
             const idx = state._evid?.idx ?? currentActuIdx;
@@ -2530,6 +2594,22 @@
 
             const rows = getFirmantesSeleccionados();
 
+            // Asegurarse de que el logo esté listo si es una URL
+            let logoImg = LOGO_CLINICA;
+            if (LOGO_CLINICA && LOGO_CLINICA.startsWith('/')) {
+                try {
+                    const img = new Image();
+                    img.src = LOGO_CLINICA;
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => resolve();
+                        img.onerror = () => reject();
+                    });
+                    logoImg = img;
+                } catch (e) {
+                    console.error("No se pudo pre-cargar el logo:", e);
+                }
+            }
+
             for (const servicio of svcs) {
                 const pdf = new window.jspdf.jsPDF({
                     orientation: 'portrait',
@@ -2545,7 +2625,8 @@
                         fecha,
                         version,
                         vigencia,
-                        rows
+                        rows,
+                        logoImg // Pasamos la imagen ya cargada
                     });
                     pdf.save(`Implementacion_Despliegue_${normalizeSlug(tema)}_${normalizeSlug(servicio)}.pdf`);
                 } else {
@@ -2556,7 +2637,8 @@
                         responsable: resp,
                         horario: hora,
                         duracion: dur,
-                        rows
+                        rows,
+                        logoImg // Pasamos la imagen ya cargada
                     });
                     pdf.save(`Ficha_Capacitacion_${normalizeSlug(tema)}_${normalizeSlug(servicio)}.pdf`);
                 }
@@ -2624,10 +2706,13 @@
             pdf.line(m + 3 * metaColW, metaY, m + 3 * metaColW, topY + headH);
 
             // Logo
-            if (typeof LOGO_CLINICA !== 'undefined' && LOGO_CLINICA) {
+            const logo = data.logoImg || LOGO_CLINICA;
+            if (logo) {
                 try {
-                    pdf.addImage(LOGO_CLINICA, 'PNG', m + 4, topY + 2.5, 32, 11);
-                } catch (_) {}
+                    pdf.addImage(logo, 'PNG', m + 4, topY + 2.5, 32, 11);
+                } catch (err) {
+                    console.warn("Falla al cargar logo en PDF:", err);
+                }
             }
 
             // Título
@@ -2766,9 +2851,10 @@
             pdf.line(m + 2 * metaColW, metaY, m + 2 * metaColW, topY + headH);
             pdf.line(m + 3 * metaColW, metaY, m + 3 * metaColW, topY + headH);
 
-            if (typeof LOGO_CLINICA !== 'undefined' && LOGO_CLINICA) {
+            const logo = data.logoImg || LOGO_CLINICA;
+            if (logo) {
                 try {
-                    pdf.addImage(LOGO_CLINICA, 'PNG', m + 4, topY + 3, 26, 9);
+                    pdf.addImage(logo, 'PNG', m + 4, topY + 3, 26, 9);
                 } catch (_) {}
             }
 
@@ -3213,13 +3299,44 @@
             });
         }
 
+        // --- Asociación Global (Necesario por script type="module") ---
+        window.initModule = initModule;
         window.saveBatch = saveBatch;
         window.importXL = importXL;
         window.cruzarDatos = cruzarDatos;
         window.generarCronograma = generarCronograma;
-        window.initModule = initModule;
+        window.saveCrono = saveCrono;
+        window.saveSeguimiento = saveSeguimiento;
+        window.exportIdent = exportIdent;
+        window.exportPerfil = exportPerfil;
+        window.exportCrono = exportCrono;
+        window.exportActu = exportActu;
+        window.exportRepo = exportRepo;
+        window.addRepoDescarte = addRepoDescarte;
+        window.addRepoRow = addRepoRow;
+        window.importFromInventario = importFromInventario;
+        window.sincroRepo = sincroRepo;
+        window.renderRepo = renderRepo;
+        window.renderCrono = renderCrono;
+        window.renderActu = renderActu;
+        window.renderIdent = renderIdent;
+        window.renderPerfil = renderPerfil;
+        window.renderDash = renderDash;
+        window.updateRow = updateRow;
+        window.updateRepoFecha = updateRepoFecha;
+        window.abrirEvidencia = abrirEvidencia;
+        window.abrirSig = abrirSig;
+        window.seleccionarProf = seleccionarProf;
+        window.toggleEvidFields = toggleEvidFields;
+        window.autoCalcVigencia = autoCalcVigencia;
+        window.segEditSave = segEditSave;
+        window.segEditDelete = segEditDelete;
+        window.toggleSegMode = toggleSegMode;
+        window.abrirEdicionCrono = abrirEdicionCrono;
+        window.applyCronoEdit = applyCronoEdit;
+        window.genEvidenciasPDF = genEvidenciasPDF;
 
-        // Inicializar directamente (los módulos se ejecutan diferidos por defecto)
+        // Inicializar directamente
         initModule();
         /*]]>*/
     </script>

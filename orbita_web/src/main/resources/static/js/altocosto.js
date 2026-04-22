@@ -4923,12 +4923,12 @@
 
                         if (pacientesBandeja.length === 0) {
                                 const msg = window.__textoBusqueda
-                                        ? `<tr><td colspan="7" style="text-align:center; padding:40px; color:#94a3b8;">
+                                        ? `<tr><td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;">
                                 <div style="font-size:32px; margin-bottom:8px;">🔍</div>
                                 <div style="font-size:14px; font-weight:600;">Sin resultados</div>
                                 <div style="font-size:12px; margin-top:4px;">No se encontraron pacientes con "<strong>${window.__textoBusqueda}</strong>"</div>
                               </td></tr>`
-                                        : `<tr><td colspan="7" style="text-align:center; padding: 20px; color: #64748b;">No hay pacientes con el filtro seleccionado en la bandeja de <b>${bandejaNorm.toUpperCase()}</b>.</td></tr>`;
+                                        : `<tr><td colspan="6" style="text-align:center; padding: 20px; color: #64748b;">No hay pacientes con el filtro seleccionado en la bandeja de <b>${bandejaNorm.toUpperCase()}</b>.</td></tr>`;
 
                                 tbody.innerHTML = msg;
                                 return;
@@ -5034,7 +5034,6 @@
 
                                 tr.innerHTML = `
                             ${checkHtml}
-                            <td style="padding-left:12px !important;"><span class="pac-id">${idMostrar}</span></td>
                             <td>
                                 <div style="display:flex; flex-direction:column; gap:3px; line-height:1.3;">
                                     <span class="pac-nombre" style="font-weight:600;">${nombrePaciente} ${signalNoCohorte}</span>
@@ -5245,7 +5244,7 @@
                                 renderizarTablaPacientes(window.__pacientesClasificados);
 
                                 if (tbody.innerHTML === "") {
-                                        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 20px; color: #64748b;">No hay pacientes en la bandeja de <b>${String(bandejaActual).toUpperCase()}</b>.</td></tr>`;
+                                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 20px; color: #64748b;">No hay pacientes en la bandeja de <b>${String(bandejaActual).toUpperCase()}</b>.</td></tr>`;
                                 }
 
                                 const panelMasivo = document.getElementById("panelMasivo");
