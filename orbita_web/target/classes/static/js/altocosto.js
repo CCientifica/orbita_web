@@ -234,6 +234,12 @@
         function iniciarHeartbeatFicha() {
                 detenerHeartbeatFicha();
                 lockState.heartbeatTimer = setInterval(() => {
+                        // 🛑 Si el usuario está IDLE (inactivo), dejamos de enviar latidos.
+                        // Esto permite que el lock expire naturalmente en el servidor y otros puedan entrar.
+                        if (window.__isIdle) {
+                                console.warn("[LOCKS] Sesión en inactividad profunda. Suspendiendo heartbeat.");
+                                return;
+                        }
                         heartbeatFicha().catch(err => console.warn('[LOCKS] heartbeat error', err));
                 }, LOCK_HEARTBEAT_MS);
         }
@@ -360,6 +366,67 @@
                         );
                 } catch (_) { }
         });
+
+        // =========================================================
+        // 🕵️‍♂️ NUEVO: SISTEMA DE DETECCIÓN DE INACTIVIDAD (IDLE)
+        // =========================================================
+        const IDLE_LIMIT_MS = 2 * 60 * 1000; // 2 minutos
+        window.__idleSeconds = 0;
+        window.__lastActivity = Date.now();
+        window.__isIdle = false;
+
+        function resetActivity() {
+                if (window.__isIdle) {
+                        console.log("🚀 [ALTO-COSTO] Usuario regresó. Reanudando...");
+                        window.__isIdle = false;
+                        const overlay = document.getElementById("idleOverlay");
+                        if (overlay) overlay.style.display = "none";
+                }
+                window.__lastActivity = Date.now();
+        }
+
+        // Listeners globales para actividad (solo mientras el modal está abierto)
+        document.addEventListener('mousemove', resetActivity);
+        document.addEventListener('keydown', resetActivity);
+        document.addEventListener('click', resetActivity);
+        document.addEventListener('scroll', resetActivity, true);
+
+        function chequearInactividad() {
+                if (!currentPacienteId || window.__modalReadOnly) return;
+
+                const diff = Date.now() - window.__lastActivity;
+                if (diff > IDLE_LIMIT_MS && !window.__isIdle) {
+                        window.__isIdle = true;
+                        console.warn("⏳ [ALTO-COSTO] Inactividad detectada (2m). Pausando gestión.");
+                        mostrarAvisoInactividad();
+                }
+
+                if (window.__isIdle) {
+                        window.__idleSeconds += 1;
+                }
+        }
+
+        setInterval(chequearInactividad, 1000);
+
+        function mostrarAvisoInactividad() {
+                let overlay = document.getElementById("idleOverlay");
+                if (!overlay) {
+                        overlay = document.createElement("div");
+                        overlay.id = "idleOverlay";
+                        overlay.style.cssText = "position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:11000; display:flex; align-items:center; justify-content:center; flex-direction:column; color:white; font-family:sans-serif; transition:all 0.3s;";
+                        overlay.innerHTML = `
+                        <div style="background:#1e293b; padding:40px; border-radius:2rem; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); border:1px solid #334155; max-width:400px;">
+                            <div style="font-size:48px; margin-bottom:20px;">⏳</div>
+                            <h2 style="font-weight:800; margin-bottom:10px;">Sesión Pausada</h2>
+                            <p style="opacity:0.8; font-size:14px; margin-bottom:25px;">Hemos detectado 2 minutos de inactividad. El cronómetro se ha detenido para mayor precisión.</p>
+                            <button onclick="window.resetActivity()" style="background:#6366f1; color:white; border:none; padding:12px 30px; border-radius:12px; font-weight:800; cursor:pointer; width:100%; transition:transform 0.2s;">ESTOY AQUÍ, CONTINUAR</button>
+                        </div>
+                    `;
+                        document.body.appendChild(overlay);
+                }
+                overlay.style.display = "flex";
+        }
+        window.resetActivity = resetActivity;
 
         // 🔥 HELPERS MÍNIMOS REQUERIDOS (BLINDAJE TOTAL)
         const $getID = (id) => document.getElementById(id);
@@ -3481,6 +3548,13 @@
                 const timerEl = document.getElementById("gestionTimer");
                 if (timerEl) timerEl.textContent = "00:00";
                 if (window.timerInterval) clearInterval(window.timerInterval);
+
+                // Reiniciar métricas de inactividad de sesión
+                window.__idleSeconds = 0;
+                window.__lastActivity = Date.now();
+                window.__isIdle = false;
+                const overlay = document.getElementById("idleOverlay");
+                if (overlay) overlay.style.display = "none";
         };
 
         const __cerrarModalOriginal = window.cerrarModal;
@@ -4558,7 +4632,9 @@
                         const tiempoBaseAcumulado = Number(periodoObj?.tiempo_segundos || 0);
                         window.startTime = Date.now();
                         window.timerInterval = setInterval(() => {
-                                const sesionActual = Math.floor((Date.now() - window.startTime) / 1000);
+                                if (window.__isIdle) return; // 🛑 No sumar tiempo si está en IDLE
+
+                                const sesionActual = Math.floor((Date.now() - window.startTime - (window.__idleSeconds * 1000)) / 1000);
                                 const totalMostrar = tiempoBaseAcumulado + sesionActual;
                                 const fmtT = (s) => {
                                         const sc = Number(s) || 0;
@@ -4908,6 +4984,8 @@
                                                 p?.datos_base?.VAR6_NumeroIdentificacionUsuario ||
                                                 p?.datos_base?.VAR6_Identificacion ||
                                                 p?.identificacion ||
+                                                p?.id_doc ||
+                                                p?.id ||
                                                 ''
                                         ).toLowerCase();
 
@@ -5401,9 +5479,17 @@
                                 $setText("pctOcultosCancer", (totalCancer > 0 ? Math.round((ocultosCancer / totalCancer) * 100) : 0) + "%");
                                 $setText("pctOcultosHemofilia", (totalHemo > 0 ? Math.round((ocultosHemo / totalHemo) * 100) : 0) + "%");
 
-                                // --- ACTUALIZACIÓN DE NUEVOS INDICADORES ---
-                                const inactividadMinHoy = 0;
-                                const inactividadPctHoy = 0;
+                                // --- ACTUALIZACIÓN DE NUEVOS INDICADORES REALES ---
+                                let totalInactividadSegundos = 0;
+                                pacientesActivos.forEach(pa => {
+                                        totalInactividadSegundos += Number(pa.periodos?.[pPeriodo]?.inactividad_segundos || 0);
+                                });
+
+                                const inactividadMinHoy = Math.round((totalInactividadSegundos / 60) * 10) / 10;
+                                const inactividadPctHoy = sumSecsMes > 0
+                                        ? Math.round((totalInactividadSegundos / (sumSecsMes + totalInactividadSegundos)) * 100)
+                                        : 0;
+
                                 $setText("hoySubtitulo", `Inactividad: ${inactividadMinHoy} min · ${inactividadPctHoy}%`);
 
                                 const precisionGlobal = (validadosPeriodo + totalDevolucionesPeriodo) > 0
@@ -5676,7 +5762,10 @@
                                 ? Math.max(0, Math.floor((Date.now() - window.startTime) / 1000))
                                 : 0;
                         const tiempoAcumuladoAntes = dataActual?.periodos?.[periodoActual]?.tiempo_segundos || 0;
+                        const inactividadAcumuladaAntes = dataActual?.periodos?.[periodoActual]?.inactividad_segundos || 0;
+
                         const tiempoNuevoTotal = tiempoAcumuladoAntes + tiempoSesionActual;
+                        const inactividadNuevaTotal = inactividadAcumuladaAntes + window.__idleSeconds;
 
                         const historialSesionesD = dataActual?.periodos?.[periodoActual]?.historial_sesiones || [];
                         historialSesionesD.push({
@@ -5692,6 +5781,7 @@
                                 [`periodos.${periodoActual}.validador`]: null,
                                 [`periodos.${periodoActual}.validado_el`]: null,
                                 [`periodos.${periodoActual}.tiempo_segundos`]: tiempoNuevoTotal,
+                                [`periodos.${periodoActual}.inactividad_segundos`]: inactividadNuevaTotal,
                                 [`periodos.${periodoActual}.historial_sesiones`]: historialSesionesD,
 
                                 // 🔥 MÉTRICAS DE MAPA DE CALOR
@@ -5879,7 +5969,10 @@
                         }
 
                         const tiempoAnterior = Number(dataExistente?.periodos?.[periodoActual]?.tiempo_segundos || 0);
+                        const inactividadAnterior = Number(dataExistente?.periodos?.[periodoActual]?.inactividad_segundos || 0);
+
                         const tiempoTotalFinal = tiempoAnterior + elapsedSec;
+                        const inactividadTotalFinal = inactividadAnterior + window.__idleSeconds;
 
                         // Historial de sesiones individuales (para auditoría)
                         const historialSesiones = dataExistente?.periodos?.[periodoActual]?.historial_sesiones || [];
@@ -5899,6 +5992,7 @@
                                 validador_email: auth.currentUser ? auth.currentUser.email : "desconocido",
                                 [`periodos.${periodoActual}.estado`]: "validado",
                                 [`periodos.${periodoActual}.tiempo_segundos`]: tiempoTotalFinal,
+                                [`periodos.${periodoActual}.inactividad_segundos`]: inactividadTotalFinal,
                                 [`periodos.${periodoActual}.historial_sesiones`]: historialSesiones,
                                 [`periodos.${periodoActual}.validado_el`]: new Date().toISOString(),
                                 [`periodos.${periodoActual}.validador`]: auth.currentUser ? auth.currentUser.email : "desconocido",
