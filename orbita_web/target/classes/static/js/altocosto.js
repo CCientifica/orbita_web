@@ -401,7 +401,7 @@
         document.addEventListener('scroll', resetActivity, true);
 
         function chequearInactividad() {
-                if (!currentPacienteId || window.__modalReadOnly) return;
+                if (!lockState.currentPatientId || window.__modalReadOnly) return;
 
                 const diff = Date.now() - window.__lastActivity;
                 if (diff > IDLE_LIMIT_MS && !window.__isIdle) {
@@ -5348,11 +5348,36 @@
                                 window.__totalErroresHumanos = 0;
                                 window.__totalDevoluciones = 0;
 
+                                let oldestPendingDate = null;
+                                let oldestPendingName = "";
+                                let totalPendientes = 0;
+
                                 pacientesActivos.forEach(p => {
                                         const per = p?.periodos?.[pPeriodo];
                                         const estado = String(per?.estado || "").toLowerCase();
                                         const fechaValidacionStr = per?.validado_el || p?.ultima_validacion || p?.ultima_actualizacion;
                                         const hov_val = (getLocalYYYYMMDD(fechaValidacionStr) === HOY_LOCAL);
+
+                                        // 🕵️ LÓGICA DE LATENCIA: Buscar el más antiguo de los PENDIENTES
+                                        if (estado === "pendiente" || estado === "") {
+                                            totalPendientes++;
+                                            const nombre = p.datos_base?.VAR10_NombrePaciente || p.nombre || "";
+                                            const iden = p.identificacion || p.id || "";
+                                            
+                                            if (nombre || iden) {
+                                                // Prioridad Absoluta: cargado_el del periodo actual (Task import: lines 6796/6840)
+                                                const fCargaRaw = per?.cargado_el || p.fecha_carga || p.ultima_actualizacion;
+                                                if (fCargaRaw) {
+                                                    const dCarga = new Date(fCargaRaw);
+                                                    if (!isNaN(dCarga.getTime())) {
+                                                        if (!oldestPendingDate || dCarga < oldestPendingDate) {
+                                                            oldestPendingDate = dCarga;
+                                                            oldestPendingName = nombre || `ID: ${iden}`;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
 
                                         // Eficiencia Real: Solo Aprobados (Caja Fuerte)
                                         if (estado === "aprobado") {
@@ -5360,40 +5385,82 @@
                                                 if (hov_val) totalAprobadosHoy++;
                                         }
 
-                                        // Esfuerzo Bruto: Validados + Aprobados
+                                        // ... esfuerzo bruto, impacto y errores se mantienen igual ...
                                         if (estado === "validado" || estado === "aprobado") {
                                                 gestadosPeriodo++;
-                                                if (hov_val) {
-                                                        validadosHoy++;
-                                                        totalGestionesHoy++;
-                                                }
+                                                if (hov_val) { validadosHoy++; totalGestionesHoy++; }
                                                 const secs = Number(per?.tiempo_segundos ?? 0) || 0;
                                                 if (secs > 0) {
                                                         sumSecsMes += secs; nMes++;
                                                         if (hov_val) { sumSecsHoy += secs; nHoy++; }
                                                 }
                                         }
-
-                                        // Métricas de Impacto (Task 351/480)
                                         const mCorregidos = Number(per?.auditoria_errores_corregidos || 0);
                                         window.__totalSaneados += mCorregidos;
                                         window.__totalDevoluciones += Number(per?.veces_devuelto || 0);
+                                        if (estado === "aprobado") window.__totalErroresHumanos += Number(per?.auditoria_correcciones_humanas || 0);
+                                        const hDev = per?.historial_devoluciones || [];
+                                        hDev.forEach(d => { if (getLocalYYYYMMDD(d.fecha) === HOY_LOCAL) totalDevolucionesHoy++; });
+                                        const alertas = per?.auditoria_detalle_alertas || [];
+                                        alertas.forEach(err => { errorCounts[err] = (errorCounts[err] || 0) + 1; });
+                                });
 
-                                        if (estado === "aprobado") {
-                                                window.__totalErroresHumanos += Number(per?.auditoria_correcciones_humanas || 0);
+                                // 📊 CÁLCULO DE META ACELERADA (VELOCIDAD DE RECUPERACIÓN)
+                                const yF = document.getElementById("filtroAnio").value;
+                                const mF = document.getElementById("filtroMes").value;
+                                const diasCiclo = typeof getDiasHabilesCiclo === 'function' ? getDiasHabilesCiclo(yF, mF) : [];
+                                const ahoraLat = new Date();
+                                let diasRestantesLatencia = diasCiclo.filter(d => d.getTime() > ahoraLat.getTime()).length || 1;
+                                const metaRecomendada = Math.ceil(totalPendientes / diasRestantesLatencia);
+
+                                // 📊 ACTUALIZAR TERMÓMETRO DE OPORTUNIDAD (LATENCIA)
+                                const latenciaDiv = document.getElementById("latenciaTermometro");
+                                const latenciaTexto = document.getElementById("latenciaTexto");
+                                if (latenciaDiv && latenciaTexto) {
+                                    if (oldestPendingDate) {
+                                        const diffDias = Math.floor((ahoraLat - oldestPendingDate) / (1000 * 60 * 60 * 24));
+                                        latenciaDiv.style.display = "inline-flex";
+                                        latenciaDiv.style.removeProperty("display");
+                                        
+                                        let statusColor = "#10b981"; 
+                                        let bgOpacity = "rgba(16, 185, 129, 0.2)";
+                                        let icon = "🌟";
+                                        let prefijo = "LATENCIA IDEAL";
+
+                                        if (diffDias > 15) {
+                                            statusColor = "#ef4444"; 
+                                            bgOpacity = "rgba(239, 68, 68, 0.2)";
+                                            icon = "🚨";
+                                            prefijo = "RETRASO CRÍTICO";
+                                        } else if (diffDias > 7) {
+                                            statusColor = "#f59e0b"; 
+                                            bgOpacity = "rgba(245, 158, 11, 0.2)";
+                                            icon = "⚠️";
+                                            prefijo = "LATENCIA OPERATIVA";
                                         }
 
-                                        const hDev = per?.historial_devoluciones || [];
-                                        hDev.forEach(d => {
-                                                if (getLocalYYYYMMDD(d.fecha) === HOY_LOCAL) totalDevolucionesHoy++;
-                                        });
+                                        latenciaDiv.style.background = bgOpacity;
+                                        latenciaDiv.style.border = `1px solid ${statusColor}`;
+                                        
+                                        let mensajeFinal = `${icon} <b>${prefijo}: ${diffDias} DÍAS</b>. `;
+                                        if (diffDias > 7) {
+                                            const faltanParaMision = Math.max(metaRecomendada - validadosHoy, 0);
+                                            mensajeFinal += `Meta diaria de nivelación: <b>${metaRecomendada}</b> pacientes <b>DIARIOS</b> (Hoy llevas <b>${validadosHoy}</b>). `;
+                                            if (faltanParaMision > 0) {
+                                                mensajeFinal += `<span style="opacity:0.9; font-size:0.8rem; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 12px; margin-left: 5px; border: 1px solid rgba(255,255,255,0.2);">🔴 Faltan <b>${faltanParaMision}</b> para el objetivo de <b>HOY</b></span>`;
+                                            } else {
+                                                mensajeFinal += `<span style="opacity:0.9; font-size:0.8rem; background: rgba(16,185,129,0.3); padding: 4px 10px; border-radius: 12px; margin-left: 5px;">✅ Objetivo de hoy cumplido</span>`;
+                                            }
+                                        } else {
+                                            mensajeFinal += `¡Meta cumplida! Sigue así para mantener la oportunidad.`;
+                                        }
 
-                                        // Top Errores (Variables con alertas)
-                                        const alertas = per?.auditoria_detalle_alertas || [];
-                                        alertas.forEach(err => {
-                                                errorCounts[err] = (errorCounts[err] || 0) + 1;
-                                        });
-                                });
+                                        latenciaTexto.innerHTML = mensajeFinal;
+                                        latenciaDiv.title = `Para reducir la latencia a 7 días, es necesario gestionar al menos ${metaRecomendada} pacientes CADA DÍA.`;
+                                    } else {
+                                        latenciaDiv.style.display = "none";
+                                    }
+                                }
 
                                 // PACIENTES A RENDERIZAR (aplicar filtro de "Ver Ocultos" si aplica)
                                 const pacientesAmostrar = pacientesTotalesMatch.filter(p => {
@@ -5617,10 +5684,20 @@
                                 }
                                 $setText("rezagoSubtitulo", topErrorKey !== "N/A" ? `⚠️ Error frecuente: ${topErrorKey}` : "");
 
-                                // Meta dinámica ajustada
-                                $setText("metaText", `Hoy: ${validadosHoy} / ${metaHoyFinal} pacientes`);
-                                $setWidth("globalBar", Math.min(porcentajeEjecucion, 100));
-                                $setText("globalPctHero", porcentajeEjecucion + "%");
+                                // ─── CÁLCULOS DE META Y PROYECCIÓN (RESTAURADOS TOTALMENTE) ───
+                                const metaBaseDiaria = 5; // Tu meta base de siempre
+                                const porcentajeBarraMeta = Math.round((validadosHoy / metaBaseDiaria) * 100);
+
+                                // 1. Título Principal (Hoy: 6 / 5 pacientes) - Debe coincidir con la barra
+                                $setText("metaText", `Hoy: ${validadosHoy} / ${metaBaseDiaria} pacientes`);
+                                
+                                // 2. Porcentaje de la BARRA (El 120% carajooo)
+                                $setText("globalPctHero", porcentajeBarraMeta + "%");
+                                $setWidth("globalBar", Math.min(porcentajeBarraMeta, 100));
+
+                                // 3. Subtítulo (Tu formato exacto)
+                                const faltanParaCerrar = Math.max(totalPeriodo - validadosPeriodo, 0);
+                                $setText("prodStateText", `Va exactamente al ritmo ideal. Meta diaria: ${metaBaseDiaria}. Proyección cierre: ${proyeccionAlRitmoActual}/${totalPeriodo}. Faltan ${faltanParaCerrar} para cerrar el mes.`);
 
                                 // ─── APLICAR ALARMAS VISUALES A LOS CARDS ─────────────────────
                                 const aplicarAlarmaCard = (cardId, estado, badgeTexto) => {
