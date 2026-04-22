@@ -3589,6 +3589,11 @@
                 window.__isIdle = false;
                 const overlay = document.getElementById("idleOverlay");
                 if (overlay) overlay.style.display = "none";
+
+                // 🕵️ Marcar el momento de cierre para detectar el "hueco" hasta la próxima ficha
+                localStorage.setItem('__lastFichaCloseTime', Date.now().toString());
+
+                liberarLockFicha().catch(() => { });
         };
 
         const __cerrarModalOriginal = window.cerrarModal;
@@ -4407,32 +4412,49 @@
                         const ahora = new Date();
                         const hoyStr = ahora.getFullYear() + '-' + (ahora.getMonth() + 1) + '-' + ahora.getDate();
                         const ultimoDiaFicha = localStorage.getItem('__lastFichaOpenDay');
+                        const ultimaMarcaCierre = localStorage.getItem('__lastFichaCloseTime');
 
-                        // Si es un día nuevo y es un día hábil (L-V no festivo)
+                        // 1. LÓGICA DE INICIO DE JORNADA (7:00 AM)
                         if (ultimoDiaFicha !== hoyStr && typeof horasDiaLaboral === 'function' && horasDiaLaboral(ahora) > 0) {
                                 const limiteInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 7, 0, 0);
-                                
                                 if (ahora > limiteInicio) {
                                         const segundosRetraso = Math.floor((ahora - limiteInicio) / 1000);
                                         window.__idleSeconds = (window.__idleSeconds || 0) + segundosRetraso;
                                         
-                                        // 🚀 GUARDADO INMEDIATO: Registrar el retraso en Firebase de una vez
+                                        // Guardado inmediato del retraso...
                                         (async () => {
                                                 try {
                                                         const pPeriodo = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
                                                         const docRef = doc(db, "pacientes_cac", idDoc);
                                                         const inactAnterior = Number(data.periodos?.[pPeriodo]?.inactividad_segundos || 0);
-                                                        await updateDoc(docRef, {
-                                                                [`periodos.${pPeriodo}.inactividad_segundos`]: inactAnterior + segundosRetraso
-                                                        });
-                                                        console.log("✅ [ALTO-COSTO] Retraso de inicio guardado en Firebase.");
-                                                } catch (err) { console.error("Error guardando retraso inicial:", err); }
+                                                        await updateDoc(docRef, { [`periodos.${pPeriodo}.inactividad_segundos`]: inactAnterior + segundosRetraso });
+                                                } catch (e) { }
                                         })();
-                                        
-                                        console.warn(`🕒 [ALTO-COSTO] Inicio tardío detectado (Jornada 7:00 AM). Se abonan ${Math.floor(segundosRetraso/60)} min de inactividad.`);
                                 }
                                 localStorage.setItem('__lastFichaOpenDay', hoyStr);
+                        } 
+                        // 2. LÓGICA DE RASTREADOR DE HUECOS (ELIMINAR TRAMPA)
+                        else if (ultimaMarcaCierre) {
+                                const msCierre = parseInt(ultimaMarcaCierre);
+                                const diffMs = Date.now() - msCierre;
+                                
+                                if (diffMs > 5000) { // Ignorar huecos menores a 5 segundos (doble clic o errores)
+                                        let segundosHueco = Math.floor(diffMs / 1000);
+                                        
+                                        // 🥪 Ajuste de Almuerzo (Ignorar hueco entre 12 y 1pm si es muy largo)
+                                        const h12 = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 12, 0, 0).getTime();
+                                        const h13 = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 13, 0, 0).getTime();
+                                        
+                                        if (msCierre < h12 && Date.now() > h13) {
+                                                segundosHueco = Math.max(0, segundosHueco - 3600); // Restar 1 hora de almuerzo
+                                        }
+
+                                        window.__idleSeconds = (window.__idleSeconds || 0) + segundosHueco;
+                                        console.warn(`🕵️ [AUDITORÍA] Detectado hueco de ${Math.floor(segundosHueco/60)} min entre fichas. Sumado a inactividad.`);
+                                }
                         }
+                        // Limpiar marca de cierre porque ya estamos dentro de una ficha
+                        localStorage.removeItem('__lastFichaCloseTime');
                 } catch (e) {
                         console.error("Error en cálculo de inactividad inicial:", e);
                 }
