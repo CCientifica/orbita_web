@@ -142,7 +142,7 @@
         // ============================================================
         const LOCKS_API_BASE = '/api/altocosto/locks';
         const LOCK_HEARTBEAT_MS = 60000;
-        const LOCKS_REFRESH_MS = 45000;
+        const LOCKS_REFRESH_MS = 15000; // ⚡ Reducido a 15s para mayor fluidez
 
         // Inyectar estilos de locks necesarios para la tabla
         const lockStyleEl = document.createElement('style');
@@ -189,7 +189,8 @@
                 const r = await lockFetch('/tomar', 'POST', {
                         pacienteId: String(pacienteId).trim(),
                         email: user.email,
-                        nombre: user.nombre
+                        nombre: user.nombre,
+                        isIdle: !!window.__isIdle
                 });
 
                 if (r.ok && r.data?.success) {
@@ -220,7 +221,8 @@
 
                 const r = await lockFetch('/heartbeat', 'POST', {
                         pacienteId: lockState.currentPatientId,
-                        email: user.email
+                        email: user.email,
+                        isIdle: !!window.__isIdle
                 });
 
                 if (r.ok && r.data?.success) return;
@@ -310,17 +312,20 @@
                         if (String(lock.email || '').trim().toLowerCase() === user.email) {
                                 tr.classList.add('lock-by-me');
                                 tr.title = 'Ficha en uso por ti';
-                                badge.textContent = 'En uso por ti';
+                                badge.innerHTML = '👤 <span style="margin-left:4px;">En uso por ti</span>';
                                 badge.style.background = '#dbeafe';
                                 badge.style.color = '#1d4ed8';
-                                badge.style.border = '1px solid #bfdbfe';
+                                badge.style.border = '1px solid #3b82f6';
                         } else {
                                 tr.classList.add('lock-by-other');
-                                tr.title = `Ficha en uso por ${owner}`;
-                                badge.textContent = `En uso por ${owner}`;
-                                badge.style.background = '#fee2e2';
-                                badge.style.color = '#b91c1c';
-                                badge.style.border = '1px solid #fecaca';
+                                tr.title = `Ficha en uso por ${owner}${lock.isIdle ? ' (INACTIVO)' : ''}`;
+                                badge.innerHTML = `${lock.isIdle ? '⏳' : '🔒'} <span style="margin-left:4px;">${lock.isIdle ? 'Inactivo' : 'En uso'} por ${owner}</span>`;
+                                badge.style.background = lock.isIdle ? '#fffef3' : '#fee2e2';
+                                badge.style.color = lock.isIdle ? '#d97706' : '#b91c1c';
+                                badge.style.border = lock.isIdle ? '1px solid #f59e0b' : '1px solid #ef4444';
+                                badge.style.boxShadow = lock.isIdle ? 'none' : '0 0 10px rgba(239, 68, 68, 0.2)';
+
+                                if (lock.isIdle) tr.classList.add('lock-is-idle');
                         }
 
                         const firstNameCell = tr.querySelector('td:nth-child(2) .pac-nombre');
@@ -342,6 +347,10 @@
 
         function iniciarRefreshLocks() {
                 if (lockState.refreshTimer) clearInterval(lockState.refreshTimer);
+                
+                // ⚡ Refrescar inmediatamente al iniciar
+                refrescarLocksVisuales().catch(() => { });
+
                 lockState.refreshTimer = setInterval(() => {
                         refrescarLocksVisuales().catch(() => { });
                 }, LOCKS_REFRESH_MS);
@@ -3535,7 +3544,32 @@
         };
 
         // --- FUNCIÓN PARA DEVOLVER A PENDIENTES (CORREGIDA) ---
-        window.cerrarModal = () => {
+        window.cerrarModal = async () => {
+                // 🔥 GUARDADO AUTOMÁTICO AL CERRAR: Sincronizar tiempo e inactividad
+                if (currentPacienteId && !window.__modalReadOnly) {
+                        try {
+                                const idDoc = currentPacienteId;
+                                const dataActual = currentPacienteData;
+                                const pPeriodo = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
+                                
+                                const tiempoSesionRelativo = window.startTime 
+                                        ? Math.max(0, Math.floor((Date.now() - window.startTime) / 1000)) 
+                                        : 0;
+
+                                const tAnt = Number(dataActual?.periodos?.[pPeriodo]?.tiempo_segundos || 0);
+                                const iAnt = Number(dataActual?.periodos?.[pPeriodo]?.inactividad_segundos || 0);
+
+                                if (tiempoSesionRelativo > 0 || window.__idleSeconds > 0) {
+                                        const docRef = doc(db, "pacientes_cac", idDoc);
+                                        await updateDoc(docRef, {
+                                                [`periodos.${pPeriodo}.tiempo_segundos`]: tAnt + Math.max(0, tiempoSesionRelativo - window.__idleSeconds),
+                                                [`periodos.${pPeriodo}.inactividad_segundos`]: iAnt + window.__idleSeconds
+                                        });
+                                        console.log("💾 [AUDITORÍA] Progreso guardado automáticamente.");
+                                }
+                        } catch (e) { console.warn("Error en auto-guardado:", e); }
+                }
+
                 const modal = document.getElementById("modalPaciente");
                 if (modal) modal.style.display = "none";
 
@@ -4368,6 +4402,41 @@
                 cohorteModalActual = data.cohorte || "cáncer";
                 ultimaVariableEnfocada = "";
 
+                // 🔥 NUEVO: LÓGICA DE INACTIVIDAD POR INICIO TARDÍO (LÍMITE 7:30 AM)
+                try {
+                        const ahora = new Date();
+                        const hoyStr = ahora.getFullYear() + '-' + (ahora.getMonth() + 1) + '-' + ahora.getDate();
+                        const ultimoDiaFicha = localStorage.getItem('__lastFichaOpenDay');
+
+                        // Si es un día nuevo y es un día hábil (L-V no festivo)
+                        if (ultimoDiaFicha !== hoyStr && typeof horasDiaLaboral === 'function' && horasDiaLaboral(ahora) > 0) {
+                                const limiteInicio = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 7, 0, 0);
+                                
+                                if (ahora > limiteInicio) {
+                                        const segundosRetraso = Math.floor((ahora - limiteInicio) / 1000);
+                                        window.__idleSeconds = (window.__idleSeconds || 0) + segundosRetraso;
+                                        
+                                        // 🚀 GUARDADO INMEDIATO: Registrar el retraso en Firebase de una vez
+                                        (async () => {
+                                                try {
+                                                        const pPeriodo = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
+                                                        const docRef = doc(db, "pacientes_cac", idDoc);
+                                                        const inactAnterior = Number(data.periodos?.[pPeriodo]?.inactividad_segundos || 0);
+                                                        await updateDoc(docRef, {
+                                                                [`periodos.${pPeriodo}.inactividad_segundos`]: inactAnterior + segundosRetraso
+                                                        });
+                                                        console.log("✅ [ALTO-COSTO] Retraso de inicio guardado en Firebase.");
+                                                } catch (err) { console.error("Error guardando retraso inicial:", err); }
+                                        })();
+                                        
+                                        console.warn(`🕒 [ALTO-COSTO] Inicio tardío detectado (Jornada 7:00 AM). Se abonan ${Math.floor(segundosRetraso/60)} min de inactividad.`);
+                                }
+                                localStorage.setItem('__lastFichaOpenDay', hoyStr);
+                        }
+                } catch (e) {
+                        console.error("Error en cálculo de inactividad inicial:", e);
+                }
+
                 const container = document.getElementById("formVariables");
                 if (!container) return;
                 container.innerHTML = "";
@@ -5142,6 +5211,11 @@
                                 tr.setAttribute('data-paciente-id', idDoc);
                                 tbody.appendChild(tr);
                         });
+
+                        // 🔒 Sincronizar bloqueos de forma no bloqueante
+                        setTimeout(() => {
+                                if (typeof pintarLocksEnTabla === 'function') pintarLocksEnTabla();
+                        }, 100);
                 }
 
                 // =========================================================
@@ -7022,11 +7096,10 @@
                 }
         };
 
-        iniciarRefreshLocks();
-        refrescarLocksVisuales().catch(() => { });
+        // ⚡ Carga inmediata de la tabla
+        window.cargarPacientes();
 
-        // 🔥 DISPARO INICIAL: Cargar la cohorte operativa por defecto al entrar
         setTimeout(() => {
-                if (typeof window.cargarPacientes === 'function') window.cargarPacientes();
-        }, 800);
+                iniciarRefreshLocks();
+        }, 1500);
 })();

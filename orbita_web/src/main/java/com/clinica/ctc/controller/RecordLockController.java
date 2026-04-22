@@ -20,12 +20,14 @@ public class RecordLockController {
         public String email;
         public String nombre;
         public Instant lastHeartbeat;
+        public boolean isIdle;
 
-        public LockInfo(String pacienteId, String email, String nombre, Instant lastHeartbeat) {
+        public LockInfo(String pacienteId, String email, String nombre, Instant lastHeartbeat, boolean isIdle) {
             this.pacienteId = pacienteId;
             this.email = email;
             this.nombre = nombre;
             this.lastHeartbeat = lastHeartbeat;
+            this.isIdle = isIdle;
         }
     }
 
@@ -33,6 +35,7 @@ public class RecordLockController {
         public String pacienteId;
         public String email;
         public String nombre;
+        public boolean isIdle;
     }
 
     @PostMapping("/tomar")
@@ -52,7 +55,7 @@ public class RecordLockController {
             ));
         }
 
-        activeLocks.put(key, new LockInfo(req.pacienteId, req.email, req.nombre, Instant.now()));
+        activeLocks.put(key, new LockInfo(req.pacienteId, req.email, req.nombre, Instant.now(), req.isIdle));
         return ResponseEntity.ok(Map.of("success", true, "lockedBy", req.email));
     }
 
@@ -75,6 +78,7 @@ public class RecordLockController {
         }
 
         currentLock.lastHeartbeat = Instant.now();
+        currentLock.isIdle = req.isIdle;
         return ResponseEntity.ok(Map.of("success", true));
     }
 

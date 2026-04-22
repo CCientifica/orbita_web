@@ -54,22 +54,33 @@
 
         /* 🔒 Concurrency Lockdown Styles */
         .lock-by-me {
-            background-color: rgba(59, 130, 246, 0.05) !important;
-            border-left: 4px solid #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.12) !important;
+            border-left: 6px solid #3b82f6 !important;
             transition: all 0.2s ease;
         }
 
         .lock-by-other {
-            background-color: rgba(239, 68, 68, 0.03) !important;
+            background-color: rgba(239, 68, 68, 0.08) !important;
             cursor: not-allowed !important;
-            opacity: 0.85;
-            filter: grayscale(0.2);
+            opacity: 0.9;
             pointer-events: none;
-            border-left: 4px solid #ef4444 !important;
+            border-left: 6px solid #ef4444 !important;
+            box-shadow: inset 4px 0 0 -2px #ef4444;
         }
 
         .lock-by-other td {
             color: #94a3b8 !important;
+        }
+
+        .lock-is-idle {
+            background-color: rgba(245, 158, 11, 0.08) !important;
+            border-left: 6px solid #f59e0b !important;
+            opacity: 0.8 !important;
+            pointer-events: none;
+        }
+
+        .lock-is-idle td {
+            color: #d97706 !important;
         }
 
         .lock-badge-inline {
