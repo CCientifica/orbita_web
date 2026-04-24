@@ -45,15 +45,12 @@ Para asegurar el principio de **Responsabilidad Única (SOLID)**, la lógica se 
 2.  **Seguridad Centralizada**: Toda autorización se gestiona desde `SecurityConfig.java`.
 3.  **Frontend Basado en Layouts**: El uso de `layout.html` asegura la fidelidad visual global.
 
-### 🔌 Interoperabilidad & Firebase Version-Safe Execution
-El sistema integra mecanismos críticos para garantizar la funcionalidad en despliegues híbridos:
+### 🔐 Gestión de Secretos y Configuración Dinámica (Cloud Secrets)
+Para garantizar la máxima seguridad y agilidad operativa, **ÓrbitA** implementa un modelo de **Secretos como Servicio (SaaS)** utilizando FireStore como bóveda centralizada:
 
-1.  **Firebase Shim (`firebase-shim.js`)**: Actúa como un puente de compatibilidad y **centralizador de versiones**.
-    *   **Política de Unificación**: Para evitar conflictos entre versiones del SDK (e.g., v10.8.0 vs v10.13.2), todos los módulos deben utilizar exclusivamente los objetos y funciones expuestos en `window.firebaseInstance` y `window.firebaseFirestore`.
-    *   **Modular Initialization**: Implementa un patrón de inicialización defensiva (`initModule`) que reintenta la carga hasta que el Shim está disponible, evitando errores de tipo durante el arranque.
-2.  **Orbita Layout Bridge (`orbita-layout-bridge.js`)**: Es el encargado de la **Fidelidad Visual**. 
-    *   Inyecta dinámicamente los fragmentos de `layout.html` (Sidebar, Navbar, Footer) mediante `fetch`.
-    *   **Bridge de Roles**: Sincroniza la sesión de Firebase con el Navbar institucional para mostrar identidad y permisos en tiempo real.
+1.  **Bóveda de Configuración (`config/ia_params`)**: Las credenciales sensibles (ej. API Keys de Groq/LLama3) nunca residen en el código fuente ni en archivos de propiedades estáticas. Se almacenan en una colección protegida en la nube.
+2.  **Aprovisionamiento Master Admin**: Solo los perfiles de **Master Admin** poseen la interfaz dinámica para inyectar o rotar llaves API en tiempo real sin necesidad de realizar nuevos despliegues de código o reinicios de servidor.
+3.  **Inyección en Tiempo de Ejecución (Runtime Injection)**: Los módulos de IA realizan peticiones asíncronas durante el `init()` para recuperar e inyectar las credenciales necesarias, asegurando que el repositorio de Git permanezca 100% libre de secretos y cumpliendo con los estándares de **Secret Scanning**.
 
 Este blindaje garantiza que la interfaz institucional sea resiliente y visualmente idéntica en cualquier entorno.
 

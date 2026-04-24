@@ -939,6 +939,11 @@
                 <div class="nav-group-items">
                     <a th:href="@{/alto-costo}" class="nav-link"><i data-lucide="heart-pulse"></i><span>Alto
                             Costo</span></a>
+                    <!-- 📊 Observatorio de Ciencia de Datos -->
+                    <a th:href="@{/observatorio-analitico}" class="nav-link" style="border-left: 2px solid #3b82f6; margin-left: 5px;">
+                        <i data-lucide="gauge" style="color: #60a5fa;"></i>
+                        <span>Observatorio Analítico</span>
+                    </a>
                     <a th:href="@{/porfiria}" class="nav-link" sec:authorize="!hasAuthority('analista')"><i
                             data-lucide="microscope"></i><span>PorfirIA</span></a>
                 </div>

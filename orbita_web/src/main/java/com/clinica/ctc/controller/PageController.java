@@ -36,6 +36,11 @@ public class PageController {
         return "alto-costo";
     }
 
+    @GetMapping("/observatorio-analitico")
+    public String observatorioAnalitico() {
+        return "observatorio-analitico";
+    }
+
     @GetMapping("/porfiria")
     public String porfiria() {
         return "porfiria";

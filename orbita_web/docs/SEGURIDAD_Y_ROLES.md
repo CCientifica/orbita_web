@@ -27,11 +27,23 @@ La seguridad de ÓrbitA es el pilar que garantiza la confidencialidad, integrida
 
 | Rol (Firebase) | Authority Spring | Alcance y Visibilidad | Restricciones de Red (URL Directa) | Acciones Permitidas (Botones) |
 | :--- | :--- | :--- | :--- | :--- |
-| **`master admin`** | `master admin` | **Acceso Total**. Todos los módulos. | **Ninguna**. Acceso a todas las rutas. | Todas: Crear, Editar, Borrar, Cargar, Exportar. |
-| **`super admin`** | `super admin` | Gestión operativa. CAC, LOS, RCF, Datos. | **Bloqueado**: `/usuarios`, `/cronogramagpc`, `/plananual-gpc`. | Gestión: Ver, Editar, Cargar, Exportar. |
-| **`admin`** | `admin` | Consulta institucional. CAC, LOS, RCF, Datos. | **Bloqueado**: `/usuarios`, `/cronogramagpc`, `/plananual-gpc`. | Lectura: Solo Ver y Descargar Reportes. |
-| **`analista`** | `analista` | Soporte técnico. **Solo Alto Costo**. | **Bloqueado**: Todo excepto `/altocosto`, `/home`. | Operativo: Validar datos, Exportar TXT. (Restringido: No ve SISCAD XL, Carga Excel ni Ver Ocultos). |
+| **`master admin`** | `master admin` | **Acceso Total**. Todos los módulos. | **Ninguna**. Acceso a todas las rutas. | Todas: **Gestión de Llaves IA (Nube)**, Crear, Editar, Borrar. |
+| **`super admin`** | `super admin` | Gestión operativa. CAC, Auditoría IA. | **Bloqueado**: `/usuarios`, `/cronogramagpc`. | Gestión: Auditar IA, Ver, Editar, Cargar, Exportar. |
+| **`admin`** | `admin` | Consulta institucional. CAC, LOS. | **Bloqueado**: `/usuarios`, `/cronogramagpc`. | Lectura: Solo Ver y Descargar Reportes. |
+| **`analista`** | `analista` | Soporte técnico. **Alto Costo e IA**. | **Bloqueado**: Todo excepto `/altocosto`, `/home`. | Operatividad: **Auditoría IA (Monitoreada)**, Validar datos, Exportar TXT. |
 | **`auditor`** | `auditor` | Monitoreo. **Solo Datos y Predicción**. | **Bloqueado**: `/usuarios`, `/ctc`, `/altocosto`. | Lectura: Visualización de Dashboards. |
+
+---
+
+---
+
+## 🔍 Telemetría y Gestión de Productividad (Anti-Cheat)
+
+ÓrbitA implementa un sistema de monitoreo ético para garantizar la veracidad de la gestión en el módulo de Alto Costo (SISCAD):
+
+1.  **Detección de Salida Prematura**: El sistema monitorea el tiempo de gestión dentro de cada ficha. Si una `analista` intenta cerrar una ficha no validada tras más de 30 segundos de actividad, el sistema emite una advertencia de bloqueo indicando que su productividad no será contabilizada si abandona el registro.
+2.  **Segregación de Métricas**: Para mantener la integridad de los reportes, el sistema **excluye** a los roles `master admin` y `super admin` de la telemetría de inactividad. Los administradores pueden supervisar sin afectar los KPIs de productividad del equipo.
+3.  **Corte Diario de Inactividad**: Los registros de inactividad se desglosan por fecha (`YYYY-MM-DD`) en Firestore, permitiendo auditorías diarias de desempeño y evitando la acumulación errónea de tiempos entre jornadas.
 
 ---
 
@@ -69,11 +81,10 @@ Controlado en `layout.html` y plantillas individuales:
 ```
 
 ### 3. Nivel de Accionable (Botones/Edición)
-Incluso si el módulo es visible (p. ej., Alto Costo o Estadística Diaria), ciertos botones están bloqueados:
-*   **Analistas**: No ven botones de carga (`sec:authorize="!hasAuthority('analista')"`).
-*   **Auditores**: Tienen visualización de solo lectura asegurada mediante estas etiquetas.
-*   **Estadística Diaria ("Cargar Datos" / "Enviar Reporte")**: Estos botones usan un esquema combinado inyectado desde el servidor con `sec:authorize="hasAnyAuthority('master admin', 'super admin')"` y luego revelado visualmente mediante validación JS sobre `window.orbitaUser.role` para asegurar el flujo interactivo.
-*   **Alto Costo (Administración y Filtros)**: El botón "Ver Ocultos" y los controles de "Carga Excel / SISCAD XL" están restringidos exclusivamente a `master admin` y `super admin`. El rol `analista` tiene prohibida la visualización de estos elementos, limitándose únicamente a la descarga en formato TXT dentro del panel administrativo.
+Incluso si el módulo es visible, ciertos botones están bloqueados:
+*   **Analistas**: No ven botones de carga. Tienen telemetría de productividad obligatoria.
+*   **Auditores**: Tienen visualización de solo lectura.
+*   **Master Admin**: Único perfil con acceso a la **Bóveda de Configuración IA** para la gestión de llaves API.
 
 ---
 

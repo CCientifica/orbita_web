@@ -58,7 +58,16 @@ A continuación se describen los módulos operativos en la plataforma, clasifica
 
 ---
 
-### 5. **Estancia Predictiva (LOS IA)**
+### 5. **Inteligencia Artificial Cognitiva**
+*   **Auditoría IA (Brain)**:
+    *   **Tipo**: Auditoría Asistida por LLM.
+    *   **Propósito**: Auditoría científica y administrativa en tiempo real de los registros de Alto Costo. Utiliza modelos de lenguaje de última generación para detectar incoherencias en diagnósticos, errores en el reporte SISCAD y sugerir correcciones inmediatas a las analistas.
+    *   **Seguridad**: Credenciales dinámicas gestionadas desde la **Bóveda de la Nube** (exclusivo Master Admin).
+    *   **Acceso**: `master admin`, `super admin`, `analista`.
+
+---
+
+### 6. **Estancia Predictiva (LOS IA)**
 *   **Predictor LOS (Length of Stay)**:
     *   **Tipo**: Inteligencia Artificial / Predictivo.
     *   **Propósito**: Predicción de la estancia hospitalaria de pacientes para optimizar el giro de cama y la gestión de recursos.

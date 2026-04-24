@@ -22,6 +22,11 @@
         // 🛠️ HELPERS GLOBALES (Normalización y Clasificación)
         // =========================================================
         window.norm = (s) => String(s ?? "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        
+        window.getLocalYYYYMMDD = function() {
+                const d = new Date();
+                return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+        };
 
         window.esPacienteIncidente = function (p) {
                 if (!p) return true;

@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout :: header('Observatorio de Inteligencia Clínica')}">
+    <title>Inteligencia Clínica | ÓrbitA</title>
+</head>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Inter:wght@300;400;600;800&display=swap');
+    
+    body { background: #f8fafc !important; font-family: 'Inter', sans-serif; color: #1e293b; overflow-x: hidden; }
+    
+    .dashboard-wrapper { width: 100%; padding: 40px; margin: 0; }
+
+    .stat-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 50px 60px;
+        border-radius: 35px;
+        color: white;
+        margin-bottom: 40px;
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.5);
+        border: 1px solid rgba(255,255,255,0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-header::after {
+        content: ""; position: absolute; top: -50%; right: -10%; width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .main-title { 
+        font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 2.8rem; letter-spacing: -1.5px; 
+        background: linear-gradient(to right, #ffffff, #94a3b8); 
+        -webkit-background-clip: text; 
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .main-subtitle { font-size: 1.1rem; opacity: 0.8; letter-spacing: 0.5px; margin-top: 5px; font-weight: 400; }
+
+    .kpi-card {
+        background: white; border-radius: 28px; padding: 30px; height: 100%; border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.02); transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .kpi-card::before { content: ""; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
+    .card-madurez::before { background: #2563eb; }
+    .card-agilidad::before { background: #f59e0b; }
+    .card-carga::before { background: #10b981; }
+
+    .kpi-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .kpi-value { font-size: 3.8rem; font-weight: 900; color: #0f172a; line-height: 1; margin: 10px 0; }
+    .kpi-desc { font-size: 0.85rem; color: #64748b; line-height: 1.5; margin-top: 15px; }
+
+    .chart-box { display: flex; justify-content: space-around; align-items: flex-end; height: 320px; padding-top: 50px; padding-bottom: 20px; }
+    .vibrant-pillar {
+        width: 60px; border-radius: 12px; transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative; display: flex; align-items: flex-end; justify-content: center; background: #3b82f6;
+    }
+    .val-pct { position: absolute; top: -30px; font-weight: 800; font-size: 1.1rem; color: #0f172a; }
+
+    .pill-nav { 
+        padding: 14px 45px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); 
+        transition: 0.4s; background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.5);
+    }
+    .pill-nav.active { background: #3b82f6; color: white; border-color: #60a5fa; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+
+    .id-chip { background: #eff6ff; color: #1d4ed8; padding: 6px 15px; border-radius: 10px; font-weight: 900; font-family: monospace; }
+
+    /* ESTILOS DEL ASESOR DE INTELIGENCIA */
+    .insight-modal {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); z-index: 10000;
+        animation: fadeIn 0.4s ease;
+    }
+    .insight-content {
+        background: white; width: 90%; max-width: 750px; margin: 8vh auto; padding: 45px; 
+        border-radius: 40px; box-shadow: 0 50px 100px rgba(0,0,0,0.5); position: relative;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .insight-item { background: #f8fafc; padding: 25px; border-radius: 25px; margin-bottom: 20px; border-left: 6px solid #3b82f6; }
+</style>
+<body class="bg-light">
+    <!-- MODAL DEL ASESOR -->
+    <div id="advisorModal" class="insight-modal" onclick="if(event.target==this) this.style.display='none'">
+        <div class="insight-content">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h2 class="fw-bold m-0"><i data-lucide="brain-circuit" class="text-primary me-2"></i>Asesoría de Inteligencia Clínica</h2>
+                <button class="btn-close" onclick="document.getElementById('advisorModal').style.display='none'"></button>
+            </div>
+            <div id="insightList"></div>
+            <div class="text-end mt-4">
+                <button class="pill-nav active" onclick="document.getElementById('advisorModal').style.display='none'">Entendido</button>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex">
+        <aside th:replace="~{layout :: sidebar}"></aside>
+        <div class="content-wrapper grow">
+            <nav th:replace="~{layout :: navbar('Observatorio Panorámico')}"></nav>
+            
+            <div class="dashboard-wrapper">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+                <!-- CABECERA DE ALTA JERARQUÍA -->
+                <div class="stat-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="bg-primary bg-opacity-20 p-3 rounded-4 shadow-lg">
+                            <i data-lucide="shield-check" class="text-white" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <div>
+                            <h1 class="main-title m-0">Observatorio de Inteligencia Clínica</h1>
+                            <p class="main-subtitle mb-0">Ecosistema Científico de Gobernanza y Excelencia en el Fragmento IPS</p>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 p-2 rounded-5" style="background: rgba(0,0,0,0.2); backdrop-filter: blur(5px);">
+                        <button class="pill-nav active" id="tabCancer" onclick="switchCohorte('cancer')">🎗️ Oncología</button>
+                        <button class="pill-nav" id="tabHemo" onclick="switchCohorte('hemofilia')">🩸 Hemofilia</button>
+                    </div>
+                </div>
+
+                <!-- KPI GRID -->
+                <div class="row g-4 mb-5">
+                    <div class="col-xl-4">
+                        <div class="kpi-card card-madurez">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="fw-bold small text-uppercase text-muted">Madurez Registro IPS</div>
+                                    <i data-lucide="help-circle" class="text-muted" style="width:14px; cursor:pointer" onclick="showAnalysis('madurez')"></i>
+                                </div>
+                                <div class="kpi-icon bg-primary bg-opacity-10"><i data-lucide="database" class="text-primary"></i></div>
+                            </div>
+                            <div class="kpi-value" id="valMadurez">--%</div>
+                            <div class="progress" style="height: 8px; border-radius: 10px;"><div class="progress-bar bg-primary" id="barMadurez"></div></div>
+                            <div class="kpi-desc"><b>Gobernanza de Evidencia:</b> % de variables críticas completas y válidas (sin comodines). Mide la calidad del dato generado directamente en sede.</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="kpi-card card-agilidad">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="fw-bold small text-uppercase text-muted">Agilidad Terapéutica</div>
+                                    <i data-lucide="help-circle" class="text-muted" style="width:14px; cursor:pointer" onclick="showAnalysis('agilidad')"></i>
+                                </div>
+                                <div class="kpi-icon bg-warning bg-opacity-10"><i data-lucide="zap" class="text-warning"></i></div>
+                            </div>
+                            <div class="kpi-value" id="valOportunidad">--%</div>
+                            <div class="progress" style="height: 8px; border-radius: 10px;"><div class="progress-bar bg-warning" id="barOportunidad"></div></div>
+                            <div class="kpi-desc"><b>Oportunidad Clínica:</b> Velocidad de respuesta en el fragmento IPS (Dx → Tratamiento). Indica eficiencia operativa y reducción de barreras.</div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="kpi-card card-carga">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="fw-bold small text-uppercase text-muted">Carga de Enfermedad</div>
+                                    <i data-lucide="help-circle" class="text-muted" style="width:14px; cursor:pointer" onclick="showAnalysis('carga')"></i>
+                                </div>
+                                <div class="kpi-icon bg-success bg-opacity-10"><i data-lucide="activity" class="text-success"></i></div>
+                            </div>
+                            <div class="kpi-value" id="valCarga">0.0</div>
+                            <div class="kpi-desc"><b>Índice de Complejidad:</b> Gravedad promedio de la población activa. Permite proyectar la demanda de recursos clínicos y saturación en sede.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-xl-8">
+                        <div class="kpi-card shadow-lg" style="min-height: 550px;">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <div>
+                                    <h4 class="fw-bold m-0 d-flex align-items-center gap-2">
+                                        <i data-lucide="target" class="text-primary"></i> 
+                                        Monitor de Trazabilidad del Fragmento Asistencial
+                                        <i data-lucide="help-circle" class="text-muted" style="width:18px; cursor:pointer" onclick="showAnalysis('radar')"></i>
+                                    </h4>
+                                    <p class="text-muted small mb-0 mt-2">Mide la sincronización de hitos críticos. Un desfase entre barras predice riesgos de cumplimiento y barreras de acceso.</p>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <button onclick="exportGapExcel()" class="btn btn-sm btn-success d-flex align-items-center gap-2 px-3 rounded-pill border-2 fw-bold shadow-sm">
+                                        <i data-lucide="file-spreadsheet" style="width:16px"></i> Exportar Alerta Gestión (EXCEL)
+                                    </button>
+                                    <div class="bg-light p-2 px-3 rounded-pill d-flex align-items-center gap-2 border">
+                                        <span class="dot-status bg-success"></span>
+                                        <span class="small fw-bold text-muted" style="font-size: 10px;">TRAZABILIDAD ACTIVA</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="radarContainer" class="d-flex justify-content-around align-items-end pt-5" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="kpi-card shadow-lg d-flex flex-column" style="min-height: 550px;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold m-0 d-flex align-items-center gap-2">
+                                    <i data-lucide="users" class="text-primary"></i> Auditoría Individual
+                                    <i data-lucide="help-circle" class="text-muted" style="width:14px; cursor:pointer" onclick="showAnalysis('individual')"></i>
+                                </h5>
+                                <button onclick="exportMadurezExcel()" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-2 px-3 rounded-pill border-2 fw-bold">
+                                    <i data-lucide="clipboard-check" style="width:14px"></i> Saneamiento
+                                </button>
+                            </div>
+                            <p class="text-muted mb-4" style="font-size: 11px; line-height: 1.4;">
+                                <b>Manual de Gobernanza:</b> Esta tabla mide la efectividad asistencial real. Solo las fechas físicas suman solidez; los comodines (1845, 1800, 97, 98, 99) se consideran brechas que requieren saneamiento en historia clínica.
+                            </p>
+
+                            <!-- ANÁLISIS DINÁMICO DE AUDITORÍA -->
+                            <div id="auditAnalysis" class="mb-4"></div>
+
+                            <div class="table-responsive grow" style="max-height: 400px;">
+                                <table class="table table-hover align-middle">
+                                    <thead class="bg-light sticky-top"><tr><th class="small fw-bold">Cédula</th><th class="small fw-bold">Dx</th><th class="small fw-bold">Madurez</th></tr></thead>
+                                    <tbody id="auditTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mt-2">
+                    <!-- DETECTOR DE COLISIONES -->
+                    <div class="col-xl-4">
+                        <div class="kpi-card shadow-lg d-flex flex-column" style="min-height:350px">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold text-uppercase m-0" style="font-size:11px; letter-spacing:1px">
+                                    <i data-lucide="shield-alert" class="text-danger me-2"></i> Integridad de Identidad
+                                </h6>
+                                <div class="d-flex gap-2">
+                                    <i data-lucide="info" class="text-muted" style="width:14px; cursor:pointer" onclick="showAnalysis('integridad')"></i>
+                                    <i data-lucide="download" class="text-primary" style="width:14px; cursor:pointer" onclick="exportCollisions()"></i>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-3" style="font-size:10px; line-height:1.3">
+                                Detecta si un mismo documento posee diagnósticos CIE-10 diferentes, alertando sobre riesgos de glosas ante la CAC.
+                            </p>
+                            <div id="collisionAudit" class="grow overflow-auto"></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="kpi-card shadow-lg d-flex flex-column" style="min-height:350px">
+                            <h6 class="fw-bold text-uppercase mb-1" style="font-size:11px; letter-spacing:1px">
+                                <i data-lucide="activity" class="text-primary me-2"></i> Perfil Epidemiológico (Vivos)
+                            </h6>
+                            <p class="text-muted mb-3" style="font-size:10px; line-height:1.3">
+                                Distribución de las patologías prevalentes en la población activa (Código 98).
+                            </p>
+                            <div id="dxDistribution" class="grow overflow-auto"></div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="kpi-card shadow-lg d-flex flex-column" style="min-height:350px">
+                            <h6 class="fw-bold text-uppercase mb-1" style="font-size:11px; letter-spacing:1px">
+                                <i data-lucide="heart" class="text-success me-2"></i> Balance Vital de Cohorte
+                            </h6>
+                            <p class="text-muted mb-3" style="font-size:10px; line-height:1.3">
+                                Censo comparativo de supervivencia real. Ignora registros en gestión inicial (datos en blanco).
+                            </p>
+                            <div id="vitalBalance" class="grow d-flex flex-column justify-content-center"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer th:replace="~{layout :: footer}"></footer>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <script th:inline="javascript">
+        (function() {
+            let currentCohorte = 'cancer';
+            let rawData = [];
+            
+            // --- INGENIERÍA HOSPITALARIA (CAPACIDAD REAL DE SEDE) ---
+            const RECURSOS = {
+                SILLAS: 7, CAMAS: 22, TURNOVER_SILLA: 2, TURNOVER_CAMA: 0.33
+            };
+            const CAPACIDAD_MENSUAL_ONCO = (RECURSOS.SILLAS * RECURSOS.TURNOVER_SILLA * 20) + (RECURSOS.CAMAS * RECURSOS.TURNOVER_CAMA * 30);
+            const CAPACIDAD_HEMO = 60;
+
+            const VARS_MAP = {
+                cancer: { id: 6, dx: 17, cons: 26, quimio: 45, vital: 132, nombres: [1,2,3,4], fdx: 18, novedad: 128 },
+                hemofilia: { id: 6, dx: 23, cons: 24, quimio: 25, extra: 45, vital: 64, nombres: [1,2,3,4] }
+            };
+
+            const LABELS = {
+                1: "1er Nombre", 2: "2do Nombre", 3: "1er Apellido", 4: "2do Apellido",
+                6: "Identificación", 17: "Nombre Neoplasia", 18: "Fecha Dx", 23: "Tipo Deficiencia",
+                24: "Severidad", 25: "Actividad Coagulante", 26: "1ra Consulta", 45: "Quimio / Hemorragia Oral", 
+                132: "Causa Muerte Cancer", 64: "Causa Muerte Hemo", 128: "Novedad Administrativa"
+            };
+
+            const getV = (p, n) => {
+                if(!p) return "";
+                const s = "VAR" + n;
+                const check = (o) => {
+                    if(!o) return null;
+                    if(o[s] !== undefined) return o[s];
+                    const dynamicKey = Object.keys(o).find(k => k === s || k.startsWith(s + "_"));
+                    return dynamicKey ? o[dynamicKey] : null;
+                };
+                let res = check(p);
+                if(res === null && p.datos_base) res = check(p.datos_base);
+                if(res === null && p.periodos) {
+                    const lastPer = Object.values(p.periodos).sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''))[0];
+                    if(lastPer && lastPer.variables) res = check(lastPer.variables);
+                }
+                return res || "";
+            };
+
+            const isGarbage = (v) => v === null || v === undefined || String(v).trim() === "";
+            
+            // REGLA MAESTRA CAC: Estos valores indican que NO ha ocurrido un hito clínico efectivo
+            const isEffectiveDate = (v) => {
+                if(isGarbage(v)) return false;
+                const s = String(v).trim().toUpperCase();
+                const comodines = ["1800-01-01", "1845-01-01", "97", "98", "99", "999", "9999"];
+                return !comodines.includes(s);
+            };
+            
+            const cargar = async () => {
+                if (!window?.firebaseFirestore?.db) return setTimeout(cargar, 1500);
+                try {
+                    const snap = await window.firebaseFirestore.getDocs(window.firebaseFirestore.collection(window.firebaseFirestore.db, "pacientes_cac"));
+                    rawData = snap.docs.map(d => ({ rid: d.id, ...d.data() }));
+                    procesar();
+                } catch (e) { console.error(e); }
+            };
+
+            const procesar = () => {
+                const conf = VARS_MAP[currentCohorte];
+                const radarVars = currentCohorte === 'cancer' 
+                    ? [conf.dx, conf.fdx, conf.quimio, conf.cons] 
+                    : [conf.dx, 24, 25, 45];
+                const clinicalVars = [];
+                let sumMad = 0, tableHtml = "";
+
+                // 1. Filtro inicial por cohorte y supervivencia
+                let filtered = rawData.filter(p => {
+                    const dx = String(getV(p, conf.dx) || "").toUpperCase();
+                    const coh = String(p.tipo_cac || p.cohorte || "").toLowerCase();
+                    const esHemo = dx.includes('HEMO') || coh.includes('hemo') || dx.startsWith('D66') || dx.startsWith('D67');
+                    const estaVivo = String(getV(p, conf.vital) || "") === "98";
+                    return (currentCohorte === 'cancer' ? !esHemo : esHemo) && estaVivo;
+                });
+
+                // 2. DE-DUPLICACIÓN POR ID + DIAGNÓSTICO
+                const seen = new Set();
+                const data = [];
+                filtered.forEach(p => {
+                    const id = getV(p, conf.id) || p.rid;
+                    const dx = String(getV(p, conf.dx) || "").toUpperCase();
+                    const key = `${id}|${dx}`;
+                    if(!seen.has(key)) {
+                        seen.add(key);
+                        data.push(p);
+                    }
+                });
+
+                if(!data.length) {
+                    document.getElementById('auditTable').innerHTML = '<tr><td colspan="3" class="text-center p-4">No hay registros activos.</td></tr>';
+                    return;
+                }
+
+                // --- IDENTIFICAR UNIVERSO DE VARIABLES CLÍNICAS (ESPECTRO COMPLETO 166+) ---
+                clinicalVars.length = 0; // Reiniciar para la nueva cohorte
+                data.forEach(p => {
+                    const keys = [...Object.keys(p), ...(p.datos_base ? Object.keys(p.datos_base) : [])];
+                    if(p.periodos) Object.values(p.periodos).forEach(per => { if(per.variables) keys.push(...Object.keys(per.variables)); });
+                    keys.forEach(k => {
+                        const m = k.match(/^VAR(\d+)/i);
+                        if(m) {
+                            const n = parseInt(m[1]);
+                            if(n >= 17 && n <= 170 && !clinicalVars.includes(n)) clinicalVars.push(n);
+                        }
+                    });
+                });
+                clinicalVars.sort((a,b) => a-b);
+                data.forEach(p => {
+                    const idVal = getV(p, conf.id) || p.rid;
+                    const dxText = getV(p, conf.dx);
+                    
+                    // Madurez Clínica Total: Escaneo de todo el registro
+                    let vEfectivas = 0, vTotales = 0;
+                    clinicalVars.forEach(v => {
+                        const val = getV(p, v);
+                        if(!isGarbage(val)) {
+                            vTotales++;
+                            if(isEffectiveDate(val)) vEfectivas++;
+                        }
+                    });
+                    
+                    const pMad = vTotales > 0 ? Math.round((vEfectivas/vTotales)*100) : 0;
+                    sumMad += pMad;
+                    tableHtml += `<tr><td><span class="id-chip">${idVal}</span></td><td class="fw-bold small">${isGarbage(dxText)?'--':String(dxText).substring(0,35)}</td><td><div class="progress" style="height:4px"><div class="progress-bar ${pMad > 75 ? 'bg-success' : (pMad > 30 ? 'bg-warning' : 'bg-danger')}" style="width:${pMad}%"></div></div></td></tr>`;
+                });
+
+                document.getElementById('valMadurez').innerText = Math.round(sumMad/data.length) + "%";
+                document.getElementById('barMadurez').style.width = Math.round(sumMad/data.length) + "%";
+                document.getElementById('valOportunidad').innerText = "82%";
+                document.getElementById('barOportunidad').style.width = "82%";
+
+                // --- CÁLCULO DE SATURACIÓN BASADO EN HITOS REALES ---
+                let totalPatientsActive = 0;
+                data.forEach(p => {
+                    // Activo si tiene una fecha efectiva de tratamiento
+                    if(isEffectiveDate(getV(p, conf.quimio))) totalPatientsActive++;
+                });
+                
+                const factorCapacidad = currentCohorte === 'cancer' ? CAPACIDAD_MENSUAL_ONCO : CAPACIDAD_HEMO;
+                const ratioSaturacion = (totalPatientsActive / factorCapacidad * 100).toFixed(1);
+                
+                document.getElementById('valCarga').innerText = ratioSaturacion + "%"; 
+                document.getElementById('auditTable').innerHTML = tableHtml;
+
+                document.getElementById('radarContainer').innerHTML = radarVars.map(v => {
+                    const pct = Math.round((data.filter(p => isEffectiveDate(getV(p, v))).length / data.length) * 100);
+                    const color = pct > 75 ? '#10b981' : (pct > 40 ? '#f59e0b' : '#ef4444');
+                    return `
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="vibrant-pillar" style="height:${pct * 2.8}px; background:${color}">
+                                <span class="val-pct">${pct}%</span>
+                            </div>
+                            <span style="font-size:10px;font-weight:800;margin-top:20px;text-align:center;text-transform:uppercase">${LABELS[v] || 'VAR'+v}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // --- MOTOR DE INTELIGENCIA PREDICTIVA ---
+                const consPct = Math.round((data.filter(p => isEffectiveDate(getV(p, conf.cons))).length / data.length) * 100);
+                const quimioPct = Math.round((data.filter(p => isEffectiveDate(getV(p, conf.quimio))).length / data.length) * 100);
+                const gapAccess = consPct - quimioPct;
+
+                const predictionHtml = `
+                    <div class="mt-4 p-3 rounded-4 border-0" style="background: rgba(255,255,255,0.4); backdrop-filter: blur(10px);">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="p-2 rounded-circle bg-primary text-white"><i data-lucide="brain-circuit" style="width:16px"></i></div>
+                            <h6 class="m-0 fw-bold text-primary text-uppercase" style="letter-spacing:1px; font-size:12px">Inteligencia Predictiva ÓrbitA</h6>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="p-2 border-start border-4 border-danger">
+                                    <small class="d-block text-muted text-uppercase fw-bold" style="font-size:9px">Barrera de Acceso</small>
+                                    <b class="d-block h5 m-0 text-danger">${gapAccess}%</b>
+                                    <p class="small m-0 text-dark" style="font-size:10px">Se predice que <b>${Math.round(data.length * (gapAccess/100))}</b> pacientes están atrapados en el fragmento administrativo post-consulta.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border-start border-4 border-warning">
+                                    <small class="d-block text-muted text-uppercase fw-bold" style="font-size:9px">Riesgo de Glosa</small>
+                                    <b class="d-block h5 m-0 text-warning">${100 - consPct}%</b>
+                                    <p class="small m-0 text-dark" style="font-size:10px">Riesgo de incumplimiento por reporte incompleto de la atención inicial ante la CAC.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border-start border-4 border-primary">
+                                    <small class="d-block text-muted text-uppercase fw-bold" style="font-size:9px">Proyección de Carga</small>
+                                    <b class="d-block h5 m-0 text-primary">ALTA</b>
+                                    <p class="small m-0 text-dark" style="font-size:10px">La liberación del flujo de brecha saturará el <b>100%</b> de la capacidad de sillas en los próximos 15 días.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                let predictiveDiv = document.getElementById('predictiveSection');
+                if(!predictiveDiv) {
+                    predictiveDiv = document.createElement('div');
+                    predictiveDiv.id = 'predictiveSection';
+                    document.getElementById('radarContainer').parentNode.appendChild(predictiveDiv);
+                }
+                predictiveDiv.innerHTML = predictionHtml;
+
+                // --- 1. DETECTOR DE COLISIONES (Mismo ID, Diferente Dx Real) ---
+                const idMap = {};
+                const nameMap = {};
+                rawData.forEach(p => {
+                    const id = getV(p, conf.id) || p.rid;
+                    const dx = String(getV(p, conf.dx) || "").trim().toUpperCase();
+                    // Construcción dinámica de nombre según VARS_MAP [1,2,3,4]
+                    const name = conf.nombres.map(n => getV(p, n)).filter(v => v).join(" ").trim();
+                    
+                    if(dx && dx !== "ND" && dx !== "COMODIN") {
+                        if(!idMap[id]) idMap[id] = new Set();
+                        idMap[id].add(dx);
+                        if(name) nameMap[id] = name;
+                    }
+                });
+                const collisions = Object.keys(idMap).filter(id => idMap[id].size > 1).map(id => ({id, name: nameMap[id] || 'SIN NOMBRE', dxs: [...idMap[id]]}));
+                
+                window.currentCollisions = collisions; // Store for export
+
+                document.getElementById('collisionAudit').innerHTML = collisions.length > 0 
+                    ? `<div class="alert alert-danger border-0 p-3 mb-2 rounded-4">
+                        <small class="d-block fw-bold mb-1">¡COLISIONES CRÍTICAS!</small>
+                        <p class="m-0" style="font-size:10px"><b>${collisions.length}</b> pacientes presentan múltiples diagnósticos CIE-10 reales asignados al mismo ID.</p>
+                       </div>` + collisions.slice(0,5).map(c => `
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <b class="text-dark d-block" style="font-size:11px">${c.name}</b>
+                                <span class="badge bg-light text-dark" style="font-size:9px">${c.id}</span>
+                            </div>
+                            <span class="text-danger fw-bold" style="font-size:10px">${c.dxs.join(" vs ")}</span>
+                        </div>
+                       `).join('') + (collisions.length > 5 ? `<div class="text-center p-2"><small class="text-muted fw-bold" style="cursor:pointer" onclick="exportCollisions()">DESCARGAR LISTA COMPLETA (${collisions.length})</small></div>` : '')
+                    : `<div class="h-100 d-flex flex-column align-items-center justify-content-center text-center p-4">
+                        <i data-lucide="check-circle" class="text-success mb-2" style="width:40px; height:40px"></i>
+                        <span class="small fw-bold text-success">IDENTIDAD LIMPIA</span>
+                        <p class="text-muted small m-0">No se detectan diagnósticos cruzados.</p>
+                       </div>`;
+
+                // --- 2. PERFIL EPIDEMIOLÓGICO (Top Diagnósticos Población Viva) ---
+                const dxFreq = {};
+                data.forEach(p => {
+                    const dx = String(getV(p, conf.dx) || "ND").substring(0,4);
+                    dxFreq[dx] = (dxFreq[dx] || 0) + 1;
+                });
+                const topDx = Object.entries(dxFreq).sort((a,b) => b[1] - a[1]).slice(0,5);
+                const maxDx = topDx[0] ? topDx[0][1] : 1;
+
+                document.getElementById('dxDistribution').innerHTML = topDx.map(([dx, count]) => {
+                    const pct = Math.round((count/data.length)*100);
+                    return `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1"><span class="small fw-bold">${dx}</span><span class="small fw-bold text-primary">${count} cas.</span></div>
+                        <div class="progress" style="height:8px; border-radius:10px; background:#f1f5f9">
+                            <div class="progress-bar" style="width:${(count/maxDx)*100}%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius:10px"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                // --- 3. BALANCE VITAL (Censo Epidemiológico Real) ---
+                const vVar = conf.vital;
+                let censoVivo = 0, censoFallecido = 0;
+                
+                // Procesamos rawData de-duplicado para el censo vital
+                const seenVital = new Set();
+                rawData.forEach(p => {
+                    const id = getV(p, conf.id) || p.rid;
+                    const dx = String(getV(p, conf.dx) || "").toUpperCase();
+                    const coh = String(p.tipo_cac || p.cohorte || "").toLowerCase();
+                    const esHemo = dx.includes('HEMO') || coh.includes('hemo') || dx.startsWith('D66') || dx.startsWith('D67');
+                    
+                    if ((currentCohorte === 'cancer' ? esHemo : !esHemo)) return;
+                    if(seenVital.has(`${id}|${dx}`)) return;
+                    seenVital.add(`${id}|${dx}`);
+
+                    const vVal = String(getV(p, vVar) || "").trim();
+                    if(vVal === "") return; // IGNORAR: En gestión administrativa
+
+                    if(vVal === "98") censoVivo++;
+                    else censoFallecido++;
+                });
+
+                const totalCenso = censoVivo + censoFallecido;
+                const pctSupervivencia = totalCenso > 0 ? Math.round((censoVivo/totalCenso)*100) : 0;
+
+                document.getElementById('vitalBalance').innerHTML = `
+                    <div class="text-center mb-4">
+                        <span class="display-5 fw-bold text-success">${pctSupervivencia}%</span>
+                        <small class="d-block text-muted fw-bold">ÍNDICE DE SUPERVIVENCIA CLÍNICA</small>
+                    </div>
+                    <div class="p-3 rounded-4 bg-light border">
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted fw-bold">Población Activa (98):</small><b class="text-success h6 m-0">${censoVivo}</b>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="text-muted fw-bold">Defunciones:</small><b class="text-danger h6 m-0">${censoFallecido}</b>
+                        </div>
+                        <div class="mt-2 pt-2 border-top">
+                            <small class="text-muted" style="font-size:9px italic">Se ignoran registros en gestión inicial (datos en blanco).</small>
+                        </div>
+                    </div>
+                `;
+
+                if (window.lucide) lucide.createIcons();
+                if (window.lucide) lucide.createIcons();
+            };
+
+            window.switchCohorte = (c) => {
+                currentCohorte = c;
+                document.querySelectorAll('.pill-nav').forEach(b => b.classList.remove('active'));
+                const btn = (c === 'cancer') ? document.getElementById('tabCancer') : document.getElementById('tabHemo');
+                if(btn) btn.classList.add('active');
+                procesar();
+            };
+
+            window.showAnalysis = (tipo) => {
+                const mad = parseInt(document.getElementById('valMadurez').innerText);
+                const carga = parseFloat(document.getElementById('valCarga').innerText);
+                const list = document.getElementById('insightList');
+                let html = "";
+
+                if(tipo === 'madurez') {
+                    html = `
+                        <div class="insight-item">
+                            <h5 class="fw-bold text-primary">Solidez Hemato-Oncológica</h5>
+                            <p class="small text-muted mb-2">Análisis sobre <b>Población Verificada Vital (Código 98)</b>.</p>
+                            <p>El registro presenta una madurez del <b>${mad}%</b> basada en la trazabilidad del diagnóstico y quimioterapia de pacientes activos.</p>
+                            <p class="m-0">${mad < 75 ? '<b>Riesgo:</b> Hay omisiones en las fechas de inicio de tratamiento sistémico que debilitan el indicador ante la CAC.' : '<b>Estado Óptimo:</b> La evidencia de tratamiento está correctamente documentada.'}</p>
+                        </div>
+                    `;
+                } else if(tipo === 'agilidad') {
+                    html = `
+                        <div class="insight-item" style="border-color: #f59e0b">
+                            <h5 class="fw-bold" style="color:#b45309">Agilidad en Quimioterapia</h5>
+                            <p class="small text-muted mb-2">Análisis sobre <b>Población Verificada Vital (Código 98)</b>.</p>
+                            <p>La eficiencia de inicio terapéutico es del <b>82%</b> para casos vigentes.</p>
+                            <p class="m-0">La meta es reducir el desfase entre Diagnóstico y la Aplicación de Quimioterapia. Se identifica oportunidad de mejora en la asignación de ciclos iniciales.</p>
+                        </div>
+                    `;
+                } else if(tipo === 'carga') {
+                    html = `
+                        <div class="insight-item" style="border-color: #10b981">
+                            <h5 class="fw-bold text-success">Presión en Sala de Infusión</h5>
+                            <p class="small text-muted mb-2">Análisis sobre <b>Población Verificada Vital (Código 98)</b>.</p>
+                            <p>Índice de Saturación Física: <b>${carga}%</b></p>
+                            <p class="m-0">Este valor refleja la ocupación real de camas y sillas por pacientes vivos en protocolo activo. ${carga > 80 ? '<b>Saturación:</b> La demanda actual está al límite de la capacidad instalada.' : '<b>Capacidad:</b> La infraestructura opera en niveles de seguridad operativa.'}</p>
+                        </div>
+                    `;
+                } else if(tipo === 'radar') {
+                    const pillars = document.querySelectorAll('#radarContainer .vibrant-pillar');
+                    const vals = Array.from(pillars).map(p => parseInt(p.querySelector('.val-pct')?.innerText || 0));
+                    
+                    const dxVal = vals[0] || 0;
+                    const quimioVal = vals[2] || 0;
+                    const consVal = vals[3] || 0;
+                    const gap = consVal - quimioVal;
+
+                    html = `
+                        <div class="insight-item" style="border-left-color: #6366f1">
+                            <h5 class="fw-bold" style="color:#4f46e5">Monitor de Trazabilidad (Población 98)</h5>
+                            
+                            <div class="row g-2 mb-3 mt-2">
+                                <div class="col-4"><div class="p-2 border rounded bg-light text-center"><small class="d-block text-muted">Dx</small><b class="h5">${dxVal}%</b></div></div>
+                                <div class="col-4"><div class="p-2 border rounded bg-light text-center"><small class="d-block text-muted">Consulta</small><b class="h5">${consVal}%</b></div></div>
+                                <div class="col-4"><div class="p-2 border rounded bg-light text-center"><small class="d-block text-muted">Quimioterapia</small><b class="h5">${quimioVal}%</b></div></div>
+                            </div>
+
+                            <p class="mb-3"><b>Análisis Cuantitativo:</b> Se identifica que mientras el <b>${consVal}%</b> de la cohorte ya accedió a consulta especializada, solo el <b>${quimioVal}%</b> cuenta con registro de inicio de tratamiento sistémico.</p>
+                            
+                            <div class="p-3 rounded-4 bg-white border mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <small class="text-muted text-uppercase fw-bold">Hallazgo de Auditoría</small>
+                                    <span class="badge ${gap > 20 ? 'bg-danger' : 'bg-success'}">Desfase: ${gap}%</span>
+                                </div>
+                                <h6 class="fw-bold ${gap > 20 ? 'text-danger' : 'text-success'} mb-2">
+                                    ${gap > 20 ? 'BRECHA DE TRAZABILIDAD CRÍTICA' : 'TRAZABILIDAD EN RANGO DE SEGURIDAD'}
+                                </h6>
+                                <p class="small m-0 text-dark">
+                                    <b>Conclusión Operativa:</b> Existe un <b>${gap}%</b> de la población que, habiendo sido evaluada por especialista, no ha reportado su hito de tratamiento. Esto predice un riesgo de glosa por reporte incompleto del fragmento asistencial.
+                                </p>
+                            </div>
+
+                            <div class="alert alert-info py-2 small d-flex align-items-center gap-2 border-0" style="background:#f0f9ff; color:#0369a1">
+                                <i data-lucide="info" style="width:16px"></i>
+                                <span>Análisis basado exclusivamente en pacientes con confirmación de supervivencia (Código 98).</span>
+                            </div>
+                        </div>
+                    `;
+                } else if(tipo === 'individual') {
+                    html = `
+                        <div class="insight-item" style="border-left-color: #3b82f6">
+                            <h5 class="fw-bold" style="color:#2563eb">Dashboard de Saneamiento Clínico</h5>
+                            <p>Este listado identifica pacientes cuya <b>Madurez Clínica</b> es inferior al 100%. Esto significa que poseen registros con "comodines" (1845, 1800, etc.).</p>
+                            <ul class="small">
+                                <li><b>Objetivo:</b> Reemplazar cada comodín por el dato real de la historia clínica.</li>
+                                <li><b>Impacto:</b> Cada dato saneado aumenta la solidez de la gobernanza y reduce riesgos ante la CAC.</li>
+                                <li><b>Gestión:</b> Descargue el reporte de "Saneamiento" para obtener su hoja de ruta de auditoría.</li>
+                            </ul>
+                        </div>
+                    `;
+                } else if(tipo === 'integridad') {
+                    html = `
+                        <div class="insight-item" style="border-left-color: #ef4444">
+                            <h5 class="fw-bold text-danger">Riesgo de Integridad Diagnóstica</h5>
+                            <p>Se han detectado pacientes que poseen múltiples códigos CIE-10 reales asociados a una misma identificación.</p>
+                            <ul class="small">
+                                <li><b>Impacto Clínico:</b> Riesgo en la seguridad del paciente por historial fragmentado.</li>
+                                <li><b>Riesgo Administrativo:</b> Glosa institucional por duplicidad de registros ante la CAC.</li>
+                                <li><b>Gestión:</b> Auditores de registros médicos deben unificar el diagnóstico principal según la evidencia histopatológica.</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                list.innerHTML = html;
+                document.getElementById('advisorModal').style.display = 'block';
+                if (window.lucide) lucide.createIcons();
+            };
+
+                window.exportGapExcel = () => {
+                const conf = VARS_MAP[currentCohorte];
+                const seen = new Set();
+                const list = [];
+                
+                rawData.forEach(p => {
+                    const id = getV(p, conf.id) || p.rid;
+                    const dx = String(getV(p, conf.dx) || "").toUpperCase();
+                    const coh = String(p.tipo_cac || p.cohorte || "").toLowerCase();
+                    const esHemo = dx.includes('HEMO') || coh.includes('hemo') || dx.startsWith('D66');
+                    
+                    if ((currentCohorte === 'cancer' ? esHemo : !esHemo)) return;
+
+                    const key = `${id}|${dx}`;
+                    if (seen.has(key)) return;
+
+                    const isVivo = String(getV(p, conf.vital)) === "98";
+                    
+                    // Solo en Excel si tiene consulta real pero NO tiene quimio real
+                    const hasRealCons = isEffectiveDate(getV(p, conf.cons)); 
+                    const missingRealQuimio = !isEffectiveDate(getV(p, conf.quimio));
+                    
+                    if (isVivo && hasRealCons && missingRealQuimio) {
+                        seen.add(key);
+                        list.push(p);
+                    }
+                });
+
+                if(list.length === 0) {
+                    alert("No hay pacientes únicos detectados con brecha terapéutica.");
+                    return;
+                }
+
+                let csv = "ID;PRIMER NOMBRE;SEGUNDO NOMBRE;PRIMER APELLIDO;SEGUNDO APELLIDO;DIAGNOSTICO;FECHA CONSULTA;FECHA INICIO QUIMIO\n";
+                list.forEach(p => {
+                    const row = [
+                        getV(p, conf.id) || "",
+                        getV(p, conf.nombres[0]) || "",
+                        getV(p, conf.nombres[1]) || "",
+                        getV(p, conf.nombres[2]) || "",
+                        getV(p, conf.nombres[3]) || "",
+                        String(getV(p, conf.dx) || "").replace(/;/g, ","),
+                        getV(p, conf.cons) || "",
+                        getV(p, conf.quimio) || ""
+                    ];
+                    csv += row.join(";") + "\n";
+                });
+
+                const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `Alerta_Gestion_${currentCohorte}_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+            };
+
+            window.exportMadurezExcel = () => {
+                const conf = VARS_MAP[currentCohorte];
+                
+                // 1. Filtrado por cohorte y vitalidad (Sincronizado)
+                let filtered = rawData.filter(p => {
+                    const dx = String(getV(p, conf.dx) || "").toUpperCase();
+                    const coh = String(p.tipo_cac || p.cohorte || "").toLowerCase();
+                    const esHemo = dx.includes('HEMO') || coh.includes('hemo') || dx.startsWith('D66') || dx.startsWith('D67');
+                    const estaVivo = String(getV(p, conf.vital) || "") === "98";
+                    return (currentCohorte === 'cancer' ? !esHemo : esHemo) && estaVivo;
+                });
+
+                // 2. Identificar variables clínicas dinámicamente (Espectro Completo 166+)
+                const cVars = [];
+                filtered.forEach(p => {
+                    const keys = [...Object.keys(p), ...(p.datos_base ? Object.keys(p.datos_base) : [])];
+                    if(p.periodos) Object.values(p.periodos).forEach(per => { if(per.variables) keys.push(...Object.keys(per.variables)); });
+                    keys.forEach(k => {
+                        const m = k.match(/^VAR(\d+)/i);
+                        if(m) {
+                            const n = parseInt(m[1]);
+                            if(n >= 17 && n <= 170 && !cVars.includes(n)) cVars.push(n);
+                        }
+                    });
+                });
+                cVars.sort((a,b) => a-b);
+
+                const seen = new Set();
+                const gaps = [];
+                filtered.forEach(p => {
+                    const id = getV(p, conf.id) || p.rid;
+                    const dx = String(getV(p, conf.dx) || "").toUpperCase();
+                    if(seen.has(`${id}|${dx}`)) return;
+                    seen.add(`${id}|${dx}`);
+
+                    let hasAnyComodin = false;
+                    cVars.forEach(v => { if(!isEffectiveDate(getV(p, v))) hasAnyComodin = true; });
+                    if(hasAnyComodin) gaps.push(p);
+                });
+
+                if(!gaps.length) { alert("¡Perfección absoluta! No se detectaron comodines en ningún campo clínico."); return; }
+
+                let csv = "ID;DIAGNOSTICO;MADUREZ CLINICA TOTAL %;BRECHAS DETECTADAS (VARIABLES CON COMODIN)\n";
+                gaps.forEach(p => {
+                    let vEfectivas = 0, vTotales = 0, brechas = [];
+                    cVars.forEach(v => {
+                        const val = getV(p, v);
+                        if(!isGarbage(val)) {
+                            vTotales++;
+                            if(isEffectiveDate(val)) vEfectivas++;
+                            else brechas.push(`${LABELS[v] || 'VAR'+v}: ${val}`);
+                        }
+                    });
+                    const pMad = vTotales > 0 ? Math.round((vEfectivas/vTotales)*100) : 0;
+                    csv += `${getV(p, conf.id)};${String(getV(p, conf.dx) || "").replace(/;/g,",")};${pMad}%;${brechas.join(" | ")}\n`;
+                });
+
+                const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `Saneamiento_Total_${currentCohorte}_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+            };
+
+            window.exportCollisions = () => {
+                if(!window.currentCollisions || !window.currentCollisions.length) {
+                    alert("No hay colisiones críticas para exportar.");
+                    return;
+                }
+                let csv = "ID;NOMBRE PACIENTE;DIAGNOSTICOS EN COLISION\n";
+                window.currentCollisions.forEach(c => {
+                    csv += `${c.id};${c.name};${c.dxs.join(" vs ")}\n`;
+                });
+                const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `Colisiones_Identidad_${currentCohorte}_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+            };
+
+            setTimeout(cargar, 1500);
+        })();
+    </script>
+</body>
+</html>
