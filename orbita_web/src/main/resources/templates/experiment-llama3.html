@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="layout :: header('Auditoría SISCAD')">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Auditoría SISCAD — Orbita Clínica</title>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <aside th:replace="layout :: sidebar"></aside>
+
+        <div class="content-wrapper">
+            <nav th:replace="layout :: navbar('Auditoría SISCAD')"></nav>
+
+            <style>
+                .hover-bg:hover {
+                    background: #f8fafc;
+                    transition: 0.2s;
+                }
+
+                #workListItems::-webkit-scrollbar {
+                    width: 5px;
+                }
+
+                #workListItems::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+            </style>
+
+            <main class="page-body" style="padding: 2.5rem; background-color: #f3f6f9; flex: 1; overflow-y: auto;">
+
+                <div class="container-fluid">
+                    <div class="d-flex align-items-center justify-content-between mb-5">
+                        <div class="d-flex align-items-center gap-4">
+                            <div
+                                style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 18px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4); display: flex;">
+                                <i data-lucide="shield-check" style="width: 32px; height: 32px;"></i>
+                            </div>
+                            <div>
+                                <h1 class="h2 mb-1" style="font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">
+                                    Auditoría Forense SISCAD</h1>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-primary-soft text-primary"
+                                        style="font-size: 0.76rem; font-weight: 800; background: rgba(59, 130, 246, 0.1); padding: 8px 16px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em;">Resolución
+                                        0247</span>
+                                    <span class="text-muted" style="font-size: 0.85rem; font-weight: 500;">IA Llama 3.3
+                                        Turbo v8.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-5">
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm p-4"
+                                style="border-radius: 24px; border-left: 6px solid #3b82f6 !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-uppercase text-muted mb-1"
+                                            style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;">
+                                            Variables Revisadas</p>
+                                        <h2 id="stat-vars" class="mb-0" style="font-weight: 900; color: #1e293b;">--
+                                        </h2>
+                                    </div>
+                                    <div
+                                        style="background: #eff6ff; padding: 10px; border-radius: 12px; color: #3b82f6;">
+                                        <i data-lucide="list-checks"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm p-4"
+                                style="border-radius: 24px; border-left: 6px solid #10b981 !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-uppercase text-muted mb-1"
+                                            style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;">
+                                            Precisión Técnica</p>
+                                        <h2 id="stat-precision" class="mb-0" style="font-weight: 900; color: #1e293b;">
+                                            --</h2>
+                                    </div>
+                                    <div
+                                        style="background: #f0fdf4; padding: 10px; border-radius: 12px; color: #10b981;">
+                                        <i data-lucide="target"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm p-4"
+                                style="border-radius: 24px; border-left: 6px solid #f59e0b !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-uppercase text-muted mb-1"
+                                            style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;">Reglas
+                                            Maestras</p>
+                                        <h2 class="mb-0" style="font-weight: 900; color: #1e293b;">10</h2>
+                                    </div>
+                                    <div
+                                        style="background: #fffbeb; padding: 10px; border-radius: 12px; color: #f59e0b;">
+                                        <i data-lucide="book-open"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm p-4"
+                                style="border-radius: 24px; border-left: 6px solid #64748b !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-uppercase text-muted mb-1"
+                                            style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;">
+                                            EVALUACIÓN RIESGO</p>
+                                        <h2 id="stat-risk" class="mb-0"
+                                            style="font-weight: 900; color: #1e293b; font-size: 1.2rem;">SIN EVALUAR
+                                        </h2>
+                                    </div>
+                                    <div
+                                        style="background: #f8fafc; padding: 10px; border-radius: 12px; color: #64748b;">
+                                        <i data-lucide="search"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <div class="card border-0 shadow-sm mb-4"
+                                style="border-radius: 30px; background: white; overflow: hidden;">
+                                <div class="card-body p-4 text-center">
+                                    <div id="workListContainer"
+                                        style="display: none; text-align: left; margin-bottom: 2rem;">
+                                        <h6 class="text-uppercase text-primary mb-3 small fw-bold">Lista de Trabajo</h6>
+                                        <div id="workListItems"
+                                            style="max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid #f1f5f9;">
+                                        </div>
+                                    </div>
+
+                                    <div id="manualSearchSection">
+                                        <div class="input-group mb-4 shadow-sm"
+                                            style="border-radius: 15px; overflow: hidden;">
+                                            <input type="text" id="patientId" class="form-control border-0 bg-light p-3"
+                                                placeholder="ID Paciente">
+                                            <button class="btn btn-dark px-4 border-0" id="btnFetch"><i
+                                                    data-lucide="search"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <button class="btn btn-outline-primary w-100 py-3 mb-3" data-bs-toggle="modal"
+                                        data-bs-target="#dataModal" style="border-radius: 15px; border-style: dashed;">
+                                        VER FICHA TÉCNICA
+                                    </button>
+
+                                    <div class="mt-4 pt-4 border-top">
+                                        <input type="file" id="siscacExcel" accept=".xlsx, .xls" style="display: none;">
+                                        <button class="btn btn-dark w-100 py-3"
+                                            onclick="document.getElementById('siscacExcel').click()"
+                                            style="border-radius: 15px;">
+                                            CARGAR EXCEL ERRORES
+                                        </button>
+                                        <div id="excelStatus" class="mt-2 small text-muted">No hay reporte.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-8">
+                            <div class="card border-0 shadow-sm d-flex flex-column"
+                                style="border-radius: 30px; min-height: 720px; background: white;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <h6 class="m-0 fw-bold text-muted text-uppercase small">Auditoría e Interacción</h6>
+                                    
+                                    <!-- 🔑 Panel Master Admin para Provisión de IA -->
+                                    <div id="masterAIPanel" style="display:none;" class="d-flex gap-2 align-items-center p-2 rounded-3 bg-light border shadow-sm">
+                                        <input type="password" id="masterKeyInput" class="form-control form-control-sm" placeholder="Nueva llave Groq..." style="width:180px; font-size:11px;">
+                                        <button class="btn btn-danger btn-sm" onclick="subirLlaveANube()" title="Subir a Firestore">☁️ Sincronizar</button>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary btn-lg shadow-sm px-5 py-3" id="btnAudit"
+                                    style="border-radius: 18px; font-weight: 800; background: linear-gradient(135deg, #1e3a8a, #3b82f6); border:none;">
+                                    AUDITAR
+                                </button>
+                                <div class="card-body p-4" style="overflow-y: auto; max-height: 500px;">
+                                    <div id="loader" style="display:none; text-align:center; padding-top:150px;">
+                                        <div class="spinner-grow text-primary"></div>
+                                        <h4 class="mt-4 fw-bold">Analizando...</h4>
+                                    </div>
+                                    <div id="resultsArea">
+                                        <div class="text-center" style="padding-top: 150px; opacity: 0.15;">
+                                            <i data-lucide="message-square" style="width: 100px; height: 100px;"></i>
+                                            <h3>Asistente de Auditoría</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer border-0 bg-light p-4" style="border-radius: 0 0 30px 30px;">
+                                    <div class="d-flex gap-2">
+                                        <input type="text" id="chatInput" class="form-control border-0 p-3 shadow-sm"
+                                            placeholder="Pregunta algo..." style="border-radius: 15px;">
+                                        <button class="btn btn-dark p-3 shadow-sm" id="btnChat"
+                                            style="border-radius: 15px;"><i data-lucide="send"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="dataModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+                            <div class="modal-header border-0 p-4">
+                                <h5 class="modal-title fw-bold">Ficha de Datos</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4" id="dataView" style="max-height: 60vh; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" id="groqKey" value="">
+            </main>
+
+            <footer th:replace="~{layout :: footer}"></footer>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div th:replace="~{layout :: scripts}"></div>
+
+    <script>
+        // MOTOR DE AUDITORÍA SIN INTERFERENCIAS
+        let db, collection, query, where, getDocs;
+
+        (async function init() {
+            // Sincronización con el motor nativo de Orbita
+            let attempts = 0;
+            while ((!window.firebaseInstance || !window.firebaseFirestore) && attempts < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                attempts++;
+            }
+            if (!window.firebaseInstance) return;
+
+            db = window.firebaseInstance.db;
+            const fs = window.firebaseFirestore;
+            collection = fs.collection;
+            query = fs.query;
+            where = fs.where;
+            getDocs = fs.getDocs;
+            const doc = fs.doc;
+            const getDoc = fs.getDoc;
+
+            console.log("✅ Auditoría conectada satisfactoriamente");
+
+            // 🔑 LÓGICA DE PROVISIÓN MASTER ADMIN
+            window.subirLlaveANube = async () => {
+                const llave = document.getElementById("masterKeyInput").value.trim();
+                if (!llave) { alert("⚠️ Por favor pega una llave válida."); return; }
+                
+                try {
+                    const { doc, setDoc } = window.firebaseFirestore;
+                    await setDoc(doc(db, "config", "ia_params"), {
+                        groq_key: llave,
+                        actualizado_el: new Date().toISOString(),
+                        responsable: "Master Admin"
+                    });
+                    alert("✅ LLAVE SINCRONIZADA CON ÉXITO EN LA NUBE.\n\nYa puedes borrarla del código y subir a Git tranquilamente.");
+                    location.reload(); // Recargar para activar
+                } catch (e) {
+                    console.error(e);
+                    alert("❌ Error al guardar en Firebase. Verifica tus permisos.");
+                }
+            };
+
+            // ☁️ CARGA DE LLAVE DESDE LA NUBE (SEGURIDAD TOTAL GIT)
+            try {
+                const docRef = doc(db, "config", "ia_params");
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const key = docSnap.data().groq_key;
+                    document.getElementById("groqKey").value = key;
+                    console.log("🔑 Credencial de IA cargada desde la nube.");
+                } else {
+                    console.warn("⚠️ No se encontró la configuración de IA en la base de datos.");
+                }
+            } catch (e) {
+                console.error("❌ Error recuperando llave de la nube:", e);
+            }
+
+            // 🕵️ DETECTOR DE ROL PARA PANEL MASTER
+            const checkMasterPrivileges = () => {
+                const u = window.orbitaUser || window.OrbitaContext;
+                if (!u) return;
+                const rol = (u.rol || u.role || "").toLowerCase();
+                if (rol.includes("master") || rol.includes("super")) {
+                    const p = document.getElementById("masterAIPanel");
+                    if (p) p.style.display = "flex";
+                }
+            };
+            
+            checkMasterPrivileges(); // Intento inicial
+            window.addEventListener('user-ready', checkMasterPrivileges); // Escucha de evento
+        })();
+
+        let currentPatient = null;
+        let siscacErrorsMap = {};
+        let siscacMasterMap = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try { lucide.createIcons(); } catch (e) { }
+        });
+
+        document.getElementById('siscacExcel').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetMaestro = workbook.Sheets["Maestro_Errores"];
+                    if (sheetMaestro) {
+                        const jsonMaestro = XLSX.utils.sheet_to_json(sheetMaestro);
+                        jsonMaestro.forEach(row => {
+                            const code = row["Error"] || row["Error "];
+                            const desc = row["Descripcion"] || row["Descripción"];
+                            if (code && desc) siscacMasterMap[code.toString().trim()] = desc;
+                        });
+                    }
+                    const sheetLista = workbook.Sheets["Lista_Errores"];
+                    if (sheetLista) {
+                        const jsonLista = XLSX.utils.sheet_to_json(sheetLista);
+                        siscacErrorsMap = {};
+                        jsonLista.forEach(row => {
+                            const id = row["Identificacion"] || row["Identificación"];
+                            const err = row["Id Error"] || row["Id_Error"];
+                            if (id && err) {
+                                const cleanId = id.toString().trim();
+                                if (!siscacErrorsMap[cleanId]) siscacErrorsMap[cleanId] = [];
+                                siscacErrorsMap[cleanId].push(err.toString().trim());
+                            }
+                        });
+                    }
+                    document.getElementById('excelStatus').innerHTML = `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-success fw-bold">Reporte Cargado</span>
+                            <button id="btnSyncCloud" class="btn btn-sm btn-primary" style="font-size:0.6rem; padding: 2px 8px; border-radius:8px;">
+                                <i data-lucide="cloud-upload" style="width:12px;"></i> SINCRONIZAR NUBE
+                            </button>
+                        </div>`;
+
+                    document.getElementById('btnSyncCloud').onclick = syncToCloud;
+                    renderWorkList();
+                } catch (err) { console.error(err); }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        async function syncToCloud() {
+            const btn = document.getElementById('btnSyncCloud');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
+
+            let count = 0;
+            const ids = Object.keys(siscacErrorsMap);
+
+            for (const id of ids) {
+                try {
+                    const q = query(collection(db, "pacientes_cac"), where("identificacion", "==", id));
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        const docRef = snap.docs[0].ref;
+                        const errorCodes = siscacErrorsMap[id];
+                        const fullErrors = errorCodes.map(code => ({
+                            code,
+                            desc: siscacMasterMap[code] || 'Error Desconocido'
+                        }));
+
+                        // Capturar la última solución de la IA si el paciente es el actual
+                        let iaSolution = "";
+                        if (id === document.getElementById('patientId').value.trim()) {
+                            iaSolution = document.getElementById('resultsArea').innerHTML;
+                        }
+
+                        // ACTUALIZAR BASE DE DATOS
+                        await updateDoc(docRef, {
+                            audit_siscac: {
+                                hasErrors: true,
+                                errors: fullErrors,
+                                ia_solution: iaSolution,
+                                updatedAt: new Date()
+                            }
+                        });
+                        count++;
+                    }
+                } catch (e) { console.error(`Error sincronizando ${id}:`, e); }
+            }
+
+            btn.innerHTML = `<i data-lucide="check" style="width:12px;"></i> ${count} SINCRONIZADOS`;
+            btn.classList.replace('btn-primary', 'btn-success');
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.classList.replace('btn-success', 'btn-primary');
+                btn.disabled = false;
+                lucide.createIcons();
+            }, 3000);
+            lucide.createIcons();
+        }
+
+        function renderWorkList() {
+            const list = document.getElementById('workListItems');
+            document.getElementById('workListContainer').style.display = 'block';
+            document.getElementById('manualSearchSection').style.display = 'none';
+            list.innerHTML = Object.entries(siscacErrorsMap).map(([id, errors]) => `
+                <div class="d-flex align-items-center justify-content-between p-3 border-bottom hover-bg" style="cursor:pointer;" onclick="loadAndAudit('${id}')">
+                    <div><div class="fw-bold">${id}</div><div class="text-danger small">${errors.length} errores</div></div>
+                    <button class="btn btn-sm btn-outline-primary">CORREGIR</button>
+                </div>
+            `).join('');
+        }
+
+        window.loadAndAudit = async function (id) {
+            const area = document.getElementById('resultsArea');
+            area.innerHTML = `<div class="text-center py-5"><h5>Buscando ${id}...</h5></div>`;
+            document.getElementById('patientId').value = id;
+            if (await fetchPatientData(id)) {
+                setTimeout(() => { document.getElementById('btnAudit').click(); }, 500);
+            }
+        };
+
+        async function fetchPatientData(id) {
+            try {
+                // USAMOS LOS GLOBALES DE FIREBASE QUE YA TIENE LA APP
+                // firebase, db son globales en Orbita
+                const q = query(collection(db, "pacientes_cac"), where("identificacion", "==", id));
+                const snap = await getDocs(q);
+                if (snap.empty) return false;
+
+                const rawData = snap.docs[0].data();
+                const vars = {};
+                function extraer(obj) {
+                    if (!obj || typeof obj !== 'object') return;
+                    Object.entries(obj).forEach(([k, v]) => {
+                        if (k.startsWith('VAR')) vars[k] = v;
+                        else if (typeof v === 'object') extraer(v);
+                    });
+                }
+                extraer(rawData);
+                currentPatient = vars;
+                document.getElementById('stat-vars').innerText = Object.keys(vars).length;
+                renderData(vars);
+                return true;
+            } catch (e) {
+                console.error(e);
+                document.getElementById('resultsArea').innerHTML = `<div class="alert alert-danger">Error Permisos: ${e.message}</div>`;
+                return false;
+            }
+        }
+
+        document.getElementById('btnFetch').addEventListener('click', () => {
+            const id = document.getElementById('patientId').value.trim();
+            if (id) fetchPatientData(id);
+        });
+
+        function renderData(data) {
+            document.getElementById('dataView').innerHTML = Object.entries(data)
+                .sort((a, b) => (parseInt(a[0].replace('VAR', '')) || 0) - (parseInt(b[0].replace('VAR', '')) || 0))
+                .map(([k, v]) => `<div class="d-flex justify-content-between py-1 border-bottom small"><b>${k}</b> <span>${v}</span></div>`).join('');
+        }
+
+        document.getElementById('btnAudit').addEventListener('click', async () => {
+            if (!currentPatient) return;
+            const loader = document.getElementById('loader');
+            const area = document.getElementById('resultsArea');
+            const patientId = document.getElementById('patientId').value.trim();
+            loader.style.display = 'block';
+            area.innerHTML = '';
+
+            const errors = siscacErrorsMap[patientId] || [];
+            let ctx = { ID: patientId };
+            const errorText = errors.map(e => {
+                const desc = siscacMasterMap[e] || '';
+                (desc.match(/V\d+/g) || []).forEach(v => {
+                    const key = Object.keys(currentPatient).find(k => k.replace('VAR', 'V') === v);
+                    if (key) ctx[v] = currentPatient[key];
+                });
+                return `[Error ${e}]: ${desc}`;
+            }).join('\n');
+
+            try {
+                const prompt = `AUDITOR. DATOS: ${JSON.stringify(ctx)}. ERRORES: ${errorText}. SOLUCIÓN BREVE. FORMATO HTML.`;
+                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${document.getElementById('groqKey').value}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: prompt }], temperature: 0 })
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 429) throw new Error("Límite de la IA alcanzado. Por favor espera 60 segundos antes de reintentar.");
+                    throw new Error("Servidor de IA saturado (Error " + resp.status + ")");
+                }
+
+                const d = await resp.json();
+                if (d.choices && d.choices.length > 0) {
+                    const res = d.choices[0].message.content;
+                    area.innerHTML = res;
+
+                    // Lógica de indicadores corregida (basada en texto natural)
+                    const strictPattern = /^\d+\.\s+Error/gm;
+                    const strictMatches = res.match(strictPattern) || [];
+                    const matches = res.match(/\bError\s+[A-Z]?\d+/g) || [];
+                    const findingCount = strictMatches.length > 0 ? strictMatches.length : Math.ceil(matches.length / 2);
+
+                    const riskEl = document.getElementById('stat-risk');
+                    const precisionEl = document.getElementById('stat-precision');
+
+                    if (findingCount === 0) {
+                        precisionEl.innerText = '100%';
+                        riskEl.innerText = 'IMPECABLE';
+                        riskEl.style.color = '#10b981';
+                    } else {
+                        const precision = Math.max(0, 100 - (findingCount * 6.5)).toFixed(1);
+                        precisionEl.innerText = precision + '%';
+
+                        if (findingCount <= 2) { riskEl.innerText = 'CALIDAD ALTA'; riskEl.style.color = '#3b82f6'; }
+                        else if (findingCount <= 5) { riskEl.innerText = 'CALIDAD MEDIA'; riskEl.style.color = '#f59e0b'; }
+                        else { riskEl.innerText = 'CALIDAD CRÍTICA'; riskEl.style.color = '#ef4444'; }
+                    }
+                }
+            } catch (e) {
+                area.innerHTML = `<div class="alert alert-warning m-3 border-0 shadow-sm" style="border-radius:15px;">
+                    <h6 class="fw-bold mb-1">Aviso de Saturación</h6>
+                    <p class="m-0 small">${e.message}</p>
+                </div>`;
+            } finally {
+                loader.style.display = 'none';
+                try { lucide.createIcons(); } catch (err) { }
+            }
+        });
+
+        // RECONEXIÓN DEL CHAT DE CONSULTA (VERSION INFALIBLE)
+        document.getElementById('btnChat').addEventListener('click', async () => {
+            const btn = document.getElementById('btnChat');
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            const area = document.getElementById('resultsArea');
+            const apiKey = document.getElementById('groqKey').value.trim();
+
+            if (!question) return;
+
+            if (!apiKey) {
+                area.innerHTML += `<div class="alert alert-warning p-2 small m-3">⚠️ <b>Falta API Key:</b> Ingresa tu llave de Groq en la parte superior para hablar con la IA.</div>`;
+                return;
+            }
+
+            // Bloquear botón y limpiar entrada
+            btn.disabled = true;
+            const originalBtn = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            // Burbuja del analista
+            area.innerHTML += `
+                <div class="d-flex justify-content-end mb-3 mt-4">
+                    <div class="p-3 shadow-sm bg-light" style="border-radius:15px; max-width:80%; font-size:0.9rem; border-right: 4px solid #1e293b;">
+                        <b class="text-primary small">Analista:</b><br>${question}
+                    </div>
+                </div>
+            `;
+
+            const tempId = 'ai-loading-' + Date.now();
+            area.innerHTML += `
+                <div class="d-flex justify-content-start mb-3" id="${tempId}">
+                    <div class="p-3 shadow-sm border bg-white text-muted italic" style="border-radius:15px; font-size:0.8rem;">
+                        <div class="spinner-border spinner-border-sm me-2"></div> Orbita está procesando tu consulta...
+                    </div>
+                </div>
+            `;
+
+            input.value = '';
+            area.parentElement.scrollTop = area.parentElement.scrollHeight;
+
+            try {
+                // Preparar contexto del paciente (si existe)
+                let contextText = "No hay paciente seleccionado aún.";
+                if (window.currentPatient) {
+                    const cleanData = {};
+                    const keys = ['identificacion', 'nombreCompleto', 'cohorte', 'dx_descripcion'];
+                    keys.forEach(k => { if (window.currentPatient[k]) cleanData[k] = window.currentPatient[k]; });
+                    contextText = JSON.stringify(cleanData);
+                }
+
+                const prompt = `CONVERSACIÓN TÉCNICA AUDITORÍA. Contexto Paciente: ${contextText}. Pregunta Analista: ${question}`;
+                console.log("PROMPT ENVIADO A GROQ:", prompt);
+
+                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{ role: "user", content: prompt }],
+                        temperature: 0.7,
+                        max_tokens: 1024
+                    })
+                });
+
+                if (!resp.ok) {
+                    const errorDetails = await resp.json();
+                    throw new Error(errorDetails.error?.message || `Error HTTP ${resp.status}`);
+                }
+
+                const d = await resp.json();
+                document.getElementById(tempId)?.remove();
+
+                if (d.choices && d.choices.length > 0) {
+                    area.innerHTML += `
+                        <div class="d-flex justify-content-start mb-3">
+                            <div class="p-3 shadow-sm border bg-white" style="border-radius:15px; max-width:85%; font-size:0.9rem; border-left: 4px solid #6366f1; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1) !important;">
+                                <b class="text-indigo-600 small">Respuesta IA:</b><br>${d.choices[0].message.content.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                document.getElementById(tempId)?.remove();
+                area.innerHTML += `<div class="alert alert-danger p-2 small m-3">⛔ <b>Error de Comunicación:</b> ${e.message}<br><small>Verifica tu conexión o la validez de la API Key.</small></div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtn;
+                area.parentElement.scrollTop = area.parentElement.scrollHeight;
+            }
+        });
+
+        // Soporte para tecla Enter en el chat
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('btnChat').click();
+        });
+    </script>
+</body>
+
+</html>

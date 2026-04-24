@@ -116,4 +116,9 @@ public class PageController {
         return "dashboard-citas-cx-imx";
     }
 
+    @GetMapping("/experiment-llama3")
+    public String experimentLlama3() {
+        return "experiment-llama3";
+    }
+
 }

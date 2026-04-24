@@ -23,7 +23,7 @@
         // =========================================================
         window.norm = (s) => String(s ?? "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-        window.esPacienteIncidente = function(p) {
+        window.esPacienteIncidente = function (p) {
                 if (!p) return true;
                 const isRealValue = (v) => {
                         if (v === null || v === undefined) return false;
@@ -38,7 +38,7 @@
                 for (const k of combinedKeys) {
                         if (isKeyClinica(k)) {
                                 const val = p[k] ?? base[k];
-                                if (isRealValue(val)) return false; 
+                                if (isRealValue(val)) return false;
                         }
                 }
                 if (p.periodos) {
@@ -51,7 +51,7 @@
                                 }
                         }
                 }
-                return true; 
+                return true;
         };
 
         // 🎨 SISTEMA DE ESTILOS PREMIUM PARA AYUDAS Y TOOLTIPS
@@ -347,7 +347,7 @@
 
         function iniciarRefreshLocks() {
                 if (lockState.refreshTimer) clearInterval(lockState.refreshTimer);
-                
+
                 // ⚡ Refrescar inmediatamente al iniciar
                 refrescarLocksVisuales().catch(() => { });
 
@@ -894,6 +894,7 @@
         const DATE_KEYS_CANCER = new Set([
                 "VAR7_FechaNacimiento",
                 "VAR16_FechaAfiliacionEPSRegistra",
+                "VAR16_FechaAiliacionEPSRegistra",
                 "VAR18_FechaDx",
                 "VAR19_FechaNotaRemisionMedico",
                 "VAR20_FechaIngresoInstitucionRealizo",
@@ -3545,15 +3546,26 @@
 
         // --- FUNCIÓN PARA DEVOLVER A PENDIENTES (CORREGIDA) ---
         window.cerrarModal = async () => {
-                // 🔥 GUARDADO AUTOMÁTICO AL CERRAR: Sincronizar tiempo e inactividad
-                if (currentPacienteId && !window.__modalReadOnly) {
+                // 🛑 BLOQUEO ANTI-TRAMPA PARA ANALISTAS
+                const rolActualStr = String(window.__userRol || '').toLowerCase();
+                const esAnalistaUser = rolActualStr.includes('analista');
+                const tSesionCheck = window.startTime ? Math.max(0, Math.floor((Date.now() - window.startTime) / 1000)) : 0;
+
+                if (esAnalistaUser && !window.__modalReadOnly && tSesionCheck > 30) {
+                    const minG = (tSesionCheck / 60).toFixed(1);
+                    const confirmSalida = confirm(`⚠️ ADVERTENCIA DE PRODUCTIVIDAD\n\nHas gestionado esta ficha por ${minG} minutos.\n\nSi sales ahora sin pulsar el botón "VALIDAR Y FINALIZAR", todo este tiempo se contará como INACTIVIDAD en tu reporte de hoy.\n\n¿Estás segura de que deseas salir y perder tu tiempo de gestión?`);
+                    if (!confirmSalida) return;
+                }
+
+                // 🔥 GUARDADO AUTOMÁTICO AL CERRAR: Sincronizar tiempo e inactividad (SOLO ANALISTAS)
+                if (currentPacienteId && !window.__modalReadOnly && esAnalistaUser) {
                         try {
                                 const idDoc = currentPacienteId;
                                 const dataActual = currentPacienteData;
                                 const pPeriodo = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
-                                
-                                const tiempoSesionRelativo = window.startTime 
-                                        ? Math.max(0, Math.floor((Date.now() - window.startTime) / 1000)) 
+
+                                const tiempoSesionRelativo = window.startTime
+                                        ? Math.max(0, Math.floor((Date.now() - window.startTime) / 1000))
                                         : 0;
 
                                 const tAnt = Number(dataActual?.periodos?.[pPeriodo]?.tiempo_segundos || 0);
@@ -3563,7 +3575,8 @@
                                         const docRef = doc(db, "pacientes_cac", idDoc);
                                         await updateDoc(docRef, {
                                                 [`periodos.${pPeriodo}.tiempo_segundos`]: tAnt + Math.max(0, tiempoSesionRelativo - window.__idleSeconds),
-                                                [`periodos.${pPeriodo}.inactividad_segundos`]: iAnt + window.__idleSeconds
+                                                [`periodos.${pPeriodo}.inactividad_segundos`]: iAnt + window.__idleSeconds,
+                                                [`periodos.${pPeriodo}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: Number(dataActual?.periodos?.[pPeriodo]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + window.__idleSeconds
                                         });
                                         console.log("💾 [AUDITORÍA] Progreso guardado automáticamente.");
                                 }
@@ -4420,37 +4433,42 @@
                                 if (ahora > limiteInicio) {
                                         const segundosRetraso = Math.floor((ahora - limiteInicio) / 1000);
                                         window.__idleSeconds = (window.__idleSeconds || 0) + segundosRetraso;
-                                        
+
                                         // Guardado inmediato del retraso...
                                         (async () => {
                                                 try {
                                                         const pPeriodo = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
                                                         const docRef = doc(db, "pacientes_cac", idDoc);
                                                         const inactAnterior = Number(data.periodos?.[pPeriodo]?.inactividad_segundos || 0);
-                                                        await updateDoc(docRef, { [`periodos.${pPeriodo}.inactividad_segundos`]: inactAnterior + segundosRetraso });
+                                                        const hoyIda = getLocalYYYYMMDD(new Date());
+                                                        const inactDiaAnt = Number(data.periodos?.[pPeriodo]?.inactividad_diaria?.[hoyIda] || 0);
+                                                        await updateDoc(docRef, { 
+                                                            [`periodos.${pPeriodo}.inactividad_segundos`]: inactAnterior + segundosRetraso,
+                                                            [`periodos.${pPeriodo}.inactividad_diaria.${hoyIda}`]: inactDiaAnt + segundosRetraso
+                                                        });
                                                 } catch (e) { }
                                         })();
                                 }
                                 localStorage.setItem('__lastFichaOpenDay', hoyStr);
-                        } 
+                        }
                         // 2. LÓGICA DE RASTREADOR DE HUECOS (ELIMINAR TRAMPA)
                         else if (ultimaMarcaCierre) {
                                 const msCierre = parseInt(ultimaMarcaCierre);
                                 const diffMs = Date.now() - msCierre;
-                                
+
                                 if (diffMs > 5000) { // Ignorar huecos menores a 5 segundos (doble clic o errores)
                                         let segundosHueco = Math.floor(diffMs / 1000);
-                                        
+
                                         // 🥪 Ajuste de Almuerzo (Ignorar hueco entre 12 y 1pm si es muy largo)
                                         const h12 = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 12, 0, 0).getTime();
                                         const h13 = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 13, 0, 0).getTime();
-                                        
+
                                         if (msCierre < h12 && Date.now() > h13) {
                                                 segundosHueco = Math.max(0, segundosHueco - 3600); // Restar 1 hora de almuerzo
                                         }
 
                                         window.__idleSeconds = (window.__idleSeconds || 0) + segundosHueco;
-                                        console.warn(`🕵️ [AUDITORÍA] Detectado hueco de ${Math.floor(segundosHueco/60)} min entre fichas. Sumado a inactividad.`);
+                                        console.warn(`🕵️ [AUDITORÍA] Detectado hueco de ${Math.floor(segundosHueco / 60)} min entre fichas. Sumado a inactividad.`);
                                 }
                         }
                         // Limpiar marca de cierre porque ya estamos dentro de una ficha
@@ -4462,6 +4480,36 @@
                 const container = document.getElementById("formVariables");
                 if (!container) return;
                 container.innerHTML = "";
+
+                // 🔥 PANEL DE AUDITORÍA PERSISTENTE (SOLUCIÓN IA)
+                if (data.audit_siscac?.hasErrors) {
+                    const auditContent = data.audit_siscac.ia_solution || 
+                        `<div class="text-muted small">No hay solución IA detallada, pero se reportan los siguientes códigos: ${data.audit_siscac.errors.map(e => e.code).join(', ')}</div>`;
+
+                    const auditPanel = `
+                        <div id="persistentAuditPanel" class="col-12 mb-4" style="grid-column: 1 / -1;">
+                            <div style="background: #fffbeb; border: 2px solid #f59e0b; border-radius: 1.5rem; padding: 25px; box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.1);">
+                                <div class="d-flex align-items-center gap-3 mb-3 border-bottom pb-3" style="border-color: #fef3c7 !important;">
+                                    <div style="background: #f59e0b; color: white; padding: 10px; border-radius: 14px; display: flex;">
+                                        <i data-lucide="shield-alert" style="width:24px; height:24px;"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 fw-bold" style="color: #92400e; font-size: 1.1rem;">Hallazgos de Auditoría IA</h5>
+                                        <div class="text-muted small fw-bold text-uppercase" style="letter-spacing:0.05em; font-size:10px;">Resolución 0247 — Análisis Forense</div>
+                                    </div>
+                                </div>
+                                <div class="audit-body-content" style="color: #451a03; line-height: 1.6; font-size: 0.95rem;">
+                                    ${auditContent}
+                                </div>
+                                <div class="mt-3 pt-3 border-top text-end" style="border-color: #fef3c7 !important;">
+                                    <small class="text-muted italic" style="font-size: 11px;">Sincronizado: ${new Date(data.audit_siscac.updatedAt?.seconds * 1000 || Date.now()).toLocaleString()}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('afterbegin', auditPanel);
+                    if (window.lucide) setTimeout(() => window.lucide.createIcons(), 100);
+                }
 
                 const normCoh = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const isCancer = (normCoh(cohorteModalActual) === "cancer");
@@ -4655,10 +4703,21 @@
                         }
 
                         // Inputs de Texto / Fechas
+                        let displayVal = (val || "").toString().trim();
+                        if (esFecha && displayVal && !/^\d{4}-\d{2}-\d{2}$/.test(displayVal)) {
+                                // Intento de conversión si viene feo de Firebase
+                                try {
+                                        const d = new Date(displayVal);
+                                        if (!isNaN(d.getTime())) {
+                                                displayVal = d.toISOString().split('T')[0];
+                                        }
+                                } catch (e) { }
+                        }
+
                         container.innerHTML += `
             <div class="form-group">
                 <label>${labelHTML}</label>
-                <input type="text" inputmode="${esFecha ? 'numeric' : 'text'}" id="f_${esc(keyStore)}" class="${esFecha ? 'date-iso' : ''}" value="${esc(val || '')}" oninput="window.controlarFlujoYLimpieza('${esc(keyStore)}');" placeholder="${esFecha ? 'AAAA-MM-DD' : 'Obligatorio'}" ${readOnly ? "disabled" : ""} ${attrVolatil}>
+                <input type="text" inputmode="${esFecha ? 'numeric' : 'text'}" id="f_${esc(keyStore)}" class="${esFecha ? 'date-iso' : ''}" value="${esc(displayVal)}" oninput="window.controlarFlujoYLimpieza('${esc(keyStore)}');" placeholder="${esFecha ? 'AAAA-MM-DD' : 'Obligatorio'}" ${readOnly ? "disabled" : ""} ${attrVolatil}>
             </div>`;
                 }
 
@@ -5158,7 +5217,9 @@
 
                                 // Señal de No Cohorte (Analista)
                                 // La señal de No Cohorte ya fue calculada arriba para estilizar la fila
-                                const signalNoCohorte = esNoCohorte ? `<span style="background:#fee2e2; color:#b91c1c; padding:2px 10px; border-radius:14px; font-size:10px; margin-left:8px; font-weight:900; border:2px solid #ef4444; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.15); display: inline-flex; align-items: center; gap: 4px;" title="Analista reporta: No pertenece a la cohorte">🚫 RECORTE: NO COHORTE</span>` : "";
+                                                                const signalNoCohorte = esNoCohorte ? `<span style="background:#fee2e2; color:#b91c1c; padding:2px 10px; border-radius:14px; font-size:10px; margin-left:8px; font-weight:900; border:2px solid #ef4444; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.15); display: inline-flex; align-items: center; gap: 4px;" title="Analista reporta: No pertenece a la cohorte">🚫 RECORTE: NO COHORTE</span>` : "";
+                                const auditSignal = p?.audit_siscac?.hasErrors ? `<span style="background:#fff7ed; color:#c2410c; padding:2px 10px; border-radius:14px; font-size:10px; margin-left:8px; font-weight:900; border:2px solid #f59e0b; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.15); display: inline-flex; align-items: center; gap: 4px;" title="Auditoría: Hallazgos detectados"><i class="fas fa-exclamation-triangle"></i> ❗ AUDITORÍA</span>` : "";
+
 
                                 let btnActionCell = "";
                                 if (estadoPaciente === "pendiente") {
@@ -5200,6 +5261,9 @@
                                 ↩ Reabrir
                             </button>`;
                                 }
+
+
+
 
                                 tr.innerHTML = `
                             ${checkHtml}
@@ -5360,23 +5424,23 @@
 
                                         // 🕵️ LÓGICA DE LATENCIA: Buscar el más antiguo de los PENDIENTES
                                         if (estado === "pendiente" || estado === "") {
-                                            totalPendientes++;
-                                            const nombre = p.datos_base?.VAR10_NombrePaciente || p.nombre || "";
-                                            const iden = p.identificacion || p.id || "";
-                                            
-                                            if (nombre || iden) {
-                                                // Prioridad Absoluta: cargado_el del periodo actual (Task import: lines 6796/6840)
-                                                const fCargaRaw = per?.cargado_el || p.fecha_carga || p.ultima_actualizacion;
-                                                if (fCargaRaw) {
-                                                    const dCarga = new Date(fCargaRaw);
-                                                    if (!isNaN(dCarga.getTime())) {
-                                                        if (!oldestPendingDate || dCarga < oldestPendingDate) {
-                                                            oldestPendingDate = dCarga;
-                                                            oldestPendingName = nombre || `ID: ${iden}`;
+                                                totalPendientes++;
+                                                const nombre = p.datos_base?.VAR10_NombrePaciente || p.nombre || "";
+                                                const iden = p.identificacion || p.id || "";
+
+                                                if (nombre || iden) {
+                                                        // Prioridad Absoluta: cargado_el del periodo actual (Task import: lines 6796/6840)
+                                                        const fCargaRaw = per?.cargado_el || p.fecha_carga || p.ultima_actualizacion;
+                                                        if (fCargaRaw) {
+                                                                const dCarga = new Date(fCargaRaw);
+                                                                if (!isNaN(dCarga.getTime())) {
+                                                                        if (!oldestPendingDate || dCarga < oldestPendingDate) {
+                                                                                oldestPendingDate = dCarga;
+                                                                                oldestPendingName = nombre || `ID: ${iden}`;
+                                                                        }
+                                                                }
                                                         }
-                                                    }
                                                 }
-                                            }
                                         }
 
                                         // Eficiencia Real: Solo Aprobados (Caja Fuerte)
@@ -5417,49 +5481,49 @@
                                 const latenciaDiv = document.getElementById("latenciaTermometro");
                                 const latenciaTexto = document.getElementById("latenciaTexto");
                                 if (latenciaDiv && latenciaTexto) {
-                                    if (oldestPendingDate) {
-                                        const diffDias = Math.floor((ahoraLat - oldestPendingDate) / (1000 * 60 * 60 * 24));
-                                        latenciaDiv.style.display = "inline-flex";
-                                        latenciaDiv.style.removeProperty("display");
-                                        
-                                        let statusColor = "#10b981"; 
-                                        let bgOpacity = "rgba(16, 185, 129, 0.2)";
-                                        let icon = "🌟";
-                                        let prefijo = "LATENCIA IDEAL";
+                                        if (oldestPendingDate) {
+                                                const diffDias = Math.floor((ahoraLat - oldestPendingDate) / (1000 * 60 * 60 * 24));
+                                                latenciaDiv.style.display = "inline-flex";
+                                                latenciaDiv.style.removeProperty("display");
 
-                                        if (diffDias > 15) {
-                                            statusColor = "#ef4444"; 
-                                            bgOpacity = "rgba(239, 68, 68, 0.2)";
-                                            icon = "🚨";
-                                            prefijo = "RETRASO CRÍTICO";
-                                        } else if (diffDias > 7) {
-                                            statusColor = "#f59e0b"; 
-                                            bgOpacity = "rgba(245, 158, 11, 0.2)";
-                                            icon = "⚠️";
-                                            prefijo = "LATENCIA OPERATIVA";
-                                        }
+                                                let statusColor = "#10b981";
+                                                let bgOpacity = "rgba(16, 185, 129, 0.2)";
+                                                let icon = "🌟";
+                                                let prefijo = "LATENCIA IDEAL";
 
-                                        latenciaDiv.style.background = bgOpacity;
-                                        latenciaDiv.style.border = `1px solid ${statusColor}`;
-                                        
-                                        let mensajeFinal = `${icon} <b>${prefijo}: ${diffDias} DÍAS</b>. `;
-                                        if (diffDias > 7) {
-                                            const faltanParaMision = Math.max(metaRecomendada - validadosHoy, 0);
-                                            mensajeFinal += `Meta diaria de nivelación: <b>${metaRecomendada}</b> pacientes <b>DIARIOS</b> (Hoy llevas <b>${validadosHoy}</b>). `;
-                                            if (faltanParaMision > 0) {
-                                                mensajeFinal += `<span style="opacity:0.9; font-size:0.8rem; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 12px; margin-left: 5px; border: 1px solid rgba(255,255,255,0.2);">🔴 Faltan <b>${faltanParaMision}</b> para el objetivo de <b>HOY</b></span>`;
-                                            } else {
-                                                mensajeFinal += `<span style="opacity:0.9; font-size:0.8rem; background: rgba(16,185,129,0.3); padding: 4px 10px; border-radius: 12px; margin-left: 5px;">✅ Objetivo de hoy cumplido</span>`;
-                                            }
+                                                if (diffDias > 15) {
+                                                        statusColor = "#ef4444";
+                                                        bgOpacity = "rgba(239, 68, 68, 0.2)";
+                                                        icon = "🚨";
+                                                        prefijo = "RETRASO CRÍTICO";
+                                                } else if (diffDias > 7) {
+                                                        statusColor = "#f59e0b";
+                                                        bgOpacity = "rgba(245, 158, 11, 0.2)";
+                                                        icon = "⚠️";
+                                                        prefijo = "LATENCIA OPERATIVA";
+                                                }
+
+                                                latenciaDiv.style.background = bgOpacity;
+                                                latenciaDiv.style.border = `1px solid ${statusColor}`;
+
+                                                let mensajeFinal = `${icon} <b>${prefijo}: ${diffDias} DÍAS</b>. `;
+                                                if (diffDias > 7) {
+                                                        const faltanParaMision = Math.max(metaRecomendada - validadosHoy, 0);
+                                                        mensajeFinal += `Meta diaria de nivelación: <b>${metaRecomendada}</b> pacientes <b>DIARIOS</b> (Hoy llevas <b>${validadosHoy}</b>). `;
+                                                        if (faltanParaMision > 0) {
+                                                                mensajeFinal += `<span style="opacity:0.9; font-size:0.8rem; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 12px; margin-left: 5px; border: 1px solid rgba(255,255,255,0.2);">🔴 Faltan <b>${faltanParaMision}</b> para el objetivo de <b>HOY</b></span>`;
+                                                        } else {
+                                                                mensajeFinal += `<span style="opacity:0.9; font-size:0.8rem; background: rgba(16,185,129,0.3); padding: 4px 10px; border-radius: 12px; margin-left: 5px;">✅ Objetivo de hoy cumplido</span>`;
+                                                        }
+                                                } else {
+                                                        mensajeFinal += `¡Meta cumplida! Sigue así para mantener la oportunidad.`;
+                                                }
+
+                                                latenciaTexto.innerHTML = mensajeFinal;
+                                                latenciaDiv.title = `Para reducir la latencia a 7 días, es necesario gestionar al menos ${metaRecomendada} pacientes CADA DÍA.`;
                                         } else {
-                                            mensajeFinal += `¡Meta cumplida! Sigue así para mantener la oportunidad.`;
+                                                latenciaDiv.style.display = "none";
                                         }
-
-                                        latenciaTexto.innerHTML = mensajeFinal;
-                                        latenciaDiv.title = `Para reducir la latencia a 7 días, es necesario gestionar al menos ${metaRecomendada} pacientes CADA DÍA.`;
-                                    } else {
-                                        latenciaDiv.style.display = "none";
-                                    }
                                 }
 
                                 // PACIENTES A RENDERIZAR (aplicar filtro de "Ver Ocultos" si aplica)
@@ -5642,10 +5706,10 @@
                                 $setText("pctOcultosCancer", (totalCancer > 0 ? Math.round((ocultosCancer / totalCancer) * 100) : 0) + "%");
                                 $setText("pctOcultosHemofilia", (totalHemo > 0 ? Math.round((ocultosHemo / totalHemo) * 100) : 0) + "%");
 
-                                // --- ACTUALIZACIÓN DE NUEVOS INDICADORES REALES ---
+                                // --- ACTUALIZACIÓN DE NUEVOS INDICADORES REALES (FILTRADO DIARIO) ---
                                 let totalInactividadSegundos = 0;
                                 pacientesActivos.forEach(pa => {
-                                        totalInactividadSegundos += Number(pa.periodos?.[pPeriodo]?.inactividad_segundos || 0);
+                                        totalInactividadSegundos += Number(pa.periodos?.[pPeriodo]?.inactividad_diaria?.[hoyLocalStr] || 0);
                                 });
 
                                 const inactividadMinHoy = Math.round((totalInactividadSegundos / 60) * 10) / 10;
@@ -5690,7 +5754,7 @@
 
                                 // 1. Título Principal (Hoy: 6 / 5 pacientes) - Debe coincidir con la barra
                                 $setText("metaText", `Hoy: ${validadosHoy} / ${metaBaseDiaria} pacientes`);
-                                
+
                                 // 2. Porcentaje de la BARRA (El 120% carajooo)
                                 $setText("globalPctHero", porcentajeBarraMeta + "%");
                                 $setWidth("globalBar", Math.min(porcentajeBarraMeta, 100));
@@ -5955,6 +6019,7 @@
                                 [`periodos.${periodoActual}.validado_el`]: null,
                                 [`periodos.${periodoActual}.tiempo_segundos`]: tiempoNuevoTotal,
                                 [`periodos.${periodoActual}.inactividad_segundos`]: inactividadNuevaTotal,
+                                [`periodos.${periodoActual}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: (dataActual?.periodos?.[periodoActual]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + segundosDiferencia,
                                 [`periodos.${periodoActual}.historial_sesiones`]: historialSesionesD,
 
                                 // 🔥 MÉTRICAS DE MAPA DE CALOR
@@ -6166,6 +6231,7 @@
                                 [`periodos.${periodoActual}.estado`]: "validado",
                                 [`periodos.${periodoActual}.tiempo_segundos`]: tiempoTotalFinal,
                                 [`periodos.${periodoActual}.inactividad_segundos`]: inactividadTotalFinal,
+                                [`periodos.${periodoActual}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: (dataExistente?.periodos?.[periodoActual]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + difSegundos,
                                 [`periodos.${periodoActual}.historial_sesiones`]: historialSesiones,
                                 [`periodos.${periodoActual}.validado_el`]: new Date().toISOString(),
                                 [`periodos.${periodoActual}.validador`]: auth.currentUser ? auth.currentUser.email : "desconocido",
@@ -6841,7 +6907,7 @@
                                                         const v3h = cellBy(fila, "VAR3_PrimerApellido");
                                                         const v6h = cellBy(fila, "VAR6_Identificacion");
                                                         const idIdentH = String(v6h || "").trim().replace(/\D/g, "");
-                                                        
+
                                                         if (!idIdentH) continue;
 
                                                         const docIdH = `${idIdentH}_HEMO`;
@@ -6862,12 +6928,12 @@
                                                                         VAR7_FechaNacimiento: toISO(cellBy(fila, "VAR7_FechaNacimiento")),
                                                                         VAR8_Sexo: (cellBy(fila, "VAR8_Sexo") || "").toUpperCase()
                                                                 },
-                                                                periodos: { 
-                                                                    [periodo]: { 
-                                                                        cargado_el: new Date().toISOString(), 
-                                                                        estado: "pendiente", 
-                                                                        variables: {} 
-                                                                    } 
+                                                                periodos: {
+                                                                        [periodo]: {
+                                                                                cargado_el: new Date().toISOString(),
+                                                                                estado: "pendiente",
+                                                                                variables: {}
+                                                                        }
                                                                 }
                                                         };
 
@@ -6976,6 +7042,12 @@
                                 if (btnProdXlsx) btnProdXlsx.style.display = accesoTotal ? 'inline-block' : 'none';
                                 if (btnTxt) btnTxt.style.display = 'inline-block'; // siempre visible para analista
                                 if (btnToggleOcultos) btnToggleOcultos.style.display = accesoTotal ? 'flex' : 'none';
+
+                                // 🧠 FILTRO DE SEGURIDAD AUDITORÍA IA
+                                const btnAuditoriaIA = document.getElementById("btnMainAuditoriaIA");
+                                if (btnAuditoriaIA) {
+                                    btnAuditoriaIA.style.display = (isMaster || isSuper || isAnalista) ? 'flex' : 'none';
+                                }
 
                         } else {
                                 adminSection.style.display = 'none';
