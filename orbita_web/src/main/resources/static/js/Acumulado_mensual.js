@@ -35,6 +35,12 @@ const polsignInAnonymously = (...args) => { ensureFirebase(); return window.fire
 const onAuthStateChanged = polonAuthStateChanged;
 const signInAnonymously = polsignInAnonymously;
 
+// Proxy para Timestamp de Firestore
+const Timestamp = {
+  fromDate: (date) => { ensureFirebase(); return fs.Timestamp.fromDate(date); },
+  now: () => { ensureFirebase(); return fs.Timestamp.now(); }
+};
+
 // Ejecución inicial
 ensureFirebase();
 
@@ -60,17 +66,17 @@ const BRAND = {
 const CAP_COLLECTION = "cap";
 
 const ALIGNMENT_CAP_MAP = [
-  { key: "urgencias", label: "Urgencias", capMatch: "urgencias" },
-  { key: "hospitalizacion", label: "Hospitalización", capMatch: "hospitalizacion" },
-  { key: "uci", label: "UCI", capMatch: "uci" },
-  { key: "uce", label: "UCE", capMatch: "uce" },
-  { key: "cirugia", label: "Cirugía", capMatch: "cirugia" },
-  { key: "consultaExterna", label: "Consulta Externa", capMatch: "consulta externa" },
-  { key: "laboratorio", label: "Laboratorio", capMatch: "laboratorio" },
-  { key: "imagenes", label: "Imágenes Diagnósticas (Total)", capMatch: "estudios imagenes" },
-  { key: "imagenesTac", label: "· Tomografías (TAC)", capMatch: "tomograf" },
-  { key: "imagenesRx", label: "· Rayos X", capMatch: "Cantidad de rayos X mes" },
-  { key: "imagenesEco", label: "· Ecografías", capMatch: "Cantidad de Ecografias mes" }
+  { key: "urgencias", label: "Urgencias", capMatch: "urgencias", weight: 100 },
+  { key: "hospitalizacion", label: "Hospitalización", capMatch: "hospitalizacion", weight: 90 },
+  { key: "uci", label: "UCI", capMatch: "uci", weight: 85 },
+  { key: "uce", label: "UCE", capMatch: "uce", weight: 80 },
+  { key: "cirugia", label: "Cirugía", capMatch: "cirugia", weight: 75 },
+  { key: "consultaExterna", label: "Consulta Externa", capMatch: "consulta externa", weight: 60 },
+  { key: "laboratorio", label: "Laboratorio", capMatch: "laboratorio", weight: 40 },
+  { key: "imagenes", label: "Imágenes Diagnósticas (Total)", capMatch: "estudios imagenes", weight: 35 },
+  { key: "imagenesTac", label: "• Tomografías (TAC)", capMatch: "tomograf", weight: 25 },
+  { key: "imagenesRx", label: "• Rayos X", capMatch: "Cantidad de rayos X mes", weight: 20 },
+  { key: "imagenesEco", label: "• Ecografías", capMatch: "Cantidad de Ecografias mes", weight: 20 }
 ];
 
 const KPI_PALETTE = {
@@ -123,9 +129,21 @@ function tableToData(sel) {
   t.querySelectorAll('tbody tr').forEach(tr => {
     const tds = tr.querySelectorAll('td');
     if (tds.length < 2) return;
-    const label = tds[0].textContent.trim();
+
+    // Si hay 3 o más celdas, la primera suele ser el grupo (Hosp/Amb)
+    let label = "";
+    let valueTd = null;
+
+    if (tds.length >= 3) {
+      label = `${tds[0].textContent.trim()} - ${tds[1].textContent.trim()}`;
+      valueTd = tds[2];
+    } else {
+      label = tds[0].textContent.trim();
+      valueTd = tds[1];
+    }
+
     // Limpiamos etiquetas de estado (CUMPLE META, etc) del valor
-    const rawVal = tds[1].querySelector('input')?.value || tds[1].textContent.trim();
+    const rawVal = valueTd.querySelector('input')?.value || valueTd.textContent.trim();
     const val = rawVal.split(/cumple|meta|casi/i)[0].trim();
     data.push([label, val]);
   });
@@ -493,10 +511,10 @@ function exportExcel() {
 window.addEventListener("DOMContentLoaded", () => {
   const today = new Date();
   const ym = today.toISOString().slice(0, 7);
-  const monthEl = $("#month");
+  const monthEl = document.getElementById("month");
   if (monthEl) {
-    monthEl.value = ym;
-    monthEl.addEventListener("change", () => runLoad());
+    // monthEl.value = ym; // Ya se establece abajo
+    monthEl.onchange = () => runLoad();
   }
 
   // --- Listeners de Botones con protección contra errores ---
@@ -1404,7 +1422,8 @@ function buildStrategicAlignmentModel({ capMeta, capRows }) {
       mesAnterior,
       promHist,
       variacionMes,
-      pesoVal: STRATEGIC_WEIGHT_VAL[impacto] || 1
+      pesoVal: STRATEGIC_WEIGHT_VAL[impacto] || 1,
+      weight: item.weight || 0
     });
   }
 
@@ -1574,8 +1593,8 @@ function renderAlineacionEstrategica(model, monthId) {
   }
 
   if (mix) {
-    const frenos = model.filter(x => x.esIncumplimiento).sort((a, b) => a.brecha - b.brecha);
-    const sosten = model.filter(x => !x.esIncumplimiento).sort((a, b) => b.brecha - a.brecha);
+    const frenos = model.filter(x => x.esIncumplimiento).sort((a, b) => b.weight !== a.weight ? b.weight - a.weight : a.brecha - b.brecha);
+    const sosten = model.filter(x => !x.esIncumplimiento).sort((a, b) => b.weight !== a.weight ? b.weight - a.weight : b.brecha - a.brecha);
 
     let htmlFrenos = frenos.map(x => `
       <div style="margin-bottom:10px; padding:12px; border-radius:8px; border-left:5px solid #ef4444; background:#fef2f2; border:1px solid #fee2e2; border-left-width:5px;">
@@ -1747,7 +1766,10 @@ function getCapMonthColumn(headerRow, monthId) {
 
 function extractStrategicCapMeta(capRows, monthId) {
   const headerIdx = findCapHeaderRow(capRows);
-  if (headerIdx < 0) throw new Error("No se encontró encabezado mensual en CAP.");
+  if (headerIdx < 0) {
+    console.warn("No se encontró encabezado mensual en CAP.");
+    return {};
+  }
 
   const headerRow = capRows[headerIdx];
   const monthCol = getCapMonthColumn(headerRow, monthId);
@@ -3968,6 +3990,11 @@ async function loadYearlyConsolidated(yearId) {
           // ✅ REGLA ACTUALIZADA: Se elimina la división histórica
           sumaPrev += sumaMesPrev;
           mesesPrev++;
+        } else if (fila.isSumatoriaImg) {
+          const v1 = parseFloat(mesSet["IMG-TOT|Imágenes (Total)"]) || 0;
+          const v3 = parseFloat(mesSet["IMG-TOT|Procedimientos guiados (Total)"]) || 0;
+          sumaPrev += (v1 + v3);
+          mesesPrev++;
         } else {
           for (let key of fila.dbKeys) {
             const v = mesSet[key] || mesSet[`URG|${key}`] || mesSet[`URGENCIAS|${key}`] || mesSet[`CIRUGIA_ING|${key}`] || mesSet[`CIRUGIA_EGR|${key}`] || mesSet[`CX-ESP|${key}`] || mesSet[`CE|${key}`] || mesSet[`HEM|${key}`] || mesSet[`HOSP|${key}`] || mesSet[`UCI|${key}`] || mesSet[`UCE|${key}`] || mesSet[`INST|${key}`] || mesSet[`HEMO_ONCO|${key}`] || mesSet[`HEMOCOMPONENTES|${key}`] || mesSet[`ENDO|${key}`] || mesSet[`IMG|${key}`] || mesSet[`IMG-HOS|${key}`] || mesSet[`IMG-AMB|${key}`] || mesSet[`IMG-TOT|${key}`] || mesSet[`LAB|${key}`] || mesSet[`EST|${key}`];
@@ -3985,9 +4012,8 @@ async function loadYearlyConsolidated(yearId) {
 
         if (fila.isSumatoriaImg) {
           const v1 = parseFloat(mesSet["IMG-TOT|Imágenes (Total)"]) || 0;
-          const v2 = parseFloat(mesSet["IMG-TOT|Pacientes (Total)"]) || 0;
           const v3 = parseFloat(mesSet["IMG-TOT|Procedimientos guiados (Total)"]) || 0;
-          val = v1 + v2 + v3;
+          val = v1 + v3;
         } else if (fila.isSumatoriaLab) {
           const keysLab = ["LAB|INSTITUCIONAL", "LAB|Microbiologia", "LAB|PRIME", "LAB|SUESCUN", "LAB|COLCAN", "LAB|ANTIOQUIA", "LAB|CENTRO DE REFERENCIA", "LAB|LIME", "LAB|SYNLAB", "LAB|ICMT", "LAB|CIB", "LAB|UNILAB", "LAB|Muestras particulares"];
           let sumaMes = 0;
@@ -4084,6 +4110,7 @@ async function loadYearlyConsolidated(yearId) {
             <table style="min-width: 100%; width: max-content; border-collapse: collapse; font-family: 'Outfit', sans-serif; font-size: 0.95rem; text-align: center;">
                 <thead>
                     <tr style="background: #253D5B; color: #fff;">
+                        <th style="border: 1px solid #fff; width:30px;"></th>
                         <th style="border: 1px solid #fff; padding: 12px; text-align:left;">URGENCIAS</th>
                         <th style="border: 1px solid #fff; background: #4E6C9F; padding: 12px;">Promedio ${prevYear}</th>
                         <th style="border: 1px solid #fff; background: #64748b; padding: 12px;">META ANUAL</th>
@@ -4628,19 +4655,19 @@ async function runInteligencia(year, month0, agg, meta) {
   if (!intelContainer) return;
 
   const monthNamesArr = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  const currentName = monthNamesArr[parseInt(month0) - 1];
+  const mIdx = parseInt(month0);
+  const currentName = monthNamesArr[mIdx];
   if (intelDateBadge) intelDateBadge.textContent = `${currentName} ${year}`;
 
   // 1. Contexto Temporal y Proyección de Cierre de Año
-  const mIdx = parseInt(month0);
   const yNum = parseInt(year);
-  const factorAnual = 12 / mIdx; // Proyección simple: (YTD / m) * 12
+  const factorAnual = 12 / (mIdx + 1); // Proyección simple: (YTD / m) * 12
 
   // 2. Indicadores (IDs sincronizados exactamente con snapshotAutoCalculados y tablas)
   // 2. Indicadores (IDs sincronizados exactamente con snapshotAutoCalculados y tablas)
   const indicators = [
-    { label: "Admisiones Totales", id: "EST|Total admisiones", unit: "pacientes", useYoYMeta: true },
-    { label: "Atenciones Efectivas", id: "EST|Atenciones efectivas (Egresos atendidos)", unit: "egresos", useYoYMeta: true },
+    { label: "Admisiones Totales", id: "URG|Total ingresos a urgencias (triages + ortopedia)", unit: "pacientes", useYoYMeta: true },
+    { label: "Atenciones Efectivas", id: "URG|Egresos atendidos urgencias", unit: "egresos", useYoYMeta: true },
     { label: "Urgencias (Ingresos)", id: "URG|Total ingresos a urgencias (triages + ortopedia)", unit: "pacientes", metaKey: "urgenciasMeta" },
     { label: "Consulta Externa", id: "CE|TOTAL", unit: "consultas", metaKey: "ceMetaConsultas" },
     { label: "Egresos Hosp.", id: "HOSP|EGRESOS HOSP. PUESTOS 2, 3 y 4", unit: "egresos", target: Math.round(7560 / 12) },
@@ -4697,7 +4724,10 @@ async function runInteligencia(year, month0, agg, meta) {
   const getValFromData = (data, indicatorId) => {
     if (!data) return 0;
 
-    // SUMATORIA ESPECIAL: LABORATORIO
+    // 1. Caso Directo (Plano/Moderno)
+    if (data[indicatorId] != null) return Number(data[indicatorId]);
+
+    // 2. SUMATORIA ESPECIAL: LABORATORIO
     if (indicatorId === "LAB|TOTAL") {
       const labItems = [
         "LAB|ANTIOQUIA", "LAB|CENTRO DE REFERENCIA", "LAB|CIB", "LAB|COLCAN",
@@ -4711,17 +4741,26 @@ async function runInteligencia(year, month0, agg, meta) {
         else if (data.lab && data.lab.hosp && data.lab.hosp[labelNoPrefix]) sumLab += Number(data.lab.hosp[labelNoPrefix]);
         else if (k === "LAB|Muestras particulares" && data.lab && data.lab.part) sumLab += Number(data.lab.part.muestras);
       });
-      // ✅ REGLA OBLIGATORIA: Siempre aplicamos la regla de división por 2 para el motor de alineación/ranking
       return Math.round(sumLab / 2);
     }
 
-    // SUMATORIA ESPECIAL: CONSULTA EXTERNA
+    // 3. SUMATORIA ESPECIAL: CONSULTA EXTERNA
     if (indicatorId === "CE|TOTAL") {
       let sumCe = 0;
       Object.keys(data).forEach(k => { if (k.startsWith("CE|") && k !== "CE|TOTAL") sumCe += Number(data[k]); });
       if (sumCe === 0 && data.ce) Object.values(data.ce).forEach(v => sumCe += Number(v));
       return sumCe;
     }
+
+    // 4. Fallback para Estructura Anidada (Antigua/2025)
+    if (indicatorId === "URG|Total ingresos a urgencias (triages + ortopedia)") return Number(data.urg?.ingresos || 0);
+    if (indicatorId === "URG|Egresos atendidos urgencias") return Number(data.urg?.egresosAt || 0);
+    if (indicatorId === "HOSP|EGRESOS HOSP. PUESTOS 2, 3 y 4") return Number(data.hosp?.egresos || 0);
+    if (indicatorId === "UCI|EGRESOS DE UCI ADULTOS") return Number(data.uci?.egresos || 0);
+    if (indicatorId === "UCE|EGRESOS DE UCE ADULTOS") return Number(data.uce?.egresos || 0);
+    if (indicatorId === "CX-ESP|Total de U.V.R") return Number(data.cx?.uvrTotal || 0);
+    if (indicatorId === "IMG-TOT|Pacientes (Total)") return Number((data.img?.hosp?.pacientes || 0) + (data.img?.amb?.pacientes || 0));
+
     return 0;
   };
 

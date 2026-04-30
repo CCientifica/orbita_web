@@ -534,6 +534,21 @@
                             <div class="row g-4 mt-2" id="dash-insights">
                                 <!-- Se llena vía JS -->
                             </div>
+
+                            <div class="row g-4 mt-4">
+                                <div class="col-md-6">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Eficiencia Operativa (Lead Times en Días)</div>
+                                        <div style="height: 250px;"><canvas id="chartLeadTimes"></canvas></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="chart-card">
+                                        <div class="chart-title">Cumplimiento de Hitos (Meta vs Real)</div>
+                                        <div style="height: 250px;"><canvas id="chartHitos"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Panel 1: Identificación -->
@@ -1224,8 +1239,8 @@
                 const s4 = await getDocs(query(collection(db, 'gpc_seguimiento'), where('anio', '==', state.anio)));
                 state.actu = s4.docs.map(d => ({ ...d.data(), id: d.id }));
 
-                const s5 = await getDocs(collection(db, 'gpc_profesionales'));
-                state.profs = s5.docs.map(d => d.data());
+                // state.profs se cargará bajo demanda (Lazy Load) al abrir evidencias
+                state.profs = [];
 
                 const s6 = await getDocs(collection(db, 'gpc_repositorio_maestro'));
                 state.repo = s6.docs.map(d => ({ ...d.data(), id: d.id }));
@@ -1246,11 +1261,12 @@
             try {
                 const batch = writeBatch(db);
                 
-                // 1. Obtener IDs actuales en DB para este año
-                const snap = await getDocs(collection(db, coll));
+                // 1. Obtener IDs actuales en DB para este año (Filtrado por año para ahorrar lecturas)
+                const { query, where } = window.firebaseFirestore;
+                const snap = await getDocs(query(collection(db, coll), where('anio', '==', state.anio)));
                 const dbIds = [];
                 snap.forEach(ds => {
-                    if (ds.data().anio === state.anio) dbIds.push(ds.id);
+                    dbIds.push(ds.id);
                 });
 
                 // 2. Preparar guardado y rastrear activos
@@ -2449,13 +2465,24 @@
 
         // --- Evidencias & Modal ---
         let currentActuIdx = -1;
-        function abrirEvidencia(idx) {
+        async function abrirEvidencia(idx) {
             currentActuIdx = idx;
             const r = state.actu[idx];
             qs('#evidDocRef').textContent = r.tema;
             qs('#evidTema').value = r.tema;
             qs('#evidFecha').value = r.fechaSoc || r.fchEntrega || '';
             qs('#evidModal').style.display = 'flex';
+
+            // Carga de profesionales bajo demanda (si no están cargados)
+            if (!state.profs || state.profs.length === 0) {
+                try {
+                    const { db } = window.firebaseInstance;
+                    const { collection, getDocs } = window.firebaseFirestore;
+                    const s5 = await getDocs(collection(db, 'gpc_profesionales'));
+                    state.profs = s5.docs.map(d => d.data());
+                } catch (err) { console.error("Error cargando profesionales:", err); }
+            }
+
             renderServicios();
             renderProfsCat();
             renderProfsSel();
@@ -3028,21 +3055,11 @@
         function renderDash() {
             if (!state.plan || !state.actu || !state.repo || !state.inventario) return;
 
-            // --- COMBINAR DATOS PARA ANÁLISIS TOTAL (Inventario + Maestro) ---
+            // --- FUENTE DE VERDAD: Repositorio Maestro ---
+            // El usuario reporta que el conteo es erróneo porque se combinan datos del inventario.
+            // Usaremos exclusivamente el repositorio maestro para las métricas globales.
             const allDocs = [...state.repo];
-            const repoCodes = new Set(state.repo.map(r => r.codigo).filter(Boolean));
-            state.inventario.forEach(i => {
-                if(!repoCodes.has(i.codigo)) {
-                    allDocs.push({
-                        codigo: i.codigo,
-                        nombre: i.nombre,
-                        ultimaAct: i.fchUlt,
-                        proximaAct: i.fchProx,
-                        prior: i.prior,
-                        tipo: i.codigo && i.codigo.startsWith('GPC') ? 'GPC' : 'Protocolo'
-                    });
-                }
-            });
+            const activeDocs = allDocs.filter(r => r.status !== 'Descartado' && r.status !== 'Inexistente');
 
             // KPIs
             const totalPlan = state.plan.filter(x => x.accion !== 'Mantener').length;
@@ -3053,20 +3070,26 @@
 
             qs('#stat-pendientes').textContent = state.actu.length;
             
-            const vencidos = allDocs.filter(r => getSemforo(r.proximaAct).txt === 'VENCIDO').length;
-            qs('#stat-vencidos').textContent = vencidos;
+            // Alertas: Vencidos + Urgentes + Por Vencer (Excluyendo descartados)
+            const vencidos = activeDocs.filter(r => getSemforo(r.proximaAct).txt === 'VENCIDO').length;
+            const urgentes = activeDocs.filter(r => getSemforo(r.proximaAct).txt === 'URGENTE').length;
+            const porVencer = activeDocs.filter(r => getSemforo(r.proximaAct).txt === 'POR VENCER').length;
             
+            // El usuario prefiere ver la suma de alertas críticas en el stat card
+            qs('#stat-vencidos').textContent = vencidos + urgentes + porVencer;
+            
+            // Total Repositorio (Incluye descartados para transparencia del maestro)
             qs('#stat-maestro').textContent = allDocs.length;
 
             const baseColors = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#3b82f6', '#8b5cf6'];
 
-            // Chart 1: Salud de la Base Documental
-            const rVig = allDocs.filter(r => getSemforo(r.proximaAct).txt === 'VIGENTE').length;
-            const rVen = vencidos;
-            const rPor = allDocs.filter(r => getSemforo(r.proximaAct).txt === 'POR VENCER' || getSemforo(r.proximaAct).txt === 'URGENTE' || !r.proximaAct).length;
+            // Chart 1: Salud de la Base Documental (Solo sobre documentos activos)
+            const rVig = activeDocs.filter(r => getSemforo(r.proximaAct).txt === 'VIGENTE').length;
+            const rVen = vencidos + urgentes + porVencer;
+            const rPor = allDocs.length - rVig - rVen; // Pendientes, grises o descartados
 
             updateChart('chartSalud', 'doughnut', {
-                labels: ['Vigente', 'Vencido', 'Pendiente/Gris'],
+                labels: ['Vigente', 'Vencido/Alerta', 'Pendiente/Gris'],
                 datasets: [{
                     data: [rVig, rVen, rPor],
                     backgroundColor: ['#10b981', '#f43f5e', '#bcb5af'],
@@ -3075,12 +3098,18 @@
                 }]
             }, { cutout: '75%' });
 
-            // Chart 2: Ciclo de Seguimiento
+            // Chart 2: Ciclo de Seguimiento (Producción)
+            // Filtramos para que solo cuente documentos que NO estén descartados ni sean inexistentes
+            const segActivos = state.actu.filter(r => {
+                const st = (r.statusManual || '').toLowerCase();
+                return st !== 'descartado' && st !== 'inexistente';
+            });
+
             const statesSeg = { 
-                'Iniciados': state.actu.filter(r => !r.fchEnvio && !r.fchRetorno && !r.fechaSoc).length,
-                'Revisión': state.actu.filter(r => r.fchEnvio && !r.fchRetorno).length,
-                'Aprobados': state.actu.filter(r => r.fchRetorno && !r.fechaSoc).length,
-                'Cerrados': state.actu.filter(r => r.fechaSoc).length
+                'Iniciados': segActivos.filter(r => !r.fchEnvio && !r.fchRetorno && !r.fechaSoc && r.statusManual !== 'Actualizado').length,
+                'Revisión': segActivos.filter(r => r.fchEnvio && !r.fchRetorno && !r.fechaSoc && r.statusManual !== 'Actualizado').length,
+                'Aprobados': segActivos.filter(r => r.fchRetorno && !r.fechaSoc && r.statusManual !== 'Actualizado').length,
+                'Cerrados': segActivos.filter(r => r.fechaSoc || r.statusManual === 'Actualizado').length
             };
 
             updateChart('chartSeg', 'pie', {
@@ -3220,68 +3249,116 @@
                 }
             });
 
-            // 5. Insights dinámicos y Salud Documental
+            // 5. Insights y Diagnóstico
             const insightsBox = qs('#dash-insights');
             insightsBox.innerHTML = '';
             
-            // Cálculos de Salud
-            const totalDocs = allDocs.length;
-            const saludDocs = allDocs.filter(r => {
-                const d = new Date(r.ultimaAct);
-                return !isNaN(d) && (now - d) / (1000 * 60 * 60 * 24 * 365) < 3;
+            const docsParaSalud = allDocs.filter(r => (r.status || '').toLowerCase() !== 'inexistente');
+            const totalDocs = docsParaSalud.length;
+            const saludDocsCount = docsParaSalud.filter(r => {
+                if ((r.status || '').toLowerCase() === 'descartado') return false;
+                return getSemforo(r.proximaAct).txt === 'VIGENTE';
             }).length;
-            const healthIdx = totalDocs ? Math.round((saludDocs / totalDocs) * 100) : 0;
+            const healthIdx = totalDocs ? Math.round((saludDocsCount / totalDocs) * 100) : 0;
+            const deudaHisto = activeDocs.filter(r => {
+                if(!r.ultimaAct) return false;
+                const d = new Date(r.ultimaAct);
+                return !isNaN(d) && (now - d) / (1000 * 60 * 60 * 24 * 365) > 5;
+            }).length;
 
-            const deudaHisto = aging['> 5 años'];
-            const presionOp = futureExp.slice(0, 3).reduce((a, b) => a + b, 0);
+            const riesgos = activeDocs.filter(r => {
+                if(!r.ultimaAct) return false;
+                const d = new Date(r.ultimaAct);
+                return !isNaN(d) && (now - d) / (1000 * 60 * 60 * 24 * 365) > 5;
+            });
 
             let healthClass = healthIdx > 80 ? 'text-success' : (healthIdx > 50 ? 'text-warning' : 'text-danger');
 
             insightsBox.innerHTML = `
-                <div class="col-md-4">
-                    <div class="chart-card d-flex flex-column align-items-center text-center p-4">
-                        <div class="stat-lbl mb-2 text-muted">Índice de Salud Documental</div>
-                        <div class="stat-val ${healthClass}" style="font-size: 3rem;">${healthIdx}%</div>
-                        <p class="small text-muted mb-0">${saludDocs} de ${totalDocs} documentos están actualizados (< 3 años).</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="chart-card d-flex flex-column align-items-center text-center p-4">
-                        <div class="stat-lbl mb-2 text-muted">Deuda Histórica Acumulada</div>
-                        <div class="stat-val text-danger" style="font-size: 3rem;">${deudaHisto}</div>
-                        <p class="small text-muted mb-0">Documentos que exceden los 5 años de antigüedad y requieren revisión inmediata.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="chart-card d-flex flex-column align-items-center text-center p-4">
-                        <div class="stat-lbl mb-2 text-muted">Presión Operativa Inminente</div>
-                        <div class="stat-val text-primary" style="font-size: 3rem;">${presionOp}</div>
-                        <p class="small text-muted mb-0">Vencimientos previstos para los próximos 90 días naturales.</p>
-                    </div>
-                </div>
+                <div class="col-md-4"><div class="chart-card text-center p-4">
+                    <div class="stat-lbl mb-2">Salud de la Base</div>
+                    <div class="stat-val ${healthClass}" style="font-size:3rem">${healthIdx}%</div>
+                    <p class="small text-muted">${saludDocsCount} de ${totalDocs} al día.</p>
+                </div></div>
+                <div class="col-md-4"><div class="chart-card text-center p-4">
+                    <div class="stat-lbl mb-2">Deuda Histórica</div>
+                    <div class="stat-val text-danger" style="font-size:3rem">${deudaHisto}</div>
+                    <p class="small text-muted">Docs obsoletos (>5 años).</p>
+                </div></div>
+                <div class="col-md-4"><div class="chart-card text-center p-4">
+                    <div class="stat-lbl mb-2">Alertas de Hoy</div>
+                    <div class="stat-val text-primary" style="font-size:3rem">${vencidos + urgentes + porVencer}</div>
+                    <p class="small text-muted">Total documentos en riesgo.</p>
+                </div></div>
             `;
-
-            const riesgos = allDocs.filter(r => {
-                if(!r.ultimaAct) return false;
-                const d = new Date(r.ultimaAct);
-                if(isNaN(d)) return false;
-                return (now - d) / (1000 * 60 * 60 * 24 * 365) > 5;
-            });
 
             if(riesgos.length > 0) {
                 const docRiesgo = riesgos.sort((a,b) => new Date(a.ultimaAct) - new Date(b.ultimaAct))[0];
-                insightsBox.innerHTML += `
-                    <div class="col-12 mt-3">
-                        <div class="alert alert-danger d-flex align-items-center gap-3" style="border-radius:15px; background:#fff1f2; border:1px solid #fda4af">
-                            <div style="font-size:1.5rem"></div>
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="color:#9f1239">DIAGNÓSTICO: Riesgo Máximo de Obsolescencia</h6>
-                                <p class="mb-0 small text-muted">El documento <b>${docRiesgo.nombre} (${docRiesgo.codigo})</b> es el más antiguo del sistema (última revisión en ${docRiesgo.ultimaAct}). Su vigencia científica ha expirado.</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                insightsBox.innerHTML += `<div class="col-12 mt-3"><div class="alert alert-danger d-flex align-items-center gap-3" style="border-radius:15px; border:1px solid #fda4af; background:#fff1f2">
+                    <div style="font-size:1.5rem">🚨</div>
+                    <div><h6 class="mb-0 fw-bold" style="color:#9f1239">ALERTA CRÍTICA: Documento más antiguo detectado</h6>
+                    <p class="mb-0 small text-dark"><b>${docRiesgo.nombre} (${docRiesgo.codigo})</b> no se revisa desde ${docRiesgo.ultimaAct}.</p></div>
+                </div></div>`;
             }
+
+            // --- ANALÍTICA DE TIEMPOS (SIMPLIFICADA) ---
+            const diffDays = (d1, d2) => {
+                if(!d1 || !d2) return null;
+                const da = new Date(d1); const db = new Date(d2);
+                if(isNaN(da) || isNaN(db)) return null;
+                let days = Math.round((db - da) / (1000 * 60 * 60 * 24));
+                return (days > 365) ? 30 : (days < -30 ? 0 : days); // Proteccion contra outliers de años anteriores
+            };
+
+            const t_elab = [], t_cal = [], t_soc = [];
+            state.actu.forEach(r => {
+                const d1 = diffDays(r.fchEntrega, r.fchEnvio); if(d1 !== null) t_elab.push(d1);
+                const d2 = diffDays(r.fchEnvio, r.fchRetorno); if(d2 !== null) t_cal.push(d2);
+                const d3 = diffDays(r.fchRetorno, r.fechaSoc); if(d3 !== null) t_soc.push(d3);
+            });
+            const avg = arr => arr.length ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length) : 0;
+            
+            updateChart('chartLeadTimes', 'bar', {
+                labels: ['Retraso en Envío', 'Días en Calidad', 'Días para Socializar'],
+                datasets: [{ 
+                    label: 'Promedio de Días', 
+                    data: [avg(t_elab), avg(t_cal), avg(t_soc)], 
+                    backgroundColor: ['#f43f5e', '#3b82f6', '#10b981'], 
+                    borderRadius: 8 
+                }]
+            }, { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Días promedio' } } } });
+
+            // Cumplimiento de Hitos (Basado en Reglas de Negocio del Usuario)
+            const totalH = state.actu.filter(r => r.fchEnvio || r.fchRetorno || r.fechaSoc).length || 1;
+            
+            // 1. Puntualidad Envío: fchEnvio <= fchEntrega
+            const h_envio = Math.round((state.actu.filter(r => r.fchEnvio && r.fchEntrega && r.fchEnvio <= r.fchEntrega).length / (state.actu.filter(r => r.fchEntrega).length || 1)) * 100);
+            
+            // 2. Tasa Aprobación (Calidad): fchRetorno - fchEnvio <= 30 días
+            const docsConCalidad = state.actu.filter(r => r.fchEnvio && r.fchRetorno);
+            const h_calidad = docsConCalidad.length ? Math.round((docsConCalidad.filter(r => {
+                const diff = diffDays(r.fchEnvio, r.fchRetorno);
+                return diff !== null && diff <= 30;
+            }).length / docsConCalidad.length) * 100) : 0;
+
+            // 3. Tasa Socialización: fechaSoc debe ser en el mismo mes que fchRetorno
+            const docsAprobados = state.actu.filter(r => r.fchRetorno && r.fechaSoc);
+            const h_social = docsAprobados.length ? Math.round((docsAprobados.filter(r => {
+                const dRet = new Date(r.fchRetorno + 'T00:00:00');
+                const dSoc = new Date(r.fechaSoc + 'T00:00:00');
+                // Cumple si el mes y año son iguales o si Soc es menor/igual al último día del mes de Retorno
+                return dSoc.getMonth() === dRet.getMonth() && dSoc.getFullYear() === dRet.getFullYear();
+            }).length / docsAprobados.length) * 100) : 0;
+
+            updateChart('chartHitos', 'bar', {
+                labels: ['Puntualidad Envío (Plan)', 'Calidad Oportuna (<30d)', 'Socialización (Mes Corriente)'],
+                datasets: [{ 
+                    label: 'Cumplimiento de Meta %', 
+                    data: [h_envio, h_calidad, h_social], 
+                    backgroundColor: ['#4e6c9f', '#3b82f6', '#10b981'],
+                    borderRadius: 8
+                }]
+            }, { scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }, plugins: { legend: { display: false } } });
         }
 
         function updateChart(id, type, data, options = {}) {

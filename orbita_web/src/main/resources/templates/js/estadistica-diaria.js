@@ -434,34 +434,65 @@ function sumMensualHasta(capIndex, uid, mes) {
 /* ===== Lectura de realizados ===== */
 // Suma y cuenta días con dato hasta la fecha seleccionada.
 // Si consolidar=true → desde ENE-01 hasta mes/día seleccionado.
+// 🧠 MEMORIA DE CACHÉ PARA EVITAR RE-LECTURAS INNECESARIAS
+window.__cacheEstadistica = window.__cacheEstadistica || {};
+
 async function cargarAcumuladosHasta(anio, mes, hastaDia, consolidar) {
   const mapa = {}; // { kpiId: { sum: number, days: number } }
   const mesIni = consolidar ? 1 : +mes;
   const mesFin = +mes;
 
-  const promesas = [];
   for (let m = mesIni; m <= mesFin; m++) {
     const MM = String(m).padStart(2, '0');
+    const cacheKey = `${anio}_${MM}`;
+    const esMesActual = (m === mesFin);
+    
+    // Si el mes ya está en caché y NO es el mes actual (que puede cambiar), lo usamos
+    if (window.__cacheEstadistica[cacheKey] && !esMesActual) {
+      const dataMes = window.__cacheEstadistica[cacheKey];
+      Object.keys(dataMes).forEach(k => {
+        if (!mapa[k]) mapa[k] = { sum: 0, days: 0 };
+        mapa[k].sum += dataMes[k].sum;
+        mapa[k].days += dataMes[k].days;
+      });
+      continue;
+    }
+
+    // Si es el mes actual o no está en caché, lo descargamos por día
     const topDay = (m === mesFin) ? hastaDia : daysInMonth(anio, MM);
+    const tempMapaMes = {}; // Para guardar este mes en caché al final
+    const promesas = [];
+
     for (let d = 1; d <= topDay; d++) {
       const dd = String(d).padStart(2, '0');
       promesas.push(getDocs(collection(db, "realizados", anio, MM, dd, "kpi")));
     }
+
+    const snapshots = await Promise.all(promesas);
+    snapshots.forEach(snap => {
+      snap.forEach(docu => {
+        const r = docu.data();
+        const k = String(r.kpi || "");
+        const v = Number(r.valor || 0);
+        
+        if (!mapa[k]) mapa[k] = { sum: 0, days: 0 };
+        mapa[k].sum += v;
+        mapa[k].days += 1;
+
+        if (!esMesActual) {
+           if (!tempMapaMes[k]) tempMapaMes[k] = { sum: 0, days: 0 };
+           tempMapaMes[k].sum += v;
+           tempMapaMes[k].days += 1;
+        }
+      });
+    });
+
+    // Guardamos meses pasados en caché para que no se vuelvan a pedir en esta sesión
+    if (!esMesActual && Object.keys(tempMapaMes).length > 0) {
+      window.__cacheEstadistica[cacheKey] = tempMapaMes;
+    }
   }
 
-  const snapshots = await Promise.all(promesas);
-  snapshots.forEach(snap => {
-    if (snap.empty) return;
-    const vistos = new Set();
-    snap.forEach(docu => {
-      const r = docu.data();
-      const k = String(r.kpi || "");
-      const v = Number(r.valor || 0);
-      if (!mapa[k]) mapa[k] = { sum: 0, days: 0 };
-      mapa[k].sum += v;
-      if (!vistos.has(k)) { mapa[k].days += 1; vistos.add(k); }
-    });
-  });
   return mapa;
 }
 
@@ -2850,13 +2881,17 @@ async function cargarVistaMensual() {
     } catch (e) { console.warn("Error updating charts:", e); }
 
 
-    let ultimoDiaConDato = 0;
+    // ✅ OPTIMIZACIÓN: No volver a consultar la DB. Usar lo que ya tenemos en dataMes.
+    let ultimoDiaConDato = 1;
     for (let d = nDias; d >= 1; d--) {
       const dd = String(d).padStart(2, "0");
-      const snap = await getDocs(collection(db, "realizados", anio, mes, dd, "kpi"));
-      if (!snap.empty) { ultimoDiaConDato = d; break; }
+      // Revisamos si algún KPI tuvo valor ese día en el objeto dataMes ya descargado
+      const hayDato = Object.values(dataMes).some(valoresKpi => valoresKpi[d - 1] > 0);
+      if (hayDato) {
+        ultimoDiaConDato = d;
+        break;
+      }
     }
-    if (ultimoDiaConDato === 0) ultimoDiaConDato = 1;
 
     const capSnap = await getDocs(collection(db, "forecast", anio, "unidades"));
     const capIndex = {};

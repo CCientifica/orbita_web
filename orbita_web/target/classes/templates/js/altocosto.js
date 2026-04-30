@@ -14,7 +14,7 @@
         const { db, auth } = window.firebaseInstance;
         const {
                 collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-                query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch
+                query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch, increment
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
 
@@ -112,7 +112,7 @@
         // ============================================================
         const LOCKS_API_BASE = '/api/altocosto/locks';
         const LOCK_HEARTBEAT_MS = 60000;
-        const LOCKS_REFRESH_MS = 45000;
+        const LOCKS_REFRESH_MS = 15000; // 🔥 Refresco a 15s según diseño
 
         // Inyectar estilos de locks necesarios para la tabla
         const lockStyleEl = document.createElement('style');
@@ -159,7 +159,8 @@
                 const r = await lockFetch('/tomar', 'POST', {
                         pacienteId: String(pacienteId).trim(),
                         email: user.email,
-                        nombre: user.nombre
+                        nombre: user.nombre,
+                        isIdle: !!window.__isIdle
                 });
 
                 if (r.ok && r.data?.success) {
@@ -190,7 +191,8 @@
 
                 const r = await lockFetch('/heartbeat', 'POST', {
                         pacienteId: lockState.currentPatientId,
-                        email: user.email
+                        email: user.email,
+                        isIdle: !!window.__isIdle
                 });
 
                 if (r.ok && r.data?.success) return;
@@ -204,6 +206,11 @@
         function iniciarHeartbeatFicha() {
                 detenerHeartbeatFicha();
                 lockState.heartbeatTimer = setInterval(() => {
+                        // 🛑 Si el usuario está IDLE (inactivo), dejamos de enviar latidos.
+                        if (window.__isIdle) {
+                                console.warn("[LOCKS] Sesión en inactividad profunda. Suspendiendo heartbeat.");
+                                return;
+                        }
                         heartbeatFicha().catch(err => console.warn('[LOCKS] heartbeat error', err));
                 }, LOCK_HEARTBEAT_MS);
         }
@@ -253,7 +260,7 @@
                         const pid = String(tr.getAttribute('data-paciente-id') || '').trim();
                         const lock = lockState.activeLocksMap.get(pid);
 
-                        tr.classList.remove('lock-by-me', 'lock-by-other');
+                        tr.classList.remove('lock-by-me', 'lock-by-other', 'lock-is-idle');
                         tr.removeAttribute('title');
 
                         const old = tr.querySelector('.lock-badge-inline');
@@ -274,17 +281,20 @@
                         if (String(lock.email || '').trim().toLowerCase() === user.email) {
                                 tr.classList.add('lock-by-me');
                                 tr.title = 'Ficha en uso por ti';
-                                badge.textContent = 'En uso por ti';
+                                badge.innerHTML = '👤 <span style="margin-left:4px;">En uso por ti</span>';
                                 badge.style.background = '#dbeafe';
                                 badge.style.color = '#1d4ed8';
-                                badge.style.border = '1px solid #bfdbfe';
+                                badge.style.border = '1px solid #3b82f6';
                         } else {
                                 tr.classList.add('lock-by-other');
-                                tr.title = `Ficha en uso por ${owner}`;
-                                badge.textContent = `En uso por ${owner}`;
-                                badge.style.background = '#fee2e2';
-                                badge.style.color = '#b91c1c';
-                                badge.style.border = '1px solid #fecaca';
+                                tr.title = `Ficha en uso por ${owner}${lock.isIdle ? ' (INACTIVO)' : ''}`;
+                                badge.innerHTML = `${lock.isIdle ? '⏳' : '🔒'} <span style="margin-left:4px;">${lock.isIdle ? 'Inactivo' : 'En uso'} por ${owner}</span>`;
+                                badge.style.background = lock.isIdle ? '#fffef3' : '#fee2e2';
+                                badge.style.color = lock.isIdle ? '#d97706' : '#b91c1c';
+                                badge.style.border = lock.isIdle ? '1px solid #f59e0b' : '1px solid #ef4444';
+                                badge.style.boxShadow = lock.isIdle ? 'none' : '0 0 10px rgba(239, 68, 68, 0.2)';
+
+                                if (lock.isIdle) tr.classList.add('lock-is-idle');
                         }
 
                         const firstNameCell = tr.querySelector('td:nth-child(2) .pac-nombre');
@@ -306,6 +316,7 @@
 
         function iniciarRefreshLocks() {
                 if (lockState.refreshTimer) clearInterval(lockState.refreshTimer);
+                refrescarLocksVisuales().catch(() => { });
                 lockState.refreshTimer = setInterval(() => {
                         refrescarLocksVisuales().catch(() => { });
                 }, LOCKS_REFRESH_MS);
@@ -316,6 +327,52 @@
                 liberarLockFicha,
                 refrescarLocksVisuales
         };
+
+        // =========================================================
+        // 📊 SISTEMA DE MEDICIÓN DE HUECOS DE PRODUCTIVIDAD
+        // =========================================================
+        async function registrarInactividadPostCierre({ pacienteId, periodo, segundos, userEmail }) {
+                if (!pacienteId || !periodo || !segundos || segundos <= 0) return;
+                try {
+                        const docRef = doc(db, "pacientes_cac", pacienteId);
+                        await updateDoc(docRef, {
+                                [`periodos.${periodo}.inactividad_post_cierre_segundos`]: increment(segundos),
+                                [`periodos.${periodo}.cierres_sin_gestion`]: increment(1),
+                                [`periodos.${periodo}.ultimo_cierre_sin_gestion_por`]: userEmail,
+                                [`periodos.${periodo}.ultimo_cierre_sin_gestion_en`]: new Date().toISOString()
+                        });
+                        console.log(`[PRODUCTIVIDAD] Registrados ${segundos}s de inactividad post-cierre para ${pacienteId}`);
+                } catch (e) {
+                        console.error("[PRODUCTIVIDAD] Error al registrar inactividad:", e);
+                }
+        }
+
+        async function procesarInactividadPostCierre() {
+                const user = getLockUser();
+                const lastClose = Number(localStorage.getItem('__lastFichaCloseTime') || 0);
+                const lastPacienteId = localStorage.getItem('__lastFichaClosePacienteId');
+                const lastUser = localStorage.getItem('__lastFichaCloseUser');
+                const lastPeriodo = localStorage.getItem('__lastFichaClosePeriodo');
+
+                if (lastClose && lastPacienteId && lastUser === user.email) {
+                        const gapSeconds = Math.floor((Date.now() - lastClose) / 1000);
+
+                        // Umbral de 30 segundos para no castigar transiciones rápidas
+                        if (gapSeconds > 30) {
+                                await registrarInactividadPostCierre({
+                                        pacienteId: lastPacienteId,
+                                        periodo: lastPeriodo,
+                                        segundos: gapSeconds,
+                                        userEmail: lastUser
+                                });
+                        }
+
+                        localStorage.removeItem('__lastFichaCloseTime');
+                        localStorage.removeItem('__lastFichaClosePacienteId');
+                        localStorage.removeItem('__lastFichaCloseUser');
+                        localStorage.removeItem('__lastFichaClosePeriodo');
+                }
+        }
 
         window.addEventListener('beforeunload', () => {
                 const user = getLockUser();
@@ -3457,6 +3514,19 @@
 
         window.cerrarModal = async (...args) => {
                 try {
+                        // 📊 Registro de cierre para medición de productividad
+                        const anio = document.getElementById("filtroAnio")?.value;
+                        const mes = document.getElementById("filtroMes")?.value;
+                        const pPeriodo = (anio && mes) ? `${anio}-${mes}` : null;
+                        
+                        // Solo registramos el hueco si la ficha se cierra estando aún en "pendiente"
+                        if (currentPacienteId && pPeriodo && !window.__modalReadOnly) {
+                                localStorage.setItem('__lastFichaCloseTime', Date.now().toString());
+                                localStorage.setItem('__lastFichaClosePacienteId', currentPacienteId);
+                                localStorage.setItem('__lastFichaCloseUser', (auth.currentUser ? auth.currentUser.email : ""));
+                                localStorage.setItem('__lastFichaClosePeriodo', pPeriodo);
+                        }
+
                         await window.__altoCostoLocks.liberarLockFicha();
                 } finally {
                         return __cerrarModalOriginal(...args);
@@ -6825,12 +6895,20 @@
         const __abrirFichaOriginal = window.abrirFicha;
 
         window.abrirFicha = async (idDoc, p, ...rest) => {
+                // 📊 Procesar inactividad del hueco anterior antes de tomar el nuevo lock
+                await procesarInactividadPostCierre();
+
                 const lockResult = await window.__altoCostoLocks.tomarLockFicha(idDoc);
 
                 if (!lockResult.ok) {
                         alert(lockResult.message || 'No fue posible abrir la ficha.');
                         return;
                 }
+
+                // Guardar metadata de apertura
+                localStorage.setItem('__currentFichaOpenTime', Date.now().toString());
+                localStorage.setItem('__currentFichaId', idDoc);
+                localStorage.setItem('__currentFichaUser', (auth.currentUser ? auth.currentUser.email : ""));
 
                 return await __abrirFichaOriginal(idDoc, p, ...rest);
         };
@@ -6920,6 +6998,56 @@
                         }
                 }
         };
+
+        // =========================================================
+        // 🕵️‍♂️ NUEVO: SISTEMA DE DETECCIÓN DE INACTIVIDAD (IDLE)
+        // =========================================================
+        const IDLE_LIMIT_MS = 2 * 60 * 1000; // 2 minutos
+        window.__idleSeconds = 0;
+        window.__lastActivity = Date.now();
+        window.__isIdle = false;
+
+        function resetActivity() {
+                if (window.__isIdle) {
+                        console.log("🚀 [ALTO-COSTO] Usuario regresó. Reanudando...");
+                        window.__isIdle = false;
+                        const overlay = document.getElementById("idleOverlay");
+                        if (overlay) overlay.style.display = "none";
+                }
+                window.__lastActivity = Date.now();
+        }
+
+        function chequearInactividad() {
+                if (!currentPacienteId || window.__modalReadOnly) return;
+                
+                const diff = Date.now() - window.__lastActivity;
+                if (diff > IDLE_LIMIT_MS && !window.__isIdle) {
+                        console.warn("😴 [ALTO-COSTO] Inactividad detectada.");
+                        window.__isIdle = true;
+                        
+                        // Opcional: Mostrar overlay visual para que el usuario sepa que está inactivo
+                        let overlay = document.getElementById("idleOverlay");
+                        if (!overlay) {
+                                overlay = document.createElement("div");
+                                overlay.id = "idleOverlay";
+                                overlay.style = "position:fixed; inset:0; background:rgba(15,23,42,0.4); backdrop-filter:blur(4px); z-index:20000; display:flex; align-items:center; justify-content:center; color:white; font-family:sans-serif; pointer-events:none;";
+                                overlay.innerHTML = '<div style="background:#1e293b; padding:20px 40px; border-radius:2rem; box-shadow:0 20px 25px -5px rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); text-align:center;">' +
+                                                    '<div style="font-size:40px; margin-bottom:10px;">⏳</div>' +
+                                                    '<div style="font-weight:900; font-size:1.2rem;">SESIÓN EN PAUSA</div>' +
+                                                    '<div style="font-size:0.9rem; opacity:0.8;">Mueve el mouse para continuar trabajando</div>' +
+                                                    '</div>';
+                                document.body.appendChild(overlay);
+                        }
+                        overlay.style.display = "flex";
+                }
+        }
+
+        document.addEventListener('mousemove', resetActivity, true);
+        document.addEventListener('keypress', resetActivity, true);
+        document.addEventListener('click', resetActivity, true);
+        document.addEventListener('scroll', resetActivity, true);
+
+        setInterval(chequearInactividad, 5000);
 
         iniciarRefreshLocks();
         refrescarLocksVisuales().catch(() => { });

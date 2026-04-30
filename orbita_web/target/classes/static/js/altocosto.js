@@ -14,7 +14,7 @@
         const { db, auth } = window.firebaseInstance;
         const {
                 collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc,
-                query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch
+                query, where, orderBy, limit, onSnapshot, serverTimestamp, writeBatch, increment
         } = window.firebaseFirestore;
         const { onAuthStateChanged, signOut } = window.firebaseAuth;
 
@@ -296,7 +296,7 @@
                         const pid = String(tr.getAttribute('data-paciente-id') || '').trim();
                         const lock = lockState.activeLocksMap.get(pid);
 
-                        tr.classList.remove('lock-by-me', 'lock-by-other');
+                        tr.classList.remove('lock-by-me', 'lock-by-other', 'lock-is-idle');
                         tr.removeAttribute('title');
 
                         const old = tr.querySelector('.lock-badge-inline');
@@ -366,6 +366,52 @@
                 liberarLockFicha,
                 refrescarLocksVisuales
         };
+
+        // =========================================================
+        // 📊 SISTEMA DE MEDICIÓN DE HUECOS DE PRODUCTIVIDAD
+        // =========================================================
+        async function registrarInactividadPostCierre({ pacienteId, periodo, segundos, userEmail }) {
+                if (!pacienteId || !periodo || !segundos || segundos <= 0) return;
+                try {
+                        const docRef = doc(db, "pacientes_cac", pacienteId);
+                        await updateDoc(docRef, {
+                                [`periodos.${periodo}.inactividad_post_cierre_segundos`]: increment(segundos),
+                                [`periodos.${periodo}.cierres_sin_gestion`]: increment(1),
+                                [`periodos.${periodo}.ultimo_cierre_sin_gestion_por`]: userEmail,
+                                [`periodos.${periodo}.ultimo_cierre_sin_gestion_en`]: new Date().toISOString()
+                        });
+                        console.log(`[PRODUCTIVIDAD] Registrados ${segundos}s de inactividad post-cierre para ${pacienteId}`);
+                } catch (e) {
+                        console.error("[PRODUCTIVIDAD] Error al registrar inactividad:", e);
+                }
+        }
+
+        async function procesarInactividadPostCierre() {
+                const user = getLockUser();
+                const lastClose = Number(localStorage.getItem('__lastFichaCloseTime') || 0);
+                const lastPacienteId = localStorage.getItem('__lastFichaClosePacienteId');
+                const lastUser = localStorage.getItem('__lastFichaCloseUser');
+                const lastPeriodo = localStorage.getItem('__lastFichaClosePeriodo');
+
+                if (lastClose && lastPacienteId && lastUser === user.email) {
+                        const gapSeconds = Math.floor((Date.now() - lastClose) / 1000);
+
+                        // Umbral de 30 segundos para no castigar transiciones rápidas
+                        if (gapSeconds > 30) {
+                                await registrarInactividadPostCierre({
+                                        pacienteId: lastPacienteId,
+                                        periodo: lastPeriodo,
+                                        segundos: gapSeconds,
+                                        userEmail: lastUser
+                                });
+                        }
+
+                        localStorage.removeItem('__lastFichaCloseTime');
+                        localStorage.removeItem('__lastFichaClosePacienteId');
+                        localStorage.removeItem('__lastFichaCloseUser');
+                        localStorage.removeItem('__lastFichaClosePeriodo');
+                }
+        }
 
         window.addEventListener('beforeunload', () => {
                 const user = getLockUser();
@@ -3618,6 +3664,19 @@
 
         window.cerrarModal = async (...args) => {
                 try {
+                        // 📊 Registro de cierre para medición de productividad
+                        const anio = document.getElementById("filtroAnio")?.value;
+                        const mes = document.getElementById("filtroMes")?.value;
+                        const pPeriodo = (anio && mes) ? `${anio}-${mes}` : null;
+                        
+                        // Solo registramos el hueco si la ficha se cierra estando aún en "pendiente"
+                        if (currentPacienteId && pPeriodo && !window.__modalReadOnly) {
+                                localStorage.setItem('__lastFichaCloseTime', Date.now().toString());
+                                localStorage.setItem('__lastFichaClosePacienteId', currentPacienteId);
+                                localStorage.setItem('__lastFichaCloseUser', (auth.currentUser ? auth.currentUser.email : ""));
+                                localStorage.setItem('__lastFichaClosePeriodo', pPeriodo);
+                        }
+
                         await window.__altoCostoLocks.liberarLockFicha();
                 } finally {
                         return __cerrarModalOriginal(...args);
@@ -5488,8 +5547,9 @@
                                 if (latenciaDiv && latenciaTexto) {
                                         if (oldestPendingDate) {
                                                 const diffDias = Math.floor((ahoraLat - oldestPendingDate) / (1000 * 60 * 60 * 24));
-                                                latenciaDiv.style.display = "inline-flex";
-                                                latenciaDiv.style.removeProperty("display");
+                                                
+                                                // ✅ Corrección: Uso sólido de display con !important para evitar colisiones
+                                                latenciaDiv.style.setProperty("display", "inline-flex", "important");
 
                                                 let statusColor = "#10b981";
                                                 let bgOpacity = "rgba(16, 185, 129, 0.2)";
@@ -5506,6 +5566,11 @@
                                                         bgOpacity = "rgba(245, 158, 11, 0.2)";
                                                         icon = "⚠️";
                                                         prefijo = "LATENCIA OPERATIVA";
+                                                } else if (diffDias > 2) {
+                                                        statusColor = "#3b82f6";
+                                                        bgOpacity = "rgba(59, 130, 246, 0.2)";
+                                                        icon = "🕒";
+                                                        prefijo = "LATENCIA ACEPTABLE";
                                                 }
 
                                                 latenciaDiv.style.background = bgOpacity;
@@ -5527,7 +5592,7 @@
                                                 latenciaTexto.innerHTML = mensajeFinal;
                                                 latenciaDiv.title = `Para reducir la latencia a 7 días, es necesario gestionar al menos ${metaRecomendada} pacientes CADA DÍA.`;
                                         } else {
-                                                latenciaDiv.style.display = "none";
+                                                latenciaDiv.style.setProperty("display", "none", "important");
                                         }
                                 }
 
@@ -7176,12 +7241,20 @@
         const __abrirFichaOriginal = window.abrirFicha;
 
         window.abrirFicha = async (idDoc, p, ...rest) => {
+                // 📊 Procesar inactividad del hueco anterior antes de tomar el nuevo lock
+                await procesarInactividadPostCierre();
+
                 const lockResult = await window.__altoCostoLocks.tomarLockFicha(idDoc);
 
                 if (!lockResult.ok) {
                         alert(lockResult.message || 'No fue posible abrir la ficha.');
                         return;
                 }
+
+                // Guardar metadata de apertura
+                localStorage.setItem('__currentFichaOpenTime', Date.now().toString());
+                localStorage.setItem('__currentFichaId', idDoc);
+                localStorage.setItem('__currentFichaUser', (auth.currentUser ? auth.currentUser.email : ""));
 
                 return await __abrirFichaOriginal(idDoc, p, ...rest);
         };

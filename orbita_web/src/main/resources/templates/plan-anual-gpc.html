@@ -1029,10 +1029,11 @@
 
             let gpcs = [];
             try {
-                const snap = await getDocs(collection(db, 'gpc_actualizaciones'));
+                const { query, where } = window.firebaseFirestore;
+                const snap = await getDocs(query(collection(db, 'gpc_actualizaciones'), where('anio', '>=', state.anio - 1)));
                 snap.forEach(d => {
                     const data = d.data();
-                    if (data.anio >= state.anio - 1) gpcs.push(data);
+                    gpcs.push(data);
                 });
             } catch (e) { console.error(e); }
 
