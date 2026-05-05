@@ -4545,6 +4545,51 @@
                 if (!container) return;
                 container.innerHTML = "";
 
+                const normCoh = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const isCancer = (normCoh(cohorteModalActual) === "cancer");
+                const vars = isCancer ? VARS_CANCER : VARS_HEMO;
+                const periodoSel = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
+
+                // 🔍 IDENTIFICACIÓN DE PACIENTE ANTIGUO (SISCAD - Búsqueda en Historial)
+                let camposLlenosCount = 0;
+                vars.forEach(v => {
+                    const key = typeof window.canonKey === 'function' ? window.canonKey(v) : v.replace(/\s+/g, '');
+                    
+                    // Verificamos en todas las fuentes posibles (Actual, Base, Raíz e Historial)
+                    const valP = data?.periodos?.[periodoSel]?.variables?.[key];
+                    const valB = data?.datos_base?.[key];
+                    const valR = data?.[key];
+                    const valH = (typeof getLastNonEmptyFromPreviousPeriods === 'function') 
+                                 ? getLastNonEmptyFromPreviousPeriods(data, periodoSel, key) 
+                                 : "";
+                    
+                    const finalVal = [valP, valB, valR, valH].find(x => x !== undefined && x !== null && String(x).trim() !== "");
+                    if (finalVal) camposLlenosCount++;
+                });
+                
+                const esAntiguo = (camposLlenosCount > 16);
+
+                // 📢 BANNER DE INSTRUCCIÓN PARA PACIENTES ANTIGUOS
+                if (esAntiguo) {
+                    const warningHtml = `
+                        <div class="col-12 mb-4" id="warningAntiguo" style="grid-column: 1 / -1;">
+                            <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 1.5rem; padding: 25px; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); display: flex; align-items: center; gap: 20px;">
+                                <div style="background: #3b82f6; color: white; padding: 15px; border-radius: 20px; display: flex; flex-shrink: 0; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                                    <i data-lucide="info" style="width:32px; height:32px;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin:0; color:#1e40af; font-weight:900; font-size:1.2rem; letter-spacing:-0.02em;">PACIENTE ANTIGUO (SISCAD APROBADO)</h4>
+                                    <p style="margin:5px 0 0; color:#1e3a8a; font-size:0.95rem; line-height:1.4; font-weight:500;">
+                                        Este registro cuenta con validación previa. <b style="color:#2563eb;">NO modifiques datos históricos</b>. 
+                                        Concéntrate únicamente en verificar los campos <span style="color:#2563eb; font-weight:800; text-decoration:underline;">AZULES</span> y completar los pendientes en <span style="color:#dc2626; font-weight:800;">ROJO</span>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('afterbegin', warningHtml);
+                }
+
                 // 🔥 PANEL DE AUDITORÍA PERSISTENTE (SOLUCIÓN IA)
                 if (data.audit_siscac?.hasErrors) {
                     const auditContent = data.audit_siscac.ia_solution || 
@@ -4571,17 +4616,13 @@
                             </div>
                         </div>
                     `;
-                    container.insertAdjacentHTML('afterbegin', auditPanel);
+                    container.insertAdjacentHTML('beforeend', auditPanel);
                     if (window.lucide) setTimeout(() => window.lucide.createIcons(), 100);
                 }
 
-                const normCoh = (s) => String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                const isCancer = (normCoh(cohorteModalActual) === "cancer");
-                const vars = isCancer ? VARS_CANCER : VARS_HEMO;
                 const ayuda = isCancer ? AYUDA_CANCER : AYUDA_HEMATO;
                 const volatilesLista = isCancer ? VOLATILES_CANCER : VOLATILES_HEMO;
 
-                const periodoSel = `${document.getElementById("filtroAnio").value}-${document.getElementById("filtroMes").value}`;
                 const periodoObj = (data?.periodos?.[periodoSel] || {});
                 const estadoPeriodo = String(periodoObj.estado || bandejaActual || "pendiente").toLowerCase();
                 const readOnly = (estadoPeriodo === "validado");
@@ -5778,6 +5819,7 @@
 
                                 // --- ACTUALIZACIÓN DE NUEVOS INDICADORES REALES (FILTRADO DIARIO) ---
                                 let totalInactividadSegundos = 0;
+                                const hoyLocalStr = getLocalYYYYMMDD(new Date());
                                 pacientesActivos.forEach(pa => {
                                         totalInactividadSegundos += Number(pa.periodos?.[pPeriodo]?.inactividad_diaria?.[hoyLocalStr] || 0);
                                 });
@@ -6089,7 +6131,7 @@
                                 [`periodos.${periodoActual}.validado_el`]: null,
                                 [`periodos.${periodoActual}.tiempo_segundos`]: tiempoNuevoTotal,
                                 [`periodos.${periodoActual}.inactividad_segundos`]: inactividadNuevaTotal,
-                                [`periodos.${periodoActual}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: (dataActual?.periodos?.[periodoActual]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + segundosDiferencia,
+                                [`periodos.${periodoActual}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: (dataActual?.periodos?.[periodoActual]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + window.__idleSeconds,
                                 [`periodos.${periodoActual}.historial_sesiones`]: historialSesionesD,
 
                                 // 🔥 MÉTRICAS DE MAPA DE CALOR
@@ -6272,8 +6314,8 @@
                                         }
                                 });
 
-                                // Si tiene más de 12 variables precargadas (los 8 demográficos + algo clínico), ya tiene historia
-                                tipoPaciente = (camposLlenosBase > 12) ? "Antiguo" : "Nuevo";
+                                // Si tiene más de 16 variables precargadas (los 8 demográficos + algo clínico), ya tiene historia
+                                tipoPaciente = (camposLlenosBase > 16) ? "Antiguo" : "Nuevo";
                         }
 
                         const tiempoAnterior = Number(dataExistente?.periodos?.[periodoActual]?.tiempo_segundos || 0);
@@ -6301,7 +6343,7 @@
                                 [`periodos.${periodoActual}.estado`]: "validado",
                                 [`periodos.${periodoActual}.tiempo_segundos`]: tiempoTotalFinal,
                                 [`periodos.${periodoActual}.inactividad_segundos`]: inactividadTotalFinal,
-                                [`periodos.${periodoActual}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: (dataExistente?.periodos?.[periodoActual]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + difSegundos,
+                                [`periodos.${periodoActual}.inactividad_diaria.${getLocalYYYYMMDD(new Date())}`]: (dataExistente?.periodos?.[periodoActual]?.inactividad_diaria?.[getLocalYYYYMMDD(new Date())] || 0) + window.__idleSeconds,
                                 [`periodos.${periodoActual}.historial_sesiones`]: historialSesiones,
                                 [`periodos.${periodoActual}.validado_el`]: new Date().toISOString(),
                                 [`periodos.${periodoActual}.validador`]: auth.currentUser ? auth.currentUser.email : "desconocido",
